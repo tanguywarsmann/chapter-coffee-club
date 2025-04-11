@@ -1,0 +1,149 @@
+
+import { useState } from "react";
+import { User } from "@/types/user";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { BookOpen, MessageSquare, ThumbsUp } from "lucide-react";
+import { toast } from "sonner";
+
+interface Activity {
+  id: string;
+  user: User;
+  type: "finished" | "started" | "badge" | "streak";
+  content: string;
+  timestamp: string;
+  bookTitle?: string;
+  bookId?: string;
+  badgeIcon?: string;
+  likes: number;
+  comments: number;
+  hasLiked: boolean;
+}
+
+interface ActivityFeedProps {
+  activities: Activity[];
+}
+
+export function ActivityFeed({ activities }: ActivityFeedProps) {
+  const [localActivities, setLocalActivities] = useState(activities);
+
+  const handleLike = (id: string) => {
+    setLocalActivities(activities.map(activity => {
+      if (activity.id === id) {
+        const liked = !activity.hasLiked;
+        const newLikes = liked ? activity.likes + 1 : activity.likes - 1;
+        return { ...activity, hasLiked: liked, likes: newLikes };
+      }
+      return activity;
+    }));
+    
+    toast.success("J'aime ajouté!");
+  };
+
+  const handleComment = (id: string) => {
+    toast.info("Commentaires bientôt disponibles!");
+  };
+
+  const getActivityIcon = (type: Activity["type"]) => {
+    switch (type) {
+      case "finished":
+        return <BookOpen className="h-4 w-4 text-green-500" />;
+      case "started":
+        return <BookOpen className="h-4 w-4 text-blue-500" />;
+      case "badge":
+        return <BookOpen className="h-4 w-4 text-yellow-500" />;
+      case "streak":
+        return <BookOpen className="h-4 w-4 text-purple-500" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
+    }
+  };
+
+  if (!localActivities.length) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Activité récente</CardTitle>
+          <CardDescription>Suivez l'activité de vos amis</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-6 border border-dashed border-coffee-light rounded-lg">
+            <p className="text-muted-foreground">Aucune activité récente</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-coffee-light">
+      <CardHeader>
+        <CardTitle className="text-xl font-serif text-coffee-darker">Activité récente</CardTitle>
+        <CardDescription>Suivez vos activités et celles de vos amis</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {localActivities.map((activity) => (
+            <div key={activity.id} className="p-4 rounded-lg border border-coffee-light">
+              <div className="flex items-start gap-3">
+                <Avatar className="h-8 w-8 border border-coffee-light">
+                  <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
+                  <AvatarFallback className="bg-coffee-medium text-primary-foreground">
+                    {activity.user.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium">{activity.user.name}</span>
+                    {getActivityIcon(activity.type)}
+                    <span className="text-muted-foreground">{activity.content}</span>
+                  </div>
+                  
+                  {activity.bookTitle && (
+                    <p className="mt-1 text-coffee-darker font-medium">
+                      "{activity.bookTitle}"
+                    </p>
+                  )}
+                  
+                  {activity.badgeIcon && (
+                    <div className="mt-2 inline-block px-3 py-1 bg-coffee-light/50 rounded-md">
+                      <span className="mr-2">{activity.badgeIcon}</span>
+                      <span className="text-sm">{activity.content}</span>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 flex items-center text-xs text-muted-foreground gap-4">
+                    <span>{activity.timestamp}</span>
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={`h-auto p-0 ${activity.hasLiked ? 'text-coffee-dark' : 'text-muted-foreground'}`}
+                        onClick={() => handleLike(activity.id)}
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                        <span>{activity.likes}</span>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-auto p-0 text-muted-foreground"
+                        onClick={() => handleComment(activity.id)}
+                      >
+                        <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                        <span>{activity.comments}</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

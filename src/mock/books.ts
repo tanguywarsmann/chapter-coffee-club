@@ -1,0 +1,140 @@
+
+import { Book } from "@/types/book";
+
+export const mockBooks: Book[] = [
+  {
+    id: "1",
+    title: "Les Misérables",
+    author: "Victor Hugo",
+    coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1287&auto=format&fit=crop",
+    description: "Un roman historique qui suit la vie et les luttes de l'ex-bagnard Jean Valjean dans la France du 19e siècle. Le livre aborde des thèmes de justice, de rédemption et d'amour, tout en décrivant les conditions sociales et politiques de l'époque.",
+    totalChapters: 12,
+    chaptersRead: 4,
+    isCompleted: false,
+    language: "français",
+    categories: ["Classique", "Historique", "Drame"],
+    pages: 1232,
+    publicationYear: 1862
+  },
+  {
+    id: "2",
+    title: "Le Comte de Monte-Cristo",
+    author: "Alexandre Dumas",
+    coverImage: "https://images.unsplash.com/photo-1509021397816-10c18db3598e?q=80&w=1374&auto=format&fit=crop",
+    description: "L'histoire d'Edmond Dantès, un jeune marin qui, injustement emprisonné, s'évade pour se venger de ceux qui l'ont trahi. Un récit captivant de vengeance, de fortune et de justice.",
+    totalChapters: 15,
+    chaptersRead: 15,
+    isCompleted: true,
+    language: "français",
+    categories: ["Aventure", "Classique", "Vengeance"],
+    pages: 1276,
+    publicationYear: 1844
+  },
+  {
+    id: "3",
+    title: "Notre-Dame de Paris",
+    author: "Victor Hugo",
+    coverImage: "https://images.unsplash.com/photo-1614332625575-6bef347e3770?q=80&w=1470&auto=format&fit=crop",
+    description: "Un roman gothique se déroulant dans le Paris du XVe siècle, centré sur la cathédrale Notre-Dame. Il raconte l'histoire de la belle bohémienne Esmeralda et de l'amour non partagé que lui porte le bossu sonneur de cloches Quasimodo.",
+    totalChapters: 10,
+    chaptersRead: 10,
+    isCompleted: true,
+    language: "français",
+    categories: ["Classique", "Gothique", "Drame"],
+    pages: 940,
+    publicationYear: 1831
+  },
+  {
+    id: "4",
+    title: "Germinal",
+    author: "Émile Zola",
+    coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1741&auto=format&fit=crop",
+    description: "Un roman sur la vie des mineurs du nord de la France au XIXe siècle, décrivant leurs conditions de travail difficiles et leur lutte pour la dignité et la justice sociale.",
+    totalChapters: 8,
+    chaptersRead: 2,
+    isCompleted: false,
+    language: "français",
+    categories: ["Classique", "Social", "Industriel"],
+    pages: 608,
+    publicationYear: 1885
+  },
+  {
+    id: "5",
+    title: "Le Petit Prince",
+    author: "Antoine de Saint-Exupéry",
+    coverImage: "https://images.unsplash.com/photo-1518744386442-2d48ac47a7eb?q=80&w=1374&auto=format&fit=crop",
+    description: "Un conte poétique et philosophique sous l'apparence d'un conte pour enfants. Il s'agit de l'histoire d'un aviateur qui, suite à une panne dans le désert du Sahara, rencontre un jeune garçon venu d'une autre planète.",
+    totalChapters: 5,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Jeunesse", "Philosophie", "Fable"],
+    pages: 93,
+    publicationYear: 1943
+  },
+  {
+    id: "6",
+    title: "Madame Bovary",
+    author: "Gustave Flaubert",
+    coverImage: "https://images.unsplash.com/photo-1463320726281-696a485928c7?q=80&w=1470&auto=format&fit=crop",
+    description: "L'histoire d'Emma Bovary, épouse d'un médecin de province, qui tente d'échapper à l'ennui de sa vie conjugale par des lectures romanesques, le luxe et des aventures amoureuses.",
+    totalChapters: 7,
+    chaptersRead: 7,
+    isCompleted: true,
+    language: "français",
+    categories: ["Classique", "Réalisme", "Drame"],
+    pages: 356,
+    publicationYear: 1857
+  },
+  {
+    id: "7",
+    title: "Les Fleurs du Mal",
+    author: "Charles Baudelaire",
+    description: "Un recueil de poèmes exprimant l'angoisse de vivre entre la spiritualité et la sensualité, entre l'idéal et le spleen, dans un Paris moderne et sordide.",
+    totalChapters: 6,
+    chaptersRead: 3,
+    isCompleted: false,
+    language: "français",
+    categories: ["Poésie", "Symbolisme", "Décadence"],
+    pages: 260,
+    publicationYear: 1857
+  },
+  {
+    id: "8",
+    title: "Candide",
+    author: "Voltaire",
+    coverImage: "https://images.unsplash.com/photo-1476275466078-4007374efbbe?q=80&w=1529&auto=format&fit=crop",
+    description: "Un conte philosophique qui raconte les aventures de Candide, un jeune homme naïf qui voyage à travers le monde, confronté à de nombreuses catastrophes qui remettent en question son optimisme initial.",
+    totalChapters: 4,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Philosophie", "Satire", "Conte"],
+    pages: 178,
+    publicationYear: 1759
+  }
+];
+
+export const getPopularBooks = (): Book[] => {
+  return mockBooks.sort(() => 0.5 - Math.random()).slice(0, 4);
+};
+
+export const getRecentlyAddedBooks = (): Book[] => {
+  return mockBooks.sort(() => 0.5 - Math.random()).slice(0, 4);
+};
+
+export const getRecommendedBooks = (): Book[] => {
+  return mockBooks.sort(() => 0.5 - Math.random()).slice(0, 4);
+};
+
+export const getBooksInProgress = (): Book[] => {
+  return mockBooks.filter(book => book.chaptersRead > 0 && !book.isCompleted);
+};
+
+export const getCompletedBooks = (): Book[] => {
+  return mockBooks.filter(book => book.isCompleted);
+};
+
+export const getBookById = (id: string): Book | undefined => {
+  return mockBooks.find(book => book.id === id);
+};

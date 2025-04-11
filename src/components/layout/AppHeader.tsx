@@ -1,0 +1,111 @@
+
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { BookOpen, User, Home, LogOut, Trophy, BookCheck, Settings } from "lucide-react";
+import { toast } from "sonner";
+
+export function AppHeader() {
+  const [user] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    toast.success("Déconnexion réussie");
+    navigate("/");
+  };
+
+  const getUserInitials = () => {
+    if (!user?.email) return "U";
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-coffee-light bg-background/95 backdrop-blur">
+      <div className="container flex h-14 items-center">
+        <Link to="/home" className="flex items-center gap-2 font-serif text-coffee-darker">
+          <BookOpen className="h-5 w-5" />
+          <span className="text-xl font-medium">READ</span>
+        </Link>
+        
+        <nav className="flex-1 md:flex md:justify-center">
+          <ul className="hidden md:flex items-center gap-6">
+            <li>
+              <Link to="/home" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+                <Home className="h-4 w-4 mr-1" />
+                Accueil
+              </Link>
+            </li>
+            <li>
+              <Link to="/explore" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+                <BookOpen className="h-4 w-4 mr-1" />
+                Explorer
+              </Link>
+            </li>
+            <li>
+              <Link to="/achievements" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+                <Trophy className="h-4 w-4 mr-1" />
+                Récompenses
+              </Link>
+            </li>
+            <li>
+              <Link to="/reading-list" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+                <BookCheck className="h-4 w-4 mr-1" />
+                Ma liste
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8 border border-coffee-light">
+                  <AvatarImage src="/avatar.png" alt="Avatar" />
+                  <AvatarFallback className="bg-coffee-medium text-primary-foreground">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.name || user.email}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profil</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/settings")}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Paramètres</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="default" className="bg-coffee-dark hover:bg-coffee-darker" asChild>
+            <Link to="/">Se connecter</Link>
+          </Button>
+        )}
+      </div>
+    </header>
+  );
+}
