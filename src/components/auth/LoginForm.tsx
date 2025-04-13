@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { BookOpen } from "lucide-react";
+import Image from "@/components/ui/image";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -36,8 +36,12 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto border-coffee-medium">
       <CardHeader className="space-y-1 flex flex-col items-center">
-        <div className="w-12 h-12 bg-coffee-dark rounded-full flex items-center justify-center mb-2">
-          <BookOpen className="text-white w-6 h-6" />
+        <div className="w-20 h-20 rounded-full overflow-hidden mb-2">
+          <Image 
+            src="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" 
+            alt="READ Bookmark" 
+            className="w-full h-full object-cover"
+          />
         </div>
         <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
         <CardDescription className="text-center">
@@ -97,3 +101,4 @@ export function LoginForm() {
     </Card>
   );
 }
+
