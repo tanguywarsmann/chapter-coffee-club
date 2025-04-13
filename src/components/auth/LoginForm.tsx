@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +35,10 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto border-coffee-medium">
       <CardHeader className="space-y-1 flex flex-col items-center">
-        <div className="w-20 h-20 rounded-full overflow-hidden mb-2">
+        <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
           <Image 
-            src="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" 
-            alt="READ Bookmark" 
+            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+            alt="READ Logo" 
             className="w-full h-full object-cover"
           />
         </div>
@@ -101,4 +100,3 @@ export function LoginForm() {
     </Card>
   );
 }
-
