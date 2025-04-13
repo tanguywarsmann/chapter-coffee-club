@@ -51,7 +51,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-logo-background text-logo-text">
       <AppHeader />
       
       <main className="container py-6 space-y-8">
