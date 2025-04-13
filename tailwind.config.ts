@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,16 +63,21 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				coffee: {
-					light: '#E6D7C3', // Light coffee cream
-					medium: '#C8B6A6', // Medium roast
-					dark: '#8D7B68', // Dark coffee
-					darker: '#5A4330', // Espresso
+					light: '#E6D7C3',
+					medium: '#C8B6A6',
+					dark: '#A0522D',
+					darker: '#8B4513',
 				},
 				chocolate: {
-					light: '#D2B48C', // Milk chocolate
-					medium: '#A67B5B', // Medium chocolate
-					dark: '#6F4E37', // Dark chocolate
-					darkest: '#3B2F2F' // Extra dark chocolate
+					light: '#D2B48C',
+					medium: '#A67B5B',
+					dark: '#6F4E37',
+					darkest: '#3B2F2F'
+				},
+				logo: {
+					background: '#A0522D',
+					text: '#F5F5DC',
+					accent: '#8B4513'
 				}
 			},
 			borderRadius: {

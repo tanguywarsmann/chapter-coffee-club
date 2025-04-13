@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BookOpen, User, Home, LogOut, Trophy, BookCheck, Settings } from "lucide-react";
 import { toast } from "sonner";
+import Image from "@/components/ui/image";
 
 export function AppHeader() {
   const [user] = useState(() => {
@@ -27,11 +28,15 @@ export function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-coffee-light bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur">
       <div className="container flex h-14 items-center">
-        <Link to="/home" className="flex items-center gap-2 font-serif text-coffee-darker">
-          <BookOpen className="h-5 w-5" />
-          <span className="text-xl font-medium">READ</span>
+        <Link to="/home" className="flex items-center gap-2">
+          <Image 
+            src="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" 
+            alt="READ Logo" 
+            className="h-8 w-8"
+          />
+          <span className="text-xl font-medium text-logo-text">READ</span>
         </Link>
         
         <nav className="flex-1 md:flex md:justify-center">
