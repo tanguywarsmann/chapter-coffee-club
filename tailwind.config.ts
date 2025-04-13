@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -75,9 +76,9 @@ export default {
 					darkest: '#3B2F2F'
 				},
 				logo: {
-					background: '#A0522D',
-					text: '#F5F5DC',
-					accent: '#8B4513'
+					background: '#B36A38', // Couleur ajustée pour mieux correspondre au marque-page
+					text: '#F0E6C9', // Couleur du texte ajustée pour correspondre au marque-page
+					accent: '#D4C6A1'  // Couleur d'accent basée sur la bordure du marque-page
 				}
 			},
 			borderRadius: {

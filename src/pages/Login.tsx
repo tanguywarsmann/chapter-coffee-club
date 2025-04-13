@@ -20,7 +20,7 @@ export default function Login() {
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8 text-center">
           <Image 
-            src="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" 
+            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
             alt="READ Logo" 
             className="mx-auto mb-4 w-40 h-40"
           />

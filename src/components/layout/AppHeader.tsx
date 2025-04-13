@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { BookOpen, User, Home, LogOut, Trophy, BookCheck, Settings } from "lucide-react";
+import { User, Home, LogOut, Trophy, BookCheck, Settings } from "lucide-react";
 import { toast } from "sonner";
 import Image from "@/components/ui/image";
 
@@ -32,7 +32,7 @@ export function AppHeader() {
       <div className="container flex h-14 items-center">
         <Link to="/home" className="flex items-center gap-2">
           <Image 
-            src="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" 
+            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
             alt="READ Logo" 
             className="h-8 w-8"
           />
@@ -42,25 +42,25 @@ export function AppHeader() {
         <nav className="flex-1 md:flex md:justify-center">
           <ul className="hidden md:flex items-center gap-6">
             <li>
-              <Link to="/home" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+              <Link to="/home" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
                 <Home className="h-4 w-4 mr-1" />
                 Accueil
               </Link>
             </li>
             <li>
-              <Link to="/explore" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
-                <BookOpen className="h-4 w-4 mr-1" />
+              <Link to="/explore" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+                <BookCheck className="h-4 w-4 mr-1" />
                 Explorer
               </Link>
             </li>
             <li>
-              <Link to="/achievements" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+              <Link to="/achievements" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
                 <Trophy className="h-4 w-4 mr-1" />
                 Récompenses
               </Link>
             </li>
             <li>
-              <Link to="/reading-list" className="flex items-center text-sm font-medium text-coffee-dark hover:text-coffee-darker">
+              <Link to="/reading-list" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
                 <BookCheck className="h-4 w-4 mr-1" />
                 Ma liste
               </Link>
@@ -72,9 +72,9 @@ export function AppHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8 border border-coffee-light">
+                <Avatar className="h-8 w-8 border border-logo-accent">
                   <AvatarImage src="/avatar.png" alt="Avatar" />
-                  <AvatarFallback className="bg-coffee-medium text-primary-foreground">
+                  <AvatarFallback className="bg-logo-accent text-primary-foreground">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -106,7 +106,7 @@ export function AppHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button variant="default" className="bg-coffee-dark hover:bg-coffee-darker" asChild>
+          <Button variant="default" className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background" asChild>
             <Link to="/">Se connecter</Link>
           </Button>
         )}
