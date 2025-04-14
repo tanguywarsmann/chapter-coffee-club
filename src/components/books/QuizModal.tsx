@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { DialogDescription } from "@/components/ui/dialog";
 
 interface QuizModalProps {
   bookTitle: string;
@@ -23,17 +24,25 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
     // In a real app, these would come from a database
     const questions = {
       "Les Misérables": [
-        { question: "Comment s'appelle l'évêque qui accueille Jean Valjean ?", answer: ["Myriel", "Monseigneur Myriel", "L'évêque Myriel"] },
-        { question: "Quel objet Jean Valjean vole-t-il qui le conduit en prison ?", answer: ["pain", "miche de pain", "une miche de pain"] },
-        { question: "Quel est le nom de la fille de Fantine ?", answer: ["Cosette"] }
+        { question: "Comment s'appelle l'évêque qui accueille Jean Valjean ?", answer: ["myriel", "monseigneur myriel", "l'évêque myriel", "eveque myriel", "évêque myriel"] },
+        { question: "Quel objet Jean Valjean vole-t-il qui le conduit en prison ?", answer: ["pain", "miche de pain", "une miche de pain", "du pain"] },
+        { question: "Quel est le nom de la fille de Fantine ?", answer: ["cosette"] }
       ],
       "Le Comte de Monte-Cristo": [
-        { question: "Sur quelle île Edmond Dantès est-il emprisonné ?", answer: ["If", "Château d'If", "l'île d'If"] },
-        { question: "Quel trésor Edmond découvre-t-il grâce à l'abbé Faria ?", answer: ["Spada", "trésor de Spada", "le trésor de Spada"] }
+        { question: "Sur quelle île Edmond Dantès est-il emprisonné ?", answer: ["if", "château d'if", "chateau d'if", "l'île d'if", "ile d'if", "île d'if"] },
+        { question: "Quel trésor Edmond découvre-t-il grâce à l'abbé Faria ?", answer: ["spada", "trésor de spada", "tresor de spada", "le trésor de spada", "le tresor de spada"] }
       ],
       "Notre-Dame de Paris": [
         { question: "Quel est le métier de Quasimodo ?", answer: ["sonneur", "sonneur de cloches", "carillonneur"] },
-        { question: "Comment s'appelle la bohémienne dont Quasimodo tombe amoureux ?", answer: ["Esmeralda", "La Esmeralda"] }
+        { question: "Comment s'appelle la bohémienne dont Quasimodo tombe amoureux ?", answer: ["esmeralda", "la esmeralda"] }
+      ],
+      "Harry Potter à l'école des sorciers": [
+        { question: "Où dort Harry Potter chez les Dursley ?", answer: ["placard", "sous l'escalier", "sous l escalier", "dans le placard", "placard sous l'escalier", "placard sous l escalier"] },
+        { question: "Quel est le numéro du coffre de Harry à Gringotts ?", answer: ["687"] }
+      ],
+      "Le Petit Prince": [
+        { question: "Sur quelle planète vit le Petit Prince ?", answer: ["b612", "asteroide b612", "astéroïde b612"] },
+        { question: "Quel animal le Petit Prince demande-t-il au narrateur de dessiner au début ?", answer: ["mouton", "un mouton"] }
       ],
       "default": [
         { question: "Qui est l'auteur principal de ce livre ?", answer: ["auteur"] }
@@ -51,11 +60,17 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
   const currentQuestion = getQuestion();
 
   const checkAnswer = (userAnswer: string): boolean => {
-    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    if (!userAnswer.trim()) return false;
     
-    return currentQuestion.answer.some(acceptedAnswer => 
-      normalizedUserAnswer.includes(acceptedAnswer.toLowerCase())
-    );
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    console.log("Checking answer:", normalizedUserAnswer);
+    console.log("Accepted answers:", currentQuestion.answer);
+    
+    return currentQuestion.answer.some(acceptedAnswer => {
+      const isMatch = normalizedUserAnswer.includes(acceptedAnswer.toLowerCase());
+      console.log(`Checking if "${normalizedUserAnswer}" includes "${acceptedAnswer}": ${isMatch}`);
+      return isMatch;
+    });
   };
 
   const handleSubmit = () => {
@@ -65,6 +80,7 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
     }
 
     const isCorrect = checkAnswer(answer);
+    console.log("Is answer correct?", isCorrect);
     
     if (isCorrect) {
       toast.success("Bonne réponse !");
@@ -89,6 +105,9 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
           <DialogTitle className="text-center text-coffee-darker font-serif">
             Vérification de lecture: Chapitre {chapterNumber}
           </DialogTitle>
+          <DialogDescription className="text-center text-sm text-muted-foreground">
+            Répondez par un mot ou une courte phrase.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
