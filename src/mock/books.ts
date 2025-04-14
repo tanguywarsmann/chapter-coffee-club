@@ -90,6 +90,7 @@ export const mockBooks: Book[] = [
     id: "7",
     title: "Les Fleurs du Mal",
     author: "Charles Baudelaire",
+    coverImage: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=1470&auto=format&fit=crop",
     description: "Un recueil de poèmes exprimant l'angoisse de vivre entre la spiritualité et la sensualité, entre l'idéal et le spleen, dans un Paris moderne et sordide.",
     totalChapters: 6,
     chaptersRead: 3,
@@ -112,6 +113,62 @@ export const mockBooks: Book[] = [
     categories: ["Philosophie", "Satire", "Conte"],
     pages: 178,
     publicationYear: 1759
+  },
+  {
+    id: "9",
+    title: "Harry Potter à l'école des sorciers",
+    author: "J.K. Rowling",
+    coverImage: "https://images.unsplash.com/photo-1618666012174-83b441c0bc76?q=80&w=1374&auto=format&fit=crop",
+    description: "Le premier tome des aventures du jeune sorcier Harry Potter qui découvre ses pouvoirs et intègre l'école de sorcellerie Poudlard.",
+    totalChapters: 10,
+    chaptersRead: 2,
+    isCompleted: false,
+    language: "français",
+    categories: ["Fantastique", "Jeunesse", "Aventure"],
+    pages: 308,
+    publicationYear: 1997
+  },
+  {
+    id: "10",
+    title: "L'Étranger",
+    author: "Albert Camus",
+    coverImage: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1376&auto=format&fit=crop",
+    description: "Un roman qui explore l'absurdité de la vie à travers le personnage de Meursault, qui reste détaché émotionnellement après la mort de sa mère et commet un meurtre.",
+    totalChapters: 6,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Philosophie", "Existentialisme", "Classique"],
+    pages: 159,
+    publicationYear: 1942
+  },
+  {
+    id: "11",
+    title: "Le Rouge et le Noir",
+    author: "Stendhal",
+    coverImage: "https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=1374&auto=format&fit=crop",
+    description: "L'histoire de l'ascension sociale de Julien Sorel, un jeune homme ambitieux dans la France de la Restauration, qui se retrouve déchiré entre ses aspirations et les réalités sociales.",
+    totalChapters: 8,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Classique", "Réalisme", "Roman psychologique"],
+    pages: 576,
+    publicationYear: 1830
+  },
+  {
+    id: "12",
+    title: "La Peste",
+    author: "Albert Camus",
+    coverImage: "https://images.unsplash.com/photo-1469827160215-9d29e96e72f4?q=80&w=1470&auto=format&fit=crop",
+    description: "Un roman allégorique qui raconte l'histoire d'une épidémie de peste bubonique qui frappe la ville d'Oran en Algérie, et les différentes réactions des habitants face à cette catastrophe.",
+    totalChapters: 7,
+    chaptersRead: 1,
+    isCompleted: false,
+    language: "français",
+    categories: ["Philosophie", "Existentialisme", "Classique"],
+    pages: 288,
+    publicationYear: 1947
   }
 ];
 
