@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 interface QuizModalProps {
@@ -13,24 +13,22 @@ interface QuizModalProps {
 }
 
 export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: QuizModalProps) {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [answer, setAnswer] = useState("");
 
-  // Mock questions - in a real app these would come from a database
+  // Mock question - in a real app this would come from a database
   const question = {
-    text: "Quelle est la principale thématique abordée dans ce chapitre ?",
-    options: [
-      { id: "a", text: "La résilience face aux défis" },
-      { id: "b", text: "L'importance des relations familiales" },
-      { id: "c", text: "La découverte de soi à travers le voyage" },
-      { id: "d", text: "L'impact de la technologie sur nos vies" },
-    ],
-    correctAnswer: "c" // In a real app, this would be hidden from frontend
+    text: "Quelle est votre interprétation du thème principal de ce chapitre et comment celui-ci s'inscrit dans l'œuvre globale ?",
+    minLength: 50 // Minimum characters required to consider a valid answer
   };
 
   const handleSubmit = () => {
-    if (selectedAnswer) {
-      // In a real app, validation would happen on the server
-      onComplete(selectedAnswer === question.correctAnswer);
+    if (answer.trim().length >= question.minLength) {
+      // In a real app, this would be sent to a backend for evaluation
+      // For now, any answer with sufficient length is considered valid
+      onComplete(true);
+    } else {
+      // Answer is too short
+      onComplete(false);
     }
   };
 
@@ -52,20 +50,20 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
           <div className="space-y-4">
             <h3 className="font-medium text-coffee-darker">{question.text}</h3>
             
-            <RadioGroup value={selectedAnswer || ""} onValueChange={setSelectedAnswer}>
-              {question.options.map((option) => (
-                <div key={option.id} className="flex items-center space-x-2 py-2">
-                  <RadioGroupItem 
-                    value={option.id} 
-                    id={option.id} 
-                    className="border-coffee-medium text-coffee-dark"
-                  />
-                  <Label htmlFor={option.id} className="cursor-pointer w-full">
-                    {option.text}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <div className="mt-2">
+              <Label htmlFor="answer" className="sr-only">Votre réponse</Label>
+              <Textarea
+                id="answer"
+                placeholder="Votre réponse..."
+                rows={6}
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                className="w-full border-coffee-medium resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Minimum {question.minLength} caractères requis ({answer.length} actuellement)
+              </p>
+            </div>
           </div>
         </div>
         
@@ -75,7 +73,7 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={!selectedAnswer}
+            disabled={answer.trim().length < question.minLength}
             className="bg-coffee-dark hover:bg-coffee-darker"
           >
             Valider ma réponse
