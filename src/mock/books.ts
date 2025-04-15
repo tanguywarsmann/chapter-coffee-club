@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 
 export const mockBooks: Book[] = [
@@ -169,6 +168,48 @@ export const mockBooks: Book[] = [
     categories: ["Philosophie", "Existentialisme", "Classique"],
     pages: 288,
     publicationYear: 1947
+  },
+  {
+    id: "13",
+    title: "La Chatte",
+    author: "Colette",
+    coverImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=1743&auto=format&fit=crop",
+    description: "Une histoire d'amour triangulaire entre Alain, sa femme Camille, et sa chatte Saha. Le roman explore les thèmes de la jalousie, de l'attachement et des relations complexes entre les êtres.",
+    totalChapters: 8,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Roman", "Psychologique", "Animalier"],
+    pages: 156,
+    publicationYear: 1933
+  },
+  {
+    id: "14",
+    title: "Un amour de Swann",
+    author: "Marcel Proust",
+    coverImage: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1374&auto=format&fit=crop",
+    description: "Extrait de 'À la recherche du temps perdu', ce roman raconte l'histoire de l'amour obsessionnel de Charles Swann pour Odette de Crécy, une demi-mondaine, dans le Paris mondain de la fin du XIXe siècle.",
+    totalChapters: 6,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Classique", "Roman psychologique", "Belle Époque"],
+    pages: 274,
+    publicationYear: 1913
+  },
+  {
+    id: "15",
+    title: "Gatsby le Magnifique",
+    author: "F. Scott Fitzgerald",
+    coverImage: "https://images.unsplash.com/photo-1599940778173-e440d7bb75dd?q=80&w=1748&auto=format&fit=crop",
+    description: "L'histoire de Jay Gatsby, mystérieux millionnaire épris de Daisy Buchanan, se déroulant pendant les Années folles à New York. Une critique de l'American Dream et une peinture de la société des années 1920.",
+    totalChapters: 9,
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: ["Classique", "Roman américain", "Années 20"],
+    pages: 218,
+    publicationYear: 1925
   }
 ];
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,9 +18,7 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
   const [attempts, setAttempts] = useState(0);
   const maxAttempts = 3;
 
-  // Get a question based on the book title and chapter number
   const getQuestion = () => {
-    // In a real app, these would come from a database
     const questions = {
       "Les Misérables": {
         1: { question: "Comment s'appelle l'évêque qui accueille Jean Valjean ?", answer: ["myriel", "monseigneur myriel", "l'évêque myriel", "eveque myriel", "évêque myriel"] },
@@ -139,7 +136,7 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
         5: { question: "Quelle substance Emma utilise-t-elle pour se suicider ?", answer: ["arsenic"] },
         6: { question: "Comment s'appelle la fille d'Emma et Charles ?", answer: ["berthe"] },
         7: { question: "Qui est le pharmacien bavard, ami de Charles ?", answer: ["homais", "monsieur homais"] },
-        8: { question: "Comment s'appelle le second amant d'Emma ?", answer: ["léon", "leon", "léon dupuis", "leon dupuis"] },
+        8: { question: "Comment s'appelle le second amant d'Emma ?", answer: ["léon", "leon", "leon dupuis", "leon dupuis"] },
         9: { question: "Quel marchand fournit des tissus et des objets à crédit à Emma ?", answer: ["lheureux"] },
         10: { question: "Quelle grande fête marque le début de la relation entre Emma et Rodolphe ?", answer: ["comices", "comices agricoles", "les comices agricoles"] }
       },
@@ -162,20 +159,43 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
         7: { question: "Qui est le frère de Cunégonde ?", answer: ["baron", "le baron"] },
         8: { question: "Qui est la vieille dame qui accompagne Candide et Cunégonde ?", answer: ["vieille", "la vieille"] }
       },
-      "default": {
-        1: { question: "Qui est l'auteur principal de ce livre ?", answer: ["auteur"] }
+      "La Chatte": {
+        1: { question: "Dans quel quartier parisien se trouve l'appartement d'Alain et Camille ?", answer: ["auteuil", "quartier d'auteuil"] },
+        2: { question: "Quel est le nom de la chatte siamoise d'Alain ?", answer: ["saha"] },
+        3: { question: "Quelle pièce Alain aménage-t-il spécialement pour Saha ?", answer: ["terrasse", "la terrasse"] },
+        4: { question: "Quel objet Camille casse-t-elle par jalousie ?", answer: ["vase", "le vase", "un vase"] },
+        5: { question: "Sur quel meuble Saha dort-elle habituellement ?", answer: ["coussin", "le coussin", "coussin bleu", "le coussin bleu"] },
+        6: { question: "Quel accident Camille tente-t-elle de provoquer ?", answer: ["chute", "faire tomber saha", "pousser saha", "la chute de saha"] },
+        7: { question: "Dans quelle ville Alain décide-t-il de partir avec Saha ?", answer: ["nice"] },
+        8: { question: "Que fait Camille à la fin du roman ?", answer: ["part", "s'en va", "quitte alain", "elle part"] }
+      },
+      "Un amour de Swann": {
+        1: { question: "Dans quel salon Swann rencontre-t-il Odette pour la première fois ?", answer: ["verdurin", "les verdurin", "salon verdurin", "le salon verdurin"] },
+        2: { question: "Quelle phrase musicale devient le symbole de l'amour entre Swann et Odette ?", answer: ["sonate de vinteuil", "la sonate de vinteuil", "vinteuil"] },
+        3: { question: "Quel surnom Odette donne-t-elle à Swann ?", answer: ["chéri", "cheri"] },
+        4: { question: "Dans quel quartier se trouve le petit hôtel où vit Odette ?", answer: ["monceau", "parc monceau", "quartier monceau"] },
+        5: { question: "Quel mot dans la lettre d'Odette déclenche la jalousie de Swann ?", answer: ["cattleya", "faire cattleya", "des cattleyas"] },
+        6: { question: "Quelle phrase Swann prononce-t-il à la fin sur son amour pour Odette ?", answer: ["pas mon genre", "n'était pas mon genre", "n'était même pas mon genre"] }
+      },
+      "Gatsby le Magnifique": {
+        1: { question: "Dans quelle ville Nick Carraway emménage-t-il au début du roman ?", answer: ["west egg", "ouest egg"] },
+        2: { question: "Quelle couleur est la lumière qui brille au bout du ponton de Daisy ?", answer: ["verte", "vert", "une lumière verte", "la lumière verte"] },
+        3: { question: "Quel est le vrai nom de Gatsby avant qu'il ne le change ?", answer: ["james gatz", "gatz"] },
+        4: { question: "Dans quel hôtel Gatsby et Tom ont-ils leur confrontation ?", answer: ["plaza", "plaza hotel", "hôtel plaza", "hotel plaza"] },
+        5: { question: "Quelle est la profession de Wilson ?", answer: ["garagiste", "mécanicien", "mecanicien"] },
+        6: { question: "Quelle voiture Gatsby prête-t-il à Daisy lors de l'accident ?", answer: ["rolls", "rolls-royce", "rolls royce", "la rolls"] },
+        7: { question: "Qui conduit la voiture lors de l'accident qui tue Myrtle ?", answer: ["daisy"] },
+        8: { question: "Dans quelle piscine Gatsby est-il assassiné ?", answer: ["sa piscine", "piscine", "la piscine"] },
+        9: { question: "Qui est la seule personne à assister à l'enterrement de Gatsby ?", answer: ["nick", "nick carraway"] }
       }
     };
 
-    // Select questions for the current book or use default
     const bookQuestions = questions[bookTitle as keyof typeof questions] || questions.default;
     
-    // Get chapter-specific question or cycle through existing ones if chapter exceeds available questions
     const chapterQuestions = bookQuestions[chapterNumber as keyof typeof bookQuestions];
     if (chapterQuestions) {
       return chapterQuestions;
     } else {
-      // Fallback: cycle through available questions if specific chapter question not available
       const availableChapters = Object.keys(bookQuestions).map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
       const cycleIndex = (chapterNumber - 1) % availableChapters.length;
       const fallbackChapter = availableChapters[cycleIndex];
