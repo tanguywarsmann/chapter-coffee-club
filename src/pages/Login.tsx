@@ -20,9 +20,9 @@ export default function Login() {
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8 text-center">
           <Image 
-            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
             alt="READ Logo" 
-            className="mx-auto mb-4 w-40 h-40"
+            className="mx-auto mb-4 w-40 h-auto"
           />
           
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
@@ -40,3 +40,4 @@ export default function Login() {
     </div>
   );
 }
+
