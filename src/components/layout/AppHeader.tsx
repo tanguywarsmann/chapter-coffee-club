@@ -4,8 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { User, Home, LogOut, Trophy, BookCheck, Settings } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { User, Home, LogOut, Trophy, BookCheck, Settings, Menu } from "lucide-react";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
 
 export function AppHeader() {
@@ -15,6 +17,7 @@ export function AppHeader() {
   });
   
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -27,9 +30,55 @@ export function AppHeader() {
     return user.email.charAt(0).toUpperCase();
   };
 
+  const MobileMenu = () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-72">
+        <SheetHeader>
+          <SheetTitle className="text-left">Menu</SheetTitle>
+        </SheetHeader>
+        <nav className="mt-4">
+          <ul className="space-y-2">
+            <li>
+              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/home")}>
+                <Home className="h-4 w-4 mr-2" />
+                Accueil
+              </Button>
+            </li>
+            <li>
+              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/explore")}>
+                <BookCheck className="h-4 w-4 mr-2" />
+                Explorer
+              </Button>
+            </li>
+            <li>
+              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/achievements")}>
+                <Trophy className="h-4 w-4 mr-2" />
+                Récompenses
+              </Button>
+            </li>
+            <li>
+              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/reading-list")}>
+                <BookCheck className="h-4 w-4 mr-2" />
+                Ma liste
+              </Button>
+            </li>
+          </ul>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur">
-      <div className="container flex h-14 items-center">
+      <div className="container flex h-14 items-center gap-4">
+        {isMobile && <MobileMenu />}
+        
         <Link to="/home" className="flex items-center gap-2">
           <Image 
             src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
@@ -39,8 +88,8 @@ export function AppHeader() {
           <span className="text-xl font-medium text-logo-text">READ</span>
         </Link>
         
-        <nav className="flex-1 md:flex md:justify-center">
-          <ul className="hidden md:flex items-center gap-6">
+        <nav className="flex-1 hidden md:block">
+          <ul className="flex items-center justify-center gap-6">
             <li>
               <Link to="/home" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
                 <Home className="h-4 w-4 mr-1" />
