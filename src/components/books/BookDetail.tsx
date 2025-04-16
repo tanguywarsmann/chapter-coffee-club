@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -8,6 +7,10 @@ import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck } from "luc
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { getBookForum, ForumPost } from "@/mock/activities";
+import { MessageCircle } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface BookDetailProps {
   book: Book;
@@ -18,6 +21,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [bookmarked, setBookmarked] = useState(book.isBookmarked || false);
   const navigate = useNavigate();
+  const forumPosts = getBookForum(book.id);
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
 
@@ -54,6 +58,65 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const handleShare = () => {
     toast.success("Lien partagé avec succès!");
   };
+
+  const ForumDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="w-full mt-4 border-coffee-light text-coffee-dark hover:text-coffee-darker"
+        >
+          <MessageCircle className="mr-2 h-5 w-5" />
+          Accéder au forum de discussion
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-serif">Forum - {book.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 mt-4">
+          {forumPosts.map((post) => (
+            <Card key={post.id} className="border-coffee-light">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={post.userAvatar} alt={post.userName} />
+                    <AvatarFallback>{post.userName[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{post.userName}</p>
+                    <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-coffee-darker">{post.content}</p>
+                <div className="mt-4 space-y-3 pl-4 border-l-2 border-coffee-light">
+                  {post.replies.map((reply) => (
+                    <div key={reply.id} className="flex items-start gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={reply.userAvatar} alt={reply.userName} />
+                        <AvatarFallback>{reply.userName[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{reply.userName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {reply.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-0.5">{reply.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <>
@@ -128,6 +191,8 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
           </Card>
         </div>
       </div>
+      
+      {book.isCompleted && <ForumDialog />}
       
       {showQuiz && (
         <QuizModal 
