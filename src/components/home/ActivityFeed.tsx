@@ -1,6 +1,6 @@
-
 import { useState } from "react";
 import { User } from "@/types/user";
+import { Comment } from "@/types/comment";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ interface Activity {
   likes: number;
   comments: number;
   hasLiked: boolean;
+  commentsList?: Comment[];
 }
 
 interface ActivityFeedProps {
@@ -27,6 +28,7 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ activities }: ActivityFeedProps) {
   const [localActivities, setLocalActivities] = useState(activities);
+  const [expandedComments, setExpandedComments] = useState<string[]>([]);
 
   const handleLike = (id: string) => {
     setLocalActivities(activities.map(activity => {
@@ -41,8 +43,12 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
     toast.success("J'aime ajouté!");
   };
 
-  const handleComment = (id: string) => {
-    toast.info("Commentaires bientôt disponibles!");
+  const toggleComments = (activityId: string) => {
+    setExpandedComments(prev => 
+      prev.includes(activityId) 
+        ? prev.filter(id => id !== activityId)
+        : [...prev, activityId]
+    );
   };
 
   const getActivityIcon = (type: Activity["type"]) => {
@@ -130,14 +136,36 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-auto p-0 text-muted-foreground"
-                        onClick={() => handleComment(activity.id)}
+                        className={`h-auto p-0 ${expandedComments.includes(activity.id) ? 'text-coffee-dark' : 'text-muted-foreground'}`}
+                        onClick={() => toggleComments(activity.id)}
                       >
                         <MessageSquare className="h-3.5 w-3.5 mr-1" />
                         <span>{activity.comments}</span>
                       </Button>
                     </div>
                   </div>
+
+                  {expandedComments.includes(activity.id) && activity.commentsList && (
+                    <div className="mt-4 space-y-3 pl-4 border-l-2 border-coffee-light">
+                      {activity.commentsList.map((comment) => (
+                        <div key={comment.id} className="flex items-start gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={comment.userAvatar} alt={comment.userName} />
+                            <AvatarFallback className="text-xs">
+                              {comment.userName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{comment.userName}</span>
+                              <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                            </div>
+                            <p className="text-sm mt-0.5">{comment.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

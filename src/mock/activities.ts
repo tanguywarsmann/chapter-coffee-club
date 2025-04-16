@@ -1,5 +1,5 @@
-
 import { User } from "@/types/user";
+import type { Comment } from "@/types/comment";
 
 const mockUsers: User[] = [
   {
@@ -54,7 +54,51 @@ const mockUsers: User[] = [
   }
 ];
 
-export const mockActivities = [
+const mockComments: { [key: string]: Comment[] } = {
+  "1": [
+    {
+      id: "c1",
+      userId: "2",
+      userName: "Thomas Dubois",
+      userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      content: "Super choix ! Un de mes livres préférés.",
+      timestamp: "Il y a 1 heure"
+    },
+    {
+      id: "c2",
+      userId: "3",
+      userName: "Emma Petit",
+      userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+      content: "J'ai adoré ce livre aussi !",
+      timestamp: "Il y a 30 minutes"
+    }
+  ],
+  "2": [
+    {
+      id: "c3",
+      userId: "4",
+      userName: "Lucas Bernard",
+      content: "Bravo ! Continue comme ça !",
+      timestamp: "Il y a 2 heures"
+    }
+  ]
+};
+
+export interface Activity {
+  id: string;
+  user: User;
+  type: "finished" | "started" | "badge" | "streak";
+  content: string;
+  bookTitle?: string;
+  badgeIcon?: string;
+  timestamp: string;
+  likes: number;
+  comments: number;
+  hasLiked: boolean;
+  commentsList?: Comment[];
+}
+
+export const mockActivities: Activity[] = [
   {
     id: "1",
     user: mockUsers[0],
@@ -63,8 +107,9 @@ export const mockActivities = [
     bookTitle: "Le Petit Prince",
     timestamp: "Il y a 2 heures",
     likes: 12,
-    comments: 3,
-    hasLiked: false
+    comments: 2,
+    hasLiked: false,
+    commentsList: mockComments["1"]
   },
   {
     id: "2",
@@ -126,7 +171,6 @@ export const getActivities = () => {
   return mockActivities;
 };
 
-// Adding the missing getUserActivities function that's being imported in Home.tsx
 export const getUserActivities = () => {
   return mockActivities;
 };
