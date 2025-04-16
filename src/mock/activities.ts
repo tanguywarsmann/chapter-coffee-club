@@ -126,3 +126,7 @@ export const getActivities = () => {
   return mockActivities;
 };
 
+// Adding the missing getUserActivities function that's being imported in Home.tsx
+export const getUserActivities = () => {
+  return mockActivities;
+};
