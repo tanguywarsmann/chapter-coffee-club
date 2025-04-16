@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,9 +11,11 @@ import {
   getRecentlyAddedBooks, 
   getRecommendedBooks 
 } from "@/mock/books";
-import { getUserActivities } from "@/mock/activities";
+import { getUserActivities, getMockFollowers, getMockFollowing } from "@/mock/activities";
 import { Book } from "@/types/book";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { User } from "lucide-react";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -22,7 +23,6 @@ export default function Home() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check if user is logged in
     const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
@@ -35,7 +35,6 @@ export default function Home() {
       return;
     }
     
-    // Mock search functionality
     const results = getRecommendedBooks().filter(book => 
       book.title.toLowerCase().includes(query.toLowerCase()) ||
       book.author.toLowerCase().includes(query.toLowerCase())
@@ -99,6 +98,26 @@ export default function Home() {
         ) : (
           <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-8">
+              <div className="flex gap-4 mb-6">
+                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light">
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-coffee-dark" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Abonnés</p>
+                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowers().length}</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light">
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-coffee-dark" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Abonnements</p>
+                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowing().length}</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
               <ReadingProgress inProgressBooks={inProgressBooks} />
               <FeaturedBooks 
                 recentlyAdded={getRecentlyAddedBooks()}

@@ -54,34 +54,24 @@ const mockUsers: User[] = [
   }
 ];
 
+const generateMockComments = (count: number): Comment[] => {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `comment-${Math.random().toString(36).substr(2, 9)}`,
+    userId: mockUsers[Math.floor(Math.random() * mockUsers.length)].id,
+    userName: mockUsers[Math.floor(Math.random() * mockUsers.length)].name,
+    userAvatar: mockUsers[Math.floor(Math.random() * mockUsers.length)].avatar,
+    content: `C'est vraiment super ! ${index + 1}`,
+    timestamp: `Il y a ${Math.floor(Math.random() * 24)} heures`
+  }));
+};
+
 const mockComments: { [key: string]: Comment[] } = {
-  "1": [
-    {
-      id: "c1",
-      userId: "2",
-      userName: "Thomas Dubois",
-      userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-      content: "Super choix ! Un de mes livres préférés.",
-      timestamp: "Il y a 1 heure"
-    },
-    {
-      id: "c2",
-      userId: "3",
-      userName: "Emma Petit",
-      userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-      content: "J'ai adoré ce livre aussi !",
-      timestamp: "Il y a 30 minutes"
-    }
-  ],
-  "2": [
-    {
-      id: "c3",
-      userId: "4",
-      userName: "Lucas Bernard",
-      content: "Bravo ! Continue comme ça !",
-      timestamp: "Il y a 2 heures"
-    }
-  ]
+  "1": generateMockComments(3),
+  "2": generateMockComments(2),
+  "3": generateMockComments(4),
+  "4": generateMockComments(3),
+  "5": generateMockComments(2),
+  "6": generateMockComments(5)
 };
 
 export interface Activity {
@@ -107,7 +97,7 @@ export const mockActivities: Activity[] = [
     bookTitle: "Le Petit Prince",
     timestamp: "Il y a 2 heures",
     likes: 12,
-    comments: 2,
+    comments: 3,
     hasLiked: false,
     commentsList: mockComments["1"]
   },
@@ -119,8 +109,9 @@ export const mockActivities: Activity[] = [
     badgeIcon: "🌙",
     timestamp: "Il y a 4 heures",
     likes: 8,
-    comments: 1,
-    hasLiked: true
+    comments: 2,
+    hasLiked: true,
+    commentsList: mockComments["2"]
   },
   {
     id: "3",
@@ -173,4 +164,22 @@ export const getActivities = () => {
 
 export const getUserActivities = () => {
   return mockActivities;
+};
+
+export const getMockFollowers = () => {
+  return Array.from({ length: 25 }, (_, i) => ({
+    id: `f${i + 1}`,
+    name: `Lecteur ${i + 1}`,
+    avatar: `https://i.pravatar.cc/150?img=${i + 1}`,
+    isFollowing: Math.random() > 0.5
+  }));
+};
+
+export const getMockFollowing = () => {
+  return Array.from({ length: 22 }, (_, i) => ({
+    id: `following${i + 1}`,
+    name: `Auteur ${i + 1}`,
+    avatar: `https://i.pravatar.cc/150?img=${30 + i}`,
+    isFollowing: true
+  }));
 };
