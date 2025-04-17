@@ -5,9 +5,11 @@ import { Book } from "@/types/book";
 interface BookGridProps {
   books: Book[];
   title?: string;
+  description?: string;
+  showAddButton?: boolean;
 }
 
-export function BookGrid({ books, title }: BookGridProps) {
+export function BookGrid({ books, title, description, showAddButton = false }: BookGridProps) {
   if (!books.length) {
     return (
       <div className="text-center p-8 border border-dashed border-coffee-light rounded-lg bg-muted/50">
@@ -19,11 +21,16 @@ export function BookGrid({ books, title }: BookGridProps) {
 
   return (
     <div className="space-y-4">
-      {title && <h2 className="text-xl font-serif font-medium text-coffee-darker">{title}</h2>}
+      {title && (
+        <div className="mb-4">
+          <h2 className="text-xl font-serif font-medium text-coffee-darker">{title}</h2>
+          {description && <p className="text-muted-foreground text-sm mt-1">{description}</p>}
+        </div>
+      )}
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         {books.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard key={book.id} book={book} showAddButton={showAddButton} />
         ))}
       </div>
     </div>
