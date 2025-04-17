@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck } from "lucide-react";
+import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck, Clock, Calendar, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
@@ -11,6 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { getBookForum, ForumPost } from "@/mock/activities";
 import { MessageCircle } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { QuoteDisplay } from "@/components/home/QuoteDisplay";
 
 interface BookDetailProps {
   book: Book;
@@ -20,10 +24,22 @@ interface BookDetailProps {
 export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [bookmarked, setBookmarked] = useState(book.isBookmarked || false);
+  const [personalNote, setPersonalNote] = useState("");
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
+  
+  // Calculate reading time remaining (roughly 20 minutes per chapter)
+  const chaptersRemaining = book.totalChapters - book.chaptersRead;
+  const readingTimeRemaining = chaptersRemaining * 20;
+  
+  // Validation history (mock data)
+  const validationHistory = [
+    { date: "15 avril 2025", question: "Qui est le personnage principal du chapitre 1?" },
+    { date: "12 avril 2025", question: "Quel événement marque le tournant du chapitre 2?" },
+    { date: "10 avril 2025", question: "Comment s'appelle le lieu où se déroule l'histoire?" },
+  ];
 
   const handleStartReading = () => {
     if (book.chaptersRead < book.totalChapters) {
@@ -57,6 +73,12 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
 
   const handleShare = () => {
     toast.success("Lien partagé avec succès!");
+  };
+
+  const handleSaveNote = () => {
+    if (personalNote.trim()) {
+      toast.success("Note personnelle enregistrée");
+    }
   };
 
   const ForumDialog = () => (
@@ -162,33 +184,83 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
           
           <Card className="border-coffee-light">
             <CardHeader>
-              <h3 className="text-lg font-medium text-coffee-darker">À propos de ce livre</h3>
+              <h3 className="text-lg font-medium text-coffee-darker flex items-center">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Votre progression
+              </h3>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground whitespace-pre-line">{book.description}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-coffee-light">
-            <CardHeader>
-              <h3 className="text-lg font-medium text-coffee-darker">Votre progression</h3>
-            </CardHeader>
-            <CardContent>
-              <div className="reading-progress mb-2">
-                <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
+            <CardContent className="space-y-4">
+              <div>
+                <Progress value={progressPercentage} className="h-3" />
+                <p className="text-sm text-muted-foreground mt-2">
+                  Page {book.chaptersRead * 30} sur {book.totalChapters * 30} ({Math.round(progressPercentage)}%)
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {book.chaptersRead} sur {book.totalChapters} chapitres terminés ({Math.round(progressPercentage)}%)
-              </p>
+              
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 mr-2" />
+                <span>Temps de lecture restant estimé: {readingTimeRemaining} minutes</span>
+              </div>
             </CardContent>
             <CardFooter>
               <Button className="w-full bg-coffee-dark hover:bg-coffee-darker" onClick={handleStartReading}>
                 <BookOpen className="mr-2 h-5 w-5" />
                 {book.chaptersRead === 0 ? "Commencer à lire" : 
-                 book.chaptersRead < book.totalChapters ? "Continuer à lire" : "Relire"}
+                 book.chaptersRead < book.totalChapters ? `Valider les 30 pages suivantes` : "Relire"}
               </Button>
             </CardFooter>
           </Card>
+          
+          <Card className="border-coffee-light">
+            <CardHeader>
+              <h3 className="text-lg font-medium text-coffee-darker flex items-center">
+                <Calendar className="mr-2 h-5 w-5" />
+                Historique des validations
+              </h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {validationHistory.map((entry, index) => (
+                  <div key={index} className="flex gap-3 pb-3 border-b border-coffee-lightest last:border-b-0">
+                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-coffee-lightest text-coffee-dark">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-coffee-darker">{entry.question}</p>
+                      <p className="text-xs text-muted-foreground">{entry.date}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-coffee-light">
+            <CardHeader>
+              <h3 className="text-lg font-medium text-coffee-darker">Note personnelle</h3>
+            </CardHeader>
+            <CardContent>
+              <Textarea 
+                placeholder="Notez vos réflexions, idées ou citations favorites..."
+                value={personalNote}
+                onChange={(e) => setPersonalNote(e.target.value)}
+                className="min-h-[100px] border-coffee-light"
+              />
+            </CardContent>
+            <CardFooter className="justify-end">
+              <Button 
+                variant="outline" 
+                className="border-coffee-light text-coffee-dark"
+                onClick={handleSaveNote}
+              >
+                Enregistrer
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <div className="mt-6">
+            <QuoteDisplay />
+          </div>
         </div>
       </div>
       
