@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
-import { ReadingProgress } from "@/components/home/ReadingProgress";
-import { FeaturedBooks } from "@/components/home/FeaturedBooks";
+import { CurrentBook } from "@/components/home/CurrentBook";
+import { QuoteDisplay } from "@/components/home/QuoteDisplay";
+import { GoalsPreview } from "@/components/home/GoalsPreview";
 import { ActivityFeed } from "@/components/home/ActivityFeed";
 import { 
   getBooksInProgress, 
@@ -16,11 +18,16 @@ import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { User } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
   const [inProgressBooks, setInProgressBooks] = useState(getBooksInProgress());
+  const [currentBook, setCurrentBook] = useState<Book | null>(
+    inProgressBooks.length > 0 ? inProgressBooks[0] : null
+  );
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -46,6 +53,21 @@ export default function Home() {
       toast.info("Aucun livre trouvé pour cette recherche.");
     } else {
       toast.success(`${results.length} livre${results.length > 1 ? 's' : ''} trouvé${results.length > 1 ? 's' : ''}.`);
+    }
+  };
+
+  const handleProgressUpdate = (newProgress: number) => {
+    if (currentBook) {
+      const updatedBook = { ...currentBook, chaptersRead: newProgress };
+      
+      // Update current book
+      setCurrentBook(updatedBook);
+      
+      // Update in progress books
+      const updatedBooks = inProgressBooks.map(book => 
+        book.id === updatedBook.id ? updatedBook : book
+      );
+      setInProgressBooks(updatedBooks);
     }
   };
 
@@ -96,39 +118,43 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-8">
-              <div className="flex gap-4 mb-6">
-                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-coffee-dark" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Abonnés</p>
-                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowers().length}</p>
-                    </div>
+          <>
+            <div className="flex flex-wrap gap-4 mb-6">
+              <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light min-w-[140px]">
+                <div className="flex items-center gap-3">
+                  <User className="h-5 w-5 text-coffee-dark" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Abonnés</p>
+                    <p className="text-2xl font-medium text-coffee-darker">{getMockFollowers().length}</p>
                   </div>
-                </Card>
-                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-coffee-dark" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Abonnements</p>
-                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowing().length}</p>
-                    </div>
+                </div>
+              </Card>
+              <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light min-w-[140px]">
+                <div className="flex items-center gap-3">
+                  <User className="h-5 w-5 text-coffee-dark" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Abonnements</p>
+                    <p className="text-2xl font-medium text-coffee-darker">{getMockFollowing().length}</p>
                   </div>
-                </Card>
+                </div>
+              </Card>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+              <div className="space-y-6 md:col-span-2 lg:col-span-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CurrentBook book={currentBook} onProgressUpdate={handleProgressUpdate} />
+                  <div className="space-y-6">
+                    <QuoteDisplay />
+                    <GoalsPreview />
+                  </div>
+                </div>
               </div>
-              <ReadingProgress inProgressBooks={inProgressBooks} />
-              <FeaturedBooks 
-                recentlyAdded={getRecentlyAddedBooks()}
-                popular={getPopularBooks()}
-                recommended={getRecommendedBooks()}
-              />
+              <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
+                <ActivityFeed activities={getUserActivities()} />
+              </div>
             </div>
-            <div className="lg:col-span-1">
-              <ActivityFeed activities={getUserActivities()} />
-            </div>
-          </div>
+          </>
         )}
       </main>
     </div>
