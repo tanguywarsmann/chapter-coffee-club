@@ -1,10 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { CurrentBook } from "@/components/home/CurrentBook";
-import { QuoteDisplay } from "@/components/home/QuoteDisplay";
 import { GoalsPreview } from "@/components/home/GoalsPreview";
 import { ActivityFeed } from "@/components/home/ActivityFeed";
 import { 
@@ -145,7 +143,6 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CurrentBook book={currentBook} onProgressUpdate={handleProgressUpdate} />
                   <div className="space-y-6">
-                    <QuoteDisplay />
                     <GoalsPreview />
                   </div>
                 </div>

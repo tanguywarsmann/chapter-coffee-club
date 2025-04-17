@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -14,7 +13,6 @@ import { MessageCircle } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { QuoteDisplay } from "@/components/home/QuoteDisplay";
 
 interface BookDetailProps {
   book: Book;
@@ -257,10 +255,6 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
               </Button>
             </CardFooter>
           </Card>
-          
-          <div className="mt-6">
-            <QuoteDisplay />
-          </div>
         </div>
       </div>
       

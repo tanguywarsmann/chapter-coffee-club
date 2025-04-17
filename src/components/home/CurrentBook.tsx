@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, ChevronRight } from "lucide-react";
 import { Book } from "@/types/book";
-import { toast } from "sonner";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -14,7 +13,6 @@ interface CurrentBookProps {
 }
 
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
-  const [currentPages, setCurrentPages] = useState(book?.chaptersRead || 0);
   const navigate = useNavigate();
   
   if (!book) {
@@ -39,31 +37,12 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   }
   
   // Calculate the progress percentage
-  const totalPages = book.pages || book.totalChapters * 30; // Estimation if no exact page count
+  const totalPages = book.totalChapters * 30; // Each chapter is 30 pages
   const pagesRead = book.chaptersRead * 30;
   const progressPercentage = (pagesRead / totalPages) * 100;
   
-  const handleValidateProgress = () => {
-    const newPagesRead = pagesRead + 30;
-    const newProgressPercentage = (newPagesRead / totalPages) * 100;
-    
-    // Update local state
-    setCurrentPages(currentPages + 1);
-    
-    // Call the parent component's update function if provided
-    if (onProgressUpdate) {
-      onProgressUpdate(currentPages + 1);
-    }
-    
-    // Show success toast
-    toast.success("Bravo ! 30 pages ajoutées à votre progression.");
-    
-    // Show achievement toast if certain milestones are reached
-    if (newPagesRead >= 100 && pagesRead < 100) {
-      toast.success("🏆 Vous avez débloqué le badge '100 pages' !", {
-        duration: 5000
-      });
-    }
+  const handleNavigateToBook = () => {
+    navigate(`/books/${book.id}`);
   };
 
   return (
@@ -84,7 +63,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
           </div>
           
           <div className="flex-1">
-            <h3 className="font-medium text-coffee-darker hover:underline cursor-pointer" onClick={() => navigate(`/books/${book.id}`)}>
+            <h3 className="font-medium text-coffee-darker hover:underline cursor-pointer" onClick={handleNavigateToBook}>
               {book.title}
             </h3>
             <p className="text-sm text-muted-foreground">{book.author}</p>
@@ -99,7 +78,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
             
             <Button 
               className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker"
-              onClick={handleValidateProgress}
+              onClick={handleNavigateToBook}
             >
               Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
