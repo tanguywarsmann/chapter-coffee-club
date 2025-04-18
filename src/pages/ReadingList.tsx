@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowDownAZ, Calendar, Book } from "lucide-react";
 import { Book as BookType } from "@/types/book";
-import { getBooksInProgressFromAPI, getCompletedBooksFromAPI } from "@/services/readingService";
+import { ReadingList } from "@/types/reading";
+import { getBookById } from "@/mock/books";
+import { toast } from "sonner";
 
 type SortOption = "date" | "author" | "pages";
 
 export default function ReadingList() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("date");
+  const [toReadBooks, setToReadBooks] = useState<BookType[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookType[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookType[]>([]);
   
@@ -28,17 +31,34 @@ export default function ReadingList() {
       return;
     }
     
-    // Load books from the API
-    loadBooks();
+    // Load reading list
+    loadReadingList();
   }, [navigate, userId]);
   
-  const loadBooks = () => {
-    const inProgress = getBooksInProgressFromAPI(userId)
-      .filter(book => !book.isCompleted);
+  const loadReadingList = () => {
+    const storedList = localStorage.getItem("reading_list");
+    const readingList: ReadingList[] = storedList ? JSON.parse(storedList) : [];
+    
+    // Filter user's books by status
+    const userBooks = readingList.filter(item => item.user_id === userId);
+    
+    const toRead = userBooks
+      .filter(item => item.status === "to_read")
+      .map(item => getBookById(item.book_id))
+      .filter((book): book is BookType => book !== null);
       
-    const completed = getCompletedBooksFromAPI(userId);
+    const inProgress = userBooks
+      .filter(item => item.status === "in_progress")
+      .map(item => getBookById(item.book_id))
+      .filter((book): book is BookType => book !== null);
+      
+    const completed = userBooks
+      .filter(item => item.status === "completed")
+      .map(item => getBookById(item.book_id))
+      .filter((book): book is BookType => book !== null);
     
     // Apply sorting
+    setToReadBooks(sortBooks(toRead, sortBy));
     setInProgressBooks(sortBooks(inProgress, sortBy));
     setCompletedBooks(sortBooks(completed, sortBy));
   };
@@ -60,8 +80,33 @@ export default function ReadingList() {
 
   const handleSort = (value: SortOption) => {
     setSortBy(value);
+    setToReadBooks(sortBooks(toReadBooks, value));
     setInProgressBooks(sortBooks(inProgressBooks, value));
     setCompletedBooks(sortBooks(completedBooks, value));
+  };
+
+  const updateBookStatus = (bookId: string, newStatus: ReadingList["status"]) => {
+    const storedList = localStorage.getItem("reading_list");
+    const readingList: ReadingList[] = storedList ? JSON.parse(storedList) : [];
+    
+    const updatedList = readingList.map(item => {
+      if (item.user_id === userId && item.book_id === bookId) {
+        return { ...item, status: newStatus };
+      }
+      return item;
+    });
+    
+    localStorage.setItem("reading_list", JSON.stringify(updatedList));
+    loadReadingList(); // Reload the lists
+    
+    const book = getBookById(bookId);
+    if (book) {
+      toast.success(`${book.title} déplacé vers "${
+        newStatus === "to_read" ? "À lire" :
+        newStatus === "in_progress" ? "En cours" :
+        "Terminés"
+      }"`);
+    }
   };
 
   return (
@@ -127,6 +172,20 @@ export default function ReadingList() {
         
         <Card className="border-coffee-light">
           <CardHeader>
+            <CardTitle className="text-xl font-serif text-coffee-darker">À lire</CardTitle>
+            <CardDescription>Votre liste de lecture à venir</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BookGrid 
+              books={toReadBooks}
+              actionLabel="Commencer la lecture"
+              onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+            />
+          </CardContent>
+        </Card>
+        
+        <Card className="border-coffee-light">
+          <CardHeader>
             <CardTitle className="text-xl font-serif text-coffee-darker">Livres terminés</CardTitle>
             <CardDescription>Vos lectures complétées</CardDescription>
           </CardHeader>
@@ -135,7 +194,7 @@ export default function ReadingList() {
               books={completedBooks}
               showDate
               actionLabel="Relire"
-              onAction={(bookId) => navigate(`/books/${bookId}`)}
+              onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
               showDeleteButton
             />
           </CardContent>

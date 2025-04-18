@@ -1,4 +1,3 @@
-
 export interface ReadingValidation {
   segment: number;
   question_id: string;
@@ -24,4 +23,11 @@ export interface ValidateReadingResponse {
   message: string;
   current_page: number;
   next_segment_question: string | null;
+}
+
+export interface ReadingList {
+  user_id: string;
+  book_id: string;
+  status: "to_read" | "in_progress" | "completed";
+  added_at: string;
 }

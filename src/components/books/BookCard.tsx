@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, PlayCircle, RefreshCw } from "lucide-react";
+import { Plus, Trash2, PlayCircle, RefreshCw, Check, BookPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface BookCardProps {
   book: Book;
@@ -26,6 +27,11 @@ export function BookCard({
   actionLabel,
   onAction 
 }: BookCardProps) {
+  const [isAdding, setIsAdding] = useState(false);
+  
+  // Get current user (in a real app, this would come from authentication)
+  const userId = localStorage.getItem("user") || "user123";
+
   const truncateTitle = (title: string, maxLength: number = 50) => {
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + '...';
@@ -37,7 +43,57 @@ export function BookCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Get current reading list
+    const storedList = localStorage.getItem("reading_list");
+    const readingList = storedList ? JSON.parse(storedList) : [];
+    
+    // Remove the book
+    const updatedList = readingList.filter((item: any) => 
+      !(item.user_id === userId && item.book_id === book.id)
+    );
+    
+    // Save updated list
+    localStorage.setItem("reading_list", JSON.stringify(updatedList));
     toast.success(`${book.title} retiré de votre liste`);
+  };
+
+  const handleAddToReadingList = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      setIsAdding(true);
+      
+      // Get current reading list
+      const storedList = localStorage.getItem("reading_list");
+      const readingList = storedList ? JSON.parse(storedList) : [];
+      
+      // Check if book is already in list
+      const exists = readingList.some((item: any) => 
+        item.user_id === userId && item.book_id === book.id
+      );
+      
+      if (exists) {
+        toast.error("Ce livre est déjà dans votre liste");
+        return;
+      }
+      
+      // Add book to list
+      const newEntry = {
+        user_id: userId,
+        book_id: book.id,
+        status: "to_read",
+        added_at: new Date().toISOString()
+      };
+      
+      readingList.push(newEntry);
+      localStorage.setItem("reading_list", JSON.stringify(readingList));
+      
+      toast.success(`${book.title} ajouté à votre liste de lecture`);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const handleAction = (e: React.MouseEvent) => {
@@ -113,10 +169,14 @@ export function BookCard({
               size="sm"
               variant="outline"
               className="mt-3 w-full border-coffee-medium text-coffee-darker hover:bg-coffee-light/20"
-              onClick={handleAction}
+              onClick={handleAddToReadingList}
+              disabled={isAdding}
             >
-              <Plus className="h-4 w-4 mr-1" />
-              Ajouter à ma liste
+              {isAdding ? (
+                <><span className="animate-spin mr-1">⏳</span> Ajout en cours...</>
+              ) : (
+                <><BookPlus className="h-4 w-4 mr-1" /> Ajouter à ma liste</>
+              )}
             </Button>
           )}
           
