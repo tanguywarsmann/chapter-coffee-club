@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -6,7 +7,6 @@ import { CurrentBook } from "@/components/home/CurrentBook";
 import { GoalsPreview } from "@/components/home/GoalsPreview";
 import { ActivityFeed } from "@/components/home/ActivityFeed";
 import { 
-  getBooksInProgress, 
   getPopularBooks, 
   getRecentlyAddedBooks, 
   getRecommendedBooks 
@@ -17,22 +17,46 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  getBooksInProgressFromAPI, 
+  initializeUserReadingProgress,
+  syncBookWithAPI 
+} from "@/services/readingService";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
-  const [inProgressBooks, setInProgressBooks] = useState(getBooksInProgress());
-  const [currentBook, setCurrentBook] = useState<Book | null>(
-    inProgressBooks.length > 0 ? inProgressBooks[0] : null
-  );
+  const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
+  const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
+  // User information (in a real app, would come from authentication)
+  const userId = localStorage.getItem("user") || "user123";
+  
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
+    if (!userId) {
       navigate("/");
+      return;
     }
-  }, [navigate]);
+    
+    // Initialize user reading progress with mock data
+    initializeUserReadingProgress(userId);
+    
+    // Load books in progress from API
+    const booksInProgress = getBooksInProgressFromAPI(userId);
+    setInProgressBooks(booksInProgress);
+    
+    // Set current book if any
+    if (booksInProgress.length > 0) {
+      // Find the most recently updated book
+      const notCompletedBooks = booksInProgress.filter(book => !book.isCompleted);
+      if (notCompletedBooks.length > 0) {
+        setCurrentBook(notCompletedBooks[0]);
+      } else {
+        setCurrentBook(booksInProgress[0]);
+      }
+    }
+  }, [navigate, userId]);
 
   const handleSearch = (query: string) => {
     if (!query.trim()) {
@@ -54,19 +78,23 @@ export default function Home() {
     }
   };
 
-  const handleProgressUpdate = (newProgress: number) => {
-    if (currentBook) {
-      const updatedBook = { ...currentBook, chaptersRead: newProgress };
-      
+  const handleProgressUpdate = (bookId: string) => {
+    // Sync the book data with our API
+    const updatedBook = syncBookWithAPI(userId, bookId);
+    
+    if (updatedBook) {
       // Update current book
       setCurrentBook(updatedBook);
       
       // Update in progress books
-      const updatedBooks = inProgressBooks.map(book => 
-        book.id === updatedBook.id ? updatedBook : book
+      setInProgressBooks(prev => 
+        prev.map(book => book.id === updatedBook.id ? updatedBook : book)
       );
-      setInProgressBooks(updatedBooks);
     }
+    
+    // Refresh all books in progress
+    const booksInProgress = getBooksInProgressFromAPI(userId);
+    setInProgressBooks(booksInProgress);
   };
 
   return (
@@ -141,7 +169,10 @@ export default function Home() {
             <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
               <div className="space-y-6 md:col-span-2 lg:col-span-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <CurrentBook book={currentBook} onProgressUpdate={handleProgressUpdate} />
+                  <CurrentBook 
+                    book={currentBook} 
+                    onProgressUpdate={() => currentBook && handleProgressUpdate(currentBook.id)} 
+                  />
                   <div className="space-y-6">
                     <GoalsPreview />
                   </div>

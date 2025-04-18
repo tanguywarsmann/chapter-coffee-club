@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
 import { Book } from "@/types/book";
+import { validateReading } from "@/services/readingService";
+import { toast } from "sonner";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -14,6 +16,10 @@ interface CurrentBookProps {
 
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const navigate = useNavigate();
+  const [isValidating, setIsValidating] = useState(false);
+  
+  // User information (in a real app, would come from authentication)
+  const userId = localStorage.getItem("user") || "user123";
   
   if (!book) {
     return (
@@ -37,12 +43,50 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   }
   
   // Calculate the progress percentage
-  const totalPages = book.totalChapters * 30; // Each chapter is 30 pages
+  const totalPages = book.totalChapters * 30;
   const pagesRead = book.chaptersRead * 30;
   const progressPercentage = (pagesRead / totalPages) * 100;
   
   const handleNavigateToBook = () => {
     navigate(`/books/${book.id}`);
+  };
+  
+  const handleValidateReading = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (book.chaptersRead >= book.totalChapters) {
+      navigate(`/books/${book.id}`);
+      return;
+    }
+    
+    try {
+      setIsValidating(true);
+      const nextSegment = book.chaptersRead + 1;
+      
+      await validateReading({
+        user_id: userId,
+        book_id: book.id,
+        segment: nextSegment
+      });
+      
+      toast.success("30 pages validées avec succès!");
+      
+      if (onProgressUpdate) {
+        onProgressUpdate(book.chaptersRead + 1);
+      }
+      
+      // Redirect to book page for quiz
+      navigate(`/books/${book.id}`);
+    } catch (error: any) {
+      if (error.error === "Segment déjà validé") {
+        toast.error("Vous avez déjà validé ce segment de lecture!");
+      } else {
+        toast.error("Erreur lors de la validation: " + (error.error || "Erreur inconnue"));
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -78,9 +122,14 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
             
             <Button 
               className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker"
-              onClick={handleNavigateToBook}
+              onClick={handleValidateReading}
+              disabled={isValidating}
             >
-              Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" />
+              {isValidating ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
+              ) : (
+                <>Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" /></>
+              )}
             </Button>
           </div>
         </div>

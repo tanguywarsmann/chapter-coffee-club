@@ -1,9 +1,10 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck, Clock, Calendar, FileText } from "lucide-react";
+import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck, Clock, Calendar, FileText, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
@@ -13,6 +14,7 @@ import { MessageCircle } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { validateReading, getBookReadingProgress } from "@/services/readingService";
 
 interface BookDetailProps {
   book: Book;
@@ -23,8 +25,12 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [bookmarked, setBookmarked] = useState(book.isBookmarked || false);
   const [personalNote, setPersonalNote] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
+
+  // User information (in a real app, would come from authentication)
+  const userId = localStorage.getItem("user") || "user123";
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
   
@@ -32,25 +38,45 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const chaptersRemaining = book.totalChapters - book.chaptersRead;
   const readingTimeRemaining = chaptersRemaining * 20;
   
-  // Validation history (mock data)
-  const validationHistory = [
-    { date: "15 avril 2025", question: "Qui est le personnage principal du chapitre 1?" },
-    { date: "12 avril 2025", question: "Quel événement marque le tournant du chapitre 2?" },
-    { date: "10 avril 2025", question: "Comment s'appelle le lieu où se déroule l'histoire?" },
-  ];
+  // Current reading progress
+  const readingProgress = getBookReadingProgress(userId, book.id);
+  
+  // Validation history (real data if available or mock data)
+  const validationHistory = readingProgress?.validations 
+    ? readingProgress.validations.map(v => {
+        const date = new Date(v.date_validated);
+        return {
+          date: date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+          question: `Validation du segment ${v.segment} (pages ${(v.segment-1)*30+1}-${v.segment*30})`,
+        };
+      }).reverse() 
+    : [
+        { date: "15 avril 2025", question: "Qui est le personnage principal du chapitre 1?" },
+        { date: "12 avril 2025", question: "Quel événement marque le tournant du chapitre 2?" },
+        { date: "10 avril 2025", question: "Comment s'appelle le lieu où se déroule l'histoire?" },
+      ];
 
   const handleStartReading = () => {
     if (book.chaptersRead < book.totalChapters) {
-      setShowQuiz(true);
+      validateReadingSegment();
     } else {
       toast.info("Vous avez déjà terminé ce livre!");
     }
   };
 
-  const handleQuizComplete = (passed: boolean) => {
-    setShowQuiz(false);
-    if (passed) {
-      toast.success("Bravo! Vous avez terminé ce chapitre!");
+  const validateReadingSegment = async () => {
+    try {
+      setIsValidating(true);
+      const nextSegment = book.chaptersRead + 1;
+      
+      const response = await validateReading({
+        user_id: userId,
+        book_id: book.id,
+        segment: nextSegment
+      });
+      
+      toast.success("Validation réussie : " + response.message);
+      setShowQuiz(true);
       onChapterComplete(book.id);
       
       if (book.chaptersRead + 1 >= book.totalChapters) {
@@ -59,7 +85,20 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
           duration: 5000,
         });
       }
-    } else {
+    } catch (error: any) {
+      if (error.error === "Segment déjà validé") {
+        toast.error("Vous avez déjà validé ce segment de lecture!");
+      } else {
+        toast.error("Erreur lors de la validation: " + (error.error || "Erreur inconnue"));
+      }
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleQuizComplete = (passed: boolean) => {
+    setShowQuiz(false);
+    if (!passed) {
       toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
     }
   };
@@ -201,10 +240,20 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full bg-coffee-dark hover:bg-coffee-darker" onClick={handleStartReading}>
-                <BookOpen className="mr-2 h-5 w-5" />
-                {book.chaptersRead === 0 ? "Commencer à lire" : 
-                 book.chaptersRead < book.totalChapters ? `Valider les 30 pages suivantes` : "Relire"}
+              <Button 
+                className="w-full bg-coffee-dark hover:bg-coffee-darker" 
+                onClick={handleStartReading}
+                disabled={isValidating}
+              >
+                {isValidating ? (
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Validation en cours...</>
+                ) : (
+                  <>
+                    <BookOpen className="mr-2 h-5 w-5" />
+                    {book.chaptersRead === 0 ? "Commencer à lire" : 
+                     book.chaptersRead < book.totalChapters ? `Valider les 30 pages suivantes` : "Relire"}
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -263,7 +312,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
       {showQuiz && (
         <QuizModal 
           bookTitle={book.title} 
-          chapterNumber={book.chaptersRead + 1}
+          chapterNumber={book.chaptersRead}
           onComplete={handleQuizComplete}
           onClose={() => setShowQuiz(false)}
         />

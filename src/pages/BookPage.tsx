@@ -3,17 +3,20 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookDetail } from "@/components/books/BookDetail";
-import { getBookById, mockBooks } from "@/mock/books";
+import { getBookById } from "@/mock/books";
 import { toast } from "sonner";
+import { syncBookWithAPI } from "@/services/readingService";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
   const [book, setBook] = useState(id ? getBookById(id) : null);
   const navigate = useNavigate();
   
+  // User information (in a real app, would come from authentication)
+  const user = localStorage.getItem("user") || "user123";
+  
   useEffect(() => {
     // Check if user is logged in
-    const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
       return;
@@ -23,24 +26,25 @@ export default function BookPage() {
     if (id && !book) {
       toast.error("Ce livre n'existe pas");
       navigate("/home");
+      return;
     }
-  }, [id, book, navigate]);
+    
+    // Sync book with API if it exists
+    if (id && book) {
+      const syncedBook = syncBookWithAPI(user, id);
+      if (syncedBook) {
+        setBook(syncedBook);
+      }
+    }
+  }, [id, book, navigate, user]);
 
   const handleChapterComplete = (bookId: string) => {
     if (!book) return;
     
-    const updatedBook = {
-      ...book,
-      chaptersRead: book.chaptersRead + 1,
-      isCompleted: book.chaptersRead + 1 >= book.totalChapters
-    };
-    
-    setBook(updatedBook);
-    
-    // Update the book in mockBooks (this would be a server update in a real app)
-    const bookIndex = mockBooks.findIndex(b => b.id === bookId);
-    if (bookIndex !== -1) {
-      mockBooks[bookIndex] = updatedBook;
+    // Since the validation is now handled by the API, we just need to refresh the book data
+    const updatedBook = syncBookWithAPI(user, bookId);
+    if (updatedBook) {
+      setBook(updatedBook);
     }
   };
 
