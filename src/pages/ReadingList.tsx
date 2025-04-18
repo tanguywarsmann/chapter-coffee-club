@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowDownAZ, Calendar, Book } from "lucide-react";
 import { Book as BookType } from "@/types/book";
-import { ReadingList } from "@/types/reading";
+import type { ReadingList } from "@/types/reading";  // Change the import to type-only
 import { getBookById } from "@/mock/books";
 import { toast } from "sonner";
 
