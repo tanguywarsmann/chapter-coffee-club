@@ -1,9 +1,9 @@
-
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { ReadingProgress, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById, mockBooks } from "@/mock/books";
 import { getQuestion } from "@/utils/quizQuestions";
+import { recordReadingActivity } from "./streakService";
 
 // Simulation d'une base de données locale
 const STORAGE_KEY = "reading_progress";
@@ -114,6 +114,9 @@ export const validateReading = async (
         
         // Sauvegarder la progression mise à jour
         saveReadingProgress(progress);
+        
+        // Record reading activity for streak
+        recordReadingActivity(request.user_id);
         
         // Mettre à jour le mockBook pour maintenir la cohérence avec l'interface existante
         const bookIndex = mockBooks.findIndex(b => b.id === book.id);

@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -7,18 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/types/badge";
 import { getUserBadges } from "@/mock/badges";
 import { Award, BookOpen, Clock, Zap } from "lucide-react";
+import { StreakCard } from "@/components/achievements/StreakCard";
+import { getUserStreak } from "@/services/streakService";
 
 export default function Achievements() {
   const navigate = useNavigate();
   const badges = getUserBadges();
+  const userId = localStorage.getItem("user");
+  const streak = getUserStreak(userId || "user123");
 
   useEffect(() => {
-    // Check if user is logged in
-    const user = localStorage.getItem("user");
-    if (!user) {
+    if (!userId) {
       navigate("/");
     }
-  }, [navigate]);
+  }, [navigate, userId]);
 
   // Mocked badges that are still locked
   const lockedBadges: Omit<Badge, "dateEarned">[] = [
@@ -67,6 +68,13 @@ export default function Achievements() {
         <h1 className="text-3xl font-serif font-medium text-coffee-darker">Récompenses et défis</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-2">
+            <StreakCard 
+              currentStreak={streak.current_streak} 
+              longestStreak={streak.longest_streak} 
+            />
+          </div>
+          
           <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-coffee-darker">Badges obtenus</p>

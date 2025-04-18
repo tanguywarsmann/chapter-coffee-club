@@ -1,3 +1,4 @@
+
 export interface ReadingValidation {
   segment: number;
   question_id: string;
@@ -31,3 +32,16 @@ export interface ReadingList {
   status: "to_read" | "in_progress" | "completed";
   added_at: string;
 }
+
+// New interfaces for reading activity
+export interface ReadingActivity {
+  user_id: string;
+  date: string; // ISO string
+}
+
+export interface ReadingStreak {
+  current_streak: number;
+  longest_streak: number;
+  last_validation_date: string;
+}
+
