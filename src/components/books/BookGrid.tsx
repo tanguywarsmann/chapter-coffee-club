@@ -6,10 +6,25 @@ interface BookGridProps {
   books: Book[];
   title?: string;
   description?: string;
+  showProgress?: boolean;
+  showDate?: boolean;
   showAddButton?: boolean;
+  showDeleteButton?: boolean;
+  actionLabel?: string;
+  onAction?: (bookId: string) => void;
 }
 
-export function BookGrid({ books, title, description, showAddButton = false }: BookGridProps) {
+export function BookGrid({ 
+  books, 
+  title, 
+  description, 
+  showProgress = false,
+  showDate = false,
+  showAddButton = false,
+  showDeleteButton = false,
+  actionLabel,
+  onAction
+}: BookGridProps) {
   if (!books.length) {
     return (
       <div className="text-center p-8 border border-dashed border-coffee-light rounded-lg bg-muted/50">
@@ -30,7 +45,16 @@ export function BookGrid({ books, title, description, showAddButton = false }: B
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         {books.map((book) => (
-          <BookCard key={book.id} book={book} showAddButton={showAddButton} />
+          <BookCard 
+            key={book.id} 
+            book={book}
+            showProgress={showProgress}
+            showDate={showDate}
+            showAddButton={showAddButton}
+            showDeleteButton={showDeleteButton}
+            actionLabel={actionLabel}
+            onAction={() => onAction?.(book.id)}
+          />
         ))}
       </div>
     </div>
