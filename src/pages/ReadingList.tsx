@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -21,17 +20,14 @@ export default function ReadingList() {
   const [inProgressBooks, setInProgressBooks] = useState<BookType[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookType[]>([]);
   
-  // User information (in a real app, would come from authentication)
   const userId = localStorage.getItem("user") || "user123";
 
   useEffect(() => {
-    // Check if user is logged in
     if (!userId) {
       navigate("/");
       return;
     }
     
-    // Load reading list
     loadReadingList();
   }, [navigate, userId]);
   
@@ -39,7 +35,6 @@ export default function ReadingList() {
     const storedList = localStorage.getItem("reading_list");
     const readingList: ReadingList[] = storedList ? JSON.parse(storedList) : [];
     
-    // Filter user's books by status
     const userBooks = readingList.filter(item => item.user_id === userId);
     
     const toRead = userBooks
@@ -57,7 +52,6 @@ export default function ReadingList() {
       .map(item => getBookById(item.book_id))
       .filter((book): book is BookType => book !== null);
     
-    // Apply sorting
     setToReadBooks(sortBooks(toRead, sortBy));
     setInProgressBooks(sortBooks(inProgress, sortBy));
     setCompletedBooks(sortBooks(completed, sortBy));
@@ -72,7 +66,6 @@ export default function ReadingList() {
           return b.pages - a.pages;
         case "date":
         default:
-          // Pour l'exemple, on trie par ID car nous n'avons pas de dates réelles
           return b.id.localeCompare(a.id);
       }
     });
@@ -97,7 +90,7 @@ export default function ReadingList() {
     });
     
     localStorage.setItem("reading_list", JSON.stringify(updatedList));
-    loadReadingList(); // Reload the lists
+    loadReadingList();
     
     const book = getBookById(bookId);
     if (book) {
