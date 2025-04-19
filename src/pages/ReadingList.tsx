@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookGrid } from "@/components/books/BookGrid";
@@ -8,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, ArrowDownAZ, Calendar, Book } from "lucide-react";
 import { Book as BookType } from "@/types/book";
-import type { ReadingList } from "@/types/reading";  // Change the import to type-only
-import { getBookById } from "@/mock/books";
+import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
 
 type SortOption = "date" | "author" | "pages";
@@ -17,46 +15,9 @@ type SortOption = "date" | "author" | "pages";
 export default function ReadingList() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("date");
-  const [toReadBooks, setToReadBooks] = useState<BookType[]>([]);
-  const [inProgressBooks, setInProgressBooks] = useState<BookType[]>([]);
-  const [completedBooks, setCompletedBooks] = useState<BookType[]>([]);
-  
   const userId = localStorage.getItem("user") || "user123";
-
-  useEffect(() => {
-    if (!userId) {
-      navigate("/");
-      return;
-    }
-    
-    loadReadingList();
-  }, [navigate, userId]);
   
-  const loadReadingList = () => {
-    const storedList = localStorage.getItem("reading_list");
-    const readingList: ReadingList[] = storedList ? JSON.parse(storedList) : [];
-    
-    const userBooks = readingList.filter(item => item.user_id === userId);
-    
-    const toRead = userBooks
-      .filter(item => item.status === "to_read")
-      .map(item => getBookById(item.book_id))
-      .filter((book): book is BookType => book !== null);
-      
-    const inProgress = userBooks
-      .filter(item => item.status === "in_progress")
-      .map(item => getBookById(item.book_id))
-      .filter((book): book is BookType => book !== null);
-      
-    const completed = userBooks
-      .filter(item => item.status === "completed")
-      .map(item => getBookById(item.book_id))
-      .filter((book): book is BookType => book !== null);
-    
-    setToReadBooks(sortBooks(toRead, sortBy));
-    setInProgressBooks(sortBooks(inProgress, sortBy));
-    setCompletedBooks(sortBooks(completed, sortBy));
-  };
+  const { getBooksByStatus } = useReadingList(userId);
 
   const sortBooks = (books: BookType[], sortOption: SortOption) => {
     return [...books].sort((a, b) => {
@@ -74,16 +35,13 @@ export default function ReadingList() {
 
   const handleSort = (value: SortOption) => {
     setSortBy(value);
-    setToReadBooks(sortBooks(toReadBooks, value));
-    setInProgressBooks(sortBooks(inProgressBooks, value));
-    setCompletedBooks(sortBooks(completedBooks, value));
   };
 
-  const updateBookStatus = (bookId: string, newStatus: ReadingList["status"]) => {
+  const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     const storedList = localStorage.getItem("reading_list");
-    const readingList: ReadingList[] = storedList ? JSON.parse(storedList) : [];
+    const readingList = storedList ? JSON.parse(storedList) : [];
     
-    const updatedList = readingList.map(item => {
+    const updatedList = readingList.map((item: any) => {
       if (item.user_id === userId && item.book_id === bookId) {
         return { ...item, status: newStatus };
       }
@@ -91,7 +49,6 @@ export default function ReadingList() {
     });
     
     localStorage.setItem("reading_list", JSON.stringify(updatedList));
-    loadReadingList();
     
     const book = getBookById(bookId);
     if (book) {
@@ -102,6 +59,10 @@ export default function ReadingList() {
       }"`);
     }
   };
+
+  const toReadBooks = sortBooks(getBooksByStatus("to_read"), sortBy);
+  const inProgressBooks = sortBooks(getBooksByStatus("in_progress"), sortBy);
+  const completedBooks = sortBooks(getBooksByStatus("completed"), sortBy);
 
   return (
     <div className="min-h-screen bg-background">

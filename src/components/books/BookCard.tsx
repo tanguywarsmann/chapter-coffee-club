@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Plus, Trash2, PlayCircle, RefreshCw, Check, BookPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useReadingList } from "@/hooks/useReadingList";
 
 interface BookCardProps {
   book: Book;
@@ -28,9 +28,8 @@ export function BookCard({
   onAction 
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  
-  // Get current user (in a real app, this would come from authentication)
   const userId = localStorage.getItem("user") || "user123";
+  const { addToReadingList } = useReadingList(userId);
 
   const truncateTitle = (title: string, maxLength: number = 50) => {
     if (title.length <= maxLength) return title;
@@ -64,33 +63,7 @@ export function BookCard({
     
     try {
       setIsAdding(true);
-      
-      // Get current reading list
-      const storedList = localStorage.getItem("reading_list");
-      const readingList = storedList ? JSON.parse(storedList) : [];
-      
-      // Check if book is already in list
-      const exists = readingList.some((item: any) => 
-        item.user_id === userId && item.book_id === book.id
-      );
-      
-      if (exists) {
-        toast.error("Ce livre est déjà dans votre liste");
-        return;
-      }
-      
-      // Add book to list
-      const newEntry = {
-        user_id: userId,
-        book_id: book.id,
-        status: "to_read",
-        added_at: new Date().toISOString()
-      };
-      
-      readingList.push(newEntry);
-      localStorage.setItem("reading_list", JSON.stringify(readingList));
-      
-      toast.success(`${book.title} ajouté à votre liste de lecture`);
+      await addToReadingList(book);
     } finally {
       setIsAdding(false);
     }
