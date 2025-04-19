@@ -67,7 +67,7 @@ export default function Achievements() {
       <main className="container py-6 space-y-8">
         <h1 className="text-3xl font-serif font-medium text-coffee-darker">Récompenses et défis</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <StreakCard 
               currentStreak={streak.current_streak} 
@@ -97,14 +97,6 @@ export default function Achievements() {
               <p className="text-3xl font-bold text-coffee-darker">48h</p>
             </div>
             <Clock className="h-8 w-8 text-coffee-darker" />
-          </div>
-          
-          <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-coffee-darker">Série actuelle</p>
-              <p className="text-3xl font-bold text-coffee-darker">12j</p>
-            </div>
-            <Zap className="h-8 w-8 text-coffee-darker" />
           </div>
         </div>
         
