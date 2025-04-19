@@ -18,67 +18,81 @@ export function QuizModal({ bookTitle, chapterNumber, onComplete, onClose }: Qui
   const [attempts, setAttempts] = useState(0);
   const maxAttempts = 3;
 
-  const currentQuestion = getQuestion(bookTitle, chapterNumber);
+  // Pour le débogage, on affiche la clé utilisée et les questions récupérées
+  console.log(`Récupération des questions pour: "${bookTitle}", chapitre ${chapterNumber}`);
+  
+  try {
+    const currentQuestion = getQuestion(bookTitle, chapterNumber);
 
-  const handleSubmit = () => {
-    if (!answer.trim()) {
-      toast.error("Veuillez entrer une réponse");
-      return;
-    }
-
-    const isCorrect = checkAnswer(answer, currentQuestion.answer);
-    
-    if (isCorrect) {
-      toast.success("Bonne réponse !");
-      onComplete(true);
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      
-      if (newAttempts >= maxAttempts) {
-        toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-        onComplete(false);
-      } else {
-        toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+    const handleSubmit = () => {
+      if (!answer.trim()) {
+        toast.error("Veuillez entrer une réponse");
+        return;
       }
-    }
-  };
 
-  return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-coffee-medium">
-        <DialogHeader>
-          <DialogTitle className="text-center text-coffee-darker font-serif">
-            Vérification de lecture: Chapitre {chapterNumber}
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground">
-            Répondez par un mot ou une courte phrase.
-          </DialogDescription>
-        </DialogHeader>
+      const isCorrect = checkAnswer(answer, currentQuestion.answer);
+      
+      if (isCorrect) {
+        toast.success("Bonne réponse !");
+        onComplete(true);
+      } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
         
-        <QuizContent
-          bookTitle={bookTitle}
-          chapterNumber={chapterNumber}
-          question={currentQuestion.question}
-          answer={answer}
-          attempts={attempts}
-          maxAttempts={maxAttempts}
-          setAnswer={setAnswer}
-        />
-        
-        <DialogFooter className="sm:justify-center gap-2">
-          <Button variant="outline" onClick={onClose} className="border-coffee-medium">
-            Annuler
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!answer.trim()}
-            className="bg-coffee-dark hover:bg-coffee-darker"
-          >
-            Valider ma réponse
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+        if (newAttempts >= maxAttempts) {
+          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+          onComplete(false);
+        } else {
+          toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+        }
+      }
+    };
+
+    return (
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md border-coffee-medium">
+          <DialogHeader>
+            <DialogTitle className="text-center text-coffee-darker font-serif">
+              Vérification de lecture: Chapitre {chapterNumber}
+            </DialogTitle>
+            <DialogDescription className="text-center text-sm text-muted-foreground">
+              Répondez par un mot ou une courte phrase.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <QuizContent
+            bookTitle={bookTitle}
+            chapterNumber={chapterNumber}
+            question={currentQuestion.question}
+            answer={answer}
+            attempts={attempts}
+            maxAttempts={maxAttempts}
+            setAnswer={setAnswer}
+          />
+          
+          <DialogFooter className="sm:justify-center gap-2">
+            <Button variant="outline" onClick={onClose} className="border-coffee-medium">
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!answer.trim()}
+              className="bg-coffee-dark hover:bg-coffee-darker"
+            >
+              Valider ma réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  } catch (error) {
+    // En cas d'erreur, on affiche un message et on ferme le modal
+    console.error("Erreur lors de la récupération des questions:", error);
+    toast.error("Une erreur est survenue lors du chargement des questions.");
+    
+    // On ferme le modal après un court délai
+    setTimeout(() => onClose(), 1500);
+    
+    return null;
+  }
 }

@@ -132,11 +132,40 @@ export const questions: Questions = {
   }
 };
 
+const mapBookTitleToQuizKey = (bookTitle: string): string => {
+  const normalizedTitle = bookTitle.toLowerCase().trim();
+  
+  if (normalizedTitle === "candide" || normalizedTitle === "8" || 
+      normalizedTitle === "candide ou l'optimisme" || normalizedTitle.includes("candide")) {
+    return "candide";
+  }
+  
+  if (normalizedTitle === "harry potter à l'école des sorciers" || 
+      normalizedTitle === "harry potter" || normalizedTitle === "9") {
+    return "harry-potter-1";
+  }
+  
+  if (questions[normalizedTitle]) {
+    return normalizedTitle;
+  }
+  
+  const firstWord = normalizedTitle.split(' ')[0];
+  for (const key of Object.keys(questions)) {
+    if (key.toLowerCase().includes(firstWord)) {
+      return key;
+    }
+  }
+  
+  return normalizedTitle;
+};
+
 export const getQuestion = (bookTitle: string, chapterNumber: number): QuestionData => {
-  const bookQuestions = questions[bookTitle];
+  const quizKey = mapBookTitleToQuizKey(bookTitle);
+  const bookQuestions = questions[quizKey];
   
   if (!bookQuestions) {
-    throw new Error(`No questions found for book: ${bookTitle}`);
+    console.warn(`Aucune question trouvée pour le livre: ${bookTitle} (clé: ${quizKey})`);
+    throw new Error(`Aucune question trouvée pour le livre: ${bookTitle}`);
   }
   
   const chapterQuestions = bookQuestions[chapterNumber];
@@ -144,8 +173,6 @@ export const getQuestion = (bookTitle: string, chapterNumber: number): QuestionD
     return chapterQuestions;
   }
   
-  // Si on n'a pas de question pour ce chapitre spécifique,
-  // on cycle parmi les questions disponibles
   const availableChapters = Object.keys(bookQuestions).map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
   const cycleIndex = (chapterNumber - 1) % availableChapters.length;
   const fallbackChapter = availableChapters[cycleIndex];
