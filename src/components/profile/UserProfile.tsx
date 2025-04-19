@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil } from "lucide-react";
+import { UserRound, Pencil } from "lucide-react";
 
 export function UserProfile() {
   const [user] = useState(() => {
@@ -14,10 +14,13 @@ export function UserProfile() {
   return (
     <Card className="border-coffee-light">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-xl font-serif text-coffee-darker">Informations personnelles</CardTitle>
+        <CardTitle className="text-xl font-serif text-coffee-darker flex items-center gap-2">
+          <UserRound className="h-5 w-5 text-coffee-dark" />
+          Mon profil
+        </CardTitle>
         <Button variant="ghost" size="sm" className="text-coffee-dark hover:text-coffee-darker">
           <Pencil className="h-4 w-4 mr-1" />
-          Modifier
+          Modifier mes informations
         </Button>
       </CardHeader>
       <CardContent>

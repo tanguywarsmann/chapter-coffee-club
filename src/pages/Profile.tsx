@@ -21,12 +21,12 @@ export default function Profile() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container py-6 space-y-8">
+        <h1 className="text-3xl font-serif font-medium text-coffee-darker">Mon profil</h1>
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-3/4 space-y-6">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker">Mon profil</h1>
             <UserProfile />
-            <UserStats />
             <UserGoals />
+            <UserStats />
           </div>
           <div className="w-full md:w-1/4">
             <UserSettings />

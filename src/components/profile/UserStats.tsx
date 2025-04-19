@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserStats } from "@/mock/stats";
-import { BookOpen, Clock, Award } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
 
 export function UserStats() {
   const stats = getUserStats();
@@ -10,8 +10,8 @@ export function UserStats() {
     <Card className="border-coffee-light">
       <CardHeader>
         <CardTitle className="text-xl font-serif text-coffee-darker flex items-center gap-2">
-          <Award className="h-5 w-5 text-coffee-dark" />
-          Lecteur discipliné
+          <BookOpen className="h-5 w-5 text-coffee-dark" />
+          Mes statistiques globales
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -19,7 +19,7 @@ export function UserStats() {
           <div className="space-y-1">
             <div className="flex items-center text-muted-foreground">
               <BookOpen className="h-4 w-4 mr-1" />
-              <span className="text-sm">Livres lus</span>
+              <span className="text-sm">Livres terminés</span>
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</p>
           </div>
@@ -35,7 +35,7 @@ export function UserStats() {
           <div className="space-y-1">
             <div className="flex items-center text-muted-foreground">
               <Clock className="h-4 w-4 mr-1" />
-              <span className="text-sm">Heures de lecture</span>
+              <span className="text-sm">Temps de lecture</span>
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.readingHours}h</p>
           </div>
