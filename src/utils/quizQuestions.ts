@@ -1,4 +1,3 @@
-
 type QuestionData = {
   question: string;
   answer: string[];
@@ -14,11 +13,34 @@ type Questions = {
 
 export const questions: Questions = {
   "Le Petit Prince": {
-    1: { question: "Sur quelle planète vit le Petit Prince ?", answer: ["b612", "asteroide b612", "astéroïde b612"] },
-    2: { question: "Quel animal le Petit Prince demande-t-il au narrateur de dessiner au début ?", answer: ["mouton", "un mouton"] },
-    3: { question: "Quelle fleur le Petit Prince aime-t-il particulièrement ?", answer: ["rose", "une rose", "sa rose"] },
-    4: { question: "Quel animal rencontre le Petit Prince dans le désert ?", answer: ["renard", "un renard", "le renard"] },
-    5: { question: "Comment le Petit Prince quitte-t-il la Terre ?", answer: ["serpent", "morsure", "morsure de serpent", "piqûre de serpent", "piqure de serpent"] }
+    1: { 
+      question: "Quel animal le narrateur dessine-t-il en premier ?",
+      answer: ["boa", "le boa", "un boa"]
+    },
+    2: { 
+      question: "Quel objet le Petit Prince demande-t-il au narrateur de dessiner ?",
+      answer: ["mouton", "un mouton", "le mouton"] 
+    },
+    3: { 
+      question: "De quelle planète vient le Petit Prince ?",
+      answer: ["b612", "asteroide b612", "astéroïde b612", "l'astéroïde b612", "l'asteroide b612"]
+    },
+    4: { 
+      question: "Quel personnage allume et éteint une lampe sans cesse ?",
+      answer: ["allumeur", "l'allumeur", "un allumeur"]
+    },
+    5: { 
+      question: "Quel animal le Petit Prince apprivoise-t-il ?",
+      answer: ["renard", "le renard", "un renard"]
+    },
+    6: { 
+      question: "Quel secret le renard révèle-t-il ? (réponse : un mot)",
+      answer: ["coeur", "cœur", "le coeur", "le cœur"]
+    },
+    7: { 
+      question: "Avec quoi le Petit Prince repart-il à la fin ?",
+      answer: ["morsure", "la morsure", "une morsure", "morsure de serpent", "la morsure du serpent"]
+    }
   },
   "Les Misérables": {
     1: { question: "Comment s'appelle l'évêque qui accueille Jean Valjean ?", answer: ["myriel", "monseigneur myriel", "l'évêque myriel"] },
