@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -126,14 +127,17 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
               </div>
               
               <Button 
-                className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker"
+                className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker text-center"
                 onClick={handleValidateReading}
                 disabled={isValidating}
               >
                 {isValidating ? (
                   <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
                 ) : (
-                  <>Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" /></>
+                  <>
+                    <span className="text-center">Valider 30 pages</span>
+                    <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0" />
+                  </>
                 )}
               </Button>
             </div>
