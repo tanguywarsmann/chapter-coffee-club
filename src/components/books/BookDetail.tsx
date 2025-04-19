@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -15,6 +14,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { validateReading, getBookReadingProgress } from "@/services/readingService";
+import { ValidationModal } from "./ValidationModal";
+import { ValidationHistory } from "./ValidationHistory";
 
 interface BookDetailProps {
   book: Book;
@@ -28,20 +29,15 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [isValidating, setIsValidating] = useState(false);
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
-
-  // User information (in a real app, would come from authentication)
-  const userId = localStorage.getItem("user") || "user123";
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
   
-  // Calculate reading time remaining (roughly 20 minutes per chapter)
   const chaptersRemaining = book.totalChapters - book.chaptersRead;
   const readingTimeRemaining = chaptersRemaining * 20;
   
-  // Current reading progress
   const readingProgress = getBookReadingProgress(userId, book.id);
   
-  // Validation history (real data if available or mock data)
   const validationHistory = readingProgress?.validations 
     ? readingProgress.validations.map(v => {
         const date = new Date(v.date_validated);
@@ -58,7 +54,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
 
   const handleStartReading = () => {
     if (book.chaptersRead < book.totalChapters) {
-      validateReadingSegment();
+      setShowValidationModal(true);
     } else {
       toast.info("Vous avez déjà terminé ce livre!");
     }
@@ -78,6 +74,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
       toast.success("Validation réussie : " + response.message);
       setShowQuiz(true);
       onChapterComplete(book.id);
+      setShowValidationModal(false);
       
       if (book.chaptersRead + 1 >= book.totalChapters) {
         toast.success("Félicitations! Vous avez terminé ce livre!", {
@@ -307,7 +304,18 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
         </div>
       </div>
       
+      <ValidationHistory validations={readingProgress?.validations || []} />
+      
       {book.isCompleted && <ForumDialog />}
+      
+      <ValidationModal
+        bookTitle={book.title}
+        segment={book.chaptersRead + 1}
+        isOpen={showValidationModal}
+        isValidating={isValidating}
+        onClose={() => setShowValidationModal(false)}
+        onValidate={validateReadingSegment}
+      />
       
       {showQuiz && (
         <QuizModal 
