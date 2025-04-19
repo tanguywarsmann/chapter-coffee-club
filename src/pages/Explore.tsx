@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { BookGrid } from "@/components/books/BookGrid";
+import { PopularBooks } from "@/components/books/PopularBooks";
 import { mockBooks } from "@/mock/books";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,30 +15,24 @@ export default function Explore() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
     const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
     }
   }, [navigate]);
 
-  // Filter books by category
   const getBooksByCategory = (categories: string[]) => {
     return mockBooks.filter(book => 
       book.categories.some(category => categories.includes(category))
     );
   };
 
-  // Define themed book sections
   const personalDevelopmentBooks = getBooksByCategory(["Philosophie", "Développement personnel"]);
   const classicShortBooks = mockBooks.filter(book => book.pages <= 200 && book.categories.includes("Classique"));
   const quickImpactBooks = mockBooks.filter(book => book.pages <= 150);
   const enjoyableNovels = getBooksByCategory(["Roman", "Aventure", "Fantastique"]);
 
-  // Logic for personalized suggestion
   const getPersonalizedSuggestion = () => {
-    // In a real app, this would use the user's reading history and preferences
-    // For now, we'll just return a random book
     const randomIndex = Math.floor(Math.random() * mockBooks.length);
     return mockBooks[randomIndex];
   };
@@ -64,6 +58,27 @@ export default function Explore() {
       toast.info("Aucun livre trouvé pour cette recherche.");
     }
   };
+
+  const getPopularBooks = () => {
+    const storedProgress = localStorage.getItem("reading_progress");
+    const allProgress = storedProgress ? JSON.parse(storedProgress) : [];
+
+    const readersPerBook: { [key: string]: number } = {};
+    allProgress.forEach((progress: any) => {
+      if (!progress.book_id) return;
+      readersPerBook[progress.book_id] = (readersPerBook[progress.book_id] || 0) + 1;
+    });
+
+    const popularBookIds = Object.entries(readersPerBook)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 3)
+      .map(([bookId]) => bookId);
+
+    const popularBooks = mockBooks.filter(book => popularBookIds.includes(book.id));
+    return { books: popularBooks, readersCount: readersPerBook };
+  };
+
+  const { books: popularBooks, readersCount } = getPopularBooks();
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,7 +113,8 @@ export default function Explore() {
           </div>
         ) : (
           <div className="space-y-12">
-            {/* Personal Suggestion Section */}
+            <PopularBooks books={popularBooks} readersCount={readersCount} />
+            
             <Card className="border-coffee-light bg-white overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row">
@@ -154,7 +170,6 @@ export default function Explore() {
               </CardContent>
             </Card>
             
-            {/* Themed Sections */}
             <BookGrid 
               books={personalDevelopmentBooks} 
               title="Développement personnel" 
