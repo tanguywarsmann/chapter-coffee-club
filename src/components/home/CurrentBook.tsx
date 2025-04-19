@@ -7,6 +7,7 @@ import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
 import { Book } from "@/types/book";
 import { validateReading } from "@/services/readingService";
 import { toast } from "sonner";
+import { QuizModal } from "@/components/books/QuizModal";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -18,7 +19,6 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   
-  // User information (in a real app, would come from authentication)
   const userId = localStorage.getItem("user") || "user123";
   
   if (!book) {
@@ -42,7 +42,6 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     );
   }
   
-  // Calculate the progress percentage
   const totalPages = book.totalChapters * 30;
   const pagesRead = book.chaptersRead * 30;
   const progressPercentage = (pagesRead / totalPages) * 100;
