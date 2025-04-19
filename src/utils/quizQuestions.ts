@@ -45,6 +45,90 @@ export const questions: Questions = {
   "Les Misérables": {
     1: { question: "Comment s'appelle l'évêque qui accueille Jean Valjean ?", answer: ["myriel", "monseigneur myriel", "l'évêque myriel"] },
     2: { question: "Quel objet Jean Valjean vole-t-il qui le conduit en prison ?", answer: ["pain", "miche de pain", "une miche de pain", "du pain"] }
+  },
+  "harry-potter-1": {
+    1: { 
+      question: "Où vivent Harry et les Dursley ?",
+      answer: ["privet", "privet drive", "4 privet drive"]
+    },
+    2: { 
+      question: "Quel objet magique Harry reçoit-il par hibou ?",
+      answer: ["lettre", "la lettre", "une lettre"]
+    },
+    3: { 
+      question: "Dans quelle boutique Harry achète-t-il sa baguette ?",
+      answer: ["ollivander", "ollivanders", "chez ollivander"]
+    },
+    4: { 
+      question: "Quel est le nom du train magique ?",
+      answer: ["poudlardexpress", "poudlard express", "le poudlard express"]
+    },
+    5: { 
+      question: "Dans quelle maison est envoyé Harry ?",
+      answer: ["gryffondor", "griffondor"]
+    },
+    6: { 
+      question: "Quel professeur surveille Severus Rogue ?",
+      answer: ["quirrell", "quirrel", "professeur quirrell"]
+    },
+    7: { 
+      question: "Quel jeu joue Harry sur un balai ?",
+      answer: ["quidditch", "le quidditch"]
+    },
+    8: { 
+      question: "Quel objet devient invisible ?",
+      answer: ["cape", "la cape", "cape d'invisibilité", "la cape d'invisibilité"]
+    },
+    9: { 
+      question: "Qui est Nicolas Flamel ?",
+      answer: ["alchimiste", "un alchimiste", "l'alchimiste"]
+    },
+    10: { 
+      question: "Qui garde la trappe piégée ?",
+      answer: ["touffu", "le chien touffu"]
+    },
+    11: { 
+      question: "Qui essayait de voler la pierre ?",
+      answer: ["voldemort", "lord voldemort"]
+    }
+  },
+  "candide": {
+    1: { 
+      question: "Quel est le nom du philosophe optimiste ?",
+      answer: ["pangloss", "le docteur pangloss"]
+    },
+    2: { 
+      question: "Quelle ville est détruite par un séisme ?",
+      answer: ["lisbonne"]
+    },
+    3: { 
+      question: "Quel tribunal religieux apparaît dans le récit ?",
+      answer: ["inquisition", "l'inquisition"]
+    },
+    4: { 
+      question: "Comment s'appelle le serviteur fidèle de Candide ?",
+      answer: ["cacambo"]
+    },
+    5: { 
+      question: "Quel pays utopique visite Candide ?",
+      answer: ["eldorado", "l'eldorado"]
+    },
+    6: { 
+      question: "Quel métal est considéré comme banal à Eldorado ?",
+      answer: ["or", "l'or"]
+    },
+    7: { 
+      question: "Quelle femme Candide aime-t-il ?",
+      answer: ["cunégonde", "cunegonde"]
+    },
+    8: { 
+      question: "Quel animal est mangé par les singes ?",
+      answer: ["femme", "une femme", "la femme"]
+    },
+    9: { 
+      question: "Quelle activité Candide choisit-il à la fin ?",
+      answer: ["jardin", "jardiner", "cultiver son jardin", "le jardinage"]
+    }
   }
 };
 
