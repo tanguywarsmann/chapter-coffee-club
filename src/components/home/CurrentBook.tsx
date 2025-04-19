@@ -19,6 +19,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [quizChapter, setQuizChapter] = useState(0);
   
   const userId = localStorage.getItem("user") || "user123";
   
@@ -71,6 +72,10 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       });
       
       toast.success("30 pages validées avec succès!");
+      
+      // Mettre à jour le chapitre actuel pour le quiz
+      setQuizChapter(book.chaptersRead + 1);
+      // Afficher le quiz après la validation
       setShowQuiz(true);
       
       if (onProgressUpdate) {
@@ -148,7 +153,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       {showQuiz && (
         <QuizModal 
           bookTitle={book.title} 
-          chapterNumber={book.chaptersRead}
+          chapterNumber={quizChapter}
           onComplete={handleQuizComplete}
           onClose={() => setShowQuiz(false)}
         />
