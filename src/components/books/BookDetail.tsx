@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -32,7 +31,6 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const forumPosts = getBookForum(book.id);
   const [showValidationModal, setShowValidationModal] = useState(false);
   
-  // Get userId from localStorage - this is the fix for the error
   const userId = localStorage.getItem("user") || "user123";
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
@@ -64,7 +62,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
     }
   };
 
-  const validateReadingSegment = async () => {
+  const handleValidateReading = async () => {
     try {
       setIsValidating(true);
       const nextSegment = book.chaptersRead + 1;
@@ -318,7 +316,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
         isOpen={showValidationModal}
         isValidating={isValidating}
         onClose={() => setShowValidationModal(false)}
-        onValidate={validateReadingSegment}
+        onValidate={handleValidateReading}
       />
       
       {showQuiz && (

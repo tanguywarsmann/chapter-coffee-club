@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +16,7 @@ interface CurrentBookProps {
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
   
   // User information (in a real app, would come from authentication)
   const userId = localStorage.getItem("user") || "user123";
@@ -71,13 +71,11 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       });
       
       toast.success("30 pages validées avec succès!");
+      setShowQuiz(true);
       
       if (onProgressUpdate) {
         onProgressUpdate(book.chaptersRead + 1);
       }
-      
-      // Redirect to book page for quiz
-      navigate(`/books/${book.id}`);
     } catch (error: any) {
       if (error.error === "Segment déjà validé") {
         toast.error("Vous avez déjà validé ce segment de lecture!");
@@ -88,52 +86,70 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       setIsValidating(false);
     }
   };
+  
+  const handleQuizComplete = (passed: boolean) => {
+    setShowQuiz(false);
+    if (!passed) {
+      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
+    }
+  };
 
   return (
-    <Card className="border-coffee-light">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-serif text-coffee-darker">Ma lecture en cours</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-4">
-          <div className="book-cover w-20 h-30 flex-shrink-0">
-            {book.coverImage ? (
-              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                <span className="text-white font-serif italic text-xl">{book.title.substring(0, 1)}</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <h3 className="font-medium text-coffee-darker hover:underline cursor-pointer" onClick={handleNavigateToBook}>
-              {book.title}
-            </h3>
-            <p className="text-sm text-muted-foreground">{book.author}</p>
-            
-            <div className="mt-3 space-y-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-coffee-darker">Progression</span>
-                <span className="text-muted-foreground">{pagesRead} sur {totalPages} pages</span>
-              </div>
-              <Progress value={progressPercentage} className="h-2" />
+    <>
+      <Card className="border-coffee-light">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-serif text-coffee-darker">Ma lecture en cours</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-4">
+            <div className="book-cover w-20 h-30 flex-shrink-0">
+              {book.coverImage ? (
+                <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+                  <span className="text-white font-serif italic text-xl">{book.title.substring(0, 1)}</span>
+                </div>
+              )}
             </div>
             
-            <Button 
-              className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker"
-              onClick={handleValidateReading}
-              disabled={isValidating}
-            >
-              {isValidating ? (
-                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
-              ) : (
-                <>Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" /></>
-              )}
-            </Button>
+            <div className="flex-1">
+              <h3 className="font-medium text-coffee-darker hover:underline cursor-pointer" onClick={handleNavigateToBook}>
+                {book.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">{book.author}</p>
+              
+              <div className="mt-3 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-coffee-darker">Progression</span>
+                  <span className="text-muted-foreground">{pagesRead} sur {totalPages} pages</span>
+                </div>
+                <Progress value={progressPercentage} className="h-2" />
+              </div>
+              
+              <Button 
+                className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker"
+                onClick={handleValidateReading}
+                disabled={isValidating}
+              >
+                {isValidating ? (
+                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
+                ) : (
+                  <>Valider 30 pages supplémentaires <ChevronRight className="h-4 w-4 ml-1" /></>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      
+      {showQuiz && (
+        <QuizModal 
+          bookTitle={book.title} 
+          chapterNumber={book.chaptersRead}
+          onComplete={handleQuizComplete}
+          onClose={() => setShowQuiz(false)}
+        />
+      )}
+    </>
   );
 }
