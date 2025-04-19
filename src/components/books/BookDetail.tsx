@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -30,6 +31,9 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
   const [showValidationModal, setShowValidationModal] = useState(false);
+  
+  // Get userId from localStorage - this is the fix for the error
+  const userId = localStorage.getItem("user") || "user123";
 
   const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
   
