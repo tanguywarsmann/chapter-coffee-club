@@ -28,6 +28,36 @@ export const getAllBooks = async (): Promise<Book[]> => {
   }));
 };
 
+export const getBookById = async (id: string): Promise<Book | null> => {
+  const { data, error } = await supabase
+    .from('books')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching book by ID:', error);
+    return null;
+  }
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    title: data.title,
+    author: data.author,
+    coverImage: data.cover_url,
+    description: data.description || "",
+    totalChapters: Math.ceil(data.total_pages / 30),
+    chaptersRead: 0,
+    isCompleted: false,
+    language: "français",
+    categories: data.tags || [],
+    pages: data.total_pages,
+    publicationYear: new Date(data.created_at || Date.now()).getFullYear()
+  };
+};
+
 export const getBooksByCategory = async (category: string): Promise<Book[]> => {
   const { data, error } = await supabase
     .from('books')
