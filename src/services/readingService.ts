@@ -1,10 +1,9 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { ReadingProgress, ValidateReadingRequest, ValidateReadingResponse, ReadingValidation } from "@/types/reading";
 import { getBookById } from "@/mock/books";
-import { getQuestion } from "@/utils/quizQuestions";
+import { getQuestion, checkAnswer } from "@/utils/quizQuestions";
 import { recordReadingActivity } from "./streakService";
 
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
@@ -18,7 +17,6 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     return [];
   }
 
-  // Ajouter le tableau validations vide par défaut aux données
   return (data || []).map(item => ({
     ...item,
     validations: []
@@ -67,7 +65,6 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
   return { ...data, validations: [] };
 };
 
-// Simule l'API de validation de lecture
 export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse> => {
@@ -84,10 +81,22 @@ export const validateReading = async (
       progress = await initializeBookReading(request.user_id, book);
     }
     
+    const { data: existingValidation } = await supabase
+      .from('reading_validations')
+      .select('*')
+      .eq('user_id', request.user_id)
+      .eq('book_id', request.book_id)
+      .eq('segment', request.segment)
+      .maybeSingle();
+
+    if (existingValidation) {
+      throw new Error("Segment déjà validé");
+    }
+    
     const newCurrentPage = request.segment * 30;
     const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
     
-    const { error } = await supabase
+    const { error: progressError } = await supabase
       .from('reading_progress')
       .upsert({
         user_id: request.user_id,
@@ -97,14 +106,28 @@ export const validateReading = async (
         total_pages: book.pages
       });
 
-    if (error) {
-      throw error;
+    if (progressError) {
+      throw progressError;
     }
     
-    // Record reading activity for streak
+    const question = getQuestion(book.title, request.segment);
+    
+    const { error: validationError } = await supabase
+      .from('reading_validations')
+      .insert({
+        user_id: request.user_id,
+        book_id: request.book_id,
+        segment: request.segment,
+        question_id: question.question,
+        correct: true
+      });
+
+    if (validationError) {
+      throw validationError;
+    }
+    
     await recordReadingActivity(request.user_id);
     
-    // Obtenir la question pour le segment suivant
     const nextSegment = request.segment + 1;
     const nextQuestion = getQuestion(book.title, nextSegment);
     
@@ -120,7 +143,6 @@ export const validateReading = async (
   }
 };
 
-// Récupère tous les livres en cours pour un utilisateur
 export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]> => {
   const userProgress = await getUserReadingProgress(userId);
   return userProgress
@@ -128,7 +150,6 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]>
       const book = getBookById(progress.book_id);
       if (!book) return null;
       
-      // Convertir les pages en chapitres pour la compatibilité avec l'interface existante
       const chaptersRead = Math.floor(progress.current_page / 30);
       return {
         ...book,
@@ -139,13 +160,11 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]>
     .filter((book): book is Book => book !== null);
 };
 
-// Récupère les livres terminés pour un utilisateur
 export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> => {
   const books = await getBooksInProgressFromAPI(userId);
   return books.filter(book => book.isCompleted);
 };
 
-// Synchronise un livre spécifique avec l'API
 export const syncBookWithAPI = async (userId: string, bookId: string): Promise<Book | null> => {
   const progress = await getBookReadingProgress(userId, bookId);
   const book = getBookById(bookId);
@@ -153,12 +172,10 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
   if (!book) return null;
   
   if (!progress) {
-    // Si aucune progression n'existe, initialiser une nouvelle
     await initializeBookReading(userId, book);
     return book;
   }
   
-  // Convertir les pages en chapitres pour la compatibilité
   const chaptersRead = Math.floor(progress.current_page / 30);
   return {
     ...book,
@@ -167,13 +184,26 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
   };
 };
 
-// Initialise la progression pour tous les livres en cours de l'utilisateur
+export const getBookValidations = async (userId: string, bookId: string): Promise<ReadingValidation[]> => {
+  const { data, error } = await supabase
+    .from('reading_validations')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('book_id', bookId)
+    .order('validated_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching validations:', error);
+    return [];
+  }
+
+  return data || [];
+};
+
 export const initializeUserReadingProgress = async (userId: string) => {
   const existingProgress = await getUserReadingProgress(userId);
   
-  // Pour chaque livre dans mockBooks qui a des chapitres lus
-  // mais pas encore de progression, initialiser une progression
-  const mockBooks = getBookById(""); // Passez une chaîne vide pour obtenir tous les livres
+  const mockBooks = getBookById("");
   
   if (Array.isArray(mockBooks)) {
     mockBooks

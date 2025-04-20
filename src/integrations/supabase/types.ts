@@ -48,6 +48,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_validations: {
+        Row: {
+          answer: string | null
+          book_id: string
+          correct: boolean
+          id: string
+          question_id: string | null
+          segment: number
+          user_id: string
+          validated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          book_id: string
+          correct?: boolean
+          id?: string
+          question_id?: string | null
+          segment: number
+          user_id: string
+          validated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          book_id?: string
+          correct?: boolean
+          id?: string
+          question_id?: string | null
+          segment?: number
+          user_id?: string
+          validated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

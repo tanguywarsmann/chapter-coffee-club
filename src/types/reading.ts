@@ -1,4 +1,3 @@
-
 export interface ReadingValidation {
   segment: number;
   question_id: string;
