@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { validateReading, getBookReadingProgress } from "@/services/readingService";
 import { ValidationModal } from "./ValidationModal";
 import { ValidationHistory } from "./ValidationHistory";
+import { ReadingProgress, ReadingValidation } from "@/types/reading";
 
 interface BookDetailProps {
   book: Book;
@@ -27,6 +29,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [bookmarked, setBookmarked] = useState(book.isBookmarked || false);
   const [personalNote, setPersonalNote] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -38,8 +41,21 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const chaptersRemaining = book.totalChapters - book.chaptersRead;
   const readingTimeRemaining = chaptersRemaining * 20;
   
-  const readingProgress = getBookReadingProgress(userId, book.id);
+  useEffect(() => {
+    // Fetch reading progress when component mounts
+    const fetchReadingProgress = async () => {
+      try {
+        const progress = await getBookReadingProgress(userId, book.id);
+        setReadingProgress(progress);
+      } catch (error) {
+        console.error("Error fetching reading progress:", error);
+      }
+    };
+    
+    fetchReadingProgress();
+  }, [userId, book.id]);
   
+  // Prepare validation history from reading progress
   const validationHistory = readingProgress?.validations 
     ? readingProgress.validations.map(v => {
         const date = new Date(v.date_validated);
@@ -306,7 +322,9 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
         </div>
       </div>
       
-      <ValidationHistory validations={readingProgress?.validations || []} />
+      {readingProgress?.validations && readingProgress.validations.length > 0 && (
+        <ValidationHistory validations={readingProgress.validations} />
+      )}
       
       {book.isCompleted && <ForumDialog />}
       

@@ -12,7 +12,7 @@ import { QuizModal } from "@/components/books/QuizModal";
 
 interface CurrentBookProps {
   book: Book | null;
-  onProgressUpdate?: (newProgress: number) => void;
+  onProgressUpdate?: (bookId: string) => void;
 }
 
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
@@ -79,7 +79,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       setShowQuiz(true);
       
       if (onProgressUpdate) {
-        onProgressUpdate(book.chaptersRead + 1);
+        onProgressUpdate(book.id);
       }
     } catch (error: any) {
       if (error.error === "Segment déjà validé") {

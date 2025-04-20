@@ -27,6 +27,7 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
   const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -39,23 +40,35 @@ export default function Home() {
       return;
     }
     
-    // Initialize user reading progress with mock data
-    initializeUserReadingProgress(userId);
-    
-    // Load books in progress from API
-    const booksInProgress = getBooksInProgressFromAPI(userId);
-    setInProgressBooks(booksInProgress);
-    
-    // Set current book if any
-    if (booksInProgress.length > 0) {
-      // Find the most recently updated book
-      const notCompletedBooks = booksInProgress.filter(book => !book.isCompleted);
-      if (notCompletedBooks.length > 0) {
-        setCurrentBook(notCompletedBooks[0]);
-      } else {
-        setCurrentBook(booksInProgress[0]);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Initialize user reading progress with mock data
+        await initializeUserReadingProgress(userId);
+        
+        // Load books in progress from API
+        const booksInProgress = await getBooksInProgressFromAPI(userId);
+        setInProgressBooks(booksInProgress);
+        
+        // Set current book if any
+        if (booksInProgress.length > 0) {
+          // Find the most recently updated book
+          const notCompletedBooks = booksInProgress.filter(book => !book.isCompleted);
+          if (notCompletedBooks.length > 0) {
+            setCurrentBook(notCompletedBooks[0]);
+          } else {
+            setCurrentBook(booksInProgress[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+    
+    fetchData();
   }, [navigate, userId]);
 
   const handleSearch = (query: string) => {
@@ -78,24 +91,42 @@ export default function Home() {
     }
   };
 
-  const handleProgressUpdate = (bookId: string) => {
-    // Sync the book data with our API
-    const updatedBook = syncBookWithAPI(userId, bookId);
-    
-    if (updatedBook) {
-      // Update current book
-      setCurrentBook(updatedBook);
+  const handleProgressUpdate = async (bookId: string) => {
+    try {
+      // Sync the book data with our API
+      const updatedBook = await syncBookWithAPI(userId, bookId);
       
-      // Update in progress books
-      setInProgressBooks(prev => 
-        prev.map(book => book.id === updatedBook.id ? updatedBook : book)
-      );
+      if (updatedBook) {
+        // Update current book
+        setCurrentBook(updatedBook);
+        
+        // Update in progress books
+        setInProgressBooks(prev => 
+          prev.map(book => book.id === updatedBook.id ? updatedBook : book)
+        );
+      }
+      
+      // Refresh all books in progress
+      const booksInProgress = await getBooksInProgressFromAPI(userId);
+      setInProgressBooks(booksInProgress);
+    } catch (error) {
+      console.error("Error updating progress:", error);
     }
-    
-    // Refresh all books in progress
-    const booksInProgress = getBooksInProgressFromAPI(userId);
-    setInProgressBooks(booksInProgress);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-logo-background text-logo-text">
+        <AppHeader />
+        <main className="container py-6 flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-10 w-10 animate-spin text-coffee-dark mb-4" />
+            <p className="text-coffee-darker">Chargement de votre bibliothèque...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-logo-background text-logo-text">
@@ -171,7 +202,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CurrentBook 
                     book={currentBook} 
-                    onProgressUpdate={() => currentBook && handleProgressUpdate(currentBook.id)} 
+                    onProgressUpdate={handleProgressUpdate} 
                   />
                   <div className="space-y-6">
                     <GoalsPreview />

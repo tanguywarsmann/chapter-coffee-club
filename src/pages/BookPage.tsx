@@ -30,21 +30,33 @@ export default function BookPage() {
     }
     
     // Sync book with API if it exists
-    if (id && book) {
-      const syncedBook = syncBookWithAPI(user, id);
-      if (syncedBook) {
-        setBook(syncedBook);
+    const updateBook = async () => {
+      if (id && book) {
+        try {
+          const syncedBook = await syncBookWithAPI(user, id);
+          if (syncedBook) {
+            setBook(syncedBook);
+          }
+        } catch (error) {
+          console.error("Error syncing book with API:", error);
+        }
       }
-    }
+    };
+    
+    updateBook();
   }, [id, book, navigate, user]);
 
-  const handleChapterComplete = (bookId: string) => {
+  const handleChapterComplete = async (bookId: string) => {
     if (!book) return;
     
     // Since the validation is now handled by the API, we just need to refresh the book data
-    const updatedBook = syncBookWithAPI(user, bookId);
-    if (updatedBook) {
-      setBook(updatedBook);
+    try {
+      const updatedBook = await syncBookWithAPI(user, bookId);
+      if (updatedBook) {
+        setBook(updatedBook);
+      }
+    } catch (error) {
+      console.error("Error updating book after chapter completion:", error);
     }
   };
 

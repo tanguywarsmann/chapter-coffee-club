@@ -1,3 +1,4 @@
+
 export interface ReadingValidation {
   segment: number;
   question_id: string;
@@ -15,7 +16,7 @@ export interface ReadingProgress {
   status: "to_read" | "in_progress" | "completed";
   streak_current: number;
   streak_best: number;
-  validations: ReadingValidation[];
+  validations?: ReadingValidation[]; // Maintenant optionnel
 }
 
 export interface ValidateReadingRequest {

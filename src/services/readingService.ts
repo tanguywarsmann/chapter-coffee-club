@@ -1,7 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
-import { ReadingProgress, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
+import { ReadingProgress, ValidateReadingRequest, ValidateReadingResponse, ReadingValidation } from "@/types/reading";
 import { getBookById } from "@/mock/books";
 import { getQuestion } from "@/utils/quizQuestions";
 import { recordReadingActivity } from "./streakService";
@@ -17,7 +18,11 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     return [];
   }
 
-  return data || [];
+  // Ajouter le tableau validations vide par défaut aux données
+  return (data || []).map(item => ({
+    ...item,
+    validations: []
+  }));
 };
 
 export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
@@ -33,7 +38,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     return null;
   }
 
-  return data;
+  return data ? { ...data, validations: [] } : null;
 };
 
 export const initializeBookReading = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
@@ -47,7 +52,10 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
 
   const { data, error } = await supabase
     .from('reading_progress')
-    .insert(newProgress)
+    .insert({
+      ...newProgress,
+      status: newProgress.status as "to_read" | "in_progress" | "completed"
+    })
     .select()
     .single();
 
@@ -56,7 +64,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
     return null;
   }
 
-  return data;
+  return { ...data, validations: [] };
 };
 
 // Simule l'API de validation de lecture
@@ -64,15 +72,16 @@ export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse> => {
   try {
-    const progress = await getBookReadingProgress(request.user_id, request.book_id);
     const book = getBookById(request.book_id);
     
     if (!book) {
       throw new Error("Livre non trouvé");
     }
     
+    let progress = await getBookReadingProgress(request.user_id, request.book_id);
+    
     if (!progress) {
-      await initializeBookReading(request.user_id, book);
+      progress = await initializeBookReading(request.user_id, book);
     }
     
     const newCurrentPage = request.segment * 30;
@@ -84,7 +93,7 @@ export const validateReading = async (
         user_id: request.user_id,
         book_id: request.book_id,
         current_page: newCurrentPage,
-        status: newStatus,
+        status: newStatus as "to_read" | "in_progress" | "completed",
         total_pages: book.pages
       });
 
@@ -112,8 +121,8 @@ export const validateReading = async (
 };
 
 // Récupère tous les livres en cours pour un utilisateur
-export const getBooksInProgressFromAPI = (userId: string): Book[] => {
-  const userProgress = getUserReadingProgress(userId);
+export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]> => {
+  const userProgress = await getUserReadingProgress(userId);
   return userProgress
     .map(progress => {
       const book = getBookById(progress.book_id);
@@ -131,21 +140,21 @@ export const getBooksInProgressFromAPI = (userId: string): Book[] => {
 };
 
 // Récupère les livres terminés pour un utilisateur
-export const getCompletedBooksFromAPI = (userId: string): Book[] => {
-  return getBooksInProgressFromAPI(userId)
-    .filter(book => book.isCompleted);
+export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> => {
+  const books = await getBooksInProgressFromAPI(userId);
+  return books.filter(book => book.isCompleted);
 };
 
 // Synchronise un livre spécifique avec l'API
-export const syncBookWithAPI = (userId: string, bookId: string): Book | null => {
-  const progress = getBookReadingProgress(userId, bookId);
+export const syncBookWithAPI = async (userId: string, bookId: string): Promise<Book | null> => {
+  const progress = await getBookReadingProgress(userId, bookId);
   const book = getBookById(bookId);
   
   if (!book) return null;
   
   if (!progress) {
     // Si aucune progression n'existe, initialiser une nouvelle
-    initializeBookReading(userId, book);
+    await initializeBookReading(userId, book);
     return book;
   }
   
@@ -159,17 +168,21 @@ export const syncBookWithAPI = (userId: string, bookId: string): Book | null => 
 };
 
 // Initialise la progression pour tous les livres en cours de l'utilisateur
-export const initializeUserReadingProgress = (userId: string) => {
-  const existingProgress = getUserReadingProgress(userId);
+export const initializeUserReadingProgress = async (userId: string) => {
+  const existingProgress = await getUserReadingProgress(userId);
   
   // Pour chaque livre dans mockBooks qui a des chapitres lus
   // mais pas encore de progression, initialiser une progression
-  mockBooks
-    .filter(book => book.chaptersRead > 0)
-    .forEach(book => {
-      const hasProgress = existingProgress.some(p => p.book_id === book.id);
-      if (!hasProgress) {
-        initializeBookReading(userId, book);
-      }
-    });
+  const mockBooks = getBookById(); // Récupère tous les livres mockés
+  
+  if (Array.isArray(mockBooks)) {
+    mockBooks
+      .filter(book => book.chaptersRead > 0)
+      .forEach(async (book) => {
+        const hasProgress = existingProgress.some(p => p.book_id === book.id);
+        if (!hasProgress) {
+          await initializeBookReading(userId, book);
+        }
+      });
+  }
 };
