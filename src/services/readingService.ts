@@ -1,9 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { ReadingProgress, ValidateReadingRequest, ValidateReadingResponse, ReadingValidation } from "@/types/reading";
 import { getBookById } from "@/mock/books";
-import { getQuestion, checkAnswer } from "@/utils/quizQuestions";
+import { getQuestionForBookSegment } from "./questionService";
 import { recordReadingActivity } from "./streakService";
 
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
@@ -75,6 +76,13 @@ export const validateReading = async (
       throw new Error("Livre non trouvé");
     }
     
+    // Get the question for this book and segment
+    const question = await getQuestionForBookSegment(request.book_id, request.segment);
+    
+    if (!question) {
+      throw new Error("Aucune question trouvée pour ce segment");
+    }
+    
     let progress = await getBookReadingProgress(request.user_id, request.book_id);
     
     if (!progress) {
@@ -110,15 +118,13 @@ export const validateReading = async (
       throw progressError;
     }
     
-    const question = getQuestion(book.title, request.segment);
-    
     const { error: validationError } = await supabase
       .from('reading_validations')
       .insert({
         user_id: request.user_id,
         book_id: request.book_id,
         segment: request.segment,
-        question_id: question.question,
+        question_id: question.id,
         correct: true
       });
 
@@ -129,7 +135,7 @@ export const validateReading = async (
     await recordReadingActivity(request.user_id);
     
     const nextSegment = request.segment + 1;
-    const nextQuestion = getQuestion(book.title, nextSegment);
+    const nextQuestion = await getQuestionForBookSegment(book.title, nextSegment);
     
     return {
       message: "Segment validé avec succès",

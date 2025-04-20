@@ -1,3 +1,12 @@
+export interface ReadingQuestion {
+  id: string;
+  book_id: string;
+  segment: number;
+  question: string;
+  answer: string;
+  created_at?: string;
+}
+
 export interface ReadingValidation {
   id: string;
   user_id: string;

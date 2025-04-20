@@ -48,6 +48,33 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_questions: {
+        Row: {
+          answer: string
+          book_id: string
+          created_at: string | null
+          id: string
+          question: string
+          segment: number
+        }
+        Insert: {
+          answer: string
+          book_id: string
+          created_at?: string | null
+          id?: string
+          question: string
+          segment: number
+        }
+        Update: {
+          answer?: string
+          book_id?: string
+          created_at?: string | null
+          id?: string
+          question?: string
+          segment?: number
+        }
+        Relationships: []
+      }
       reading_validations: {
         Row: {
           answer: string | null
