@@ -17,6 +17,7 @@ export type Database = {
           description: string | null
           id: string
           slug: string
+          tags: string[] | null
           title: string
           total_pages: number
         }
@@ -27,6 +28,7 @@ export type Database = {
           description?: string | null
           id: string
           slug: string
+          tags?: string[] | null
           title: string
           total_pages?: number
         }
@@ -37,6 +39,7 @@ export type Database = {
           description?: string | null
           id?: string
           slug?: string
+          tags?: string[] | null
           title?: string
           total_pages?: number
         }

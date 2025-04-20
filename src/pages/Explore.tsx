@@ -1,84 +1,83 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { BookGrid } from "@/components/books/BookGrid";
-import { PopularBooks } from "@/components/books/PopularBooks";
-import { mockBooks } from "@/mock/books";
+import { getAllBooks, getBooksByCategory, getAvailableCategories } from "@/services/bookService";
 import { toast } from "sonner";
+import { Book } from "@/types/book";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 
 export default function Explore() {
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [filteredBooks, setFilteredBooks] = useState(mockBooks);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      navigate("/");
-    }
+    const fetchBooks = async () => {
+      const user = localStorage.getItem("user");
+      if (!user) {
+        navigate("/");
+        return;
+      }
+
+      try {
+        const allBooks = await getAllBooks();
+        const availableCategories = await getAvailableCategories();
+        
+        setBooks(allBooks);
+        setFilteredBooks(allBooks);
+        setCategories(availableCategories);
+      } catch (error) {
+        toast.error("Erreur lors du chargement des livres");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, [navigate]);
 
-  const getBooksByCategory = (categories: string[]) => {
-    return mockBooks.filter(book => 
-      book.categories.some(category => categories.includes(category))
-    );
+  const handleCategoryFilter = async (category: string | null) => {
+    setSelectedCategory(category);
+    
+    if (category) {
+      const filteredBooks = await getBooksByCategory(category);
+      setFilteredBooks(filteredBooks);
+    } else {
+      setFilteredBooks(books);
+    }
   };
-
-  const personalDevelopmentBooks = getBooksByCategory(["Philosophie", "Développement personnel"]);
-  const classicShortBooks = mockBooks.filter(book => book.pages <= 200 && book.categories.includes("Classique"));
-  const quickImpactBooks = mockBooks.filter(book => book.pages <= 150);
-  const enjoyableNovels = getBooksByCategory(["Roman", "Aventure", "Fantastique"]);
-
-  const getPersonalizedSuggestion = () => {
-    const randomIndex = Math.floor(Math.random() * mockBooks.length);
-    return mockBooks[randomIndex];
-  };
-
-  const suggestedBook = getPersonalizedSuggestion();
 
   const handleSearch = (query: string) => {
     if (!query.trim()) {
-      setShowSearchResults(false);
+      setFilteredBooks(books);
       return;
     }
     
-    const results = mockBooks.filter(book => 
+    const results = books.filter(book => 
       book.title.toLowerCase().includes(query.toLowerCase()) ||
       book.author.toLowerCase().includes(query.toLowerCase()) ||
       book.categories.some(category => category.toLowerCase().includes(query.toLowerCase()))
     );
     
     setFilteredBooks(results);
-    setShowSearchResults(true);
     
     if (results.length === 0) {
       toast.info("Aucun livre trouvé pour cette recherche.");
     }
   };
 
-  const getPopularBooks = () => {
-    const storedProgress = localStorage.getItem("reading_progress");
-    const allProgress = storedProgress ? JSON.parse(storedProgress) : [];
+  const suggestedBook = books.length > 0 ? books[Math.floor(Math.random() * books.length)] : null;
 
-    const readersPerBook: { [key: string]: number } = {};
-    allProgress.forEach((progress: any) => {
-      if (!progress.book_id) return;
-      readersPerBook[progress.book_id] = (readersPerBook[progress.book_id] || 0) + 1;
-    });
-
-    const popularBookIds = Object.entries(readersPerBook)
-      .sort(([, a], [, b]) => (b as number) - (a as number))
-      .slice(0, 3)
-      .map(([bookId]) => bookId);
-
-    const popularBooks = mockBooks.filter(book => popularBookIds.includes(book.id));
-    return { books: popularBooks, readersCount: readersPerBook };
-  };
-
-  const { books: popularBooks, readersCount } = getPopularBooks();
+  if (loading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Chargement...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -94,27 +93,34 @@ export default function Explore() {
               placeholder="Rechercher par titre, auteur ou thématique..."
             />
           </div>
+
+          <div className="flex flex-wrap gap-2 mt-4">
+            <button 
+              className={`px-3 py-1 rounded-full text-sm ${selectedCategory === null ? 'bg-coffee-dark text-white' : 'bg-coffee-light text-coffee-darker'}`}
+              onClick={() => handleCategoryFilter(null)}
+            >
+              Tous
+            </button>
+            {categories.map(category => (
+              <button 
+                key={category}
+                className={`px-3 py-1 rounded-full text-sm ${selectedCategory === category ? 'bg-coffee-dark text-white' : 'bg-coffee-light text-coffee-darker'}`}
+                onClick={() => handleCategoryFilter(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
         
-        {showSearchResults ? (
-          <div className="space-y-8">
-            <BookGrid 
-              books={filteredBooks} 
-              title="Résultats de recherche" 
-              showAddButton={true}
-            />
-            
-            <button 
-              className="text-coffee-dark hover:text-coffee-darker font-medium"
-              onClick={() => setShowSearchResults(false)}
-            >
-              ← Retour à l'exploration
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-12">
-            <PopularBooks books={popularBooks} readersCount={readersCount} />
-            
+        <div className="space-y-12">
+          <BookGrid 
+            books={filteredBooks} 
+            title="Livres disponibles" 
+            showAddButton={true}
+          />
+          
+          {suggestedBook && (
             <Card className="border-coffee-light bg-white overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row">
@@ -156,49 +162,12 @@ export default function Explore() {
                         </span>
                       ))}
                     </div>
-                    
-                    <button 
-                      className="px-4 py-2 bg-coffee-dark text-white rounded-md hover:bg-coffee-darker transition-colors"
-                      onClick={() => {
-                        toast.success(`${suggestedBook.title} ajouté à votre liste de lecture`);
-                      }}
-                    >
-                      Ajouter à ma liste de lecture
-                    </button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
-            <BookGrid 
-              books={personalDevelopmentBooks} 
-              title="Développement personnel" 
-              description="Des lectures pour progresser et mieux se connaître"
-              showAddButton={true}
-            />
-            
-            <BookGrid 
-              books={classicShortBooks} 
-              title="Grands classiques courts" 
-              description="Des œuvres intemporelles, accessibles et rapides à lire"
-              showAddButton={true}
-            />
-            
-            <BookGrid 
-              books={quickImpactBooks} 
-              title="Livres à fort impact en moins de 3h de lecture" 
-              description="Des lectures courtes mais puissantes pour maximiser votre temps"
-              showAddButton={true}
-            />
-            
-            <BookGrid 
-              books={enjoyableNovels} 
-              title="Romans pour retrouver le plaisir de lire" 
-              description="Des histoires captivantes pour redécouvrir la joie de la lecture"
-              showAddButton={true}
-            />
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
