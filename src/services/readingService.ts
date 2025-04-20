@@ -173,7 +173,7 @@ export const initializeUserReadingProgress = async (userId: string) => {
   
   // Pour chaque livre dans mockBooks qui a des chapitres lus
   // mais pas encore de progression, initialiser une progression
-  const mockBooks = getBookById(); // Récupère tous les livres mockés
+  const mockBooks = getBookById(""); // Passez une chaîne vide pour obtenir tous les livres
   
   if (Array.isArray(mockBooks)) {
     mockBooks

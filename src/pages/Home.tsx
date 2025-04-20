@@ -15,7 +15,7 @@ import { getUserActivities, getMockFollowers, getMockFollowing } from "@/mock/ac
 import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-import { User } from "lucide-react";
+import { User, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   getBooksInProgressFromAPI, 
