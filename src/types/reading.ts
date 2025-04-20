@@ -1,8 +1,13 @@
-
 export interface ReadingValidation {
+  id: string;
+  user_id: string;
+  book_id: string;
   segment: number;
-  question_id: string;
-  date_validated: string;
+  question_id: string | null;
+  answer: string | null;
+  correct: boolean;
+  validated_at: string;
+  date_validated?: string; // Optional for backward compatibility
 }
 
 export interface ReadingProgress {
@@ -48,17 +53,4 @@ export interface ReadingStreak {
   current_streak: number;
   longest_streak: number;
   last_validation_date: string;
-}
-
-// Update the ReadingValidation interface to match the Supabase table structure
-export interface ReadingValidation {
-  id: string;
-  user_id: string;
-  book_id: string;
-  segment: number;
-  question_id: string | null;
-  answer: string | null;
-  correct: boolean;
-  validated_at: string;
-  date_validated?: string; // Keep for backward compatibility
 }
