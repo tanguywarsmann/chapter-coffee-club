@@ -197,7 +197,10 @@ export const getBookValidations = async (userId: string, bookId: string): Promis
     return [];
   }
 
-  return data || [];
+  return data ? data.map(item => ({
+    ...item,
+    date_validated: item.validated_at
+  })) : [];
 };
 
 export const initializeUserReadingProgress = async (userId: string) => {

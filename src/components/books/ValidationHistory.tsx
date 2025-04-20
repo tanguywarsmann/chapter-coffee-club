@@ -30,7 +30,7 @@ export function ValidationHistory({ validations }: ValidationHistoryProps) {
                   Validation du segment {validation.segment} (pages {(validation.segment-1)*30+1}-{validation.segment*30})
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(validation.date_validated).toLocaleDateString('fr-FR', { 
+                  {new Date(validation.validated_at || validation.date_validated).toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 
