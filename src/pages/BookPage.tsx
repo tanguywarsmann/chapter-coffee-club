@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookDetail } from "@/components/books/BookDetail";
-import { getBookById } from "@/mock/books";
+import { getBookById } from "@/services/bookService";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/readingService";
+import { Book } from "@/types/book";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,29 +22,36 @@ export default function BookPage() {
       return;
     }
     
-    // Check if book exists
-    if (id && !book) {
-      toast.error("Ce livre n'existe pas");
-      navigate("/home");
-      return;
-    }
-    
-    // Sync book with API if it exists
-    const updateBook = async () => {
-      if (id && book) {
-        try {
-          const syncedBook = await syncBookWithAPI(user, id);
-          if (syncedBook) {
-            setBook(syncedBook);
-          }
-        } catch (error) {
-          console.error("Error syncing book with API:", error);
+    // Fetch book data
+    const fetchBook = async () => {
+      if (!id) {
+        navigate("/home");
+        return;
+      }
+
+      const fetchedBook = await getBookById(id);
+      
+      if (!fetchedBook) {
+        toast.error("Ce livre n'existe pas");
+        navigate("/home");
+        return;
+      }
+
+      setBook(fetchedBook);
+      
+      // Sync book with reading progress
+      try {
+        const syncedBook = await syncBookWithAPI(user, id);
+        if (syncedBook) {
+          setBook(syncedBook);
         }
+      } catch (error) {
+        console.error("Error syncing book with API:", error);
       }
     };
     
-    updateBook();
-  }, [id, book, navigate, user]);
+    fetchBook();
+  }, [id, navigate, user]);
 
   const handleChapterComplete = async (bookId: string) => {
     if (!book) return;

@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      books: {
+        Row: {
+          author: string
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          slug: string
+          title: string
+          total_pages: number
+        }
+        Insert: {
+          author: string
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id: string
+          slug: string
+          title: string
+          total_pages?: number
+        }
+        Update: {
+          author?: string
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          slug?: string
+          title?: string
+          total_pages?: number
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book_id: string
@@ -46,7 +79,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reading_progress_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_questions: {
         Row: {
@@ -73,7 +114,15 @@ export type Database = {
           question?: string
           segment?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reading_questions_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_validations: {
         Row: {
@@ -106,7 +155,15 @@ export type Database = {
           user_id?: string
           validated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reading_validations_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
