@@ -1,4 +1,3 @@
-
 export interface ReadingValidation {
   segment: number;
   question_id: string;
@@ -6,11 +5,16 @@ export interface ReadingValidation {
 }
 
 export interface ReadingProgress {
+  id: string;
   user_id: string;
   book_id: string;
   total_pages: number;
   current_page: number;
-  last_validation_date: string;
+  started_at: string;
+  updated_at: string;
+  status: "to_read" | "in_progress" | "completed";
+  streak_current: number;
+  streak_best: number;
   validations: ReadingValidation[];
 }
 
@@ -44,4 +48,3 @@ export interface ReadingStreak {
   longest_streak: number;
   last_validation_date: string;
 }
-
