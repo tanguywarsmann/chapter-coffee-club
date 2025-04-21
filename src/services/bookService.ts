@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 
@@ -98,3 +97,39 @@ export const getAvailableCategories = async (): Promise<string[]> => {
   const allTags = data.flatMap(book => book.tags || []);
   return [...new Set(allTags)];
 };
+
+/**
+ * Insère en base une liste de livres, en évitant les doublons via le champ slug (id UUID généré automatiquement)
+ * @param booksToInsert Tableau de livres au format Book, sans id
+ * @returns Promise<void>
+ */
+export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
+  for (const book of booksToInsert) {
+    const { error } = await supabase
+      .from('books')
+      .insert({
+        // on ne fournit PAS l'id
+        title: book.title,
+        author: book.author,
+        cover_url: book.coverImage || null,
+        description: book.description,
+        total_pages: book.pages,
+        slug: slugify(book.title + "-" + book.author),
+        tags: book.categories
+      }, { upsert: true, onConflict: ['slug'] });
+    if (error && error.code !== "23505") {
+      // Code 23505 = unique_violation, donc slugs déjà présents, ce qui est OK
+      console.warn('Erreur lors de l’insertion du livre :', book.title, error);
+    }
+  }
+};
+
+/**
+ * Créée un slug unique pour le livre
+ */
+function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
