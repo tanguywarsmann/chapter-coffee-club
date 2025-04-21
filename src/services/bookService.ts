@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 
@@ -105,10 +106,13 @@ export const getAvailableCategories = async (): Promise<string[]> => {
  */
 export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
   for (const book of booksToInsert) {
+    // Générer un ID UUID temporaire pour satisfaire le type
+    const tempId = crypto.randomUUID();
+    
     const { error } = await supabase
       .from('books')
       .insert({
-        // on ne fournit PAS l'id
+        id: tempId, // On fournit un ID temporaire pour satisfaire le type
         title: book.title,
         author: book.author,
         cover_url: book.coverImage || null,
@@ -117,9 +121,10 @@ export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
         slug: slugify(book.title + "-" + book.author),
         tags: book.categories
       }, { upsert: true, onConflict: ['slug'] });
+    
     if (error && error.code !== "23505") {
       // Code 23505 = unique_violation, donc slugs déjà présents, ce qui est OK
-      console.warn('Erreur lors de l’insertion du livre :', book.title, error);
+      console.warn('Erreur lors de l'insertion du livre :', book.title, error);
     }
   }
 };
