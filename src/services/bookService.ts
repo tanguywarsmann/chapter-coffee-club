@@ -124,7 +124,7 @@ export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
     
     if (error && error.code !== "23505") {
       // Code 23505 = unique_violation, donc slugs déjà présents, ce qui est OK
-      console.warn('Erreur lors de l'insertion du livre :', book.title, error);
+      console.warn("Erreur lors de l'insertion du livre :", book.title, error);
     }
   }
 };
