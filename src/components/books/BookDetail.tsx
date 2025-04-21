@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -14,7 +13,7 @@ import { MessageCircle } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { validateReading, getBookReadingProgress } from "@/services/readingService";
+import { validateReading, getBookReadingProgress } from "@/services/reading";
 import { ValidationModal } from "./ValidationModal";
 import { ValidationHistory } from "./ValidationHistory";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";

@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/bookService";
 import { toast } from "sonner";
-import { syncBookWithAPI } from "@/services/readingService";
+import { syncBookWithAPI } from "@/services/reading";
 import { Book } from "@/types/book";
 
 export default function BookPage() {

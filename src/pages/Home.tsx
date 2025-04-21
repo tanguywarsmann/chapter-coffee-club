@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -19,9 +18,9 @@ import { User, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   getBooksInProgressFromAPI, 
-  initializeUserReadingProgress,
+  initializeUserReadingProgress, 
   syncBookWithAPI 
-} from "@/services/readingService";
+} from "@/services/reading";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -31,7 +30,6 @@ export default function Home() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // User information (in a real app, would come from authentication)
   const userId = localStorage.getItem("user") || "user123";
   
   useEffect(() => {
@@ -44,16 +42,12 @@ export default function Home() {
       try {
         setIsLoading(true);
         
-        // Initialize user reading progress with mock data
         await initializeUserReadingProgress(userId);
         
-        // Load books in progress from API
         const booksInProgress = await getBooksInProgressFromAPI(userId);
         setInProgressBooks(booksInProgress);
         
-        // Set current book if any
         if (booksInProgress.length > 0) {
-          // Find the most recently updated book
           const notCompletedBooks = booksInProgress.filter(book => !book.isCompleted);
           if (notCompletedBooks.length > 0) {
             setCurrentBook(notCompletedBooks[0]);
@@ -93,20 +87,16 @@ export default function Home() {
 
   const handleProgressUpdate = async (bookId: string) => {
     try {
-      // Sync the book data with our API
       const updatedBook = await syncBookWithAPI(userId, bookId);
       
       if (updatedBook) {
-        // Update current book
         setCurrentBook(updatedBook);
         
-        // Update in progress books
         setInProgressBooks(prev => 
           prev.map(book => book.id === updatedBook.id ? updatedBook : book)
         );
       }
       
-      // Refresh all books in progress
       const booksInProgress = await getBooksInProgressFromAPI(userId);
       setInProgressBooks(booksInProgress);
     } catch (error) {

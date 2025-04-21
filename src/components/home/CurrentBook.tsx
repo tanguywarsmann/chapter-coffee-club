@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
 import { Book } from "@/types/book";
-import { validateReading } from "@/services/readingService";
+import { validateReading } from "@/services/reading";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
 
