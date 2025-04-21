@@ -1,18 +1,61 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Plus } from "lucide-react";
-import { useState } from "react";
+import { getGoalProgress, getUserGoal, setUserGoal } from "@/services/user/userGoalsService";
 
 export function UserGoals() {
-  const [currentGoal] = useState(() => {
+  const [currentGoal, setCurrentGoal] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchGoalData = async () => {
+      try {
+        const user = localStorage.getItem("user");
+        const parsed = user ? JSON.parse(user) : null;
+        if (parsed?.id) {
+          // Get goal and progress
+          const goal = await getUserGoal(parsed.id);
+          setCurrentGoal(goal);
+          
+          const goalProgress = await getGoalProgress(parsed.id);
+          setProgress(goalProgress);
+        } else {
+          // Fallback
+          setCurrentGoal("Lire 2 livres par mois");
+          setProgress(40);
+        }
+      } catch (error) {
+        console.error("Error fetching goal data:", error);
+        // Fallback values
+        setCurrentGoal("Lire 2 livres par mois");
+        setProgress(40);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchGoalData();
+  }, []);
+
+  const handleUpdateGoal = async () => {
+    // This would open a dialog to update the goal
+    // For simplicity, we're just toggling between 2 and 3 books per month
     const user = localStorage.getItem("user");
     const parsed = user ? JSON.parse(user) : null;
-    return parsed?.preferences?.readingGoal || 2;
-  });
-
-  const progress = 40; // À connecter avec les données réelles
+    
+    if (parsed?.id) {
+      const newGoal = currentGoal.includes("2 livre") 
+        ? "Lire 3 livres par mois" 
+        : "Lire 2 livres par mois";
+        
+      await setUserGoal(parsed.id, newGoal);
+      setCurrentGoal(newGoal);
+    }
+  };
 
   return (
     <Card className="border-coffee-light">
@@ -21,7 +64,13 @@ export function UserGoals() {
           <Target className="h-5 w-5 text-coffee-dark" />
           Mon objectif
         </CardTitle>
-        <Button variant="ghost" size="sm" className="text-coffee-dark hover:text-coffee-darker">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-coffee-dark hover:text-coffee-darker"
+          onClick={handleUpdateGoal}
+          disabled={loading}
+        >
           <Plus className="h-4 w-4 mr-1" />
           Modifier mon objectif
         </Button>
@@ -29,7 +78,7 @@ export function UserGoals() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-coffee-darker">Objectif : {currentGoal} livres par mois</span>
+            <span className="text-coffee-darker">Objectif : {currentGoal}</span>
             <span className="text-muted-foreground">{progress}% atteint</span>
           </div>
           <Progress value={progress} className="h-2" />
