@@ -129,6 +129,32 @@ export const questions: Questions = {
       question: "Quelle activité Candide choisit-il à la fin ?",
       answer: ["jardin", "jardiner", "cultiver son jardin", "le jardinage"]
     }
+  },
+  "la-chatte": {
+    1: {
+      question: "Quel âge a Alain ?",
+      answer: ["24"]
+    },
+    2: {
+      question: "Quel est le nom de famille de la gouvernante ?",
+      answer: ["buque"]
+    },
+    3: {
+      question: "Quel est le prénom du frère de Camille ?",
+      answer: ["patrick"]
+    },
+    4: {
+      question: "Dans quel espace du jardin Alain retrouve-t-il Saha ?",
+      answer: ["massif"]
+    },
+    5: {
+      question: "Quel mot Alain reproche-t-il à Camille d’utiliser à la place de 'nous' ?",
+      answer: ["on"]
+    },
+    6: {
+      question: "Dans quel étage habite Patrick ?",
+      answer: ["neuvième"]
+    }
   }
 };
 
