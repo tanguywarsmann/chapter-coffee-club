@@ -1,11 +1,38 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserStats } from "@/mock/stats";
+import { getTotalPagesRead, getBooksReadCount, getAveragePagesPerWeek } from "@/services/reading/statsService";
 import { BookOpen, Clock } from "lucide-react";
 
 export function UserStats() {
-  const stats = getUserStats();
-  
+  const [stats, setStats] = useState({
+    booksRead: 0,
+    totalPages: 0,
+    readingHours: 0, // Optionnel
+    avgPagesPerWeek: 0,
+  });
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const parsed = user ? JSON.parse(user) : null;
+    if (!parsed?.id) return;
+
+    async function fetchStats() {
+      const [booksRead, totalPages, avgPagesPerWeek] = await Promise.all([
+        getBooksReadCount(parsed.id),
+        getTotalPagesRead(parsed.id),
+        getAveragePagesPerWeek(parsed.id)
+      ]);
+      setStats({
+        booksRead,
+        totalPages,
+        readingHours: 0, // Si vous voulez calculer les heures, à adapter.
+        avgPagesPerWeek,
+      });
+    }
+    fetchStats();
+  }, []);
+
   return (
     <Card className="border-coffee-light">
       <CardHeader>
@@ -23,7 +50,6 @@ export function UserStats() {
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</p>
           </div>
-          
           <div className="space-y-1">
             <div className="flex items-center text-muted-foreground">
               <BookOpen className="h-4 w-4 mr-1" />
@@ -31,7 +57,6 @@ export function UserStats() {
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.totalPages}</p>
           </div>
-          
           <div className="space-y-1">
             <div className="flex items-center text-muted-foreground">
               <Clock className="h-4 w-4 mr-1" />
@@ -39,6 +64,9 @@ export function UserStats() {
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.readingHours}h</p>
           </div>
+        </div>
+        <div className="mt-6 text-center text-base text-coffee-dark font-serif">
+          📈 En moyenne, tu lis {stats.avgPagesPerWeek} pages par semaine
         </div>
       </CardContent>
     </Card>

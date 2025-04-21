@@ -54,6 +54,10 @@ export function UserGoals() {
         
       await setUserGoal(parsed.id, newGoal);
       setCurrentGoal(newGoal);
+
+      // Rafraîchir la progression également
+      const progressValue = await getGoalProgress(parsed.id);
+      setProgress(progressValue);
     }
   };
 
@@ -82,6 +86,9 @@ export function UserGoals() {
             <span className="text-muted-foreground">{progress}% atteint</span>
           </div>
           <Progress value={progress} className="h-2" />
+        </div>
+        <div className="mt-2 text-center text-coffee-dark font-serif">
+          🎯 Objectif atteint à {progress}% ce mois-ci
         </div>
       </CardContent>
     </Card>
