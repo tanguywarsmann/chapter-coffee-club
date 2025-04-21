@@ -1,6 +1,7 @@
-
 import { BookCard } from "./BookCard";
 import { Book } from "@/types/book";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface BookGridProps {
   books: Book[];
@@ -25,6 +26,17 @@ export function BookGrid({
   actionLabel,
   onAction
 }: BookGridProps) {
+  const navigate = useNavigate();
+
+  const handleAddBook = async (bookId: string) => {
+    toast.success("Livre ajouté à ta liste !");
+    if (localStorage.getItem("onboardingDone") !== "true") {
+      setTimeout(() => {
+        navigate(`/books/${bookId}`);
+      }, 400);
+    }
+  };
+
   if (!books.length) {
     return (
       <div className="text-center p-8 border border-dashed border-coffee-light rounded-lg bg-muted/50">

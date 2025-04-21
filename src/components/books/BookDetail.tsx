@@ -29,6 +29,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [personalNote, setPersonalNote] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
+  const [showCongrats, setShowCongrats] = useState(false);
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -41,7 +42,6 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const readingTimeRemaining = chaptersRemaining * 20;
   
   useEffect(() => {
-    // Fetch reading progress when component mounts
     const fetchReadingProgress = async () => {
       try {
         const progress = await getBookReadingProgress(userId, book.id);
@@ -54,7 +54,6 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
     fetchReadingProgress();
   }, [userId, book.id]);
   
-  // Prepare validation history from reading progress
   const validationHistory = readingProgress?.validations 
     ? readingProgress.validations.map(v => {
         const date = new Date(v.date_validated);
@@ -92,7 +91,12 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
       setShowQuiz(true);
       onChapterComplete(book.id);
       setShowValidationModal(false);
-      
+
+      if (book.chaptersRead === 0) {
+        setShowCongrats(true);
+        localStorage.setItem("onboardingDone", "true");
+      }
+
       if (book.chaptersRead + 1 >= book.totalChapters) {
         toast.success("Félicitations! Vous avez terminé ce livre!", {
           icon: <Award className="h-5 w-5 text-yellow-500" />,
@@ -343,6 +347,48 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
           onComplete={handleQuizComplete}
           onClose={() => setShowQuiz(false)}
         />
+      )}
+      
+      {showCongrats && (
+        <Dialog open={showCongrats} onOpenChange={setShowCongrats}>
+          <DialogContent className="max-w-md text-center border-coffee-light">
+            <DialogHeader>
+              <DialogTitle className="font-serif text-2xl text-coffee-darker">
+                Bravo, tu as validé ton premier segment 🎉
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4 text-lg text-coffee-dark">
+              Tes premiers pas sont faits !
+              <br />Tu viens de lire 30 pages et d’engager ta série de lectures.
+              <br />
+              <br />
+              <strong>Quels sont tes progrès ?</strong>
+              <ul className="mt-3 space-y-1 text-base text-coffee-darker/90">
+                <li>• 1 segment validé</li>
+                <li>• 30 pages lues</li>
+                <li>• 1 livre en cours</li>
+              </ul>
+            </div>
+            <DialogFooter className="flex flex-col gap-2">
+              <Button 
+                onClick={() => {
+                  setShowCongrats(false);
+                  // Laisser l’utilisateur choisir la destination (stats/achievements/profile)
+                }}
+                className="bg-coffee-dark hover:bg-coffee-darker min-w-[170px]"
+              >
+                Continuer
+              </Button>
+              <a 
+                href="/achievements"
+                className="text-coffee-dark text-sm underline hover:text-coffee-darker"
+                onClick={() => setShowCongrats(false)}
+              >
+                Voir mes récompenses
+              </a>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

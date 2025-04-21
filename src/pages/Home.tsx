@@ -21,6 +21,7 @@ import {
   initializeUserReadingProgress, 
   syncBookWithAPI 
 } from "@/services/reading";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -32,6 +33,11 @@ export default function Home() {
   
   const userId = localStorage.getItem("user") || "user123";
   
+  const [showWelcome, setShowWelcome] = useState(() => {
+    const onboardingFlag = localStorage.getItem("onboardingDone");
+    return !onboardingFlag; // Only show if onboarding not completed yet
+  });
+
   useEffect(() => {
     if (!userId) {
       navigate("/");
@@ -121,7 +127,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-logo-background text-logo-text">
       <AppHeader />
-      
+      <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
       <main className="container py-6 space-y-8">
         <div className="max-w-2xl mx-auto">
           <SearchBar onSearch={handleSearch} />
