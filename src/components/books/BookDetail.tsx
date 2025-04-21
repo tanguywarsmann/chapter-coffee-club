@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck, Clock, Cal
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { getBookForum, ForumPost } from "@/mock/activities";
 import { MessageCircle } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
