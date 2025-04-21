@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface WelcomeModalProps {
   open: boolean;
@@ -8,9 +9,12 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
+  const navigate = useNavigate();
+
   const handleStart = () => {
     localStorage.setItem("onboardingDone", "true");
     onClose(false);
+    navigate("/explore");
   };
 
   const handleSkip = () => {
@@ -55,7 +59,7 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
             className="mt-2 text-sm text-coffee-medium hover:text-coffee-dark underline bg-transparent border-none outline-none"
             tabIndex={-1}
           >
-            Je verrai ça plus tard
+            Plus tard
           </button>
         </DialogFooter>
       </DialogContent>
