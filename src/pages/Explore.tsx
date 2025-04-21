@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -9,6 +8,7 @@ import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 
 export default function Explore() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -17,6 +17,10 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [showWelcome, setShowWelcome] = useState(() => {
+    const onboardingFlag = localStorage.getItem("onboardingDone");
+    return !onboardingFlag;
+  });
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -82,7 +86,10 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      
+      <WelcomeModal
+        open={showWelcome}
+        onClose={(skipFlag?: boolean) => setShowWelcome(false)}
+      />
       <main className="container py-6 space-y-10">
         <div className="space-y-4">
           <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>

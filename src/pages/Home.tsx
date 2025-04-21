@@ -35,7 +35,7 @@ export default function Home() {
   
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
-    return !onboardingFlag; // Only show if onboarding not completed yet
+    return !onboardingFlag;
   });
 
   useEffect(() => {
@@ -127,7 +127,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-logo-background text-logo-text">
       <AppHeader />
-      <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
+      <WelcomeModal 
+        open={showWelcome} 
+        onClose={(skipFlag?: boolean) => setShowWelcome(false)}
+      />
       <main className="container py-6 space-y-8">
         <div className="max-w-2xl mx-auto">
           <SearchBar onSearch={handleSearch} />
