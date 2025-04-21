@@ -106,25 +106,33 @@ export const getAvailableCategories = async (): Promise<string[]> => {
  */
 export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
   for (const book of booksToInsert) {
-    // Générer un ID UUID temporaire pour satisfaire le type
-    const tempId = crypto.randomUUID();
+    // Create an object with the correct shape for Supabase insert
+    const bookRecord = {
+      title: book.title,
+      author: book.author,
+      cover_url: book.coverImage || null,
+      description: book.description,
+      total_pages: book.pages,
+      slug: slugify(book.title + "-" + book.author),
+      tags: book.categories
+    };
     
-    const { error } = await supabase
+    // First check if the book already exists by slug
+    const { data: existingBook } = await supabase
       .from('books')
-      .insert({
-        id: tempId, // On fournit un ID temporaire pour satisfaire le type
-        title: book.title,
-        author: book.author,
-        cover_url: book.coverImage || null,
-        description: book.description,
-        total_pages: book.pages,
-        slug: slugify(book.title + "-" + book.author),
-        tags: book.categories
-      }, { upsert: true, onConflict: ['slug'] });
+      .select('id')
+      .eq('slug', bookRecord.slug)
+      .maybeSingle();
     
-    if (error && error.code !== "23505") {
-      // Code 23505 = unique_violation, donc slugs déjà présents, ce qui est OK
-      console.warn("Erreur lors de l'insertion du livre :", book.title, error);
+    // If the book doesn't exist, insert it
+    if (!existingBook) {
+      const { error } = await supabase
+        .from('books')
+        .insert(bookRecord);
+      
+      if (error) {
+        console.warn("Erreur lors de l'insertion du livre :", book.title, error);
+      }
     }
   }
 };
