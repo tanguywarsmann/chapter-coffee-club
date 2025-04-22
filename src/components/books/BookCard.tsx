@@ -1,3 +1,5 @@
+
+import React, { useState } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -5,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, PlayCircle, RefreshCw, Check, BookPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
 import { useReadingList } from "@/hooks/useReadingList";
 
 interface BookCardProps {
@@ -47,6 +48,15 @@ export function BookCard({
     const storedList = localStorage.getItem("reading_list");
     const readingList = storedList ? JSON.parse(storedList) : [];
     
+    // Parse user to get correct user ID
+    let userId = "";
+    try {
+      const user = JSON.parse(userString);
+      userId = user.id || user.email;
+    } catch (error) {
+      userId = userString;
+    }
+    
     // Remove the book
     const updatedList = readingList.filter((item: any) => 
       !(item.user_id === userId && item.book_id === book.id)
@@ -63,27 +73,13 @@ export function BookCard({
     
     if (!userString) {
       toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
-      console.error("No user ID available when trying to add book to reading list");
       return;
     }
     
     try {
       setIsAdding(true);
+      console.log('Adding book to reading list with userString:', userString, 'bookId:', book.id);
       
-      // Log additional details about the user object
-      try {
-        const parsedUser = JSON.parse(userString);
-        console.log('User object details for adding to list:', { 
-          hasId: !!parsedUser.id, 
-          idType: typeof parsedUser.id,
-          id: parsedUser.id,
-          hasEmail: !!parsedUser.email
-        });
-      } catch (e) {
-        console.log('User is not a JSON object, using as is');
-      }
-      
-      console.log('Adding book to reading list from card with userString:', userString, 'bookId:', book.id);
       await addToReadingList(book);
     } catch (error) {
       console.error('Error in handleAddToReadingList:', error);
@@ -96,6 +92,15 @@ export function BookCard({
   const handleAction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Parse user to get correct user ID
+    let userId = "";
+    try {
+      const user = JSON.parse(userString);
+      userId = user.id || user.email;
+    } catch (error) {
+      userId = userString;
+    }
     
     if (!userId) {
       toast.error("Vous devez être connecté pour effectuer cette action");
