@@ -2,40 +2,27 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress } from "@/types/reading";
 
-// Helper to normalize user ID format
-const normalizeUserId = (userId: string): string => {
-  if (!userId) return "";
-  
-  try {
-    // Check if it's a JSON string
-    if (userId.startsWith('{') && userId.includes('}')) {
-      const parsedUser = JSON.parse(userId);
-      if (parsedUser.id) {
-        // If we have a JSON object with id, use the id as the UUID
-        return parsedUser.id;
-      } else if (parsedUser.email) {
-        // Fallback: If no id but we have email, use a hash of the email
-        console.log('No id found in user object, using email hash:', parsedUser.email);
-        return parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
-      }
-    }
-    return userId;
-  } catch (e) {
-    console.error('Error normalizing user ID:', e);
-    return userId;
-  }
-};
-
 // Get all reading progress for a user
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
-  const normalizedUserId = normalizeUserId(userId);
-  console.log('Getting reading progress for normalized userId:', normalizedUserId);
+  if (!userId) {
+    console.error('Invalid user ID: empty string received');
+    return [];
+  }
+  
+  // Make sure we have a valid UUID
+  const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!validUuidPattern.test(userId)) {
+    console.error('Invalid UUID format:', userId);
+    return [];
+  }
+  
+  console.log('Getting reading progress for userId:', userId);
   
   try {
     const { data, error } = await supabase
       .from('reading_progress')
       .select('*')
-      .eq('user_id', normalizedUserId);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error fetching reading progress:', error);
@@ -54,14 +41,25 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
 
 // Get reading progress for a specific book/user
 export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
-  const normalizedUserId = normalizeUserId(userId);
-  console.log('Getting book progress for normalized userId:', normalizedUserId, 'bookId:', bookId);
+  if (!userId) {
+    console.error('Invalid user ID: empty string received');
+    return null;
+  }
+  
+  // Make sure we have a valid UUID
+  const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!validUuidPattern.test(userId)) {
+    console.error('Invalid UUID format:', userId);
+    return null;
+  }
+  
+  console.log('Getting book progress for userId:', userId, 'bookId:', bookId);
   
   try {
     const { data, error } = await supabase
       .from('reading_progress')
       .select('*')
-      .eq('user_id', normalizedUserId)
+      .eq('user_id', userId)
       .eq('book_id', bookId)
       .maybeSingle();
 

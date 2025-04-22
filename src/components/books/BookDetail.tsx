@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book as BookIcon, Bookmark, Share2, Check, Loader2 } from "lucide-react";
 import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { initializeNewBookReading } from "@/services/reading";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BookDetailProps {
   book: Book;
@@ -15,32 +16,49 @@ interface BookDetailProps {
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Get the user ID from Supabase auth session
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        console.log("User authenticated:", session.user);
+        console.log("User ID:", session.user.id);
+        setUserId(session.user.id);
+      } else {
+        // For development fallback - using localStorage
+        const userString = localStorage.getItem("user");
+        if (userString) {
+          try {
+            const userObj = JSON.parse(userString);
+            if (userObj.id) {
+              console.log("Using localStorage user ID:", userObj.id);
+              setUserId(userObj.id);
+            } else {
+              console.warn("No valid user ID found in localStorage");
+            }
+          } catch (e) {
+            console.warn("Failed to parse user from localStorage:", e);
+          }
+        }
+      }
+    };
+
+    getUser();
+  }, []);
 
   const handleStartReading = async () => {
-    const userString = localStorage.getItem("user");
-    if (!userString) {
+    if (!userId) {
       toast.error("Vous devez être connecté pour commencer une lecture");
       return;
     }
 
     setIsInitializing(true);
-    console.log('Starting reading with userString:', userString, 'bookId:', book.id);
+    console.log('Starting reading with userId:', userId, 'bookId:', book.id);
 
-    try {
-      // Log additional details about the user object
-      try {
-        const parsedUser = JSON.parse(userString);
-        console.log('User object details:', { 
-          hasId: !!parsedUser.id, 
-          idType: typeof parsedUser.id,
-          id: parsedUser.id,
-          hasEmail: !!parsedUser.email
-        });
-      } catch (e) {
-        console.log('User is not a JSON object, using as is');
-      }
-      
-      const progress = await initializeNewBookReading(userString, book.id);
+    try {      
+      const progress = await initializeNewBookReading(userId, book.id);
       if (progress) {
         toast.success("Lecture initialisée avec succès");
         // Refresh the book details to show updated progress

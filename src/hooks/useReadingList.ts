@@ -5,33 +5,54 @@ import { Book } from "@/types/book";
 import { getBookById } from "@/mock/books";
 import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
-
-// Helper to ensure userId is properly formatted
-const normalizeUserId = (userId: string): string => {
-  if (!userId) return "";
-  
-  try {
-    // Check if it's a JSON string
-    if (userId.startsWith('{') && userId.includes('}')) {
-      const parsedUser = JSON.parse(userId);
-      if (parsedUser.id) {
-        // If we have a JSON object with id, use the id as the UUID
-        return parsedUser.id;
-      } else if (parsedUser.email) {
-        // Fallback to email if no ID is available
-        return parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
-      }
-    }
-    return userId;
-  } catch (e) {
-    console.error('Error normalizing user ID in useReadingList:', e);
-    return userId;
-  }
-};
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 export const useReadingList = (userId: string) => {
   const queryClient = useQueryClient();
-  const normalizedUserId = normalizeUserId(userId);
+  const [normalizedUserId, setNormalizedUserId] = useState<string>("");
+
+  useEffect(() => {
+    // Attempt to get Supabase User ID first
+    const getUserId = async () => {
+      // Try to get user from Supabase auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        console.log("Using Supabase auth ID in useReadingList:", session.user.id);
+        setNormalizedUserId(session.user.id);
+        return;
+      }
+
+      // Fallback to the provided userId (from props)
+      if (userId) {
+        // If it's a UUID string already, use it directly
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+          console.log("Using valid UUID directly:", userId);
+          setNormalizedUserId(userId);
+          return;
+        }
+
+        // Try to extract UUID from JSON string (for backward compatibility)
+        try {
+          if (userId.startsWith('{') && userId.includes('}')) {
+            const parsedUser = JSON.parse(userId);
+            if (parsedUser.id) {
+              console.log("Extracted user ID from JSON:", parsedUser.id);
+              setNormalizedUserId(parsedUser.id);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing user ID:', e);
+        }
+      }
+
+      console.warn("No valid user ID found. Using empty string as fallback.");
+      setNormalizedUserId("");
+    };
+
+    getUserId();
+  }, [userId]);
 
   const { data: readingList } = useQuery({
     queryKey: ["reading_list"],

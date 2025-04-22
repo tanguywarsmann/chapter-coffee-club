@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -7,34 +6,22 @@ import { getUserReadingProgress, getBookReadingProgress } from "./progressServic
 
 // Create/initialize reading_progress for a book/user
 export const initializeBookReading = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
-  // Ensure userId is properly formatted
+  // Ensure userId is a valid UUID string
   if (!userId || typeof userId !== 'string') {
-    console.error('Invalid user ID format:', userId);
+    console.error('Invalid or missing user ID:', userId);
     return null;
   }
-  
-  // Check if userId is a JSON string and extract the actual ID
-  let cleanUserId = userId;
-  try {
-    if (userId.startsWith('{') && userId.includes('}')) {
-      const parsedUser = JSON.parse(userId);
-      if (parsedUser.id) {
-        // If we have a JSON object with id, use the id as the UUID
-        cleanUserId = parsedUser.id;
-        console.log('Using extracted user ID:', cleanUserId);
-      } else if (parsedUser.email) {
-        // Fallback: If no id but we have email, create a deterministic string (not ideal for production)
-        cleanUserId = parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
-        console.error('No user ID found in user object, using email-based ID (not recommended):', cleanUserId);
-      }
-    }
-  } catch (e) {
-    console.error('Error parsing user ID:', e, 'Using original value:', userId);
+
+  // Validate UUID format
+  const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!validUuidPattern.test(userId)) {
+    console.error('User ID is not a valid UUID format:', userId);
+    return null;
   }
 
   // First check if a reading progress already exists
-  console.log('Checking for existing progress with userId:', cleanUserId, 'bookId:', book.id);
-  const existingProgress = await getBookReadingProgress(cleanUserId, book.id);
+  console.log('Checking for existing progress with userId:', userId, 'bookId:', book.id);
+  const existingProgress = await getBookReadingProgress(userId, book.id);
   if (existingProgress) {
     console.log('Reading progress already exists for:', book.id);
     return existingProgress;
@@ -42,7 +29,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
 
   // If no progress exists, create a new one
   const newProgress = {
-    user_id: cleanUserId,
+    user_id: userId,
     book_id: book.id,
     total_pages: book.pages,
     current_page: 0,
@@ -72,6 +59,31 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
     console.error('Exception during reading progress initialization:', error);
     return null;
   }
+};
+
+// Utility to initialize reading progress for a new book
+export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
+  console.log('Initializing new book reading with userId:', userId, 'bookId:', bookId);
+  
+  if (!userId) {
+    console.error('Missing user ID for book initialization');
+    return null;
+  }
+
+  // Validate UUID format
+  const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!validUuidPattern.test(userId)) {
+    console.error('User ID is not a valid UUID format:', userId);
+    return null;
+  }
+  
+  const book = getBookById(bookId);
+  if (!book) {
+    console.error('Book not found:', bookId);
+    return null;
+  }
+
+  return initializeBookReading(userId, book);
 };
 
 // Get user's books in progress
@@ -116,24 +128,6 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
     chaptersRead,
     isCompleted: chaptersRead >= book.totalChapters
   };
-};
-
-// Utility to initialize reading progress for a new book
-export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
-  console.log('Initializing new book reading with userId:', userId, 'bookId:', bookId);
-  
-  if (!userId) {
-    console.error('Missing user ID for book initialization');
-    return null;
-  }
-  
-  const book = getBookById(bookId);
-  if (!book) {
-    console.error('Book not found:', bookId);
-    return null;
-  }
-
-  return initializeBookReading(userId, book);
 };
 
 // Utility to bulk initialize reading_progress for user based on mock data

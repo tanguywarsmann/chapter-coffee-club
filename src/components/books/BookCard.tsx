@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useReadingList } from "@/hooks/useReadingList";
 import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BookCardProps {
   book: Book;
@@ -28,8 +29,37 @@ export function BookCard({
   onAction,
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const userString = localStorage.getItem("user") || "";
-  const { addToReadingList } = useReadingList(userString);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { addToReadingList } = useReadingList(userId || "");
+
+  // Get the user ID from Supabase auth session
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        console.log("User authenticated in BookCard:", session.user.id);
+        setUserId(session.user.id);
+      } else {
+        // For development fallback - using localStorage
+        const userString = localStorage.getItem("user");
+        if (userString) {
+          try {
+            const userObj = JSON.parse(userString);
+            if (userObj.id) {
+              console.log("Using localStorage user ID in BookCard:", userObj.id);
+              setUserId(userObj.id);
+            } else {
+              console.warn("No valid user ID found in localStorage");
+            }
+          } catch (e) {
+            console.warn("Failed to parse user from localStorage:", e);
+          }
+        }
+      }
+    };
+
+    getUser();
+  }, []);
 
   // Utility to truncate the book title
   const truncateTitle = (title: string, maxLength: number = 50) => {
@@ -42,13 +72,9 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
 
-    // Properly extract userId (UUID string)
-    let userId = "";
-    try {
-      const user = JSON.parse(userString);
-      userId = user.id || (user.email ? String(user.email) : "");
-    } catch (_) {
-      userId = userString;
+    if (!userId) {
+      toast.error("Vous devez être connecté pour cette action");
+      return;
     }
 
     // Remove the book
@@ -66,7 +92,7 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!userString) {
+    if (!userId) {
       toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
       return;
     }
@@ -89,15 +115,6 @@ export function BookCard({
   const handleAction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // Properly extract userId (UUID string)
-    let userId = "";
-    try {
-      const user = JSON.parse(userString);
-      userId = user.id || (user.email ? String(user.email) : "");
-    } catch (_) {
-      userId = userString;
-    }
 
     if (!userId) {
       toast.error("Vous devez être connecté pour effectuer cette action");
