@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -104,15 +103,15 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   // Affiche la question du segment suivant si possible
   const showNextSegmentQuizIfAvailable = async () => {
     if (!userId) return;
-    // Resynchro pour avoir le current_page à jour !
+    // Resynchro pour avoir le current_page à jour
     const syncedBook = await syncBookWithAPI(userId, book.id);
     if (syncedBook) {
       setCurrentBook(syncedBook);
-      
+
       // Refresh reading progress
       const progress = await getBookReadingProgress(userId, book.id);
       setReadingProgress(progress);
-      
+
       const nextSegment = progress ? Math.floor((progress.current_page) / 30) + 1 : 1;
       const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
       if (!alreadyValidated) {
@@ -129,14 +128,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // 1. Action principale : bouton contextuel
+  // Bouton principal entièrement contextuel
   const handleMainButtonClick = async () => {
     if (!userId) {
       toast.error("Vous devez être connecté pour commencer ou valider votre lecture");
       return;
     }
 
+    // La lecture est initialisée si on a une page lue
     const lectureInit = !!(readingProgress?.current_page || currentBook.chaptersRead);
+
     setIsInitializing(true);
     try {
       if (!lectureInit) {
@@ -158,12 +159,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         // Segment 1 déjà validé ?
         const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
         if (segment1Validated) {
-          toast.info("Segment déjà validé, vous pouvez continuer.", {
-            action: {
-              label: "Continuer la lecture",
-              onClick: () => showNextSegmentQuizIfAvailable(),
-            },
-          });
+          // Affiche toast, mais ne bloque plus l'utilisateur
+          toast.info("Segment déjà validé, vous pouvez continuer.");
+          await showNextSegmentQuizIfAvailable();
         } else {
           setValidationSegment(1);
           await prepareAndShowQuestion(1);
@@ -271,8 +269,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Interface du bouton principal, contextuel selon l'état
+  // Interface du bouton principal contextuel
   const renderMainButton = () => {
+    // lectureInit se base UNIQUEMENT sur readingProgress, plus de current_page du book
     const lectureInit = !!(readingProgress?.current_page || currentBook.chaptersRead);
     return (
       <Button
@@ -296,7 +295,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         <BookCoverInfo book={currentBook} />
         <BookDescription description={currentBook.description} />
         {renderMainButton()}
-        <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
+        <BookProgressBar progressPercent={progressPercent} />
         {showValidationModal && validationSegment && (
           <ValidationModal
             bookTitle={currentBook.title}

@@ -1,9 +1,10 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -13,6 +14,29 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' &&
     componentTagger(),
+    VitePWA({
+      registerType: "autoUpdate",
+      manifest: {
+        short_name: "READ",
+        name: "READ — Remets-toi à la lecture, challenge après challenge",
+        icons: [
+          { src: "/READ-icon-192x192.png", type: "image/png", sizes: "192x192" },
+          { src: "/READ-icon-384x384.png", type: "image/png", sizes: "384x384" },
+          { src: "/READ-icon-512x512.png", type: "image/png", sizes: "512x512" }
+        ],
+        background_color: "#B05F2C",
+        theme_color: "#E9CBA4",
+        start_url: "/home",
+        display: "standalone"
+      },
+      // copie le service worker custom dans le build
+      srcDir: "public",
+      filename: "sw.js",
+      devOptions: {
+        enabled: true,
+        type: "module"
+      }
+    })
   ].filter(Boolean),
   resolve: {
     alias: {
