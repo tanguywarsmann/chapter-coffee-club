@@ -1,7 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/mock/books";
+import { getBookById as getMockBookById } from "@/mock/books";
+import { getBookById } from "@/services/books/bookQueries";
 import { getUserReadingProgress, getBookReadingProgress } from "./progressService";
 
 // Create/initialize reading_progress for a book/user
@@ -77,21 +79,28 @@ export const initializeNewBookReading = async (userId: string, bookId: string): 
     return null;
   }
   
-  const book = getBookById(bookId);
-  if (!book) {
-    console.error('Book not found:', bookId);
+  try {
+    // Fetch book from Supabase instead of mock data
+    const book = await getBookById(bookId);
+    if (!book) {
+      console.error('Book not found in Supabase:', bookId);
+      return null;
+    }
+    
+    console.log('Book found in Supabase:', book);
+    return initializeBookReading(userId, book);
+  } catch (error) {
+    console.error('Error fetching book from Supabase:', error);
     return null;
   }
-
-  return initializeBookReading(userId, book);
 };
 
 // Get user's books in progress
 export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]> => {
   const userProgress = await getUserReadingProgress(userId);
-  return userProgress
-    .map(progress => {
-      const book = getBookById(progress.book_id);
+  return Promise.all(userProgress.map(async progress => {
+    try {
+      const book = await getBookById(progress.book_id);
       if (!book) return null;
 
       const chaptersRead = Math.floor(progress.current_page / 30);
@@ -100,8 +109,11 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]>
         chaptersRead,
         isCompleted: chaptersRead >= book.totalChapters
       };
-    })
-    .filter((book): book is Book => book !== null);
+    } catch (error) {
+      console.error(`Error fetching book ${progress.book_id}:`, error);
+      return null;
+    }
+  })).then(books => books.filter((book): book is Book => book !== null));
 };
 
 // Get user's completed books
@@ -112,29 +124,37 @@ export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> 
 
 // Sync a single book's progress with API (from DB)
 export const syncBookWithAPI = async (userId: string, bookId: string): Promise<Book | null> => {
-  const progress = await getBookReadingProgress(userId, bookId);
-  const book = getBookById(bookId);
+  try {
+    const progress = await getBookReadingProgress(userId, bookId);
+    const book = await getBookById(bookId);
 
-  if (!book) return null;
+    if (!book) {
+      console.error('Book not found in Supabase:', bookId);
+      return null;
+    }
 
-  if (!progress) {
-    await initializeBookReading(userId, book);
-    return book;
+    if (!progress) {
+      await initializeBookReading(userId, book);
+      return book;
+    }
+
+    const chaptersRead = Math.floor(progress.current_page / 30);
+    return {
+      ...book,
+      chaptersRead,
+      isCompleted: chaptersRead >= book.totalChapters
+    };
+  } catch (error) {
+    console.error(`Error syncing book ${bookId}:`, error);
+    return null;
   }
-
-  const chaptersRead = Math.floor(progress.current_page / 30);
-  return {
-    ...book,
-    chaptersRead,
-    isCompleted: chaptersRead >= book.totalChapters
-  };
 };
 
 // Utility to bulk initialize reading_progress for user based on mock data
 export const initializeUserReadingProgress = async (userId: string) => {
   const existingProgress = await getUserReadingProgress(userId);
 
-  const mockBooks = getBookById("");
+  const mockBooks = getMockBookById("");
 
   if (Array.isArray(mockBooks)) {
     mockBooks
