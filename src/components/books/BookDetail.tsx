@@ -90,7 +90,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           toast.success("Mise à jour du livre réussie");
         }
         
-        // Afficher immédiatement la validation pour le premier segment (1)
         setValidationSegment(1);
         await prepareAndShowQuestion(1);
         
@@ -114,7 +113,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Mise à jour de la fonction pour préparer et afficher la question
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId) {
       toast.error("Données de validation incomplètes");
@@ -126,7 +124,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     try {
       console.log(`Préparation de la question pour le livre ${currentBook.id}, segment ${segment}`);
       
-      // Récupérer la question pour le segment depuis Supabase
       const question = await getQuestionForBookSegment(currentBook.id, segment);
       
       if (question) {
@@ -134,7 +131,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         setCurrentQuestion(question);
         setShowQuizModal(true);
       } else {
-        console.log("Aucune question trouvée dans Supabase, utilisation de la question par défaut");
+        console.log("Aucune question trouvée dans Supabase pour le livre " + currentBook.id + ", segment " + segment + ". Utilisation de la question par défaut.");
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setShowQuizModal(true);
@@ -143,7 +140,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       console.error('Error fetching question:', error);
       toast.error("Erreur lors de la récupération de la question: " + 
         (error instanceof Error ? error.message : String(error)));
-      // En cas d'erreur, utiliser la question par défaut
       const fallbackQuestion = getFallbackQuestion();
       setCurrentQuestion(fallbackQuestion);
       setShowQuizModal(true);

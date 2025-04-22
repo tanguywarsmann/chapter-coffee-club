@@ -19,7 +19,7 @@ export const getQuestionForBookSegment = async (
 
     if (error) {
       console.error('Error fetching question from Supabase:', error);
-      return null;
+      throw new Error(`Database error: ${error.message}`);
     }
 
     // If we found a question in the database, return it
@@ -33,7 +33,7 @@ export const getQuestionForBookSegment = async (
     return null;
   } catch (error) {
     console.error('Exception fetching question from Supabase:', error);
-    return null;
+    throw error;
   }
 };
 

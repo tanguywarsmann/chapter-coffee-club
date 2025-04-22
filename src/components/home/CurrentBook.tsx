@@ -95,7 +95,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         setQuizChapter(nextSegment);
         setShowQuiz(true);
       } else {
-        console.log("Aucune question trouvée dans Supabase, utilisation de la question par défaut");
+        console.log("Aucune question trouvée dans Supabase pour le livre " + book.id + ", segment " + nextSegment + ". Utilisation de la question par défaut.");
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setQuizChapter(nextSegment);
