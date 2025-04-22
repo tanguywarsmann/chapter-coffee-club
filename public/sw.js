@@ -1,11 +1,14 @@
 
 // -- Service worker de cache basique généré pour le mode PWA --
-const CACHE_NAME = "read-pwa-v1";
+const CACHE_NAME = "read-pwa-v2";
 const CACHE_URLS = [
   "/",
   "/home",
   "/explore",
-  "/reading-list"
+  "/reading-list",
+  "/icons/icon-192.png",
+  "/icons/icon-384.png",
+  "/icons/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {

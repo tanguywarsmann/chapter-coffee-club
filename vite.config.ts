@@ -20,9 +20,9 @@ export default defineConfig(({ mode }) => ({
         short_name: "READ",
         name: "READ — Remets-toi à la lecture, challenge après challenge",
         icons: [
-          { src: "/READ-icon-192x192.png", type: "image/png", sizes: "192x192" },
-          { src: "/READ-icon-384x384.png", type: "image/png", sizes: "384x384" },
-          { src: "/READ-icon-512x512.png", type: "image/png", sizes: "512x512" }
+          { src: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+          { src: "/icons/icon-384.png", type: "image/png", sizes: "384x384" },
+          { src: "/icons/icon-512.png", type: "image/png", sizes: "512x512" }
         ],
         background_color: "#B05F2C",
         theme_color: "#E9CBA4",
