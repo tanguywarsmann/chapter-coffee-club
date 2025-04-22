@@ -10,8 +10,12 @@ const normalizeUserId = (userId: string): string => {
     // Check if it's a JSON string
     if (userId.startsWith('{') && userId.includes('}')) {
       const parsedUser = JSON.parse(userId);
-      if (parsedUser.email) {
-        // If we have a JSON object with email, use the email as a unique identifier
+      if (parsedUser.id) {
+        // If we have a JSON object with id, use the id as the UUID
+        return parsedUser.id;
+      } else if (parsedUser.email) {
+        // Fallback: If no id but we have email, use a hash of the email
+        console.log('No id found in user object, using email hash:', parsedUser.email);
         return parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
       }
     }

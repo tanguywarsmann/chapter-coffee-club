@@ -18,15 +18,18 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
   try {
     if (userId.startsWith('{') && userId.includes('}')) {
       const parsedUser = JSON.parse(userId);
-      if (parsedUser.email) {
-        // If we have a JSON object with email, we need to get the actual user ID
-        // For now, we'll use a temporary ID based on the email
+      if (parsedUser.id) {
+        // If we have a JSON object with id, use the id as the UUID
+        cleanUserId = parsedUser.id;
+        console.log('Using extracted user ID:', cleanUserId);
+      } else if (parsedUser.email) {
+        // Fallback: If no id but we have email, create a deterministic string (not ideal for production)
         cleanUserId = parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
-        console.log('Using email-based ID:', cleanUserId);
+        console.error('No user ID found in user object, using email-based ID (not recommended):', cleanUserId);
       }
     }
   } catch (e) {
-    console.error('Error parsing user ID:', e);
+    console.error('Error parsing user ID:', e, 'Using original value:', userId);
   }
 
   // First check if a reading progress already exists
@@ -49,7 +52,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
     streak_best: 0
   };
 
-  console.log('Creating new reading progress:', newProgress);
+  console.log('Creating new reading progress with data:', newProgress);
 
   try {
     const { data, error } = await supabase

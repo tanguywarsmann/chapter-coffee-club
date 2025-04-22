@@ -17,17 +17,30 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [isInitializing, setIsInitializing] = useState(false);
 
   const handleStartReading = async () => {
-    const userId = localStorage.getItem("user");
-    if (!userId) {
+    const userString = localStorage.getItem("user");
+    if (!userString) {
       toast.error("Vous devez être connecté pour commencer une lecture");
       return;
     }
 
     setIsInitializing(true);
-    console.log('Starting reading with userId:', userId, 'bookId:', book.id);
+    console.log('Starting reading with userString:', userString, 'bookId:', book.id);
 
     try {
-      const progress = await initializeNewBookReading(userId, book.id);
+      // Log additional details about the user object
+      try {
+        const parsedUser = JSON.parse(userString);
+        console.log('User object details:', { 
+          hasId: !!parsedUser.id, 
+          idType: typeof parsedUser.id,
+          id: parsedUser.id,
+          hasEmail: !!parsedUser.email
+        });
+      } catch (e) {
+        console.log('User is not a JSON object, using as is');
+      }
+      
+      const progress = await initializeNewBookReading(userString, book.id);
       if (progress) {
         toast.success("Lecture initialisée avec succès");
         // Refresh the book details to show updated progress

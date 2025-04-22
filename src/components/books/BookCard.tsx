@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,8 +28,8 @@ export function BookCard({
   onAction 
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const userId = localStorage.getItem("user") || "";
-  const { addToReadingList } = useReadingList(userId);
+  const userString = localStorage.getItem("user") || "";
+  const { addToReadingList } = useReadingList(userString);
 
   const truncateTitle = (title: string, maxLength: number = 50) => {
     if (title.length <= maxLength) return title;
@@ -62,7 +61,7 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
     
-    if (!userId) {
+    if (!userString) {
       toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
       console.error("No user ID available when trying to add book to reading list");
       return;
@@ -70,7 +69,21 @@ export function BookCard({
     
     try {
       setIsAdding(true);
-      console.log('Adding book to reading list from card with userId:', userId, 'bookId:', book.id);
+      
+      // Log additional details about the user object
+      try {
+        const parsedUser = JSON.parse(userString);
+        console.log('User object details for adding to list:', { 
+          hasId: !!parsedUser.id, 
+          idType: typeof parsedUser.id,
+          id: parsedUser.id,
+          hasEmail: !!parsedUser.email
+        });
+      } catch (e) {
+        console.log('User is not a JSON object, using as is');
+      }
+      
+      console.log('Adding book to reading list from card with userString:', userString, 'bookId:', book.id);
       await addToReadingList(book);
     } catch (error) {
       console.error('Error in handleAddToReadingList:', error);
