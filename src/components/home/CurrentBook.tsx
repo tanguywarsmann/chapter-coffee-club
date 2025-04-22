@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,8 @@ import { Book } from "@/types/book";
 import { validateReading } from "@/services/reading";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
+import { ReadingQuestion } from "@/types/reading";
+import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -19,6 +22,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion>(getFallbackQuestion());
   
   const userId = localStorage.getItem("user") || "user123";
   
@@ -69,6 +73,10 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         book_id: book.id,
         segment: nextSegment
       });
+      
+      // Fetch question for the next segment
+      const question = await getQuestionForBookSegment(book.id, nextSegment);
+      setCurrentQuestion(question || getFallbackQuestion());
       
       toast.success("30 pages validées avec succès!");
       
@@ -155,6 +163,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
           chapterNumber={quizChapter}
           onComplete={handleQuizComplete}
           onClose={() => setShowQuiz(false)}
+          question={currentQuestion}
         />
       )}
     </>

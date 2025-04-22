@@ -1,6 +1,7 @@
+
 export interface ReadingQuestion {
   id: string;
-  book_id: string;
+  book_slug: string;
   segment: number;
   question: string;
   answer: string;

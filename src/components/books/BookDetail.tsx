@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -16,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { validateReading, getBookReadingProgress } from "@/services/reading";
 import { ValidationModal } from "./ValidationModal";
 import { ValidationHistory } from "./ValidationHistory";
-import { ReadingProgress, ReadingValidation } from "@/types/reading";
+import { ReadingProgress, ReadingValidation, ReadingQuestion } from "@/types/reading";
 import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
 
 interface BookDetailProps {
