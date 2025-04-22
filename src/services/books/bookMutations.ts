@@ -15,7 +15,11 @@ export const insertBooks = async (booksToInsert: InsertableBook[]) => {
       .maybeSingle();
     
     if (!existingBook) {
+      // Generate a UUID for the book
+      const id = crypto.randomUUID();
+      
       const bookRecord = {
+        id: id, // Provide an id to satisfy TypeScript
         title: book.title,
         author: book.author,
         cover_url: book.coverImage || null,
