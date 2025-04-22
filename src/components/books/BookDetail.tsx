@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Book as BookIcon, Bookmark, Share2, Check } from "lucide-react";
+import { Book as BookIcon, Bookmark, Share2, Check, Loader2 } from "lucide-react";
 import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { initializeNewBookReading } from "@/services/reading";
@@ -13,6 +14,7 @@ interface BookDetailProps {
 
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const handleStartReading = async () => {
     const userId = localStorage.getItem("user");
@@ -20,6 +22,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       toast.error("Vous devez être connecté pour commencer une lecture");
       return;
     }
+
+    setIsInitializing(true);
+    console.log('Starting reading with userId:', userId, 'bookId:', book.id);
 
     try {
       const progress = await initializeNewBookReading(userId, book.id);
@@ -29,10 +34,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         if (onChapterComplete) {
           onChapterComplete(book.id);
         }
+      } else {
+        toast.error("Erreur lors de l'initialisation de la lecture. Veuillez réessayer.");
+        console.error('Failed to initialize reading. No progress returned.');
       }
     } catch (error) {
       console.error('Error starting book:', error);
-      toast.error("Une erreur est survenue lors de l'initialisation de la lecture");
+      toast.error("Une erreur est survenue lors de l'initialisation de la lecture: " + 
+                 (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -84,9 +95,22 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           </div>
         </div>
         
-        <Button className="w-full bg-coffee-dark hover:bg-coffee-darker" onClick={handleStartReading}>
-          <BookIcon className="h-4 w-4 mr-2" />
-          Commencer ma lecture
+        <Button 
+          className="w-full bg-coffee-dark hover:bg-coffee-darker" 
+          onClick={handleStartReading} 
+          disabled={isInitializing}
+        >
+          {isInitializing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Initialisation...
+            </>
+          ) : (
+            <>
+              <BookIcon className="h-4 w-4 mr-2" />
+              Commencer ma lecture
+            </>
+          )}
         </Button>
       </CardContent>
     </Card>

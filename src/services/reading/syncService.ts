@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -6,8 +7,31 @@ import { getUserReadingProgress, getBookReadingProgress } from "./progressServic
 
 // Create/initialize reading_progress for a book/user
 export const initializeBookReading = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
+  // Ensure userId is properly formatted
+  if (!userId || typeof userId !== 'string') {
+    console.error('Invalid user ID format:', userId);
+    return null;
+  }
+  
+  // Check if userId is a JSON string and extract the actual ID
+  let cleanUserId = userId;
+  try {
+    if (userId.startsWith('{') && userId.includes('}')) {
+      const parsedUser = JSON.parse(userId);
+      if (parsedUser.email) {
+        // If we have a JSON object with email, we need to get the actual user ID
+        // For now, we'll use a temporary ID based on the email
+        cleanUserId = parsedUser.email.replace(/[^a-zA-Z0-9]/g, '');
+        console.log('Using email-based ID:', cleanUserId);
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing user ID:', e);
+  }
+
   // First check if a reading progress already exists
-  const existingProgress = await getBookReadingProgress(userId, book.id);
+  console.log('Checking for existing progress with userId:', cleanUserId, 'bookId:', book.id);
+  const existingProgress = await getBookReadingProgress(cleanUserId, book.id);
   if (existingProgress) {
     console.log('Reading progress already exists for:', book.id);
     return existingProgress;
@@ -15,7 +39,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
 
   // If no progress exists, create a new one
   const newProgress = {
-    user_id: userId,
+    user_id: cleanUserId,
     book_id: book.id,
     total_pages: book.pages,
     current_page: 0,
@@ -27,18 +51,24 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
 
   console.log('Creating new reading progress:', newProgress);
 
-  const { data, error } = await supabase
-    .from('reading_progress')
-    .insert(newProgress)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('reading_progress')
+      .insert(newProgress)
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error initializing reading progress:', error);
+    if (error) {
+      console.error('Error initializing reading progress:', error);
+      return null;
+    }
+
+    console.log('Successfully created reading progress:', data);
+    return { ...data, validations: [] };
+  } catch (error) {
+    console.error('Exception during reading progress initialization:', error);
     return null;
   }
-
-  return { ...data, validations: [] };
 };
 
 // Get user's books in progress
@@ -87,6 +117,13 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
 
 // Utility to initialize reading progress for a new book
 export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
+  console.log('Initializing new book reading with userId:', userId, 'bookId:', bookId);
+  
+  if (!userId) {
+    console.error('Missing user ID for book initialization');
+    return null;
+  }
+  
   const book = getBookById(bookId);
   if (!book) {
     console.error('Book not found:', bookId);

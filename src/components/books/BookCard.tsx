@@ -1,9 +1,10 @@
+
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, PlayCircle, RefreshCw, Check, BookPlus } from "lucide-react";
+import { Plus, Trash2, PlayCircle, RefreshCw, Check, BookPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useReadingList } from "@/hooks/useReadingList";
@@ -28,7 +29,7 @@ export function BookCard({
   onAction 
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const userId = localStorage.getItem("user") || "user123";
+  const userId = localStorage.getItem("user") || "";
   const { addToReadingList } = useReadingList(userId);
 
   const truncateTitle = (title: string, maxLength: number = 50) => {
@@ -61,9 +62,19 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
     
+    if (!userId) {
+      toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
+      console.error("No user ID available when trying to add book to reading list");
+      return;
+    }
+    
     try {
       setIsAdding(true);
+      console.log('Adding book to reading list from card with userId:', userId, 'bookId:', book.id);
       await addToReadingList(book);
+    } catch (error) {
+      console.error('Error in handleAddToReadingList:', error);
+      toast.error("Une erreur est survenue: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsAdding(false);
     }
@@ -72,6 +83,12 @@ export function BookCard({
   const handleAction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!userId) {
+      toast.error("Vous devez être connecté pour effectuer cette action");
+      return;
+    }
+    
     onAction?.();
   };
 
@@ -127,6 +144,7 @@ export function BookCard({
               variant="outline"
               className="mt-3 w-full border-coffee-medium text-coffee-darker hover:bg-coffee-light/20"
               onClick={handleAction}
+              disabled={isAdding}
             >
               {book.isCompleted ? (
                 <RefreshCw className="h-4 w-4 mr-1" />
@@ -146,9 +164,15 @@ export function BookCard({
               disabled={isAdding}
             >
               {isAdding ? (
-                <><span className="animate-spin mr-1">⏳</span> Ajout en cours...</>
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Ajout en cours...
+                </>
               ) : (
-                <><BookPlus className="h-4 w-4 mr-1" /> Ajouter à ma liste</>
+                <>
+                  <BookPlus className="h-4 w-4 mr-1" />
+                  Ajouter à ma liste
+                </>
               )}
             </Button>
           )}
