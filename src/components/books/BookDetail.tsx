@@ -10,6 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ValidationModal } from "./ValidationModal";
 import { Progress } from "@/components/ui/progress";
+import { QuizModal } from "./QuizModal";
+import { getQuestionForBookSegment, getFallbackQuestion } from "@/services/questionService";
+import { ReadingQuestion } from "@/types/reading";
+import { validateReading } from "@/services/reading/validationService";
 
 interface BookDetailProps {
   book: Book;
@@ -21,13 +25,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
   const [currentBook, setCurrentBook] = useState<Book>(book);
   const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Get the user ID from Supabase auth session -- no localStorage fallback!
+  // Get the user ID from Supabase auth session
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -118,10 +125,95 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   };
 
   // Handler de validation (callback de la modal)
-  const handleValidateSegment = () => {
-    setShowValidationModal(false);
-    toast.success("Étape validée !");
-    // Peut synchroniser de nouveau le livre ici si besoin
+  const handleValidateSegment = async () => {
+    if (!userId || !validationSegment) {
+      toast.error("Données de validation incomplètes");
+      setShowValidationModal(false);
+      return;
+    }
+    
+    setIsValidating(true);
+    
+    try {
+      // Fetch question for this segment
+      const question = await getQuestionForBookSegment(book.id, validationSegment);
+      
+      if (question) {
+        setCurrentQuestion(question);
+        // Close validation modal and open quiz modal
+        setShowValidationModal(false);
+        setShowQuizModal(true);
+      } else {
+        // If no question found, proceed with direct validation
+        await validateReading({
+          user_id: userId,
+          book_id: book.id,
+          segment: validationSegment
+        });
+        
+        toast.success("Segment validé !");
+        
+        // Sync book data after validation
+        const updatedBook = await syncBookWithAPI(userId, book.id);
+        if (updatedBook) {
+          setCurrentBook(updatedBook);
+        }
+        
+        if (onChapterComplete) {
+          onChapterComplete(book.id);
+        }
+        
+        setShowValidationModal(false);
+      }
+    } catch (error) {
+      console.error('Error during validation:', error);
+      toast.error("Erreur lors de la validation: " +
+        (error instanceof Error ? error.message : String(error)));
+      setShowValidationModal(false);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+  
+  const handleQuizComplete = async (passed: boolean) => {
+    setShowQuizModal(false);
+    
+    if (!passed || !userId || !validationSegment) {
+      if (!passed) {
+        toast.error("Réponse incorrecte. Réessayez plus tard.");
+      }
+      return;
+    }
+    
+    try {
+      setIsValidating(true);
+      
+      await validateReading({
+        user_id: userId,
+        book_id: book.id,
+        segment: validationSegment
+      });
+      
+      toast.success("Segment validé avec succès!");
+      
+      // Sync book data after validation
+      const updatedBook = await syncBookWithAPI(userId, book.id);
+      if (updatedBook) {
+        setCurrentBook(updatedBook);
+      }
+      
+      if (onChapterComplete) {
+        onChapterComplete(book.id);
+      }
+      
+    } catch (error: any) {
+      console.error('Error during quiz validation:', error);
+      toast.error("Erreur lors de la validation: " +
+        (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setIsValidating(false);
+      setValidationSegment(null);
+    }
   };
 
   return (
@@ -196,15 +288,25 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             </>
           )}
         </Button>
-        {/* Validation Modal pour le segment 1, ouverte après init */}
+        {/* Validation Modal pour le segment */}
         {showValidationModal && validationSegment && (
           <ValidationModal
             bookTitle={currentBook.title}
             segment={validationSegment}
             isOpen={showValidationModal}
-            isValidating={false}
+            isValidating={isValidating}
             onClose={() => setShowValidationModal(false)}
             onValidate={handleValidateSegment}
+          />
+        )}
+        {/* Quiz Modal si une question est disponible */}
+        {showQuizModal && currentQuestion && validationSegment && (
+          <QuizModal
+            bookTitle={currentBook.title}
+            chapterNumber={validationSegment}
+            onComplete={handleQuizComplete}
+            onClose={() => setShowQuizModal(false)}
+            question={currentQuestion}
           />
         )}
       </CardContent>

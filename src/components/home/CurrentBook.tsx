@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
 import { ReadingQuestion } from "@/types/reading";
 import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -23,8 +24,19 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion>(getFallbackQuestion());
+  const [userId, setUserId] = useState<string | null>(null);
   
-  const userId = localStorage.getItem("user") || "user123";
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.id) {
+        setUserId(data.user.id);
+      } else {
+        toast.warning("Vous n'êtes pas connecté. Certaines fonctionnalités seront limitées.");
+      }
+    };
+    getUser();
+  }, []);
   
   if (!book) {
     return (
@@ -59,8 +71,56 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    if (!userId) {
+      toast.error("Vous devez être connecté pour valider votre lecture");
+      return;
+    }
+    
     if (book.chaptersRead >= book.totalChapters) {
+      toast.success("Vous avez déjà terminé ce livre !");
       navigate(`/books/${book.id}`);
+      return;
+    }
+    
+    try {
+      setIsValidating(true);
+      const nextSegment = book.chaptersRead + 1;
+      
+      // Fetch question for the segment before validation
+      console.log("Fetching question for segment", nextSegment);
+      const question = await getQuestionForBookSegment(book.id, nextSegment);
+      
+      if (question) {
+        console.log("Question found:", question);
+        setCurrentQuestion(question);
+      } else {
+        console.log("No question found, using fallback");
+        setCurrentQuestion(getFallbackQuestion());
+      }
+      
+      // Set quiz chapter and show modal
+      setQuizChapter(nextSegment);
+      setShowQuiz(true);
+      
+    } catch (error: any) {
+      console.error("Error preparing validation:", error);
+      toast.error("Erreur lors de la préparation de la validation: " + 
+        (error.message || error.error || "Erreur inconnue"));
+    } finally {
+      setIsValidating(false);
+    }
+  };
+  
+  const handleQuizComplete = async (passed: boolean) => {
+    setShowQuiz(false);
+    
+    if (!passed) {
+      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
+      return;
+    }
+    
+    if (!userId) {
+      toast.error("Vous devez être connecté pour valider votre lecture");
       return;
     }
     
@@ -74,35 +134,24 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         segment: nextSegment
       });
       
-      // Fetch question for the next segment
-      const question = await getQuestionForBookSegment(book.id, nextSegment);
-      setCurrentQuestion(question || getFallbackQuestion());
-      
-      toast.success("30 pages validées avec succès!");
-      
-      // Mettre à jour le chapitre actuel pour le quiz
-      setQuizChapter(book.chaptersRead + 1);
-      // Afficher le quiz après la validation
-      setShowQuiz(true);
+      toast.success("Segment validé avec succès!");
       
       if (onProgressUpdate) {
         onProgressUpdate(book.id);
       }
+      
+      // Redirect to book page to see updated progress
+      navigate(`/books/${book.id}`);
+      
     } catch (error: any) {
-      if (error.error === "Segment déjà validé") {
-        toast.error("Vous avez déjà validé ce segment de lecture!");
+      if (error.message === "Segment déjà validé") {
+        toast.warning("Vous avez déjà validé ce segment de lecture!");
       } else {
-        toast.error("Erreur lors de la validation: " + (error.error || "Erreur inconnue"));
+        toast.error("Erreur lors de la validation: " + 
+          (error.message || error.error || "Erreur inconnue"));
       }
     } finally {
       setIsValidating(false);
-    }
-  };
-  
-  const handleQuizComplete = (passed: boolean) => {
-    setShowQuiz(false);
-    if (!passed) {
-      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
     }
   };
 
