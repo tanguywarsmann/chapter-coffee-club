@@ -414,5 +414,41 @@ export const insertClassicBooks = async () => {
     }
   ];
 
-  await insertBooks(booksToInsert);
+  for (const book of booksToInsert) {
+    // Create an object with the correct shape for Supabase insert
+    const bookRecord = {
+      id: 'placeholder', // Add placeholder ID to satisfy TypeScript, will be overwritten by Supabase
+      title: book.title,
+      author: book.author,
+      cover_url: null,
+      description: book.description,
+      total_pages: book.pages,
+      slug: slugify(book.title + "-" + book.author),
+      tags: book.categories
+    };
+    
+    // First check if the book already exists by slug
+    const { data: existingBook } = await supabase
+      .from('books')
+      .select('id')
+      .eq('slug', bookRecord.slug)
+      .maybeSingle();
+    
+    // If the book doesn't exist, insert it
+    if (!existingBook) {
+      const { error } = await supabase
+        .from('books')
+        .insert(bookRecord);
+      
+      if (error) {
+        console.warn("Erreur lors de l'insertion du livre :", book.title, error);
+      }
+    }
+  }
 };
+
+// Expose the function to the browser window
+if (typeof window !== 'undefined') {
+  window.bookService = window.bookService || {};
+  window.bookService.insertClassicBooks = insertClassicBooks;
+}
