@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,7 +114,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Nouvelle fonction pour préparer et afficher la question
+  // Mise à jour de la fonction pour préparer et afficher la question
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId) {
       toast.error("Données de validation incomplètes");
@@ -126,20 +125,23 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     
     try {
       console.log(`Préparation de la question pour le livre ${currentBook.id}, segment ${segment}`);
+      
+      // Récupérer la question pour le segment depuis Supabase
       const question = await getQuestionForBookSegment(currentBook.id, segment);
       
       if (question) {
-        console.log("Question trouvée:", question);
+        console.log("Question trouvée dans Supabase:", question);
         setCurrentQuestion(question);
         setShowQuizModal(true);
       } else {
-        console.log("Aucune question trouvée, utilisation de la question par défaut");
+        console.log("Aucune question trouvée dans Supabase, utilisation de la question par défaut");
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setShowQuizModal(true);
       }
     } catch (error) {
       console.error('Error fetching question:', error);
+      // En cas d'erreur, utiliser la question par défaut
       const fallbackQuestion = getFallbackQuestion();
       setCurrentQuestion(fallbackQuestion);
       setShowQuizModal(true);

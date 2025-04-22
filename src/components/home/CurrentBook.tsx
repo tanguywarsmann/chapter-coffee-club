@@ -86,27 +86,21 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       const nextSegment = book.chaptersRead + 1;
       console.log(`Recherche d'une question pour le livre ${book.id}, segment ${nextSegment}`);
       
-      // Récupérer la question pour le segment avant validation
-      let question;
-      try {
-        question = await getQuestionForBookSegment(book.id, nextSegment);
-      } catch (error) {
-        console.error("Erreur lors de la récupération de la question:", error);
-        question = null;
-      }
+      // Récupérer la question pour le segment depuis Supabase
+      const question = await getQuestionForBookSegment(book.id, nextSegment);
       
       if (question) {
-        console.log("Question trouvée:", question);
+        console.log("Question trouvée dans Supabase:", question);
         setCurrentQuestion(question);
+        setQuizChapter(nextSegment);
+        setShowQuiz(true);
       } else {
-        console.log("Aucune question trouvée, utilisation de la question par défaut");
+        console.log("Aucune question trouvée dans Supabase, utilisation de la question par défaut");
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
+        setQuizChapter(nextSegment);
+        setShowQuiz(true);
       }
-      
-      // Définir le chapitre du quiz et afficher la modale
-      setQuizChapter(nextSegment);
-      setShowQuiz(true);
       
     } catch (error: any) {
       console.error("Error preparing validation:", error);
