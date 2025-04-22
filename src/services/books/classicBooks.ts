@@ -279,7 +279,10 @@ declare global {
 
 // Initialize the window.bookService object if it doesn't exist
 if (typeof window !== 'undefined') {
-  window.bookService = window.bookService || {};
-  // Make sure insertClassicBooks is always assigned
+  // Initialize with an empty object that has the required structure
+  window.bookService = window.bookService || { insertClassicBooks: insertClassicBooks };
+  
+  // Even if bookService already exists, ensure insertClassicBooks is assigned
+  // This line is technically redundant if we initialize properly above, but it's safe to keep
   window.bookService.insertClassicBooks = insertClassicBooks;
 }
