@@ -108,7 +108,6 @@ export const insertBooks = async (booksToInsert: Omit<Book, "id">[]) => {
   for (const book of booksToInsert) {
     // Create an object with the correct shape for Supabase insert
     const bookRecord = {
-      id: crypto.randomUUID(), // Add a temporary UUID to satisfy the type constraint
       title: book.title,
       author: book.author,
       cover_url: book.coverImage || null,
@@ -147,3 +146,4 @@ function slugify(str: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 }
+
