@@ -141,6 +141,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       }
     } catch (error) {
       console.error('Error fetching question:', error);
+      toast.error("Erreur lors de la récupération de la question: " + 
+        (error instanceof Error ? error.message : String(error)));
       // En cas d'erreur, utiliser la question par défaut
       const fallbackQuestion = getFallbackQuestion();
       setCurrentQuestion(fallbackQuestion);
