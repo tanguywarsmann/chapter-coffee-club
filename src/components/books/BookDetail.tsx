@@ -9,13 +9,14 @@ import { useNavigate } from "react-router-dom";
 import { ValidationModal } from "./ValidationModal";
 import { QuizModal } from "./QuizModal";
 import { getQuestionForBookSegment, getFallbackQuestion, isSegmentAlreadyValidated } from "@/services/questionService";
-import { ReadingQuestion } from "@/types/reading";
+import { ReadingQuestion, ReadingProgress } from "@/types/reading";
 import { validateReading } from "@/services/reading/validationService";
 import { BookDetailHeader } from "./BookDetailHeader";
 import { BookCoverInfo } from "./BookCoverInfo";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookDescription } from "./BookDescription";
 import { Button } from "@/components/ui/button";
+import { getBookReadingProgress } from "@/services/reading/progressService";
 
 interface BookDetailProps {
   book: Book;
@@ -32,6 +33,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -40,12 +42,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       const { data } = await supabase.auth.getUser();
       if (data?.user?.id) {
         setUserId(data.user.id);
+        // Fetch reading progress when user ID is available
+        if (currentBook) {
+          const progress = await getBookReadingProgress(data.user.id, currentBook.id);
+          setReadingProgress(progress);
+        }
       } else {
         toast.warning("Vous n'êtes pas connecté. Certaines fonctionnalités seront limitées.");
       }
     };
     getUser();
-  }, []);
+  }, [currentBook]);
 
   useEffect(() => {
     if (currentBook && currentBook.totalChapters) {
@@ -67,9 +74,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   }, [progressPercent]);
 
-  // Calcul du segment actuel à valider
+  // Calcul du segment actuel à valider en utilisant readingProgress
   const getCurrentSegmentToValidate = () => {
-    return Math.floor((currentBook.current_page ?? 0) / 30) + 1;
+    const currentPage = readingProgress?.current_page || 0;
+    return Math.floor(currentPage / 30) + 1;
   };
 
   // Lance la validation pour le segment courant
@@ -100,7 +108,12 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     const syncedBook = await syncBookWithAPI(userId, book.id);
     if (syncedBook) {
       setCurrentBook(syncedBook);
-      const nextSegment = Math.floor((syncedBook.current_page ?? 0) / 30) + 1;
+      
+      // Refresh reading progress
+      const progress = await getBookReadingProgress(userId, book.id);
+      setReadingProgress(progress);
+      
+      const nextSegment = progress ? Math.floor((progress.current_page) / 30) + 1 : 1;
       const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
       if (!alreadyValidated) {
         setValidationSegment(nextSegment);
@@ -123,16 +136,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       return;
     }
 
-    const lectureInit = !!currentBook.current_page || !!currentBook.chaptersRead;
+    const lectureInit = !!(readingProgress?.current_page || currentBook.chaptersRead);
     setIsInitializing(true);
     try {
       if (!lectureInit) {
         // Lecture non commencée → initialiser lecture + checker s'il existe déjà validation segment 1
         const syncedBook = await syncBookWithAPI(userId, book.id);
         let progressCreated = false;
-        if (!syncedBook || (!syncedBook.current_page && !syncedBook.chaptersRead)) {
+        if (!syncedBook || (!readingProgress?.current_page && !syncedBook.chaptersRead)) {
           const progress = await initializeNewBookReading(userId, book.id);
           if (progress) {
+            setReadingProgress(progress);
             const updatedBook = await syncBookWithAPI(userId, book.id);
             if (updatedBook) setCurrentBook(updatedBook);
             progressCreated = true;
@@ -141,7 +155,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           setCurrentBook(syncedBook);
         }
 
-        // Segment 1 déjà validé ?
+        // Segment 1 déjà validé ?
         const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
         if (segment1Validated) {
           toast.info("Segment déjà validé, vous pouvez continuer.", {
@@ -206,7 +220,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Validation finale : après quiz réussi
+  // Validation finale : après quiz réussi
   const handleQuizComplete = async (passed: boolean) => {
     setShowQuizModal(false);
     if (!passed || !userId || !validationSegment) {
@@ -240,9 +254,13 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         });
       }
 
-      // MAJ progression – lecture
+      // MAJ progression – lecture
       const updatedBook = await syncBookWithAPI(userId, book.id);
       if (updatedBook) setCurrentBook(updatedBook);
+
+      // Update reading progress state
+      const progress = await getBookReadingProgress(userId, book.id);
+      setReadingProgress(progress);
 
       if (onChapterComplete) onChapterComplete(book.id);
     } catch (error: any) {
@@ -253,9 +271,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Interface du bouton principal, contextuel selon l’état
+  // Interface du bouton principal, contextuel selon l'état
   const renderMainButton = () => {
-    const lectureInit = !!currentBook.current_page || !!currentBook.chaptersRead;
+    const lectureInit = !!(readingProgress?.current_page || currentBook.chaptersRead);
     return (
       <Button
         disabled={isInitializing || isValidating}
