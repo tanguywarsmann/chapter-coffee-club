@@ -95,37 +95,26 @@ export type Database = {
       reading_questions: {
         Row: {
           answer: string
-          book_id: string
-          created_at: string | null
+          book_slug: string
           id: string
           question: string
           segment: number
         }
         Insert: {
           answer: string
-          book_id: string
-          created_at?: string | null
+          book_slug: string
           id?: string
           question: string
           segment: number
         }
         Update: {
           answer?: string
-          book_id?: string
-          created_at?: string | null
+          book_slug?: string
           id?: string
           question?: string
           segment?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "reading_questions_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       reading_validations: {
         Row: {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -18,6 +17,7 @@ import { validateReading, getBookReadingProgress } from "@/services/reading";
 import { ValidationModal } from "./ValidationModal";
 import { ValidationHistory } from "./ValidationHistory";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
+import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
 
 interface BookDetailProps {
   book: Book;
@@ -31,6 +31,7 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
   const [showCongrats, setShowCongrats] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const navigate = useNavigate();
   const forumPosts = getBookForum(book.id);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -87,6 +88,9 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
         book_id: book.id,
         segment: nextSegment
       });
+
+      const question = await getQuestionForBookSegment(book.id, nextSegment);
+      setCurrentQuestion(question || getFallbackQuestion());
       
       toast.success("Validation réussie : " + response.message);
       setShowQuiz(true);
@@ -341,12 +345,13 @@ export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
         onValidate={handleValidateReading}
       />
       
-      {showQuiz && (
+      {showQuiz && currentQuestion && (
         <QuizModal 
           bookTitle={book.title} 
           chapterNumber={book.chaptersRead}
           onComplete={handleQuizComplete}
           onClose={() => setShowQuiz(false)}
+          question={currentQuestion}
         />
       )}
       

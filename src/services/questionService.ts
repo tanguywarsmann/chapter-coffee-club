@@ -9,9 +9,9 @@ export const getQuestionForBookSegment = async (
   const { data, error } = await supabase
     .from('reading_questions')
     .select('*')
-    .eq('book_id', bookId)
+    .eq('book_slug', bookId)
     .eq('segment', segment)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     console.error('Error fetching question:', error);
@@ -21,19 +21,11 @@ export const getQuestionForBookSegment = async (
   return data;
 };
 
-export const createQuestionForBookSegment = async (
-  question: Omit<ReadingQuestion, 'id' | 'created_at'>
-): Promise<ReadingQuestion | null> => {
-  const { data, error } = await supabase
-    .from('reading_questions')
-    .insert(question)
-    .select()
-    .single();
+export const getFallbackQuestion = (): ReadingQuestion => ({
+  id: 'fallback',
+  book_slug: '',
+  segment: 0,
+  question: "Quel est l'élément principal de ce passage ?",
+  answer: "libre"
+});
 
-  if (error || !data) {
-    console.error('Error creating question:', error);
-    return null;
-  }
-
-  return data;
-};
