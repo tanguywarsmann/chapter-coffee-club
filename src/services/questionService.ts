@@ -10,6 +10,7 @@ export const getQuestionForBookSegment = async (
   
   try {
     // Query Supabase for a question matching the book_slug and segment
+    // Important: The book ID is used as the book_slug in the database
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')
