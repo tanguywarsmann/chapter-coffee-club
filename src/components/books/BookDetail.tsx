@@ -1,402 +1,94 @@
-
-import { useState, useEffect } from "react";
-import { Book } from "@/types/book";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, ArrowLeft, Award, Share2, Bookmark, BookmarkCheck, Clock, Calendar, FileText, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Book as BookIcon, Bookmark, Share2, Check } from "lucide-react";
+import { Book } from "@/types/book";
 import { toast } from "sonner";
-import { QuizModal } from "@/components/books/QuizModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { getBookForum, ForumPost } from "@/mock/activities";
-import { MessageCircle } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { validateReading, getBookReadingProgress } from "@/services/reading";
-import { ValidationModal } from "./ValidationModal";
-import { ValidationHistory } from "./ValidationHistory";
-import { ReadingProgress, ReadingValidation, ReadingQuestion } from "@/types/reading";
-import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
+import { initializeNewBookReading } from "@/services/reading";
 
 interface BookDetailProps {
   book: Book;
-  onChapterComplete: (bookId: string) => void;
+  onChapterComplete?: (bookId: string) => void;
 }
 
-export function BookDetail({ book, onChapterComplete }: BookDetailProps) {
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [bookmarked, setBookmarked] = useState(book.isBookmarked || false);
-  const [personalNote, setPersonalNote] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
-  const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
-  const [showCongrats, setShowCongrats] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
-  const navigate = useNavigate();
-  const forumPosts = getBookForum(book.id);
-  const [showValidationModal, setShowValidationModal] = useState(false);
-  
-  const userId = localStorage.getItem("user") || "user123";
+export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
-  
-  const chaptersRemaining = book.totalChapters - book.chaptersRead;
-  const readingTimeRemaining = chaptersRemaining * 20;
-  
-  useEffect(() => {
-    const fetchReadingProgress = async () => {
-      try {
-        const progress = await getBookReadingProgress(userId, book.id);
-        setReadingProgress(progress);
-      } catch (error) {
-        console.error("Error fetching reading progress:", error);
-      }
-    };
-    
-    fetchReadingProgress();
-  }, [userId, book.id]);
-  
-  const validationHistory = readingProgress?.validations 
-    ? readingProgress.validations.map(v => {
-        const date = new Date(v.date_validated);
-        return {
-          date: date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
-          question: `Validation du segment ${v.segment} (pages ${(v.segment-1)*30+1}-${v.segment*30})`,
-        };
-      }).reverse() 
-    : [
-        { date: "15 avril 2025", question: "Qui est le personnage principal du chapitre 1?" },
-        { date: "12 avril 2025", question: "Quel événement marque le tournant du chapitre 2?" },
-        { date: "10 avril 2025", question: "Comment s'appelle le lieu où se déroule l'histoire?" },
-      ];
-
-  const handleStartReading = () => {
-    if (book.chaptersRead < book.totalChapters) {
-      setShowValidationModal(true);
-    } else {
-      toast.info("Vous avez déjà terminé ce livre!");
+  const handleStartReading = async () => {
+    const userId = localStorage.getItem("user");
+    if (!userId) {
+      toast.error("Vous devez être connecté pour commencer une lecture");
+      return;
     }
-  };
 
-  const handleValidateReading = async () => {
     try {
-      setIsValidating(true);
-      const nextSegment = book.chaptersRead + 1;
-      
-      const response = await validateReading({
-        user_id: userId,
-        book_id: book.id,
-        segment: nextSegment
-      });
-
-      const question = await getQuestionForBookSegment(book.id, nextSegment);
-      setCurrentQuestion(question || getFallbackQuestion());
-      
-      toast.success("Validation réussie : " + response.message);
-      setShowQuiz(true);
-      onChapterComplete(book.id);
-      setShowValidationModal(false);
-
-      if (book.chaptersRead === 0) {
-        setShowCongrats(true);
-        localStorage.setItem("onboardingDone", "true");
+      const progress = await initializeNewBookReading(userId, book.id);
+      if (progress) {
+        toast.success("Lecture initialisée avec succès");
+        // Refresh the book details to show updated progress
+        if (onChapterComplete) {
+          onChapterComplete(book.id);
+        }
       }
-
-      if (book.chaptersRead + 1 >= book.totalChapters) {
-        toast.success("Félicitations! Vous avez terminé ce livre!", {
-          icon: <Award className="h-5 w-5 text-yellow-500" />,
-          duration: 5000,
-        });
-      }
-    } catch (error: any) {
-      if (error.error === "Segment déjà validé") {
-        toast.error("Vous avez déjà validé ce segment de lecture!");
-      } else {
-        toast.error("Erreur lors de la validation: " + (error.error || "Erreur inconnue"));
-      }
-    } finally {
-      setIsValidating(false);
+    } catch (error) {
+      console.error('Error starting book:', error);
+      toast.error("Une erreur est survenue lors de l'initialisation de la lecture");
     }
   };
-
-  const handleQuizComplete = (passed: boolean) => {
-    setShowQuiz(false);
-    if (!passed) {
-      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
-    }
-  };
-
-  const toggleBookmark = () => {
-    setBookmarked(!bookmarked);
-    toast.success(bookmarked ? "Livre retiré de vos favoris" : "Livre ajouté à vos favoris");
-  };
-
-  const handleShare = () => {
-    toast.success("Lien partagé avec succès!");
-  };
-
-  const handleSaveNote = () => {
-    if (personalNote.trim()) {
-      toast.success("Note personnelle enregistrée");
-    }
-  };
-
-  const ForumDialog = () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="w-full mt-4 border-coffee-light text-coffee-dark hover:text-coffee-darker"
-        >
-          <MessageCircle className="mr-2 h-5 w-5" />
-          Accéder au forum de discussion
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-serif">Forum - {book.title}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-6 mt-4">
-          {forumPosts.map((post) => (
-            <Card key={post.id} className="border-coffee-light">
-              <CardHeader>
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={post.userAvatar} alt={post.userName} />
-                    <AvatarFallback>{post.userName[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{post.userName}</p>
-                    <p className="text-sm text-muted-foreground">{post.timestamp}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-coffee-darker">{post.content}</p>
-                <div className="mt-4 space-y-3 pl-4 border-l-2 border-coffee-light">
-                  {post.replies.map((reply) => (
-                    <div key={reply.id} className="flex items-start gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={reply.userAvatar} alt={reply.userName} />
-                        <AvatarFallback>{reply.userName[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{reply.userName}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {reply.timestamp}
-                          </span>
-                        </div>
-                        <p className="text-sm mt-0.5">{reply.content}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 
   return (
-    <>
-      <div className="mb-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-coffee-darker">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="book-cover aspect-[2/3] md:col-span-1 bg-coffee-medium">
-          {book.coverImage ? (
-            <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-              <span className="text-white font-serif italic text-4xl">{book.title.substring(0, 1)}</span>
-            </div>
-          )}
-        </div>
-        
-        <div className="md:col-span-2 space-y-6">
-          <div>
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl md:text-3xl font-serif font-medium text-coffee-darker">{book.title}</h1>
-              <div className="flex space-x-2">
-                <Button size="icon" variant="ghost" onClick={toggleBookmark} className="text-coffee-dark hover:text-coffee-darker">
-                  {bookmarked ? <BookmarkCheck className="h-5 w-5" /> : <Bookmark className="h-5 w-5" />}
-                </Button>
-                <Button size="icon" variant="ghost" onClick={handleShare} className="text-coffee-dark hover:text-coffee-darker">
-                  <Share2 className="h-5 w-5" />
-                </Button>
+    <Card className="border-coffee-light">
+      <CardHeader>
+        <CardTitle className="text-2xl font-serif text-coffee-darker">{book.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-start gap-4">
+          <div className="book-cover w-32 h-48 flex-shrink-0">
+            {book.coverImage ? (
+              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+                <span className="text-white font-serif italic text-4xl">{book.title.substring(0, 1)}</span>
               </div>
-            </div>
-            <p className="text-lg text-muted-foreground">{book.author}</p>
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <h2 className="text-xl font-medium text-coffee-darker">{book.title}</h2>
+            <p className="text-sm text-muted-foreground">{book.author}</p>
             
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="mt-2 flex flex-wrap gap-1">
               {book.categories.map((category, index) => (
-                <Badge key={index} variant="outline" className="border-coffee-light">
+                <span key={index} className="px-2 py-1 bg-coffee-light/30 text-coffee-darker rounded-full text-xs">
                   {category}
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
-          
-          <Card className="border-coffee-light">
-            <CardHeader>
-              <h3 className="text-lg font-medium text-coffee-darker flex items-center">
-                <BookOpen className="mr-2 h-5 w-5" />
-                Votre progression
-              </h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Progress value={progressPercentage} className="h-3" />
-                <p className="text-sm text-muted-foreground mt-2">
-                  Page {book.chaptersRead * 30} sur {book.totalChapters * 30} ({Math.round(progressPercentage)}%)
-                </p>
-              </div>
-              
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Clock className="h-4 w-4 mr-2" />
-                <span>Temps de lecture restant estimé: {readingTimeRemaining} minutes</span>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full bg-coffee-dark hover:bg-coffee-darker" 
-                onClick={handleStartReading}
-                disabled={isValidating}
-              >
-                {isValidating ? (
-                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Validation en cours...</>
-                ) : (
-                  <>
-                    <BookOpen className="mr-2 h-5 w-5" />
-                    {book.chaptersRead === 0 ? "Commencer à lire" : 
-                     book.chaptersRead < book.totalChapters ? `Valider les 30 pages suivantes` : "Relire"}
-                  </>
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card className="border-coffee-light">
-            <CardHeader>
-              <h3 className="text-lg font-medium text-coffee-darker flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                Historique des validations
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {validationHistory.map((entry, index) => (
-                  <div key={index} className="flex gap-3 pb-3 border-b border-coffee-lightest last:border-b-0">
-                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-coffee-lightest text-coffee-dark">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm text-coffee-darker">{entry.question}</p>
-                      <p className="text-xs text-muted-foreground">{entry.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-coffee-light">
-            <CardHeader>
-              <h3 className="text-lg font-medium text-coffee-darker">Note personnelle</h3>
-            </CardHeader>
-            <CardContent>
-              <Textarea 
-                placeholder="Notez vos réflexions, idées ou citations favorites..."
-                value={personalNote}
-                onChange={(e) => setPersonalNote(e.target.value)}
-                className="min-h-[100px] border-coffee-light"
-              />
-            </CardContent>
-            <CardFooter className="justify-end">
-              <Button 
-                variant="outline" 
-                className="border-coffee-light text-coffee-dark"
-                onClick={handleSaveNote}
-              >
-                Enregistrer
-              </Button>
-            </CardFooter>
-          </Card>
         </div>
-      </div>
-      
-      {readingProgress?.validations && readingProgress.validations.length > 0 && (
-        <ValidationHistory validations={readingProgress.validations} />
-      )}
-      
-      {book.isCompleted && <ForumDialog />}
-      
-      <ValidationModal
-        bookTitle={book.title}
-        segment={book.chaptersRead + 1}
-        isOpen={showValidationModal}
-        isValidating={isValidating}
-        onClose={() => setShowValidationModal(false)}
-        onValidate={handleValidateReading}
-      />
-      
-      {showQuiz && currentQuestion && (
-        <QuizModal 
-          bookTitle={book.title} 
-          chapterNumber={book.chaptersRead}
-          onComplete={handleQuizComplete}
-          onClose={() => setShowQuiz(false)}
-          question={currentQuestion}
-        />
-      )}
-      
-      {showCongrats && (
-        <Dialog open={showCongrats} onOpenChange={setShowCongrats}>
-          <DialogContent className="max-w-md text-center border-coffee-light">
-            <DialogHeader>
-              <DialogTitle className="font-serif text-2xl text-coffee-darker">
-                Bravo, tu as validé ton premier segment 🎉
-              </DialogTitle>
-            </DialogHeader>
-            <div className="py-4 text-lg text-coffee-dark">
-              Tes premiers pas sont faits !
-              <br />Tu viens de lire 30 pages et d’engager ta série de lectures.
-              <br />
-              <br />
-              <strong>Quels sont tes progrès ?</strong>
-              <ul className="mt-3 space-y-1 text-base text-coffee-darker/90">
-                <li>• 1 segment validé</li>
-                <li>• 30 pages lues</li>
-                <li>• 1 livre en cours</li>
-              </ul>
-            </div>
-            <DialogFooter className="flex flex-col gap-2">
-              <Button 
-                onClick={() => {
-                  setShowCongrats(false);
-                  // Laisser l’utilisateur choisir la destination (stats/achievements/profile)
-                }}
-                className="bg-coffee-dark hover:bg-coffee-darker min-w-[170px]"
-              >
-                Continuer
-              </Button>
-              <a 
-                href="/achievements"
-                className="text-coffee-dark text-sm underline hover:text-coffee-darker"
-                onClick={() => setShowCongrats(false)}
-              >
-                Voir mes récompenses
-              </a>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
+        
+        <p className="text-coffee-darker">{book.description}</p>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">
+            {book.pages} pages • {book.language}
+          </span>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
+              <Bookmark className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <Button className="w-full bg-coffee-dark hover:bg-coffee-darker" onClick={handleStartReading}>
+          <BookIcon className="h-4 w-4 mr-2" />
+          Commencer ma lecture
+        </Button>
+      </CardContent>
+    </Card>
   );
-}
+};

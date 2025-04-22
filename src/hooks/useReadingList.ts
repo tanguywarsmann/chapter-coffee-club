@@ -1,8 +1,8 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
 import { getBookById } from "@/mock/books";
+import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
 
 export const useReadingList = (userId: string) => {
@@ -29,20 +29,30 @@ export const useReadingList = (userId: string) => {
       return;
     }
     
-    const newEntry: ReadingList = {
-      user_id: userId,
-      book_id: book.id,
-      status: "to_read",
-      added_at: new Date().toISOString()
-    };
-    
-    const updatedList = [...currentList, newEntry];
-    localStorage.setItem("reading_list", JSON.stringify(updatedList));
-    
-    // Invalider le cache pour forcer un re-fetch
-    queryClient.invalidateQueries({ queryKey: ["reading_list"] });
-    
-    toast.success(`${book.title} ajouté à votre liste de lecture`);
+    try {
+      const progress = await initializeNewBookReading(userId, book.id);
+      if (!progress) {
+        toast.error("Erreur lors de l'initialisation de la lecture");
+        return;
+      }
+
+      const newEntry: ReadingList = {
+        user_id: userId,
+        book_id: book.id,
+        status: "to_read",
+        added_at: new Date().toISOString()
+      };
+      
+      const updatedList = [...currentList, newEntry];
+      localStorage.setItem("reading_list", JSON.stringify(updatedList));
+      
+      queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+      
+      toast.success(`${book.title} ajouté à votre liste de lecture`);
+    } catch (error) {
+      console.error('Error adding book to reading list:', error);
+      toast.error("Une erreur est survenue lors de l'ajout du livre");
+    }
   };
 
   const getBooksByStatus = (status: ReadingList["status"]) => {

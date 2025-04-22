@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -7,20 +6,30 @@ import { getUserReadingProgress, getBookReadingProgress } from "./progressServic
 
 // Create/initialize reading_progress for a book/user
 export const initializeBookReading = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
+  // First check if a reading progress already exists
+  const existingProgress = await getBookReadingProgress(userId, book.id);
+  if (existingProgress) {
+    console.log('Reading progress already exists for:', book.id);
+    return existingProgress;
+  }
+
+  // If no progress exists, create a new one
   const newProgress = {
     user_id: userId,
     book_id: book.id,
     total_pages: book.pages,
-    current_page: book.chaptersRead * 30,
-    status: book.chaptersRead > 0 ? 'in_progress' : 'to_read'
+    current_page: 0,
+    status: 'to_read' as const,
+    started_at: new Date().toISOString(),
+    streak_current: 0,
+    streak_best: 0
   };
+
+  console.log('Creating new reading progress:', newProgress);
 
   const { data, error } = await supabase
     .from('reading_progress')
-    .insert({
-      ...newProgress,
-      status: newProgress.status as "to_read" | "in_progress" | "completed"
-    })
+    .insert(newProgress)
     .select()
     .single();
 
@@ -31,7 +40,6 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
 
   return { ...data, validations: [] };
 };
-
 
 // Get user's books in progress
 export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]> => {
@@ -51,13 +59,11 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]>
     .filter((book): book is Book => book !== null);
 };
 
-
 // Get user's completed books
 export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> => {
   const books = await getBooksInProgressFromAPI(userId);
   return books.filter(book => book.isCompleted);
 };
-
 
 // Sync a single book's progress with API (from DB)
 export const syncBookWithAPI = async (userId: string, bookId: string): Promise<Book | null> => {
@@ -79,6 +85,16 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
   };
 };
 
+// Utility to initialize reading progress for a new book
+export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
+  const book = getBookById(bookId);
+  if (!book) {
+    console.error('Book not found:', bookId);
+    return null;
+  }
+
+  return initializeBookReading(userId, book);
+};
 
 // Utility to bulk initialize reading_progress for user based on mock data
 export const initializeUserReadingProgress = async (userId: string) => {
