@@ -22,7 +22,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion>(getFallbackQuestion());
+  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   
   useEffect(() => {
@@ -84,20 +84,27 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     try {
       setIsValidating(true);
       const nextSegment = book.chaptersRead + 1;
+      console.log(`Recherche d'une question pour le livre ${book.id}, segment ${nextSegment}`);
       
-      // Fetch question for the segment before validation
-      console.log("Fetching question for segment", nextSegment);
-      const question = await getQuestionForBookSegment(book.id, nextSegment);
-      
-      if (question) {
-        console.log("Question found:", question);
-        setCurrentQuestion(question);
-      } else {
-        console.log("No question found, using fallback");
-        setCurrentQuestion(getFallbackQuestion());
+      // Récupérer la question pour le segment avant validation
+      let question;
+      try {
+        question = await getQuestionForBookSegment(book.id, nextSegment);
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la question:", error);
+        question = null;
       }
       
-      // Set quiz chapter and show modal
+      if (question) {
+        console.log("Question trouvée:", question);
+        setCurrentQuestion(question);
+      } else {
+        console.log("Aucune question trouvée, utilisation de la question par défaut");
+        const fallbackQuestion = getFallbackQuestion();
+        setCurrentQuestion(fallbackQuestion);
+      }
+      
+      // Définir le chapitre du quiz et afficher la modale
       setQuizChapter(nextSegment);
       setShowQuiz(true);
       
@@ -127,6 +134,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       setIsValidating(true);
       const nextSegment = book.chaptersRead + 1;
       
+      console.log(`Validation du segment ${nextSegment} pour le livre ${book.id}`);
       await validateReading({
         user_id: userId,
         book_id: book.id,
@@ -139,7 +147,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         onProgressUpdate(book.id);
       }
       
-      // Redirect to book page to see updated progress
+      // Redirection vers la page du livre pour voir la progression mise à jour
       navigate(`/books/${book.id}`);
       
     } catch (error: any) {
@@ -205,7 +213,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         </CardContent>
       </Card>
       
-      {showQuiz && (
+      {showQuiz && currentQuestion && (
         <QuizModal 
           bookTitle={book.title} 
           chapterNumber={quizChapter}

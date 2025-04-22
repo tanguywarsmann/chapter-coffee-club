@@ -9,7 +9,7 @@ export const getQuestionForBookSegment = async (
   console.log(`Fetching question for book ${bookId}, segment ${segment}`);
   
   try {
-    // First, try by book_id (direct ID match)
+    // Essayer d'abord par book_id (correspondance directe d'ID)
     const { data: dataById, error: errorById } = await supabase
       .from('reading_questions')
       .select('*')
@@ -22,7 +22,7 @@ export const getQuestionForBookSegment = async (
       return dataById;
     }
 
-    // If no error but no data, it means there's no question for this segment
+    // Si pas d'erreur mais pas de données, cela signifie qu'il n'y a pas de question pour ce segment
     if (!errorById && !dataById) {
       console.warn(`No question found for book ${bookId}, segment ${segment}`);
       return null;
@@ -32,7 +32,7 @@ export const getQuestionForBookSegment = async (
       console.error('Error fetching question by ID:', errorById);
     }
     
-    // Fallback to using a generic question
+    // Utiliser une question générique par défaut
     console.log('Using fallback question for segment', segment);
     return getFallbackQuestion();
   } catch (error) {
@@ -46,5 +46,5 @@ export const getFallbackQuestion = (): ReadingQuestion => ({
   book_slug: '',
   segment: 0,
   question: "Quel est l'élément principal de ce passage ?",
-  answer: "libre" // This means any answer will be accepted
+  answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
 });

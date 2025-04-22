@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,15 +90,11 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           setCurrentBook(syncedBook);
           toast.success("Mise à jour du livre réussie");
         }
-        if (window.location.pathname !== `/books/${book.id}`) {
-          navigate(`/books/${book.id}`);
-        }
-
-        if (progress.current_page === 0) {
-          setValidationSegment(1);
-          setShowValidationModal(true);
-        }
-
+        
+        // Afficher immédiatement la validation pour le premier segment (1)
+        setValidationSegment(1);
+        await prepareAndShowQuestion(1);
+        
         setTimeout(() => {
           progressRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 400);
@@ -118,6 +115,39 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
+  // Nouvelle fonction pour préparer et afficher la question
+  const prepareAndShowQuestion = async (segment: number) => {
+    if (!userId) {
+      toast.error("Données de validation incomplètes");
+      return;
+    }
+    
+    setIsValidating(true);
+    
+    try {
+      console.log(`Préparation de la question pour le livre ${currentBook.id}, segment ${segment}`);
+      const question = await getQuestionForBookSegment(currentBook.id, segment);
+      
+      if (question) {
+        console.log("Question trouvée:", question);
+        setCurrentQuestion(question);
+        setShowQuizModal(true);
+      } else {
+        console.log("Aucune question trouvée, utilisation de la question par défaut");
+        const fallbackQuestion = getFallbackQuestion();
+        setCurrentQuestion(fallbackQuestion);
+        setShowQuizModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      const fallbackQuestion = getFallbackQuestion();
+      setCurrentQuestion(fallbackQuestion);
+      setShowQuizModal(true);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const handleValidateSegment = async () => {
     if (!userId || !validationSegment) {
       toast.error("Données de validation incomplètes");
@@ -128,32 +158,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     setIsValidating(true);
     
     try {
-      const question = await getQuestionForBookSegment(book.id, validationSegment);
-      
-      if (question) {
-        setCurrentQuestion(question);
-        setShowValidationModal(false);
-        setShowQuizModal(true);
-      } else {
-        await validateReading({
-          user_id: userId,
-          book_id: book.id,
-          segment: validationSegment
-        });
-        
-        toast.success("Segment validé !");
-        
-        const updatedBook = await syncBookWithAPI(userId, book.id);
-        if (updatedBook) {
-          setCurrentBook(updatedBook);
-        }
-        
-        if (onChapterComplete) {
-          onChapterComplete(book.id);
-        }
-        
-        setShowValidationModal(false);
-      }
+      await prepareAndShowQuestion(validationSegment);
+      setShowValidationModal(false);
     } catch (error) {
       console.error('Error during validation:', error);
       toast.error("Erreur lors de la validation: " +
