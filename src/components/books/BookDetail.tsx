@@ -68,6 +68,40 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   }, [progressPercent]);
 
+  const moveToNextSegment = async () => {
+    if (!userId) return;
+    
+    try {
+      // Synchroniser pour avoir les dernières données
+      const syncedBook = await syncBookWithAPI(userId, book.id);
+      if (syncedBook) {
+        setCurrentBook(syncedBook);
+        
+        // Calculer le prochain segment à valider
+        const nextSegment = Math.floor((syncedBook.chaptersRead * 30) / 30) + 1;
+        console.log("Prochain segment à valider:", nextSegment);
+        
+        // Vérifier si le segment n'est pas déjà validé
+        const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
+        
+        if (!alreadyValidated) {
+          setValidationSegment(nextSegment);
+          await prepareAndShowQuestion(nextSegment);
+        } else {
+          toast.info(`Segment ${nextSegment} déjà validé`, {
+            action: {
+              label: "Segment suivant",
+              onClick: () => moveToNextSegment(),
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error moving to next segment:', error);
+      toast.error("Erreur lors du passage au segment suivant");
+    }
+  };
+
   const handleStartReading = async () => {
     if (!userId) {
       toast.error("Vous devez être connecté pour commencer une lecture");
@@ -77,45 +111,49 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     console.log('Starting reading with userId:', userId, 'bookId:', book.id);
 
     try {
-      const progress = await initializeNewBookReading(userId, book.id);
-
-      if (progress) {
-        toast.success("Lecture initialisée avec succès");
-        const syncedBook = await syncBookWithAPI(userId, book.id);
-        if (syncedBook) {
-          setCurrentBook(syncedBook);
-          toast.success("Mise à jour du livre réussie");
-        }
+      // Vérifier d'abord si la lecture existe déjà
+      const syncedBook = await syncBookWithAPI(userId, book.id);
+      let readingExists = false;
+      
+      if (syncedBook && syncedBook.chaptersRead > 0) {
+        readingExists = true;
+        setCurrentBook(syncedBook);
+      }
+      
+      if (!readingExists) {
+        // Initialiser seulement si nécessaire
+        const progress = await initializeNewBookReading(userId, book.id);
         
-        // Vérifier si le segment 1 a déjà été validé
-        const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
-        
-        if (segment1Validated) {
-          toast.info("Premier segment déjà validé. Vous pouvez continuer votre progression.", {
-            action: {
-              label: "Continuer la lecture",
-              onClick: () => {
-                if (progressRef.current) {
-                  progressRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-              },
-            },
-          });
-        } else {
-          setValidationSegment(1);
-          await prepareAndShowQuestion(1);
+        if (progress) {
+          toast.success("Lecture initialisée avec succès");
+          const updatedBook = await syncBookWithAPI(userId, book.id);
+          if (updatedBook) {
+            setCurrentBook(updatedBook);
+          }
         }
-        
-        setTimeout(() => {
-          progressRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 400);
-
-        if (onChapterComplete) {
-          onChapterComplete(book.id);
-        }
+      }
+      
+      // Vérifier si le segment 1 a déjà été validé
+      const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
+      
+      if (segment1Validated) {
+        toast.info("Premier segment déjà validé. Vous pouvez continuer votre progression.", {
+          action: {
+            label: "Continuer la lecture",
+            onClick: () => moveToNextSegment(),
+          },
+        });
       } else {
-        toast.error("Erreur lors de l'initialisation de la lecture. Veuillez réessayer.");
-        console.error('Failed to initialize reading. No progress returned.');
+        setValidationSegment(1);
+        await prepareAndShowQuestion(1);
+      }
+      
+      setTimeout(() => {
+        progressRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 400);
+
+      if (onChapterComplete) {
+        onChapterComplete(book.id);
       }
     } catch (error) {
       console.error('Error starting book:', error);
@@ -141,12 +179,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (segmentValidated) {
         toast.info(`Segment ${segment} déjà validé`, {
           action: {
-            label: "Continuer la lecture",
-            onClick: () => {
-              if (progressRef.current) {
-                progressRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            },
+            label: "Segment suivant",
+            onClick: () => moveToNextSegment(),
           },
         });
         setValidationSegment(null);
@@ -196,12 +230,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (segmentValidated) {
         toast.info(`Segment ${validationSegment} déjà validé`, {
           action: {
-            label: "Continuer la lecture",
-            onClick: () => {
-              if (progressRef.current) {
-                progressRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            },
+            label: "Segment suivant",
+            onClick: () => moveToNextSegment(),
           },
         });
         setShowValidationModal(false);
@@ -242,23 +272,15 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (result.already_validated) {
         toast.info(`Segment ${validationSegment} déjà validé`, {
           action: {
-            label: "Continuer la lecture",
-            onClick: () => {
-              if (progressRef.current) {
-                progressRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            },
+            label: "Segment suivant",
+            onClick: () => moveToNextSegment(),
           },
         });
       } else {
         toast.success(`Segment ${validationSegment} validé avec succès! 🎉`, {
           action: {
             label: "Continuer la lecture",
-            onClick: () => {
-              if (progressRef.current) {
-                progressRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            },
+            onClick: () => moveToNextSegment(),
           },
         });
       }
@@ -294,7 +316,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           pages={currentBook.pages}
           language={currentBook.language}
         />
-        <BookProgressBar progressPercent={progressPercent} />
+        <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
         {showValidationModal && validationSegment && (
           <ValidationModal
             bookTitle={currentBook.title}
