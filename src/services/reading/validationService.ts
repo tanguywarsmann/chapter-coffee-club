@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById } from "@/services/books/bookQueries";
-import { getQuestionForBookSegment } from "../questionService";
+import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
 import { recordReadingActivity } from "../streakService";
 import { getBookReadingProgress } from "./progressService";
 
@@ -12,6 +12,23 @@ export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse> => {
   try {
+    // Vérifier si le segment a déjà été validé
+    const alreadyValidated = await isSegmentAlreadyValidated(
+      request.user_id, 
+      request.book_id, 
+      request.segment
+    );
+    
+    if (alreadyValidated) {
+      console.log('Segment already validated, returning early', request);
+      return {
+        message: "Segment déjà validé",
+        current_page: request.segment * 30,
+        already_validated: true,
+        next_segment_question: null
+      };
+    }
+    
     const book = await getBookById(request.book_id);
 
     if (!book) {
@@ -36,20 +53,6 @@ export const validateReading = async (
       if (!progress) {
         throw new Error("Impossible d'initialiser la progression de lecture");
       }
-    }
-
-    // Check if this segment has already been validated
-    const { data: existingValidation } = await supabase
-      .from('reading_validations')
-      .select('*')
-      .eq('user_id', request.user_id)
-      .eq('book_id', request.book_id)
-      .eq('segment', request.segment)
-      .maybeSingle();
-
-    if (existingValidation) {
-      console.warn('Segment already validated', request);
-      throw new Error("Segment déjà validé");
     }
 
     // Calculate new current page and status
@@ -105,6 +108,7 @@ export const validateReading = async (
     return {
       message: "Segment validé avec succès",
       current_page: newCurrentPage,
+      already_validated: false,
       next_segment_question: nextQuestion ? nextQuestion.question : null
     };
 

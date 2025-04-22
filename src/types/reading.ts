@@ -43,6 +43,7 @@ export interface ValidateReadingRequest {
 export interface ValidateReadingResponse {
   message: string;
   current_page: number;
+  already_validated?: boolean;
   next_segment_question: string | null;
 }
 

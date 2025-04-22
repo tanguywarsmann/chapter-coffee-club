@@ -85,3 +85,34 @@ export const getFallbackQuestion = (): ReadingQuestion => ({
   question: "Quel est l'élément principal de ce passage ?",
   answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
 });
+
+// Nouvelle fonction pour vérifier si un segment a déjà été validé
+export const isSegmentAlreadyValidated = async (
+  userId: string, 
+  bookId: string, 
+  segment: number
+): Promise<boolean> => {
+  console.log(`Checking if segment ${segment} is already validated for book ${bookId} by user ${userId}`);
+  
+  try {
+    const { data, error } = await supabase
+      .from('reading_validations')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('book_id', bookId)
+      .eq('segment', segment)
+      .maybeSingle();
+      
+    if (error) {
+      console.error('Error checking segment validation:', error);
+      return false;
+    }
+    
+    const isValidated = !!data;
+    console.log(`Segment ${segment} validation status:`, isValidated ? 'already validated' : 'not validated yet');
+    return isValidated;
+  } catch (error) {
+    console.error('Exception checking segment validation:', error);
+    return false;
+  }
+};

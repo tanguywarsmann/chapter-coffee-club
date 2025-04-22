@@ -1,15 +1,16 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, ChevronRight, Loader2 } from "lucide-react";
+import { BookOpen, ChevronRight, Loader2, CheckCircle } from "lucide-react";
 import { Book } from "@/types/book";
 import { validateReading } from "@/services/reading";
 import { toast } from "sonner";
 import { QuizModal } from "@/components/books/QuizModal";
 import { ReadingQuestion } from "@/types/reading";
-import { getFallbackQuestion, getQuestionForBookSegment } from "@/services/questionService";
+import { getFallbackQuestion, getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CurrentBookProps {
@@ -84,6 +85,21 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     try {
       setIsValidating(true);
       const nextSegment = book.chaptersRead + 1;
+      
+      // Vérifier si ce segment a déjà été validé
+      const segmentValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
+      
+      if (segmentValidated) {
+        toast.info(`Segment ${nextSegment} déjà validé`, {
+          action: {
+            label: "Continuer la lecture",
+            onClick: () => navigate(`/books/${book.id}`),
+          },
+        });
+        setIsValidating(false);
+        return;
+      }
+      
       console.log(`Recherche d'une question pour le livre ${book.id}, segment ${nextSegment}`);
       
       // Récupérer la question pour le segment depuis Supabase
@@ -129,13 +145,27 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       const nextSegment = book.chaptersRead + 1;
       
       console.log(`Validation du segment ${nextSegment} pour le livre ${book.id}`);
-      await validateReading({
+      const result = await validateReading({
         user_id: userId,
         book_id: book.id,
         segment: nextSegment
       });
       
-      toast.success("Segment validé avec succès!");
+      if (result.already_validated) {
+        toast.info(`Segment ${nextSegment} déjà validé`, {
+          action: {
+            label: "Continuer la lecture",
+            onClick: () => navigate(`/books/${book.id}`),
+          },
+        });
+      } else {
+        toast.success(`Segment ${nextSegment} validé avec succès! 🎉`, {
+          action: {
+            label: "Continuer la lecture",
+            onClick: () => navigate(`/books/${book.id}`),
+          },
+        });
+      }
       
       if (onProgressUpdate) {
         onProgressUpdate(book.id);
@@ -146,7 +176,12 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       
     } catch (error: any) {
       if (error.message === "Segment déjà validé") {
-        toast.warning("Vous avez déjà validé ce segment de lecture!");
+        toast.info(`Segment ${book.chaptersRead + 1} déjà validé`, {
+          action: {
+            label: "Continuer la lecture",
+            onClick: () => navigate(`/books/${book.id}`),
+          },
+        });
       } else {
         toast.error("Erreur lors de la validation: " + 
           (error.message || error.error || "Erreur inconnue"));
