@@ -13,9 +13,9 @@ import { ReadingQuestion } from "@/types/reading";
 import { validateReading } from "@/services/reading/validationService";
 import { BookDetailHeader } from "./BookDetailHeader";
 import { BookCoverInfo } from "./BookCoverInfo";
-import { BookActions } from "./BookActions";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookDescription } from "./BookDescription";
+import { Button } from "@/components/ui/button";
 
 interface BookDetailProps {
   book: Book;
@@ -39,10 +39,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user?.id) {
-        console.log("User authenticated:", data.user);
         setUserId(data.user.id);
       } else {
-        console.warn("No authenticated user found");
         toast.warning("Vous n'êtes pas connecté. Certaines fonctionnalités seront limitées.");
       }
     };
@@ -60,6 +58,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   }, [currentBook]);
 
+  // Gestion du focus sur la barre de progression
   useEffect(() => {
     if (progressPercent > 0 && progressRef.current) {
       setTimeout(() => {
@@ -68,142 +67,135 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   }, [progressPercent]);
 
-  const moveToNextSegment = async () => {
+  // Calcul du segment actuel à valider
+  const getCurrentSegmentToValidate = () => {
+    return Math.floor((currentBook.current_page ?? 0) / 30) + 1;
+  };
+
+  // Lance la validation pour le segment courant
+  const startQuizForCurrentSegment = async () => {
+    if (!userId) {
+      toast.error("Vous devez être connecté pour valider votre lecture.");
+      return;
+    }
+    const segment = getCurrentSegmentToValidate();
+    const segmentValidated = await isSegmentAlreadyValidated(userId, book.id, segment);
+    if (segmentValidated) {
+      toast.info("Segment déjà validé, vous pouvez continuer.", {
+        action: {
+          label: "Segment suivant",
+          onClick: () => showNextSegmentQuizIfAvailable(),
+        },
+      });
+      return;
+    }
+    setValidationSegment(segment);
+    await prepareAndShowQuestion(segment);
+  };
+
+  // Affiche la question du segment suivant si possible
+  const showNextSegmentQuizIfAvailable = async () => {
     if (!userId) return;
-    
-    try {
-      // Synchroniser pour avoir les dernières données
-      const syncedBook = await syncBookWithAPI(userId, book.id);
-      if (syncedBook) {
-        setCurrentBook(syncedBook);
-        
-        // Calculer le prochain segment à valider
-        const nextSegment = Math.floor((syncedBook.chaptersRead * 30) / 30) + 1;
-        console.log("Prochain segment à valider:", nextSegment);
-        
-        // Vérifier si le segment n'est pas déjà validé
-        const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
-        
-        if (!alreadyValidated) {
-          setValidationSegment(nextSegment);
-          await prepareAndShowQuestion(nextSegment);
-        } else {
-          toast.info(`Segment ${nextSegment} déjà validé`, {
-            action: {
-              label: "Segment suivant",
-              onClick: () => moveToNextSegment(),
-            },
-          });
-        }
+    // Resynchro pour avoir le current_page à jour !
+    const syncedBook = await syncBookWithAPI(userId, book.id);
+    if (syncedBook) {
+      setCurrentBook(syncedBook);
+      const nextSegment = Math.floor((syncedBook.current_page ?? 0) / 30) + 1;
+      const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
+      if (!alreadyValidated) {
+        setValidationSegment(nextSegment);
+        await prepareAndShowQuestion(nextSegment);
+      } else {
+        toast.info(`Segment ${nextSegment} déjà validé`, {
+          action: {
+            label: "Segment suivant",
+            onClick: () => showNextSegmentQuizIfAvailable(),
+          },
+        });
       }
-    } catch (error) {
-      console.error('Error moving to next segment:', error);
-      toast.error("Erreur lors du passage au segment suivant");
     }
   };
 
-  const handleStartReading = async () => {
+  // 1. Action principale : bouton contextuel
+  const handleMainButtonClick = async () => {
     if (!userId) {
-      toast.error("Vous devez être connecté pour commencer une lecture");
+      toast.error("Vous devez être connecté pour commencer ou valider votre lecture");
       return;
     }
+
+    const lectureInit = !!currentBook.current_page || !!currentBook.chaptersRead;
     setIsInitializing(true);
-    console.log('Starting reading with userId:', userId, 'bookId:', book.id);
-
     try {
-      // Vérifier d'abord si la lecture existe déjà
-      const syncedBook = await syncBookWithAPI(userId, book.id);
-      let readingExists = false;
-      
-      if (syncedBook && syncedBook.chaptersRead > 0) {
-        readingExists = true;
-        setCurrentBook(syncedBook);
-      }
-      
-      if (!readingExists) {
-        // Initialiser seulement si nécessaire
-        const progress = await initializeNewBookReading(userId, book.id);
-        
-        if (progress) {
-          toast.success("Lecture initialisée avec succès");
-          const updatedBook = await syncBookWithAPI(userId, book.id);
-          if (updatedBook) {
-            setCurrentBook(updatedBook);
+      if (!lectureInit) {
+        // Lecture non commencée → initialiser lecture + checker s'il existe déjà validation segment 1
+        const syncedBook = await syncBookWithAPI(userId, book.id);
+        let progressCreated = false;
+        if (!syncedBook || (!syncedBook.current_page && !syncedBook.chaptersRead)) {
+          const progress = await initializeNewBookReading(userId, book.id);
+          if (progress) {
+            const updatedBook = await syncBookWithAPI(userId, book.id);
+            if (updatedBook) setCurrentBook(updatedBook);
+            progressCreated = true;
           }
+        } else if (syncedBook) {
+          setCurrentBook(syncedBook);
         }
-      }
-      
-      // Vérifier si le segment 1 a déjà été validé
-      const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
-      
-      if (segment1Validated) {
-        toast.info("Premier segment déjà validé. Vous pouvez continuer votre progression.", {
-          action: {
-            label: "Continuer la lecture",
-            onClick: () => moveToNextSegment(),
-          },
-        });
-      } else {
-        setValidationSegment(1);
-        await prepareAndShowQuestion(1);
-      }
-      
-      setTimeout(() => {
-        progressRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 400);
 
-      if (onChapterComplete) {
-        onChapterComplete(book.id);
+        // Segment 1 déjà validé ?
+        const segment1Validated = await isSegmentAlreadyValidated(userId, book.id, 1);
+        if (segment1Validated) {
+          toast.info("Segment déjà validé, vous pouvez continuer.", {
+            action: {
+              label: "Continuer la lecture",
+              onClick: () => showNextSegmentQuizIfAvailable(),
+            },
+          });
+        } else {
+          setValidationSegment(1);
+          await prepareAndShowQuestion(1);
+        }
+      } else {
+        // Lecture déjà commencée → direct quiz sur le segment courant
+        await startQuizForCurrentSegment();
       }
     } catch (error) {
-      console.error('Error starting book:', error);
-      toast.error("Une erreur est survenue lors de l'initialisation de la lecture: " +
+      toast.error("Impossible de lancer la validation: " +
         (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsInitializing(false);
     }
   };
 
+  // Prépare et ouvre la QuizModal avec la bonne question
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId) {
       toast.error("Données de validation incomplètes");
       return;
     }
-    
     setIsValidating(true);
-    
     try {
-      // Vérifier si le segment a déjà été validé
       const segmentValidated = await isSegmentAlreadyValidated(userId, currentBook.id, segment);
-      
       if (segmentValidated) {
         toast.info(`Segment ${segment} déjà validé`, {
           action: {
             label: "Segment suivant",
-            onClick: () => moveToNextSegment(),
+            onClick: () => showNextSegmentQuizIfAvailable(),
           },
         });
         setValidationSegment(null);
         setIsValidating(false);
         return;
       }
-      
-      console.log(`Préparation de la question pour le livre ${currentBook.id}, segment ${segment}`);
-      
       const question = await getQuestionForBookSegment(currentBook.id, segment);
-      
       if (question) {
-        console.log("Question trouvée dans Supabase:", question);
         setCurrentQuestion(question);
         setShowQuizModal(true);
       } else {
-        console.log("Aucune question trouvée dans Supabase pour le livre " + currentBook.id + ", segment " + segment + ". Utilisation de la question par défaut.");
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setShowQuizModal(true);
       }
     } catch (error) {
-      console.error('Error fetching question:', error);
       toast.error("Erreur lors de la récupération de la question: " + 
         (error instanceof Error ? error.message : String(error)));
       const fallbackQuestion = getFallbackQuestion();
@@ -214,44 +206,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  const handleValidateSegment = async () => {
-    if (!userId || !validationSegment) {
-      toast.error("Données de validation incomplètes");
-      setShowValidationModal(false);
-      return;
-    }
-    
-    setIsValidating(true);
-    
-    try {
-      // Vérifier si le segment a déjà été validé
-      const segmentValidated = await isSegmentAlreadyValidated(userId, currentBook.id, validationSegment);
-      
-      if (segmentValidated) {
-        toast.info(`Segment ${validationSegment} déjà validé`, {
-          action: {
-            label: "Segment suivant",
-            onClick: () => moveToNextSegment(),
-          },
-        });
-        setShowValidationModal(false);
-      } else {
-        await prepareAndShowQuestion(validationSegment);
-        setShowValidationModal(false);
-      }
-    } catch (error) {
-      console.error('Error during validation:', error);
-      toast.error("Erreur lors de la validation: " +
-        (error instanceof Error ? error.message : String(error)));
-      setShowValidationModal(false);
-    } finally {
-      setIsValidating(false);
-    }
-  };
-  
+  // Validation finale : après quiz réussi
   const handleQuizComplete = async (passed: boolean) => {
     setShowQuizModal(false);
-    
     if (!passed || !userId || !validationSegment) {
       if (!passed) {
         toast.error("Réponse incorrecte. Réessayez plus tard.");
@@ -259,49 +216,59 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       setValidationSegment(null);
       return;
     }
-    
     try {
       setIsValidating(true);
-      
       const result = await validateReading({
         user_id: userId,
         book_id: book.id,
         segment: validationSegment
       });
-      
+
       if (result.already_validated) {
         toast.info(`Segment ${validationSegment} déjà validé`, {
           action: {
             label: "Segment suivant",
-            onClick: () => moveToNextSegment(),
+            onClick: () => showNextSegmentQuizIfAvailable(),
           },
         });
       } else {
-        toast.success(`Segment ${validationSegment} validé avec succès! 🎉`, {
+        toast.success(`Segment ${validationSegment} validé 🎉`, {
           action: {
             label: "Continuer la lecture",
-            onClick: () => moveToNextSegment(),
+            onClick: () => showNextSegmentQuizIfAvailable(),
           },
         });
       }
-      
+
+      // MAJ progression – lecture
       const updatedBook = await syncBookWithAPI(userId, book.id);
-      if (updatedBook) {
-        setCurrentBook(updatedBook);
-      }
-      
-      if (onChapterComplete) {
-        onChapterComplete(book.id);
-      }
-      
+      if (updatedBook) setCurrentBook(updatedBook);
+
+      if (onChapterComplete) onChapterComplete(book.id);
     } catch (error: any) {
-      console.error('Error during quiz validation:', error);
-      toast.error("Erreur lors de la validation: " +
-        (error instanceof Error ? error.message : String(error)));
+      toast.error("Erreur lors de la validation: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsValidating(false);
       setValidationSegment(null);
     }
+  };
+
+  // Interface du bouton principal, contextuel selon l’état
+  const renderMainButton = () => {
+    const lectureInit = !!currentBook.current_page || !!currentBook.chaptersRead;
+    return (
+      <Button
+        disabled={isInitializing || isValidating}
+        onClick={handleMainButtonClick}
+        className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
+      >
+        {isInitializing
+          ? "Chargement..."
+          : lectureInit
+            ? "Valider ma lecture"
+            : "Commencer ma lecture"}
+      </Button>
+    );
   };
 
   return (
@@ -310,12 +277,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       <CardContent className="space-y-4">
         <BookCoverInfo book={currentBook} />
         <BookDescription description={currentBook.description} />
-        <BookActions
-          isInitializing={isInitializing}
-          onStartReading={handleStartReading}
-          pages={currentBook.pages}
-          language={currentBook.language}
-        />
+        {renderMainButton()}
         <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
         {showValidationModal && validationSegment && (
           <ValidationModal
@@ -324,7 +286,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             isOpen={showValidationModal}
             isValidating={isValidating}
             onClose={() => setShowValidationModal(false)}
-            onValidate={handleValidateSegment}
+            onValidate={() => {
+              setShowValidationModal(false);
+              prepareAndShowQuestion(validationSegment);
+            }}
           />
         )}
         {showQuizModal && currentQuestion && validationSegment && (
