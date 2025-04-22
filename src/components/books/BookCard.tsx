@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
@@ -35,26 +34,13 @@ export function BookCard({
   // Get the user ID from Supabase auth session
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        console.log("User authenticated in BookCard:", session.user.id);
-        setUserId(session.user.id);
+      const { data } = await supabase.auth.getUser();
+      
+      if (data?.user?.id) {
+        console.log("User authenticated in BookCard:", data.user.id);
+        setUserId(data.user.id);
       } else {
-        // For development fallback - using localStorage
-        const userString = localStorage.getItem("user");
-        if (userString) {
-          try {
-            const userObj = JSON.parse(userString);
-            if (userObj.id) {
-              console.log("Using localStorage user ID in BookCard:", userObj.id);
-              setUserId(userObj.id);
-            } else {
-              console.warn("No valid user ID found in localStorage");
-            }
-          } catch (e) {
-            console.warn("Failed to parse user from localStorage:", e);
-          }
-        }
+        console.warn("No authenticated user found in BookCard");
       }
     };
 
