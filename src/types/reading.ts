@@ -31,7 +31,7 @@ export interface ReadingProgress {
   status: "to_read" | "in_progress" | "completed";
   streak_current: number;
   streak_best: number;
-  validations?: ReadingValidation[]; // Maintenant optionnel
+  validations?: ReadingValidation[]; // Optional for flexibility
 }
 
 export interface ValidateReadingRequest {
