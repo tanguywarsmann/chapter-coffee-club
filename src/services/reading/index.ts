@@ -3,4 +3,4 @@ export * from "./progressService";
 export * from "./validationService";
 export * from "./syncService";
 export * from "./statsService";
-export * from "./questionBank";
+// Removed the questionBank export as it's no longer needed
