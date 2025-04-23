@@ -29,7 +29,16 @@ export function SignUpForm() {
       }
 
       toast.success("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
-      navigate("/home");
+      
+      // Attendre explicitement la récupération de la session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      console.log("Session récupérée après inscription:", sessionData.session?.user?.id);
+      
+      if (sessionData.session?.user) {
+        // Si la session est bien récupérée, rediriger
+        navigate("/home");
+      }
     } catch (error: any) {
       let message = "Une erreur est survenue";
       if (error.message.includes("email already registered")) {

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Image from "@/components/ui/image";
 import { SignUpForm } from "./SignUpForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,24 +17,57 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [showSignUp, setShowSignUp] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // In a real app, you'd authenticate with a backend
-    // This is a mock implementation
-    setTimeout(() => {
+    if (!email || !password) {
+      toast.error("Veuillez remplir tous les champs");
       setIsLoading(false);
-      if (email && password) {
-        // Store user in local storage as a simple mock
-        localStorage.setItem("user", JSON.stringify({ email }));
-        toast.success("Connecté avec succès!");
+      return;
+    }
+    
+    try {
+      // Tentative de connexion avec Supabase
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Afficher un message de succès
+      toast.success("Connecté avec succès!");
+      
+      // Attendre explicitement la récupération de la session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      console.log("Session récupérée après connexion:", sessionData.session?.user?.id);
+      
+      if (sessionData.session?.user) {
+        // Si la session est bien récupérée, rediriger
         navigate("/home");
       } else {
-        toast.error("Veuillez remplir tous les champs");
+        // Si après la tentative de récupération, on n'a toujours pas de session
+        console.error("Session non disponible après connexion");
+        toast.error("Erreur de session. Veuillez réessayer.");
       }
-    }, 1000);
+    } catch (error: any) {
+      console.error("Erreur de connexion:", error);
+      let message = "Erreur de connexion";
+      
+      if (error.message.includes("Invalid login credentials")) {
+        message = "Email ou mot de passe incorrect";
+      }
+      
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (showSignUp) {
