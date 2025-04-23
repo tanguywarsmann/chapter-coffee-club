@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Image from "@/components/ui/image";
+import { SignUpForm } from "./SignUpForm";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [showSignUp, setShowSignUp] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +33,23 @@ export function LoginForm() {
       }
     }, 1000);
   };
+
+  if (showSignUp) {
+    return (
+      <div className="space-y-6">
+        <SignUpForm />
+        <div className="text-sm text-center">
+          Déjà un compte?{" "}
+          <button 
+            onClick={() => setShowSignUp(false)}
+            className="text-coffee-dark hover:text-coffee-darker font-semibold"
+          >
+            Se connecter
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto border-coffee-medium">
@@ -85,16 +104,12 @@ export function LoginForm() {
         </div>
         <div className="text-sm text-center">
           Pas encore de compte?{" "}
-          <a 
-            href="#" 
-            onClick={(e) => {
-              e.preventDefault();
-              toast.info("La création de compte sera disponible prochainement!");
-            }}
+          <button 
+            onClick={() => setShowSignUp(true)}
             className="text-coffee-dark hover:text-coffee-darker font-semibold"
           >
             Créer un compte
-          </a>
+          </button>
         </div>
       </CardFooter>
     </Card>
