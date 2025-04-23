@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
 import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -87,12 +87,14 @@ export default function BookPage() {
   if (!book) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <main className="container py-6">
-        <BookDetail book={book} onChapterComplete={handleChapterComplete} />
-      </main>
-    </div>
+    <AuthGuard>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        
+        <main className="container py-6">
+          <BookDetail book={book} onChapterComplete={handleChapterComplete} />
+        </main>
+      </div>
+    </AuthGuard>
   );
 }

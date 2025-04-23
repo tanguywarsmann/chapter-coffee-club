@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -11,6 +10,7 @@ import { Book as BookType } from "@/types/book";
 import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
 import { getBookById } from "@/mock/books";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 type SortOption = "date" | "author" | "pages";
 
@@ -67,96 +67,98 @@ export default function ReadingList() {
   const completedBooks = sortBooks(getBooksByStatus("completed"), sortBy);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      
-      <main className="container py-6 space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-serif font-medium text-coffee-darker">Ma liste de lecture</h1>
-          
-          <div className="flex items-center gap-4">
-            <Select onValueChange={handleSort as any} value={sortBy}>
-              <SelectTrigger className="w-[180px]">
-                <ArrowDownAZ className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Trier par..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">
-                  <span className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Date
-                  </span>
-                </SelectItem>
-                <SelectItem value="author">
-                  <span className="flex items-center">
-                    <Book className="mr-2 h-4 w-4" />
-                    Auteur
-                  </span>
-                </SelectItem>
-                <SelectItem value="pages">
-                  <span className="flex items-center">
-                    <Book className="mr-2 h-4 w-4" />
-                    Nombre de pages
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+    <AuthGuard>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        
+        <main className="container py-6 space-y-8">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-serif font-medium text-coffee-darker">Ma liste de lecture</h1>
             
-            <Button 
-              className="bg-coffee-dark hover:bg-coffee-darker" 
-              onClick={() => navigate("/explore")}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un livre
-            </Button>
+            <div className="flex items-center gap-4">
+              <Select onValueChange={handleSort as any} value={sortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <ArrowDownAZ className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Trier par..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">
+                    <span className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Date
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="author">
+                    <span className="flex items-center">
+                      <Book className="mr-2 h-4 w-4" />
+                      Auteur
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="pages">
+                    <span className="flex items-center">
+                      <Book className="mr-2 h-4 w-4" />
+                      Nombre de pages
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                className="bg-coffee-dark hover:bg-coffee-darker" 
+                onClick={() => navigate("/explore")}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter un livre
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        <Card className="border-coffee-light">
-          <CardHeader>
-            <CardTitle className="text-xl font-serif text-coffee-darker">En cours de lecture</CardTitle>
-            <CardDescription>Reprenez où vous vous êtes arrêté</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BookGrid 
-              books={inProgressBooks}
-              showProgress
-              actionLabel="Continuer la lecture"
-              onAction={(bookId) => navigate(`/books/${bookId}`)}
-            />
-          </CardContent>
-        </Card>
-        
-        <Card className="border-coffee-light">
-          <CardHeader>
-            <CardTitle className="text-xl font-serif text-coffee-darker">À lire</CardTitle>
-            <CardDescription>Votre liste de lecture à venir</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BookGrid 
-              books={toReadBooks}
-              actionLabel="Commencer la lecture"
-              onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
-            />
-          </CardContent>
-        </Card>
-        
-        <Card className="border-coffee-light">
-          <CardHeader>
-            <CardTitle className="text-xl font-serif text-coffee-darker">Livres terminés</CardTitle>
-            <CardDescription>Vos lectures complétées</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BookGrid 
-              books={completedBooks}
-              showDate
-              actionLabel="Relire"
-              onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
-              showDeleteButton
-            />
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          
+          <Card className="border-coffee-light">
+            <CardHeader>
+              <CardTitle className="text-xl font-serif text-coffee-darker">En cours de lecture</CardTitle>
+              <CardDescription>Reprenez où vous vous êtes arrêté</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BookGrid 
+                books={inProgressBooks}
+                showProgress
+                actionLabel="Continuer la lecture"
+                onAction={(bookId) => navigate(`/books/${bookId}`)}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="border-coffee-light">
+            <CardHeader>
+              <CardTitle className="text-xl font-serif text-coffee-darker">À lire</CardTitle>
+              <CardDescription>Votre liste de lecture à venir</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BookGrid 
+                books={toReadBooks}
+                actionLabel="Commencer la lecture"
+                onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="border-coffee-light">
+            <CardHeader>
+              <CardTitle className="text-xl font-serif text-coffee-darker">Livres terminés</CardTitle>
+              <CardDescription>Vos lectures complétées</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BookGrid 
+                books={completedBooks}
+                showDate
+                actionLabel="Relire"
+                onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+                showDeleteButton
+              />
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    </AuthGuard>
   );
 }
