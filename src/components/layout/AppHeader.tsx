@@ -9,17 +9,16 @@ import { User, Home, LogOut, Trophy, BookCheck, Settings, Menu } from "lucide-re
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AppHeader() {
-  const [user] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("user");
     toast.success("Déconnexion réussie");
     navigate("/");
@@ -132,7 +131,7 @@ export function AppHeader() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.name || user.email}</p>
+                  <p className="text-sm font-medium leading-none">{user.email}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.email}
                   </p>

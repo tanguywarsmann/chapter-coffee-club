@@ -5,32 +5,11 @@ import { Book } from "@/types/book";
 import { getBookById } from "@/mock/books";
 import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
-export const useReadingList = (initialUserId: string = "") => {
+export const useReadingList = () => {
   const queryClient = useQueryClient();
-  const [userId, setUserId] = useState<string>("");
-
-  useEffect(() => {
-    // Try to get user from Supabase auth
-    const getUserId = async () => {
-      const { data } = await supabase.auth.getUser();
-      
-      if (data?.user?.id) {
-        console.log("Using Supabase auth ID in useReadingList:", data.user.id);
-        setUserId(data.user.id);
-      } else if (initialUserId) {
-        console.log("Using provided userId in useReadingList:", initialUserId);
-        setUserId(initialUserId);
-      } else {
-        console.warn("No valid user ID found, functionality will be limited");
-        setUserId("");
-      }
-    };
-
-    getUserId();
-  }, [initialUserId]);
+  const { user } = useAuth();
 
   const { data: readingList } = useQuery({
     queryKey: ["reading_list"],
@@ -41,12 +20,13 @@ export const useReadingList = (initialUserId: string = "") => {
   });
 
   const addToReadingList = async (book: Book) => {
-    if (!userId) {
+    if (!user) {
       toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
       console.error("Missing user ID when adding to reading list");
       return;
     }
 
+    const userId = user.id;
     console.log('Adding book to reading list with userId:', userId, 'bookId:', book.id);
     
     const storedList = localStorage.getItem("reading_list");
@@ -93,8 +73,9 @@ export const useReadingList = (initialUserId: string = "") => {
   };
 
   const getBooksByStatus = (status: ReadingList["status"]) => {
-    if (!readingList) return [];
+    if (!readingList || !user) return [];
     
+    const userId = user.id;
     return readingList
       .filter((item: ReadingList) => item.user_id === userId && item.status === status)
       .map((item: ReadingList) => getBookById(item.book_id))
@@ -105,6 +86,6 @@ export const useReadingList = (initialUserId: string = "") => {
     addToReadingList,
     getBooksByStatus,
     readingList,
-    userId
+    userId: user?.id
   };
 };

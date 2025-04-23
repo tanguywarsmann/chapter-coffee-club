@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -22,6 +23,7 @@ import {
   syncBookWithAPI 
 } from "@/services/reading";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -30,8 +32,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
-  const userId = localStorage.getItem("user") || "user123";
+  const { user } = useAuth();
   
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
@@ -39,7 +40,7 @@ export default function Home() {
   });
 
   useEffect(() => {
-    if (!userId) {
+    if (!user) {
       navigate("/");
       return;
     }
@@ -47,10 +48,11 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log("Fetching user data with ID:", user.id);
         
-        await initializeUserReadingProgress(userId);
+        await initializeUserReadingProgress(user.id);
         
-        const booksInProgress = await getBooksInProgressFromAPI(userId);
+        const booksInProgress = await getBooksInProgressFromAPI(user.id);
         setInProgressBooks(booksInProgress);
         
         if (booksInProgress.length > 0) {
@@ -69,7 +71,7 @@ export default function Home() {
     };
     
     fetchData();
-  }, [navigate, userId]);
+  }, [navigate, user]);
 
   const handleSearch = (query: string) => {
     if (!query.trim()) {
@@ -92,8 +94,13 @@ export default function Home() {
   };
 
   const handleProgressUpdate = async (bookId: string) => {
+    if (!user) {
+      toast.error("Vous devez être connecté pour mettre à jour votre progression");
+      return;
+    }
+    
     try {
-      const updatedBook = await syncBookWithAPI(userId, bookId);
+      const updatedBook = await syncBookWithAPI(user.id, bookId);
       
       if (updatedBook) {
         setCurrentBook(updatedBook);
@@ -103,7 +110,7 @@ export default function Home() {
         );
       }
       
-      const booksInProgress = await getBooksInProgressFromAPI(userId);
+      const booksInProgress = await getBooksInProgressFromAPI(user.id);
       setInProgressBooks(booksInProgress);
     } catch (error) {
       console.error("Error updating progress:", error);

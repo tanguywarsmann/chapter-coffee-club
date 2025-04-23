@@ -7,31 +7,14 @@ import { getBookById } from "@/services/books/bookQueries"; // Import from Supab
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
 import { Book } from "@/types/book";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Get the user ID from Supabase auth session
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      
-      if (data?.user?.id) {
-        console.log("User authenticated in BookPage:", data.user.id);
-        setUserId(data.user.id);
-      } else {
-        console.warn("No authenticated user found in BookPage");
-        toast.warning("Vous n'êtes pas connecté. Certaines fonctionnalités seront limitées.");
-      }
-    };
-
-    getUser();
-  }, []);
+  const { user } = useAuth();
   
   useEffect(() => {
     // Fetch book data
@@ -57,10 +40,10 @@ export default function BookPage() {
         setBook(fetchedBook);
         
         // Sync book with reading progress if user is authenticated
-        if (userId) {
+        if (user) {
           try {
-            console.log("Syncing book with user progress for userId:", userId, "bookId:", id);
-            const syncedBook = await syncBookWithAPI(userId, id);
+            console.log("Syncing book with user progress for userId:", user.id, "bookId:", id);
+            const syncedBook = await syncBookWithAPI(user.id, id);
             if (syncedBook) {
               setBook(syncedBook);
             }
@@ -79,17 +62,17 @@ export default function BookPage() {
     };
     
     fetchBook();
-  }, [id, navigate, userId]);
+  }, [id, navigate, user]);
 
   const handleChapterComplete = async (bookId: string) => {
-    if (!book || !userId) {
+    if (!book || !user) {
       toast.error("Vous devez être connecté pour valider un chapitre");
       return;
     }
     
     // Since the validation is now handled by the API, we just need to refresh the book data
     try {
-      const updatedBook = await syncBookWithAPI(userId, bookId);
+      const updatedBook = await syncBookWithAPI(user.id, bookId);
       if (updatedBook) {
         setBook(updatedBook);
         toast.success("Mise à jour du livre réussie");

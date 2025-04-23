@@ -3,17 +3,18 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import Image from "@/components/ui/image";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { user, isInitialized } = useAuth();
   
   useEffect(() => {
-    // Check if user is already logged in
-    const user = localStorage.getItem("user");
-    if (user) {
+    // Rediriger vers la page d'accueil si déjà connecté
+    if (isInitialized && user) {
       navigate("/home");
     }
-  }, [navigate]);
+  }, [user, isInitialized, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4">
@@ -40,4 +41,3 @@ export default function Login() {
     </div>
   );
 }
-
