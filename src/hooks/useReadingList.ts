@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
@@ -75,9 +74,8 @@ export const useReadingList = () => {
   const getBooksByStatus = (status: ReadingList["status"]) => {
     if (!readingList || !user) return [];
     
-    const userId = user.id;
     return readingList
-      .filter((item: ReadingList) => item.user_id === userId && item.status === status)
+      .filter((item: ReadingList) => item.user_id === user.id && item.status === status)
       .map((item: ReadingList) => getBookById(item.book_id))
       .filter((book): book is Book => book !== null);
   };
