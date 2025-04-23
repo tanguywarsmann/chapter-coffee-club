@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -23,6 +24,7 @@ import {
 } from "@/services/reading";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -37,6 +39,49 @@ export default function Home() {
     const onboardingFlag = localStorage.getItem("onboardingDone");
     return !onboardingFlag;
   });
+
+  const handleSearch = (query: string) => {
+    // Simple search implementation
+    if (!query.trim()) return;
+    
+    const allBooks = [
+      ...getPopularBooks(),
+      ...getRecentlyAddedBooks(),
+      ...getRecommendedBooks()
+    ];
+    
+    const filtered = allBooks.filter(book => 
+      book.title.toLowerCase().includes(query.toLowerCase()) || 
+      book.author.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    setSearchResults(filtered);
+    if (filtered.length === 0) {
+      toast.info("Aucun livre ne correspond à votre recherche");
+    }
+  };
+
+  const handleProgressUpdate = async (bookId: string) => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      // Re-fetch the current book to update progress
+      const updatedBook = await syncBookWithAPI(user.id, bookId);
+      if (updatedBook) {
+        setCurrentBook(updatedBook);
+      }
+      
+      // Refresh in-progress books
+      const books = await getBooksInProgressFromAPI(user.id);
+      setInProgressBooks(books);
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      toast.error("Erreur lors de la mise à jour de la progression");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthGuard>
