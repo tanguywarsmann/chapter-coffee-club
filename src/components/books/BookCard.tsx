@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +30,7 @@ export function BookCard({
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const { addToReadingList } = useReadingList(userId || "");
+  const { addToReadingList } = useReadingList();
 
   // Get the user ID from Supabase auth session
   useEffect(() => {

@@ -17,9 +17,8 @@ type SortOption = "date" | "author" | "pages";
 export default function ReadingList() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("date");
-  const userId = localStorage.getItem("user") || "user123";
   
-  const { getBooksByStatus } = useReadingList(userId);
+  const { getBooksByStatus } = useReadingList();
 
   const sortBooks = (books: BookType[], sortOption: SortOption) => {
     return [...books].sort((a, b) => {
@@ -42,6 +41,7 @@ export default function ReadingList() {
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     const storedList = localStorage.getItem("reading_list");
     const readingList = storedList ? JSON.parse(storedList) : [];
+    const userId = localStorage.getItem("user") || "user123"; // Get userId from localStorage
     
     const updatedList = readingList.map((item: any) => {
       if (item.user_id === userId && item.book_id === bookId) {
