@@ -141,7 +141,7 @@ export const useReadingList = () => {
               categories: [],
               pages: item.total_pages || 0,
               publicationYear: 0
-            };
+            } as Book;
           }
           
           // Add reading progress information to the book
@@ -167,7 +167,7 @@ export const useReadingList = () => {
             categories: [],
             pages: 0,
             publicationYear: 0
-          };
+          } as Book;
         }
       });
       
