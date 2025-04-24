@@ -1,17 +1,14 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { BookOpen, ChevronRight, Loader2, CheckCircle } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Book } from "@/types/book";
-import { validateReading } from "@/services/reading";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { QuizModal } from "@/components/books/QuizModal";
-import { ReadingQuestion } from "@/types/reading";
-import { getFallbackQuestion, getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
-import { supabase } from "@/integrations/supabase/client";
+import { CurrentBookCover } from "./CurrentBookCover";
+import { CurrentBookInfo } from "./CurrentBookInfo";
+import { useCurrentBookValidation } from "@/hooks/useCurrentBookValidation";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -20,24 +17,18 @@ interface CurrentBookProps {
 
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   const navigate = useNavigate();
-  const [isValidating, setIsValidating] = useState(false);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizChapter, setQuizChapter] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user?.id) {
-        setUserId(data.user.id);
-      } else {
-        toast.warning("Vous n'êtes pas connecté. Certaines fonctionnalités seront limitées.");
-      }
-    };
-    getUser();
-  }, []);
-  
+  const {
+    isValidating,
+    showQuiz,
+    setShowQuiz,
+    quizChapter,
+    currentQuestion,
+    handleValidateReading,
+    handleQuizComplete
+  } = useCurrentBookValidation(userId, book, onProgressUpdate);
+
   if (!book) {
     return (
       <Card className="border-coffee-light">
@@ -58,148 +49,9 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       </Card>
     );
   }
-  
-  const totalPages = book.totalChapters * 30;
-  const pagesRead = book.chaptersRead * 30;
-  const progressPercentage = (pagesRead / totalPages) * 100;
-  
-  const handleNavigateToBook = () => {
-    navigate(`/books/${book.id}`);
-  };
-  
-  const handleValidateReading = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!userId) {
-      toast.error("Vous devez être connecté pour valider votre lecture");
-      return;
-    }
-    
-    if (book.chaptersRead >= book.totalChapters) {
-      toast.success("Vous avez déjà terminé ce livre !");
-      navigate(`/books/${book.id}`);
-      return;
-    }
-    
-    try {
-      setIsValidating(true);
-      const nextSegment = book.chaptersRead + 1;
-      
-      // Vérifier si ce segment a déjà été validé
-      const segmentValidated = await isSegmentAlreadyValidated(userId, book.id, nextSegment);
-      
-      if (segmentValidated) {
-        toast.info(`Segment ${nextSegment} déjà validé`, {
-          action: {
-            label: "Continuer la lecture",
-            onClick: () => navigate(`/books/${book.id}`),
-          },
-        });
-        setIsValidating(false);
-        return;
-      }
-      
-      console.log(`Recherche d'une question pour le livre ${book.id}, segment ${nextSegment}`);
-      
-      // Récupérer la question pour le segment depuis Supabase
-      try {
-        const question = await getQuestionForBookSegment(book.id, nextSegment);
-        
-        if (question) {
-          console.log("Question trouvée dans Supabase:", question);
-          setCurrentQuestion(question);
-          setQuizChapter(nextSegment);
-          setShowQuiz(true);
-        } else {
-          console.log("Aucune question trouvée dans Supabase pour le livre " + book.id + ", segment " + nextSegment + ". Utilisation de la question par défaut.");
-          const fallbackQuestion = getFallbackQuestion();
-          setCurrentQuestion(fallbackQuestion);
-          setQuizChapter(nextSegment);
-          setShowQuiz(true);
-        }
-      } catch (error) {
-        console.error("Error getting question:", error);
-        toast.error("Erreur lors de la récupération de la question");
-        
-        // Utiliser la question fallback en cas d'erreur
-        const fallbackQuestion = getFallbackQuestion();
-        setCurrentQuestion(fallbackQuestion);
-        setQuizChapter(nextSegment);
-        setShowQuiz(true);
-      }
-    } catch (error: any) {
-      console.error("Error preparing validation:", error);
-      toast.error("Erreur lors de la préparation de la validation: " + 
-        (error.message || error.error || "Erreur inconnue"));
-    } finally {
-      setIsValidating(false);
-    }
-  };
-  
-  const handleQuizComplete = async (passed: boolean) => {
-    setShowQuiz(false);
-    
-    if (!passed) {
-      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
-      return;
-    }
-    
-    if (!userId) {
-      toast.error("Vous devez être connecté pour valider votre lecture");
-      return;
-    }
-    
-    try {
-      setIsValidating(true);
-      const nextSegment = book.chaptersRead + 1;
-      
-      console.log(`Validation du segment ${nextSegment} pour le livre ${book.id}`);
-      const result = await validateReading({
-        user_id: userId,
-        book_id: book.id,
-        segment: nextSegment
-      });
-      
-      if (result.already_validated) {
-        toast.info(`Segment ${nextSegment} déjà validé`, {
-          action: {
-            label: "Continuer la lecture",
-            onClick: () => navigate(`/books/${book.id}`),
-          },
-        });
-      } else {
-        toast.success(`Segment ${nextSegment} validé avec succès! 🎉`, {
-          action: {
-            label: "Continuer la lecture",
-            onClick: () => navigate(`/books/${book.id}`),
-          },
-        });
-      }
-      
-      if (onProgressUpdate) {
-        onProgressUpdate(book.id);
-      }
-      
-      // Redirection vers la page du livre pour voir la progression mise à jour
-      navigate(`/books/${book.id}`);
-      
-    } catch (error: any) {
-      if (error.message === "Segment déjà validé") {
-        toast.info(`Segment ${book.chaptersRead + 1} déjà validé`, {
-          action: {
-            label: "Continuer la lecture",
-            onClick: () => navigate(`/books/${book.id}`),
-          },
-        });
-      } else {
-        toast.error("Erreur lors de la validation: " + 
-          (error.message || error.error || "Erreur inconnue"));
-      }
-    } finally {
-      setIsValidating(false);
-    }
-  };
+
+  const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
+  const handleNavigateToBook = () => navigate(`/books/${book.id}`);
 
   return (
     <>
@@ -209,45 +61,14 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
-            <div className="book-cover w-20 h-30 flex-shrink-0">
-              {book.coverImage ? (
-                <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                  <span className="text-white font-serif italic text-xl">{book.title.substring(0, 1)}</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex-1">
-              <h3 className="font-medium text-coffee-darker hover:underline cursor-pointer" onClick={handleNavigateToBook}>
-                {book.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">{book.author}</p>
-              
-              <div className="mt-3 space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-coffee-darker">Progression</span>
-                  <span className="text-muted-foreground">{pagesRead} sur {totalPages} pages</span>
-                </div>
-                <Progress value={progressPercentage} className="h-2" />
-              </div>
-              
-              <Button 
-                className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker text-center"
-                onClick={handleValidateReading}
-                disabled={isValidating}
-              >
-                {isValidating ? (
-                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
-                ) : (
-                  <>
-                    <span className="text-center">Valider 30 pages</span>
-                    <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0" />
-                  </>
-                )}
-              </Button>
-            </div>
+            <CurrentBookCover book={book} />
+            <CurrentBookInfo
+              book={book}
+              progressPercentage={progressPercentage}
+              isValidating={isValidating}
+              onValidate={handleValidateReading}
+              onNavigate={handleNavigateToBook}
+            />
           </div>
         </CardContent>
       </Card>
