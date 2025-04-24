@@ -12,6 +12,7 @@ import { BookDescription } from "./BookDescription";
 import { Button } from "@/components/ui/button";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
+import { toast } from "sonner";
 
 interface BookDetailProps {
   book: Book;
