@@ -11,6 +11,9 @@ import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
 import { getBookById } from "@/mock/books";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
+import { initializeNewBookReading } from "@/services/reading";
 
 type SortOption = "date" | "author" | "pages";
 
@@ -19,6 +22,7 @@ export default function ReadingList() {
   const [sortBy, setSortBy] = useState<SortOption>("date");
   
   const { getBooksByStatus } = useReadingList();
+  const { user } = useAuth();
 
   const sortBooks = (books: BookType[], sortOption: SortOption) => {
     return [...books].sort((a, b) => {
@@ -65,6 +69,30 @@ export default function ReadingList() {
   const toReadBooks = sortBooks(getBooksByStatus("to_read"), sortBy);
   const inProgressBooks = sortBooks(getBooksByStatus("in_progress"), sortBy);
   const completedBooks = sortBooks(getBooksByStatus("completed"), sortBy);
+
+  useEffect(() => {
+    const initializeBooks = async () => {
+      if (!user?.id) return;
+
+      try {
+        const booksToInitialize = ['un-amour-de-swann', 'gatsby-le-magnifique'];
+        
+        for (const bookId of booksToInitialize) {
+          await initializeNewBookReading(user.id, bookId);
+        }
+        
+        // Rafraîchir la liste de lecture
+        await getBooksByStatus("in_progress");
+        
+        toast.success('Livres initialisés avec succès !');
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation des livres:', error);
+        toast.error('Erreur lors de l\'initialisation des livres');
+      }
+    };
+
+    initializeBooks();
+  }, [user?.id]);
 
   return (
     <AuthGuard>
