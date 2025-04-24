@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,8 +13,6 @@ import { toast } from "sonner";
 import { getBookById } from "@/mock/books";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
-import { initializeNewBookReading } from "@/services/reading";
 
 type SortOption = "date" | "author" | "pages";
 
@@ -66,33 +65,23 @@ export default function ReadingList() {
     }
   };
 
-  const toReadBooks = sortBooks(getBooksByStatus("to_read"), sortBy);
-  const inProgressBooks = sortBooks(getBooksByStatus("in_progress"), sortBy);
-  const completedBooks = sortBooks(getBooksByStatus("completed"), sortBy);
+  // Récupération sécurisée des livres avec gestion des erreurs
+  const getBooksBySafeStatus = (status: "to_read" | "in_progress" | "completed") => {
+    try {
+      const books = getBooksByStatus(status);
+      // Filtrer les livres qui ont toutes les propriétés requises
+      return books.filter(book => 
+        book && book.id && book.title && book.author
+      );
+    } catch (error) {
+      console.error(`Erreur lors de la récupération des livres ${status}:`, error);
+      return [];
+    }
+  };
 
-  useEffect(() => {
-    const initializeBooks = async () => {
-      if (!user?.id) return;
-
-      try {
-        const booksToInitialize = ['un-amour-de-swann', 'gatsby-le-magnifique'];
-        
-        for (const bookId of booksToInitialize) {
-          await initializeNewBookReading(user.id, bookId);
-        }
-        
-        // Rafraîchir la liste de lecture
-        await getBooksByStatus("in_progress");
-        
-        toast.success('Livres initialisés avec succès !');
-      } catch (error) {
-        console.error('Erreur lors de l\'initialisation des livres:', error);
-        toast.error('Erreur lors de l\'initialisation des livres');
-      }
-    };
-
-    initializeBooks();
-  }, [user?.id]);
+  const toReadBooks = sortBooks(getBooksBySafeStatus("to_read"), sortBy);
+  const inProgressBooks = sortBooks(getBooksBySafeStatus("in_progress"), sortBy);
+  const completedBooks = sortBooks(getBooksBySafeStatus("completed"), sortBy);
 
   return (
     <AuthGuard>

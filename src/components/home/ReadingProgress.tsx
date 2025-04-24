@@ -10,6 +10,11 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ inProgressBooks }: ReadingProgressProps) {
+  // Vérifier et filtrer les livres invalides
+  const validBooks = Array.isArray(inProgressBooks) 
+    ? inProgressBooks.filter(book => book && book.id && book.title) 
+    : [];
+
   return (
     <Card className="border-coffee-light">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -18,7 +23,7 @@ export function ReadingProgress({ inProgressBooks }: ReadingProgressProps) {
           <CardDescription>Reprenez où vous vous êtes arrêté</CardDescription>
         </div>
         
-        {inProgressBooks.length > 0 && (
+        {validBooks.length > 0 && (
           <Button variant="ghost" size="sm" asChild>
             <Link to="/reading-list" className="text-coffee-dark hover:text-coffee-darker">
               Voir tout <ArrowRight className="ml-1 h-4 w-4" />
@@ -27,7 +32,7 @@ export function ReadingProgress({ inProgressBooks }: ReadingProgressProps) {
         )}
       </CardHeader>
       <CardContent>
-        {inProgressBooks.length === 0 ? (
+        {validBooks.length === 0 ? (
           <div className="text-center p-6 border border-dashed border-coffee-light rounded-lg">
             <BookOpen className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <h3 className="text-lg font-medium text-coffee-darker mb-1">Aucune lecture en cours</h3>
@@ -38,8 +43,10 @@ export function ReadingProgress({ inProgressBooks }: ReadingProgressProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {inProgressBooks.slice(0, 3).map((book) => {
-              const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
+            {validBooks.slice(0, 3).map((book) => {
+              const progressPercentage = book.totalChapters > 0 
+                ? (book.chaptersRead / book.totalChapters) * 100
+                : 0;
               
               return (
                 <div key={book.id} className="flex gap-4">

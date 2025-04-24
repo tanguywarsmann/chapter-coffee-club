@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
@@ -74,10 +75,23 @@ export const useReadingList = () => {
   const getBooksByStatus = (status: ReadingList["status"]) => {
     if (!readingList || !user) return [];
     
-    return readingList
-      .filter((item: ReadingList) => item.user_id === user.id && item.status === status)
-      .map((item: ReadingList) => getBookById(item.book_id))
-      .filter((book): book is Book => book !== null);
+    try {
+      return readingList
+        .filter((item: ReadingList) => item.user_id === user.id && item.status === status)
+        .map((item: ReadingList) => {
+          try {
+            const book = getBookById(item.book_id);
+            return book;
+          } catch (error) {
+            console.error(`Erreur lors de la récupération du livre ${item.book_id}:`, error);
+            return null;
+          }
+        })
+        .filter((book): book is Book => book !== null);
+    } catch (error) {
+      console.error(`Erreur lors du traitement des livres ${status}:`, error);
+      return [];
+    }
   };
 
   return {
