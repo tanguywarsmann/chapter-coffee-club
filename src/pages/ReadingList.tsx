@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookGrid } from "@/components/books/BookGrid";
@@ -13,15 +13,49 @@ import { toast } from "sonner";
 import { getBookById } from "@/mock/books";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SortOption = "date" | "author" | "pages";
 
 export default function ReadingList() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("date");
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { getBooksByStatus } = useReadingList();
+  const { getBooksByStatus, isLoadingReadingList } = useReadingList();
   const { user } = useAuth();
+  
+  const [toReadBooks, setToReadBooks] = useState<BookType[]>([]);
+  const [inProgressBooks, setInProgressBooks] = useState<BookType[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<BookType[]>([]);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      try {
+        const toReadResult = await getBooksByStatus("to_read");
+        const inProgressResult = await getBooksByStatus("in_progress"); 
+        const completedResult = await getBooksByStatus("completed");
+        
+        console.log("Books to read:", toReadResult);
+        console.log("Books in progress:", inProgressResult);
+        console.log("Completed books:", completedResult);
+        
+        setToReadBooks(sortBooks(toReadResult || [], sortBy));
+        setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
+        setCompletedBooks(sortBooks(completedResult || [], sortBy));
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        toast.error("Erreur lors du chargement de vos livres");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBooks();
+  }, [user, sortBy, getBooksByStatus, isLoadingReadingList]);
 
   const sortBooks = (books: BookType[], sortOption: SortOption) => {
     return [...books].sort((a, b) => {
@@ -44,7 +78,12 @@ export default function ReadingList() {
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     const storedList = localStorage.getItem("reading_list");
     const readingList = storedList ? JSON.parse(storedList) : [];
-    const userId = localStorage.getItem("user") || "user123"; // Get userId from localStorage
+    const userId = user?.id;
+    
+    if (!userId) {
+      toast.error("Vous devez être connecté pour cette action");
+      return;
+    }
     
     const updatedList = readingList.map((item: any) => {
       if (item.user_id === userId && item.book_id === bookId) {
@@ -62,26 +101,63 @@ export default function ReadingList() {
         newStatus === "in_progress" ? "En cours" :
         "Terminés"
       }"`);
+      
+      // Update local state to reflect changes immediately
+      const moveBook = (book: BookType) => {
+        if (newStatus === "to_read") {
+          setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+          setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+          setToReadBooks(prev => [...prev, book]);
+        } else if (newStatus === "in_progress") {
+          setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+          setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+          setInProgressBooks(prev => [...prev, book]);
+        } else if (newStatus === "completed") {
+          setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+          setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+          setCompletedBooks(prev => [...prev, book]);
+        }
+      };
+      
+      const foundBook = 
+        toReadBooks.find(b => b.id === bookId) || 
+        inProgressBooks.find(b => b.id === bookId) || 
+        completedBooks.find(b => b.id === bookId);
+        
+      if (foundBook) {
+        moveBook(foundBook);
+      }
     }
   };
 
-  // Récupération sécurisée des livres avec gestion des erreurs
-  const getBooksBySafeStatus = (status: "to_read" | "in_progress" | "completed") => {
-    try {
-      const books = getBooksByStatus(status);
-      // Filtrer les livres qui ont toutes les propriétés requises
-      return books.filter(book => 
-        book && book.id && book.title && book.author
-      );
-    } catch (error) {
-      console.error(`Erreur lors de la récupération des livres ${status}:`, error);
-      return [];
-    }
-  };
-
-  const toReadBooks = sortBooks(getBooksBySafeStatus("to_read"), sortBy);
-  const inProgressBooks = sortBooks(getBooksBySafeStatus("in_progress"), sortBy);
-  const completedBooks = sortBooks(getBooksBySafeStatus("completed"), sortBy);
+  // Loading state
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen bg-background">
+          <AppHeader />
+          <main className="container py-6 space-y-8">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-serif font-medium text-coffee-darker">Ma liste de lecture</h1>
+            </div>
+            <Card className="border-coffee-light">
+              <CardHeader>
+                <Skeleton className="h-7 w-52" />
+                <Skeleton className="h-4 w-40" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-64 w-full" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>

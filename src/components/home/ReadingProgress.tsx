@@ -4,12 +4,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ReadingProgressProps {
   inProgressBooks: Book[];
+  isLoading?: boolean;
 }
 
-export function ReadingProgress({ inProgressBooks }: ReadingProgressProps) {
+export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingProgressProps) {
+  // Si nous sommes en train de charger, afficher un squelette
+  if (isLoading) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-52" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-20 w-16" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-full max-w-[200px] mb-1" />
+                  <Skeleton className="h-4 w-24 mb-3" />
+                  <Skeleton className="h-2 w-full mb-1" />
+                  <Skeleton className="h-3 w-full max-w-[150px]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   // Vérifier et filtrer les livres invalides
   const validBooks = Array.isArray(inProgressBooks) 
     ? inProgressBooks.filter(book => book && book.id && book.title) 
