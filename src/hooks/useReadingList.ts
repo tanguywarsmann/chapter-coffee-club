@@ -123,13 +123,13 @@ export const useReadingList = () => {
             setTimeout(() => reject(new Error('Timeout fetching book')), 8000)
           );
           
-          const book = await Promise.race([bookPromise, timeoutPromise]);
+          const book = await Promise.race([bookPromise, timeoutPromise]) as Book | null;
           
           if (!book) {
             console.warn(`Book not found for ID: ${item.book_id}, creating fallback entry`);
             
             // Return a fallback book object with the data we do have
-            return {
+            const fallbackBook: Book = {
               id: item.book_id,
               title: "Livre indisponible",
               author: "Auteur inconnu",
@@ -141,7 +141,9 @@ export const useReadingList = () => {
               categories: [],
               pages: item.total_pages || 0,
               publicationYear: 0
-            } as Book;
+            };
+            
+            return fallbackBook;
           }
           
           // Add reading progress information to the book
@@ -150,12 +152,12 @@ export const useReadingList = () => {
             chaptersRead: Math.floor(item.current_page / 30),
             totalChapters: Math.ceil(book.pages / 30) || 1,
             isCompleted: item.status === "completed"
-          };
+          } as Book;
         } catch (error) {
           console.error(`Error processing book ${item.book_id}:`, error);
           
           // Return a fallback book object on error
-          return {
+          const errorBook: Book = {
             id: item.book_id,
             title: "Erreur de chargement",
             author: "Contenu indisponible",
@@ -167,7 +169,9 @@ export const useReadingList = () => {
             categories: [],
             pages: 0,
             publicationYear: 0
-          } as Book;
+          };
+          
+          return errorBook;
         }
       });
       
