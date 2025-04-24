@@ -50,7 +50,6 @@ export const getQuestionForBookSegment = async (
     console.log(`Querying Supabase for book slug ${bookSlug}, segment ${segment}`);
     
     // Utiliser le slug pour interroger la table reading_questions
-    // Changement : Ne plus utiliser .maybeSingle() mais récupérer toutes les questions
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')

@@ -103,21 +103,31 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       console.log(`Recherche d'une question pour le livre ${book.id}, segment ${nextSegment}`);
       
       // Récupérer la question pour le segment depuis Supabase
-      const question = await getQuestionForBookSegment(book.id, nextSegment);
-      
-      if (question) {
-        console.log("Question trouvée dans Supabase:", question);
-        setCurrentQuestion(question);
-        setQuizChapter(nextSegment);
-        setShowQuiz(true);
-      } else {
-        console.log("Aucune question trouvée dans Supabase pour le livre " + book.id + ", segment " + nextSegment + ". Utilisation de la question par défaut.");
+      try {
+        const question = await getQuestionForBookSegment(book.id, nextSegment);
+        
+        if (question) {
+          console.log("Question trouvée dans Supabase:", question);
+          setCurrentQuestion(question);
+          setQuizChapter(nextSegment);
+          setShowQuiz(true);
+        } else {
+          console.log("Aucune question trouvée dans Supabase pour le livre " + book.id + ", segment " + nextSegment + ". Utilisation de la question par défaut.");
+          const fallbackQuestion = getFallbackQuestion();
+          setCurrentQuestion(fallbackQuestion);
+          setQuizChapter(nextSegment);
+          setShowQuiz(true);
+        }
+      } catch (error) {
+        console.error("Error getting question:", error);
+        toast.error("Erreur lors de la récupération de la question");
+        
+        // Utiliser la question fallback en cas d'erreur
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setQuizChapter(nextSegment);
         setShowQuiz(true);
       }
-      
     } catch (error: any) {
       console.error("Error preparing validation:", error);
       toast.error("Erreur lors de la préparation de la validation: " + 

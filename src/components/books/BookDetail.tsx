@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -198,21 +199,33 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         setIsValidating(false);
         return;
       }
-      const question = await getQuestionForBookSegment(currentBook.id, segment);
-      if (question) {
-        setCurrentQuestion(question);
-        setShowQuizModal(true);
-      } else {
+      
+      // Récupération de la question pour le segment
+      try {
+        const question = await getQuestionForBookSegment(currentBook.id, segment);
+        if (question) {
+          console.log("Question found for segment:", question);
+          setCurrentQuestion(question);
+          setShowQuizModal(true);
+        } else {
+          console.log("No question found, using fallback");
+          const fallbackQuestion = getFallbackQuestion();
+          setCurrentQuestion(fallbackQuestion);
+          setShowQuizModal(true);
+        }
+      } catch (error) {
+        console.error("Error getting question:", error);
+        toast.error("Erreur lors de la récupération de la question: " + 
+          (error instanceof Error ? error.message : String(error)));
+        
+        // Utiliser la question de secours en cas d'erreur
         const fallbackQuestion = getFallbackQuestion();
         setCurrentQuestion(fallbackQuestion);
         setShowQuizModal(true);
       }
     } catch (error) {
-      toast.error("Erreur lors de la récupération de la question: " + 
+      toast.error("Erreur lors de la préparation de la validation: " + 
         (error instanceof Error ? error.message : String(error)));
-      const fallbackQuestion = getFallbackQuestion();
-      setCurrentQuestion(fallbackQuestion);
-      setShowQuizModal(true);
     } finally {
       setIsValidating(false);
     }
