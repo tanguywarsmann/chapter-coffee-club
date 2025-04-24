@@ -101,31 +101,32 @@ export const useReadingList = () => {
         : [];
       
       // Fetch book details for each reading list entry
-      const books = await Promise.all(
-        filteredList.map(async (item: any) => {
-          try {
-            // Fetch book from Supabase instead of mock data
-            const book = await getBookById(item.book_id);
-            if (!book) {
-              console.warn(`Book not found for ID: ${item.book_id}`);
-              return null;
-            }
-            
-            // Add reading progress information to the book
-            return {
-              ...book,
-              chaptersRead: Math.floor(item.current_page / 30), // Approximate chapters based on pages
-              totalChapters: Math.ceil(book.pages / 30), // Approximate total chapters
-              isCompleted: item.status === "completed"
-            };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération du livre ${item.book_id}:`, error);
+      const booksPromises = filteredList.map(async (item: any) => {
+        try {
+          // Fetch book from Supabase
+          const book = await getBookById(item.book_id);
+          
+          // Skip this book if not found
+          if (!book) {
+            console.warn(`Book not found for ID: ${item.book_id}`);
             return null;
           }
-        })
-      );
+          
+          // Add reading progress information to the book
+          return {
+            ...book,
+            chaptersRead: Math.floor(item.current_page / 30), // Approximate chapters based on pages
+            totalChapters: Math.ceil(book.pages / 30), // Approximate total chapters
+            isCompleted: item.status === "completed"
+          };
+        } catch (error) {
+          console.error(`Erreur lors de la récupération du livre ${item.book_id}:`, error);
+          return null;
+        }
+      });
       
-      // Filter out null entries
+      // Wait for all promises to resolve and filter out null entries
+      const books = await Promise.all(booksPromises);
       return books.filter((book): book is Book => book !== null);
     } catch (error) {
       console.error(`Erreur lors du traitement des livres ${status}:`, error);
