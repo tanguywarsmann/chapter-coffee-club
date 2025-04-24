@@ -33,7 +33,10 @@ export const useReadingList = () => {
           throw error;
         }
 
-        console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
+        // Utiliser un log conditionnel pour éviter de spammer en production
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
+        }
         return readingProgressData || [];
       } catch (error) {
         console.error("Exception while fetching reading list:", error);
@@ -41,7 +44,7 @@ export const useReadingList = () => {
       }
     },
     enabled: !!user,
-    staleTime: 60000, // Increase staleTime to reduce unnecessary refetches
+    staleTime: 300000, // Increase staleTime to 5 minutes to reduce unnecessary refetches
     refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
     retry: 1, // Limit retries to avoid excessive requests on failure
   });
@@ -54,7 +57,6 @@ export const useReadingList = () => {
     }
 
     const userId = user.id;
-    console.log('Adding book to reading list with userId:', userId, 'bookId:', book.id);
     
     // Check if book already exists in reading list
     const { data: existingEntries, error: checkError } = await supabase
@@ -87,7 +89,6 @@ export const useReadingList = () => {
       queryClient.invalidateQueries({ queryKey: ["reading_list", userId] });
       
       toast.success(`${book.title} ajouté à votre liste de lecture`);
-      console.log('Successfully added book to reading list:', book.title);
     } catch (error) {
       console.error('Error adding book to reading list:', error);
       toast.error("Une erreur est survenue lors de l'ajout du livre: " + 
@@ -97,7 +98,9 @@ export const useReadingList = () => {
 
   const getBooksByStatus = async (status: ReadingList["status"]) => {
     if (!readingList || !user) {
-      console.log(`No reading list or user found for status: ${status}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`No reading list or user found for status: ${status}`);
+      }
       return [];
     }
     
@@ -107,10 +110,14 @@ export const useReadingList = () => {
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
       
-      console.log(`Filtered list for status ${status}:`, filteredList.length);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Filtered list for status ${status}:`, filteredList.length);
+      }
       
       if (filteredList.length === 0) {
-        console.log(`No books found with status: ${status}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`No books found with status: ${status}`);
+        }
         return [];
       }
       
@@ -177,7 +184,9 @@ export const useReadingList = () => {
       
       // Wait for all promises to resolve or reject
       const books = await Promise.all(booksPromises);
-      console.log(`Retrieved ${books.length} books for status ${status}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Retrieved ${books.length} books for status ${status}`);
+      }
       
       return books;
     } catch (error) {

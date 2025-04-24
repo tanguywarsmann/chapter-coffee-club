@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
@@ -23,78 +23,100 @@ export default function ReadingList() {
   const [inProgressBooks, setInProgressBooks] = useState([]);
   const [completedBooks, setCompletedBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [dataFetched, setDataFetched] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(null);
-
-  // Use separate useEffect for initial load
-  useEffect(() => {
-    console.log("ReadingList component mounted, user:", user?.id);
-    let isMounted = true;
+  const [isFetching, setIsFetching] = useState(false);
+  
+  // Référence pour éviter les mises à jour sur des composants démontés
+  const isMounted = useRef(true);
+  
+  // Flag pour éviter les fetchs multiples et n'exécuter qu'une seule fois
+  const initialFetchDone = useRef(false);
+  
+  // Fonction memoizée pour fetcher les livres
+  const fetchBooks = useCallback(async () => {
+    // Ne pas exécuter si l'utilisateur n'est pas authentifié
+    if (!user) return;
     
-    const fetchBooks = async () => {
-      if (!user) {
-        console.log("No user found, skipping book fetch");
-        if (isMounted) {
-          setIsLoading(false);
-        }
-        return;
-      }
-      
-      if (isMounted) {
-        setIsLoading(true);
-        setError(null);
-      }
-      
-      try {
+    // Ne pas exécuter si le composant est démonté
+    if (!isMounted.current) return;
+    
+    // Éviter les double-fetches
+    if (initialFetchDone.current) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      if (process.env.NODE_ENV === 'development') {
         console.log("Fetching books for ReadingList page...");
-        const [toReadResult, inProgressResult, completedResult] = await Promise.all([
-          getBooksByStatus("to_read"),
-          getBooksByStatus("in_progress"), 
-          getBooksByStatus("completed")
-        ]);
-        
+      }
+      
+      // Paralléliser les requêtes pour de meilleures performances
+      const [toReadResult, inProgressResult, completedResult] = await Promise.all([
+        getBooksByStatus("to_read"),
+        getBooksByStatus("in_progress"), 
+        getBooksByStatus("completed")
+      ]);
+      
+      if (process.env.NODE_ENV === 'development') {
         console.log("Books to read:", toReadResult?.length || 0);
         console.log("Books in progress:", inProgressResult?.length || 0);
         console.log("Completed books:", completedResult?.length || 0);
-        
-        // Only update state if the component is still mounted
-        if (isMounted) {
-          setToReadBooks(sortBooks(toReadResult || [], sortBy));
-          setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
-          setCompletedBooks(sortBooks(completedResult || [], sortBy));
-          setDataFetched(true);
-        }
-      } catch (err) {
-        console.error("Error fetching books:", err);
-        if (isMounted) {
-          setError(err);
-          toast.error("Erreur lors du chargement de vos livres");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
       }
-    };
+      
+      // Ne mettre à jour que si le composant est toujours monté
+      if (isMounted.current) {
+        setToReadBooks(sortBooks(toReadResult || [], sortBy));
+        setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
+        setCompletedBooks(sortBooks(completedResult || [], sortBy));
+        initialFetchDone.current = true;
+      }
+    } catch (err) {
+      console.error("Error fetching books:", err);
+      if (isMounted.current) {
+        setError(err);
+        toast.error("Erreur lors du chargement de vos livres");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [user?.id, getBooksByStatus, sortBy, sortBooks]);
+  
+  // Effect pour le premier chargement uniquement
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log("ReadingList component mounted, user:", user?.id);
+    }
     
+    isMounted.current = true;
+    initialFetchDone.current = false;
+    
+    // Fetch initial data
     fetchBooks();
     
+    // Cleanup
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
-  }, [user, getBooksByStatus]);
+  }, [user?.id, fetchBooks]);
   
-  // Separate effect for sorting to avoid refetching data
+  // Effet séparé pour la mise à jour du tri uniquement
   useEffect(() => {
-    if (dataFetched && !isLoading) {
+    if (!isLoading && initialFetchDone.current) {
       setToReadBooks(prev => sortBooks([...prev], sortBy));
       setInProgressBooks(prev => sortBooks([...prev], sortBy));
       setCompletedBooks(prev => sortBooks([...prev], sortBy));
     }
-  }, [sortBy, dataFetched, sortBooks]);
+  }, [sortBy, sortBooks]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
+    if (!user) {
+      toast.error("Vous devez être connecté pour cette action");
+      return;
+    }
+    
     const bookToUpdate = 
       toReadBooks.find(b => b.id === bookId) || 
       inProgressBooks.find(b => b.id === bookId) || 
@@ -104,19 +126,12 @@ export default function ReadingList() {
       console.error("Book not found for ID:", bookId);
       return;
     }
-
-    const userId = user?.id;
-    
-    if (!userId) {
-      toast.error("Vous devez être connecté pour cette action");
-      return;
-    }
     
     try {
-      // Set fetching state temporarily
+      // Indiquer visuellement l'action en cours
       setIsFetching(true);
       
-      // Update local state without refetching from API
+      // Mise à jour locale sans refetch
       if (newStatus === "to_read") {
         setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
         setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
@@ -137,13 +152,19 @@ export default function ReadingList() {
         "Terminés"
       }"`);
       
-      // Clear fetching state after local state update
-      setTimeout(() => setIsFetching(false), 500);
+      // Nettoyer l'indicateur de chargement après mise à jour
+      setTimeout(() => {
+        if (isMounted.current) {
+          setIsFetching(false);
+        }
+      }, 500);
       
     } catch (err) {
       console.error("Error updating book status:", err);
-      setIsFetching(false);
-      toast.error("Erreur lors de la mise à jour du statut");
+      if (isMounted.current) {
+        setIsFetching(false);
+        toast.error("Erreur lors de la mise à jour du statut");
+      }
     }
   };
 
