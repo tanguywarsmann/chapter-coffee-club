@@ -12,7 +12,7 @@ import { BookSortSelect } from "@/components/reading/BookSortSelect";
 import { BookListSection } from "@/components/reading/BookListSection";
 import { LoadingBookList } from "@/components/reading/LoadingBookList";
 import { useBookSorting } from "@/hooks/useBookSorting";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookEmptyState } from "@/components/reading/BookEmptyState";
 
 export default function ReadingList() {
   const navigate = useNavigate();
@@ -23,20 +23,22 @@ export default function ReadingList() {
   const [inProgressBooks, setInProgressBooks] = useState([]);
   const [completedBooks, setCompletedBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(null);
 
+  // Use separate useEffect for initial load and for sort changes
   useEffect(() => {
     console.log("ReadingList component mounted, user:", user?.id);
     
     const fetchBooks = async () => {
       if (!user) {
         console.log("No user found, skipping book fetch");
+        setIsLoading(false);
         return;
       }
       
       setIsLoading(true);
-      setIsFetching(true);
       setError(null);
       
       try {
@@ -58,12 +60,21 @@ export default function ReadingList() {
         toast.error("Erreur lors du chargement de vos livres");
       } finally {
         setIsLoading(false);
-        setIsFetching(false);
+        setInitialLoadComplete(true);
       }
     };
     
     fetchBooks();
-  }, [user, sortBy, getBooksByStatus, isLoadingReadingList, sortBooks]);
+  }, [user, getBooksByStatus]);
+  
+  // Separate effect for sorting to avoid refetching data
+  useEffect(() => {
+    if (initialLoadComplete && !isLoading) {
+      setToReadBooks(prev => sortBooks([...prev], sortBy));
+      setInProgressBooks(prev => sortBooks([...prev], sortBy));
+      setCompletedBooks(prev => sortBooks([...prev], sortBy));
+    }
+  }, [sortBy, initialLoadComplete, sortBooks]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     const bookToUpdate = 
@@ -84,6 +95,9 @@ export default function ReadingList() {
     }
     
     try {
+      // Set fetching state temporarily
+      setIsFetching(true);
+      
       const storedList = localStorage.getItem("reading_list");
       const readingList = storedList ? JSON.parse(storedList) : [];
       
@@ -95,51 +109,36 @@ export default function ReadingList() {
       });
       
       localStorage.setItem("reading_list", JSON.stringify(updatedList));
+      
+      // Update local state without refetching from API
+      if (newStatus === "to_read") {
+        setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+        setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+        setToReadBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
+      } else if (newStatus === "in_progress") {
+        setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+        setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+        setInProgressBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
+      } else if (newStatus === "completed") {
+        setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+        setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+        setCompletedBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
+      }
+      
+      toast.success(`${bookToUpdate.title} déplacé vers "${
+        newStatus === "to_read" ? "À lire" :
+        newStatus === "in_progress" ? "En cours" :
+        "Terminés"
+      }"`);
+      
+      // Clear fetching state after local state update
+      setTimeout(() => setIsFetching(false), 300);
+      
     } catch (err) {
       console.error("Error updating localStorage:", err);
-    }
-    
-    toast.success(`${bookToUpdate.title} déplacé vers "${
-      newStatus === "to_read" ? "À lire" :
-      newStatus === "in_progress" ? "En cours" :
-      "Terminés"
-    }"`);
-    
-    if (newStatus === "to_read") {
-      setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-      setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-      setToReadBooks(prev => [...prev, bookToUpdate]);
-    } else if (newStatus === "in_progress") {
-      setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-      setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-      setInProgressBooks(prev => [...prev, bookToUpdate]);
-    } else if (newStatus === "completed") {
-      setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-      setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-      setCompletedBooks(prev => [...prev, bookToUpdate]);
+      setIsFetching(false);
     }
   };
-
-  // Render empty state if no user or if there's an error
-  const renderEmptyState = () => (
-    <Card className="border-coffee-light">
-      <CardHeader>
-        <CardTitle className="text-xl font-serif text-coffee-darker">Aucune lecture trouvée</CardTitle>
-        <CardDescription>
-          {error ? "Une erreur est survenue lors du chargement de vos livres." : "Vous n'avez pas encore de livres dans votre liste de lecture."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex justify-center py-8">
-        <Button 
-          className="bg-coffee-dark hover:bg-coffee-darker" 
-          onClick={() => navigate("/explore")}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Découvrir des livres
-        </Button>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <AuthGuard>
@@ -171,10 +170,10 @@ export default function ReadingList() {
           {isLoading ? (
             <LoadingBookList />
           ) : error ? (
-            renderEmptyState()
+            <BookEmptyState hasError={true} />
           ) : (
             <>
-              {inProgressBooks.length > 0 ? (
+              {inProgressBooks && inProgressBooks.length > 0 && (
                 <BookListSection
                   title="En cours de lecture"
                   description="Reprenez où vous vous êtes arrêté"
@@ -183,9 +182,9 @@ export default function ReadingList() {
                   actionLabel="Continuer la lecture"
                   onAction={(bookId) => navigate(`/books/${bookId}`)}
                 />
-              ) : null}
+              )}
               
-              {toReadBooks.length > 0 ? (
+              {toReadBooks && toReadBooks.length > 0 && (
                 <BookListSection
                   title="À lire"
                   description="Votre liste de lecture à venir"
@@ -193,9 +192,9 @@ export default function ReadingList() {
                   actionLabel="Commencer la lecture"
                   onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
                 />
-              ) : null}
+              )}
               
-              {completedBooks.length > 0 ? (
+              {completedBooks && completedBooks.length > 0 && (
                 <BookListSection
                   title="Livres terminés"
                   description="Vos lectures complétées"
@@ -204,10 +203,15 @@ export default function ReadingList() {
                   actionLabel="Relire"
                   onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
                 />
-              ) : null}
+              )}
               
-              {!isLoading && !error && inProgressBooks.length === 0 && toReadBooks.length === 0 && completedBooks.length === 0 && (
-                renderEmptyState()
+              {!isLoading && !error && 
+                (!inProgressBooks?.length && !toReadBooks?.length && !completedBooks?.length) && (
+                <BookEmptyState 
+                  hasError={false} 
+                  title="Aucune lecture trouvée" 
+                  description="Vous n'avez pas encore de livres dans votre liste de lecture."
+                />
               )}
             </>
           )}

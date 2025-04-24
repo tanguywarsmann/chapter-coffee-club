@@ -43,6 +43,7 @@ export const useReadingList = () => {
     enabled: !!user,
     staleTime: 30000, // Add a staleTime to reduce unnecessary refetches
     refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
+    retry: 1, // Limit retries to avoid excessive requests on failure
   });
 
   const addToReadingList = async (book: Book) => {
@@ -113,7 +114,7 @@ export const useReadingList = () => {
         return [];
       }
       
-      // Fetch book details for each reading list entry
+      // Fetch book details for each reading list entry - using Promise.allSettled to ensure all promises complete
       const booksPromises = filteredList.map(async (item: any) => {
         try {
           // Fetch book from Supabase
@@ -175,8 +176,12 @@ export const useReadingList = () => {
       });
       
       try {
-        // Wait for all promises to resolve
-        const books = await Promise.all(booksPromises);
+        // Use Promise.allSettled to handle all promises, even if some fail
+        const results = await Promise.allSettled(booksPromises);
+        const books = results
+          .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+          .map(result => result.value);
+          
         console.log(`Retrieved ${books.length} books for status ${status}:`, books);
         
         // Always return the array, even if some entries are fallbacks
