@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,7 +9,6 @@ import { Plus, ArrowDownAZ, Calendar, Book } from "lucide-react";
 import { Book as BookType } from "@/types/book";
 import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
-import { getBookById } from "@/mock/books";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +19,7 @@ export default function ReadingList() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   
   const { getBooksByStatus, isLoadingReadingList } = useReadingList();
   const { user } = useAuth();
@@ -34,7 +33,10 @@ export default function ReadingList() {
       if (!user) return;
       
       setIsLoading(true);
+      setIsFetching(true);
+      
       try {
+        console.log("Fetching books for ReadingList page...");
         const toReadResult = await getBooksByStatus("to_read");
         const inProgressResult = await getBooksByStatus("in_progress"); 
         const completedResult = await getBooksByStatus("completed");
@@ -51,6 +53,7 @@ export default function ReadingList() {
         toast.error("Erreur lors du chargement de vos livres");
       } finally {
         setIsLoading(false);
+        setIsFetching(false);
       }
     };
     
@@ -58,12 +61,17 @@ export default function ReadingList() {
   }, [user, sortBy, getBooksByStatus, isLoadingReadingList]);
 
   const sortBooks = (books: BookType[], sortOption: SortOption) => {
+    if (!books || !Array.isArray(books)) {
+      console.warn("Attempted to sort non-array books:", books);
+      return [];
+    }
+    
     return [...books].sort((a, b) => {
       switch(sortOption) {
         case "author":
-          return a.author.localeCompare(b.author);
+          return (a.author || "").localeCompare(b.author || "");
         case "pages":
-          return b.pages - a.pages;
+          return (b.pages || 0) - (a.pages || 0);
         case "date":
         default:
           return b.id.localeCompare(a.id);
@@ -102,7 +110,6 @@ export default function ReadingList() {
         "Terminés"
       }"`);
       
-      // Update local state to reflect changes immediately
       const moveBook = (book: BookType) => {
         if (newStatus === "to_read") {
           setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
@@ -130,7 +137,6 @@ export default function ReadingList() {
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <AuthGuard>
@@ -205,6 +211,12 @@ export default function ReadingList() {
               </Button>
             </div>
           </div>
+          
+          {isFetching && (
+            <div className="py-2 px-4 bg-coffee-light/20 rounded-md text-center text-sm text-muted-foreground">
+              Mise à jour de votre liste de lecture...
+            </div>
+          )}
           
           <Card className="border-coffee-light">
             <CardHeader>

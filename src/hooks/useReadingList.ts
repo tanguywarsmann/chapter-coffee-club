@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
-import { getBookById } from "@/services/books/bookQueries"; // Changed from mock to real data source
+import { getBookById } from "@/services/books/bookQueries";
 import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ export const useReadingList = () => {
     queryFn: async () => {
       // Check first if user is authenticated
       if (!user) {
+        console.log("No user found, returning empty reading list");
         return [];
       }
 
@@ -40,6 +41,8 @@ export const useReadingList = () => {
       }
     },
     enabled: !!user,
+    staleTime: 30000, // Add a staleTime to reduce unnecessary refetches
+    refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
   });
 
   const addToReadingList = async (book: Book) => {
@@ -92,7 +95,10 @@ export const useReadingList = () => {
   };
 
   const getBooksByStatus = async (status: ReadingList["status"]) => {
-    if (!readingList || !user) return [];
+    if (!readingList || !user) {
+      console.log(`No reading list or user found for status: ${status}`);
+      return [];
+    }
     
     try {
       // Filter reading list entries by status
@@ -100,36 +106,76 @@ export const useReadingList = () => {
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
       
+      console.log(`Filtered list for status ${status}:`, filteredList);
+      
+      if (filteredList.length === 0) {
+        console.log(`No books found with status: ${status}`);
+        return [];
+      }
+      
       // Fetch book details for each reading list entry
       const booksPromises = filteredList.map(async (item: any) => {
         try {
           // Fetch book from Supabase
+          console.log(`Fetching book with ID: ${item.book_id}`);
           const book = await getBookById(item.book_id);
           
-          // Skip this book if not found
+          // Even if the book is not found or incomplete, return basic information
           if (!book) {
-            console.warn(`Book not found for ID: ${item.book_id}`);
-            return null;
+            console.warn(`Book not found for ID: ${item.book_id}, creating fallback entry`);
+            
+            // Return a fallback book object with the data we do have
+            return {
+              id: item.book_id,
+              title: "Chargement...",
+              author: "...",
+              description: "",
+              chaptersRead: Math.floor(item.current_page / 30),
+              totalChapters: Math.ceil(item.total_pages / 30) || 1,
+              isCompleted: item.status === "completed",
+              language: "fr",
+              categories: [],
+              pages: item.total_pages || 0,
+              publicationYear: 0
+            };
           }
           
           // Add reading progress information to the book
+          console.log(`Successfully fetched book: ${book.title}`);
           return {
             ...book,
-            chaptersRead: Math.floor(item.current_page / 30), // Approximate chapters based on pages
-            totalChapters: Math.ceil(book.pages / 30), // Approximate total chapters
+            chaptersRead: Math.floor(item.current_page / 30),
+            totalChapters: Math.ceil(book.pages / 30) || 1,
             isCompleted: item.status === "completed"
           };
         } catch (error) {
-          console.error(`Erreur lors de la récupération du livre ${item.book_id}:`, error);
-          return null;
+          console.error(`Error fetching book ${item.book_id}:`, error);
+          
+          // Return a fallback book object on error
+          return {
+            id: item.book_id,
+            title: "Erreur de chargement",
+            author: "Contenu indisponible",
+            description: "Impossible de charger les détails de ce livre.",
+            chaptersRead: 0,
+            totalChapters: 1,
+            isCompleted: false,
+            language: "fr",
+            categories: [],
+            pages: 0,
+            publicationYear: 0
+          };
         }
       });
       
-      // Wait for all promises to resolve and filter out null entries
+      // Wait for all promises to resolve
       const books = await Promise.all(booksPromises);
-      return books.filter((book): book is Book => book !== null);
+      console.log(`Retrieved ${books.length} books for status ${status}:`, books);
+      
+      // Always return the array, even if some entries are fallbacks
+      return books;
     } catch (error) {
-      console.error(`Erreur lors du traitement des livres ${status}:`, error);
+      console.error(`Error processing books with status ${status}:`, error);
       return [];
     }
   };

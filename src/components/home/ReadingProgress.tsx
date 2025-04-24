@@ -41,10 +41,9 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
     );
   }
   
-  // Vérifier et filtrer les livres invalides
-  const validBooks = Array.isArray(inProgressBooks) 
-    ? inProgressBooks.filter(book => book && book.id && book.title) 
-    : [];
+  // We ensure inProgressBooks is always an array, even if undefined
+  const books = Array.isArray(inProgressBooks) ? inProgressBooks : [];
+  console.log("Rendering ReadingProgress with books:", books);
 
   return (
     <Card className="border-coffee-light">
@@ -54,7 +53,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           <CardDescription>Reprenez où vous vous êtes arrêté</CardDescription>
         </div>
         
-        {validBooks.length > 0 && (
+        {books.length > 0 && (
           <Button variant="ghost" size="sm" asChild>
             <Link to="/reading-list" className="text-coffee-dark hover:text-coffee-darker">
               Voir tout <ArrowRight className="ml-1 h-4 w-4" />
@@ -63,7 +62,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
         )}
       </CardHeader>
       <CardContent>
-        {validBooks.length === 0 ? (
+        {books.length === 0 ? (
           <div className="text-center p-6 border border-dashed border-coffee-light rounded-lg">
             <BookOpen className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <h3 className="text-lg font-medium text-coffee-darker mb-1">Aucune lecture en cours</h3>
@@ -74,35 +73,53 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           </div>
         ) : (
           <div className="space-y-4">
-            {validBooks.slice(0, 3).map((book) => {
-              const progressPercentage = book.totalChapters > 0 
-                ? (book.chaptersRead / book.totalChapters) * 100
-                : 0;
+            {books.slice(0, 3).map((book) => {
+              // Calculate progress safely with fallbacks for missing data
+              const chaptersRead = book.chaptersRead || 0;
+              const totalChapters = book.totalChapters || 1;
+              const progressPercentage = (chaptersRead / totalChapters) * 100;
               
               return (
                 <div key={book.id} className="flex gap-4">
-                  <div className="book-cover w-16">
+                  <div className="book-cover w-16 h-24 overflow-hidden">
                     {book.coverImage ? (
-                      <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                      <img 
+                        src={book.coverImage} 
+                        alt={book.title} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          // Replace broken image with placeholder
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                        <span className="text-white font-serif italic">{book.title.substring(0, 1)}</span>
+                        <span className="text-white font-serif italic">
+                          {book.title?.substring(0, 1) || "?"}
+                        </span>
                       </div>
                     )}
                   </div>
                   
                   <div className="flex-1">
                     <Link to={`/books/${book.id}`} className="block">
-                      <h3 className="font-medium text-coffee-darker line-clamp-1 hover:underline">{book.title}</h3>
-                      <p className="text-sm text-muted-foreground">{book.author}</p>
+                      <h3 className="font-medium text-coffee-darker line-clamp-1 hover:underline">
+                        {book.title || "Chargement..."}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {book.author || "..."}
+                      </p>
                       
                       <div className="mt-2 space-y-1">
-                        <div className="reading-progress">
-                          <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
+                        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-coffee-dark rounded-full" 
+                            style={{ width: `${Math.max(0, Math.min(100, progressPercentage))}%` }}
+                          ></div>
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{Math.round(progressPercentage)}% terminé</span>
-                          <span>{book.chaptersRead}/{book.totalChapters} chapitres</span>
+                          <span>{chaptersRead}/{totalChapters} chapitres</span>
                         </div>
                       </div>
                     </Link>
