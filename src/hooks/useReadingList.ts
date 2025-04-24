@@ -13,7 +13,7 @@ export const useReadingList = () => {
   const { user } = useAuth();
 
   const { data: readingList, isLoading: isLoadingReadingList } = useQuery({
-    queryKey: ["reading_list"],
+    queryKey: ["reading_list", user?.id],
     queryFn: async () => {
       // Check first if user is authenticated
       if (!user) {
@@ -33,7 +33,7 @@ export const useReadingList = () => {
           throw error;
         }
 
-        console.log("Reading progress data from Supabase:", readingProgressData);
+        console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         return readingProgressData || [];
       } catch (error) {
         console.error("Exception while fetching reading list:", error);
@@ -41,7 +41,7 @@ export const useReadingList = () => {
       }
     },
     enabled: !!user,
-    staleTime: 30000, // Add a staleTime to reduce unnecessary refetches
+    staleTime: 60000, // Increase staleTime to reduce unnecessary refetches
     refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
     retry: 1, // Limit retries to avoid excessive requests on failure
   });
@@ -84,7 +84,7 @@ export const useReadingList = () => {
         return;
       }
       
-      queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+      queryClient.invalidateQueries({ queryKey: ["reading_list", userId] });
       
       toast.success(`${book.title} ajouté à votre liste de lecture`);
       console.log('Successfully added book to reading list:', book.title);
@@ -107,27 +107,24 @@ export const useReadingList = () => {
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
       
-      console.log(`Filtered list for status ${status}:`, filteredList);
+      console.log(`Filtered list for status ${status}:`, filteredList.length);
       
       if (filteredList.length === 0) {
         console.log(`No books found with status: ${status}`);
         return [];
       }
       
-      // Fetch book details for each reading list entry - using Promise.allSettled to ensure all promises complete
+      // Use Promise.all with proper error handling
       const booksPromises = filteredList.map(async (item: any) => {
         try {
-          // Fetch book from Supabase
-          console.log(`Fetching book with ID: ${item.book_id}`);
-          let book = null;
+          // Fetch book details with timeout protection
+          const bookPromise = getBookById(item.book_id);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout fetching book')), 8000)
+          );
           
-          try {
-            book = await getBookById(item.book_id);
-          } catch (bookError) {
-            console.error(`Error in getBookById for ${item.book_id}:`, bookError);
-          }
+          const book = await Promise.race([bookPromise, timeoutPromise]);
           
-          // Even if the book is not found or incomplete, return basic information
           if (!book) {
             console.warn(`Book not found for ID: ${item.book_id}, creating fallback entry`);
             
@@ -148,7 +145,6 @@ export const useReadingList = () => {
           }
           
           // Add reading progress information to the book
-          console.log(`Successfully fetched book: ${book.title}`);
           return {
             ...book,
             chaptersRead: Math.floor(item.current_page / 30),
@@ -175,21 +171,11 @@ export const useReadingList = () => {
         }
       });
       
-      try {
-        // Use Promise.allSettled to handle all promises, even if some fail
-        const results = await Promise.allSettled(booksPromises);
-        const books = results
-          .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-          .map(result => result.value);
-          
-        console.log(`Retrieved ${books.length} books for status ${status}:`, books);
-        
-        // Always return the array, even if some entries are fallbacks
-        return books;
-      } catch (promiseError) {
-        console.error(`Error in Promise.all for books with status ${status}:`, promiseError);
-        return [];
-      }
+      // Wait for all promises to resolve or reject
+      const books = await Promise.all(booksPromises);
+      console.log(`Retrieved ${books.length} books for status ${status}`);
+      
+      return books;
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
       return [];

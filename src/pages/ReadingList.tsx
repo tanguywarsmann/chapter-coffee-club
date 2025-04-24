@@ -23,58 +23,76 @@ export default function ReadingList() {
   const [inProgressBooks, setInProgressBooks] = useState([]);
   const [completedBooks, setCompletedBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(null);
 
-  // Use separate useEffect for initial load and for sort changes
+  // Use separate useEffect for initial load
   useEffect(() => {
     console.log("ReadingList component mounted, user:", user?.id);
+    let isMounted = true;
     
     const fetchBooks = async () => {
       if (!user) {
         console.log("No user found, skipping book fetch");
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
         return;
       }
       
-      setIsLoading(true);
-      setError(null);
+      if (isMounted) {
+        setIsLoading(true);
+        setError(null);
+      }
       
       try {
         console.log("Fetching books for ReadingList page...");
-        const toReadResult = await getBooksByStatus("to_read");
-        const inProgressResult = await getBooksByStatus("in_progress"); 
-        const completedResult = await getBooksByStatus("completed");
+        const [toReadResult, inProgressResult, completedResult] = await Promise.all([
+          getBooksByStatus("to_read"),
+          getBooksByStatus("in_progress"), 
+          getBooksByStatus("completed")
+        ]);
         
-        console.log("Books to read:", toReadResult);
-        console.log("Books in progress:", inProgressResult);
-        console.log("Completed books:", completedResult);
+        console.log("Books to read:", toReadResult?.length || 0);
+        console.log("Books in progress:", inProgressResult?.length || 0);
+        console.log("Completed books:", completedResult?.length || 0);
         
-        setToReadBooks(sortBooks(toReadResult || [], sortBy));
-        setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
-        setCompletedBooks(sortBooks(completedResult || [], sortBy));
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          setToReadBooks(sortBooks(toReadResult || [], sortBy));
+          setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
+          setCompletedBooks(sortBooks(completedResult || [], sortBy));
+          setDataFetched(true);
+        }
       } catch (err) {
         console.error("Error fetching books:", err);
-        setError(err);
-        toast.error("Erreur lors du chargement de vos livres");
+        if (isMounted) {
+          setError(err);
+          toast.error("Erreur lors du chargement de vos livres");
+        }
       } finally {
-        setIsLoading(false);
-        setInitialLoadComplete(true);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
     
     fetchBooks();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user, getBooksByStatus]);
   
   // Separate effect for sorting to avoid refetching data
   useEffect(() => {
-    if (initialLoadComplete && !isLoading) {
+    if (dataFetched && !isLoading) {
       setToReadBooks(prev => sortBooks([...prev], sortBy));
       setInProgressBooks(prev => sortBooks([...prev], sortBy));
       setCompletedBooks(prev => sortBooks([...prev], sortBy));
     }
-  }, [sortBy, initialLoadComplete, sortBooks]);
+  }, [sortBy, dataFetched, sortBooks]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     const bookToUpdate = 
@@ -98,18 +116,6 @@ export default function ReadingList() {
       // Set fetching state temporarily
       setIsFetching(true);
       
-      const storedList = localStorage.getItem("reading_list");
-      const readingList = storedList ? JSON.parse(storedList) : [];
-      
-      const updatedList = readingList.map((item: any) => {
-        if (item.user_id === userId && item.book_id === bookId) {
-          return { ...item, status: newStatus };
-        }
-        return item;
-      });
-      
-      localStorage.setItem("reading_list", JSON.stringify(updatedList));
-      
       // Update local state without refetching from API
       if (newStatus === "to_read") {
         setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
@@ -132,11 +138,12 @@ export default function ReadingList() {
       }"`);
       
       // Clear fetching state after local state update
-      setTimeout(() => setIsFetching(false), 300);
+      setTimeout(() => setIsFetching(false), 500);
       
     } catch (err) {
-      console.error("Error updating localStorage:", err);
+      console.error("Error updating book status:", err);
       setIsFetching(false);
+      toast.error("Erreur lors de la mise à jour du statut");
     }
   };
 
@@ -167,13 +174,13 @@ export default function ReadingList() {
             </div>
           )}
 
-          {isLoading ? (
+          {isLoading || isLoadingReadingList ? (
             <LoadingBookList />
           ) : error ? (
             <BookEmptyState hasError={true} />
           ) : (
             <>
-              {inProgressBooks && inProgressBooks.length > 0 && (
+              {inProgressBooks.length > 0 && (
                 <BookListSection
                   title="En cours de lecture"
                   description="Reprenez où vous vous êtes arrêté"
@@ -184,7 +191,7 @@ export default function ReadingList() {
                 />
               )}
               
-              {toReadBooks && toReadBooks.length > 0 && (
+              {toReadBooks.length > 0 && (
                 <BookListSection
                   title="À lire"
                   description="Votre liste de lecture à venir"
@@ -194,7 +201,7 @@ export default function ReadingList() {
                 />
               )}
               
-              {completedBooks && completedBooks.length > 0 && (
+              {completedBooks.length > 0 && (
                 <BookListSection
                   title="Livres terminés"
                   description="Vos lectures complétées"
@@ -206,7 +213,7 @@ export default function ReadingList() {
               )}
               
               {!isLoading && !error && 
-                (!inProgressBooks?.length && !toReadBooks?.length && !completedBooks?.length) && (
+                (inProgressBooks.length === 0 && toReadBooks.length === 0 && completedBooks.length === 0) && (
                 <BookEmptyState 
                   hasError={false} 
                   title="Aucune lecture trouvée" 
