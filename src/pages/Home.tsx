@@ -2,27 +2,17 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
-import { CurrentReadingCard } from "@/components/home/CurrentReadingCard";
-import { GoalsPreview } from "@/components/home/GoalsPreview";
-import { ActivityFeed } from "@/components/home/ActivityFeed";
-import { 
-  getPopularBooks, 
-  getRecentlyAddedBooks, 
-  getRecommendedBooks 
-} from "@/mock/books";
-import { getUserActivities, getMockFollowers, getMockFollowing } from "@/mock/activities";
-import { Book } from "@/types/book";
-import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
-import { User, Loader2 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { getBooksInProgressFromAPI, initializeUserReadingProgress, syncBookWithAPI } from "@/services/reading";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { ReadingProgress } from "@/components/home/ReadingProgress";
 import { useReadingList } from "@/hooks/useReadingList";
-import { CurrentBook } from "@/components/home/CurrentBook";
+import { Book } from "@/types/book";
+import { toast } from "sonner";
+import { getBooksInProgressFromAPI, syncBookWithAPI } from "@/services/reading";
+import { getPopularBooks, getRecentlyAddedBooks, getRecommendedBooks } from "@/mock/books";
+import { SearchResults } from "@/components/home/SearchResults";
+import { StatsCards } from "@/components/home/StatsCards";
+import { HomeContent } from "@/components/home/HomeContent";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
@@ -31,7 +21,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const { user } = useAuth();
   const isMounted = useRef(true);
   const hasFetchedBooks = useRef(false);
@@ -135,7 +124,6 @@ export default function Home() {
   }, [user, fetchInProgressBooks]);
 
   const handleSearch = (query: string) => {
-    // Simple search implementation
     if (!query.trim()) {
       return;
     }
@@ -165,7 +153,6 @@ export default function Home() {
     
     try {
       setIsLoading(true);
-      // Re-fetch the current book to update progress
       const updatedBook = await syncBookWithAPI(user.id, bookId);
       
       if (!isMounted.current) return;
@@ -174,7 +161,6 @@ export default function Home() {
         setCurrentBook(updatedBook);
       }
       
-      // Refresh in-progress books
       const books = await getBooksInProgressFromAPI(user.id);
       
       if (!isMounted.current) return;
@@ -207,101 +193,22 @@ export default function Home() {
           </div>
 
           {searchResults ? (
-            <div className="space-y-4">
-              <h2 className="text-xl font-serif font-medium text-coffee-darker">Résultats de recherche</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {searchResults.map(book => (
-                  <div 
-                    key={book.id} 
-                    className="book-card group cursor-pointer"
-                    onClick={() => navigate(`/books/${book.id}`)}
-                  >
-                    <div className="book-cover bg-coffee-medium">
-                      {book.coverImage ? (
-                        <img 
-                          src={book.coverImage} 
-                          alt={book.title} 
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder.svg';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                          <span className="text-white font-serif italic text-xl">{book.title.substring(0, 1)}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-medium text-coffee-darker line-clamp-1">{book.title}</h3>
-                      <p className="text-sm text-muted-foreground">{book.author}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button 
-                className="text-coffee-dark hover:text-coffee-darker font-medium"
-                onClick={() => setSearchResults(null)}
-              >
-                Retour à l'accueil
-              </button>
-            </div>
+            <SearchResults 
+              searchResults={searchResults} 
+              onReset={() => setSearchResults(null)} 
+            />
           ) : (
             <>
-              <div className="flex flex-wrap gap-4 mb-6">
-                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light min-w-[140px]">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-coffee-dark" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Abonnés</p>
-                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowers().length}</p>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="flex-1 p-4 flex items-center justify-between border-coffee-light min-w-[140px]">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-coffee-dark" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Abonnements</p>
-                      <p className="text-2xl font-medium text-coffee-darker">{getMockFollowing().length}</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-              
-              <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-                <div className="space-y-6 md:col-span-2 lg:col-span-3">
-                  {isLoadingCurrentBook ? (
-                    <div className="flex items-center justify-center p-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-coffee-dark" />
-                    </div>
-                  ) : currentReading ? (
-                    <CurrentReadingCard
-                      book={currentReading}
-                      currentPage={currentReading.chaptersRead * 30}
-                      onContinueReading={handleContinueReading}
-                    />
-                  ) : null}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <CurrentBook 
-                      book={currentBook} 
-                      onProgressUpdate={handleProgressUpdate} 
-                    />
-                    <div className="space-y-6">
-                      <GoalsPreview />
-                    </div>
-                  </div>
-                  
-                  <ReadingProgress 
-                    inProgressBooks={inProgressBooks} 
-                    isLoading={isLoading} 
-                  />
-                </div>
-                <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
-                  <ActivityFeed activities={getUserActivities()} />
-                </div>
-              </div>
+              <StatsCards />
+              <HomeContent
+                currentReading={currentReading}
+                isLoadingCurrentBook={isLoadingCurrentBook}
+                currentBook={currentBook}
+                inProgressBooks={inProgressBooks}
+                isLoading={isLoading}
+                onProgressUpdate={handleProgressUpdate}
+                onContinueReading={handleContinueReading}
+              />
             </>
           )}
         </main>
