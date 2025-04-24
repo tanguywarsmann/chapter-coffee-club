@@ -26,25 +26,33 @@ export default function ReadingList() {
   const [error, setError] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   
-  // Référence pour éviter les mises à jour sur des composants démontés
+  // Références pour éviter les mises à jour sur des composants démontés et le fetching répété
   const isMounted = useRef(true);
-  
-  // Flag pour éviter les fetchs multiples et n'exécuter qu'une seule fois
   const initialFetchDone = useRef(false);
+  const hasFetchedOnMount = useRef(false);
   
   // Fonction memoizée pour fetcher les livres
   const fetchBooks = useCallback(async () => {
-    // Ne pas exécuter si l'utilisateur n'est pas authentifié
-    if (!user) return;
+    // DEFENSIVE: Ne pas exécuter si l'utilisateur n'est pas authentifié
+    if (!user || !user.id) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("fetchBooks: No user available, skipping fetch");
+      }
+      return;
+    }
     
     // Ne pas exécuter si le composant est démonté
     if (!isMounted.current) return;
     
-    // Éviter les double-fetches
-    if (initialFetchDone.current) return;
+    // Ne pas re-déclencher de fetch si déjà en cours
+    if (isFetching) return;
+    
+    // Éviter les double-fetches lors du montage initial
+    if (hasFetchedOnMount.current) return;
     
     setIsLoading(true);
     setError(null);
+    setIsFetching(true);
     
     try {
       if (process.env.NODE_ENV === 'development') {
@@ -58,18 +66,13 @@ export default function ReadingList() {
         getBooksByStatus("completed")
       ]);
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log("Books to read:", toReadResult?.length || 0);
-        console.log("Books in progress:", inProgressResult?.length || 0);
-        console.log("Completed books:", completedResult?.length || 0);
-      }
-      
       // Ne mettre à jour que si le composant est toujours monté
       if (isMounted.current) {
         setToReadBooks(sortBooks(toReadResult || [], sortBy));
         setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
         setCompletedBooks(sortBooks(completedResult || [], sortBy));
         initialFetchDone.current = true;
+        hasFetchedOnMount.current = true;
       }
     } catch (err) {
       console.error("Error fetching books:", err);
@@ -80,38 +83,49 @@ export default function ReadingList() {
     } finally {
       if (isMounted.current) {
         setIsLoading(false);
+        setIsFetching(false);
       }
     }
-  }, [user?.id, getBooksByStatus, sortBy, sortBooks]);
+  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching]);
   
-  // Effect pour le premier chargement uniquement
+  // Effect pour le premier chargement uniquement - déclenché uniquement si user est disponible
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("ReadingList component mounted, user:", user?.id);
+    // DEFENSIVE: Ne pas déclencher d'effet si l'utilisateur n'est pas authentifié
+    if (!user || !user.id) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("ReadingList component mounted, but no user available, waiting for user...");
+      }
+      // On ne retourne pas encore, car on veut configurer le cleanup
+    } else if (!hasFetchedOnMount.current) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("ReadingList component mounted, user found:", user.id);
+      }
+      
+      // Reset states for a fresh fetch
+      isMounted.current = true;
+      
+      // Fetch initial data only if not already done and user is available
+      fetchBooks();
     }
-    
-    isMounted.current = true;
-    initialFetchDone.current = false;
-    
-    // Fetch initial data
-    fetchBooks();
     
     // Cleanup
     return () => {
       isMounted.current = false;
     };
-  }, [user?.id, fetchBooks]);
+  }, [user, fetchBooks]);
   
-  // Effet séparé pour la mise à jour du tri uniquement
+  // Effet séparé pour la mise à jour du tri uniquement - ne déclenche pas de nouveau fetch
   useEffect(() => {
-    if (!isLoading && initialFetchDone.current) {
-      setToReadBooks(prev => sortBooks([...prev], sortBy));
-      setInProgressBooks(prev => sortBooks([...prev], sortBy));
-      setCompletedBooks(prev => sortBooks([...prev], sortBy));
-    }
+    // Ne pas exécuter si le composant est démonté ou si les livres n'ont pas été chargés
+    if (!isMounted.current || !initialFetchDone.current) return;
+    
+    setToReadBooks(prev => sortBooks([...prev], sortBy));
+    setInProgressBooks(prev => sortBooks([...prev], sortBy));
+    setCompletedBooks(prev => sortBooks([...prev], sortBy));
   }, [sortBy, sortBooks]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
+    // DEFENSIVE: Ne pas exécuter si l'utilisateur n'est pas authentifié
     if (!user) {
       toast.error("Vous devez être connecté pour cette action");
       return;

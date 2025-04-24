@@ -15,9 +15,11 @@ export const useReadingList = () => {
   const { data: readingList, isLoading: isLoadingReadingList } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: async () => {
-      // Check first if user is authenticated
-      if (!user) {
-        console.log("No user found, returning empty reading list");
+      // Strict defensive check - stop immediately if no user
+      if (!user || !user.id) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log("No user found, returning empty reading list");
+        }
         return [];
       }
 
@@ -43,8 +45,8 @@ export const useReadingList = () => {
         throw error; // Re-throw to be caught by React Query's error handling
       }
     },
-    enabled: !!user,
-    staleTime: 300000, // Increase staleTime to 5 minutes to reduce unnecessary refetches
+    enabled: !!user?.id, // Only run query when user ID is available
+    staleTime: 600000, // Increase staleTime to 10 minutes to reduce unnecessary refetches
     refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
     retry: 1, // Limit retries to avoid excessive requests on failure
   });
@@ -97,9 +99,10 @@ export const useReadingList = () => {
   };
 
   const getBooksByStatus = async (status: ReadingList["status"]) => {
-    if (!readingList || !user) {
+    // Strong defensive check - return empty array immediately if no user or readingList
+    if (!user?.id || !readingList) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`No reading list or user found for status: ${status}`);
+        console.log(`No user or reading list available for status: ${status}`);
       }
       return [];
     }
@@ -111,13 +114,11 @@ export const useReadingList = () => {
         : [];
       
       if (process.env.NODE_ENV === 'development') {
+        // Log only once per status to avoid console spam
         console.log(`Filtered list for status ${status}:`, filteredList.length);
       }
       
       if (filteredList.length === 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`No books found with status: ${status}`);
-        }
         return [];
       }
       
@@ -184,10 +185,6 @@ export const useReadingList = () => {
       
       // Wait for all promises to resolve or reject
       const books = await Promise.all(booksPromises);
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Retrieved ${books.length} books for status ${status}`);
-      }
-      
       return books;
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
@@ -200,6 +197,6 @@ export const useReadingList = () => {
     getBooksByStatus,
     readingList,
     isLoadingReadingList,
-    userId: user?.id
+    userId: user?.id // Safe access with optional chaining
   };
 };
