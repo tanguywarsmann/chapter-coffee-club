@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,10 +17,26 @@ export function AppHeader() {
   const { user } = useAuth();
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("user");
-    toast.success("Déconnexion réussie");
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Logout error:", error);
+        toast.error("Erreur lors de la déconnexion");
+        return;
+      }
+      
+      localStorage.removeItem("user");
+      
+      toast.success("Déconnexion réussie");
+      
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
+    } catch (e) {
+      console.error("Exception during logout:", e);
+      toast.error("Erreur inattendue lors de la déconnexion");
+    }
   };
 
   const getUserInitials = () => {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -34,11 +35,16 @@ export default function Home() {
   const [currentReading, setCurrentReading] = useState<Book | null>(null);
   const [isLoadingCurrentBook, setIsLoadingCurrentBook] = useState(true);
 
+  // FIX: Use a ref to prevent infinite fetching loop
+  const fetchingCurrentReading = useRef(false);
+
   useEffect(() => {
     const fetchCurrentReading = async () => {
-      if (!user?.id) return;
-
+      // FIX: Skip if already fetching or no user ID
+      if (!user?.id || fetchingCurrentReading.current) return;
+      
       try {
+        fetchingCurrentReading.current = true;
         setIsLoadingCurrentBook(true);
         const inProgressBooks = await getBooksByStatus("in_progress");
         
@@ -47,6 +53,8 @@ export default function Home() {
         // Get the most recently updated book
         if (inProgressBooks && inProgressBooks.length > 0) {
           setCurrentReading(inProgressBooks[0]);
+        } else {
+          setCurrentReading(null);
         }
       } catch (error) {
         console.error("Error fetching current reading:", error);
@@ -56,12 +64,19 @@ export default function Home() {
       } finally {
         if (isMounted.current) {
           setIsLoadingCurrentBook(false);
+          fetchingCurrentReading.current = false;
         }
       }
     };
 
-    fetchCurrentReading();
-  }, [user?.id, getBooksByStatus]);
+    // Only fetch if user exists and component is mounted
+    if (user?.id && isMounted.current) {
+      fetchCurrentReading();
+    } else {
+      // Reset loading state if no user
+      setIsLoadingCurrentBook(false);
+    }
+  }, [user?.id, getBooksByStatus]); // Keep dependencies minimal
 
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
@@ -69,16 +84,20 @@ export default function Home() {
     }
   }, [currentReading, navigate]);
 
+  // FIX: Use a ref to prevent infinite fetching loop
+  const fetchingInProgress = useRef(false);
+
   const fetchInProgressBooks = useCallback(async () => {
-    // Don't fetch if no user or already fetched
-    if (!user?.id || hasFetchedBooks.current || !isMounted.current) {
+    // Don't fetch if no user or already fetched or currently fetching
+    if (!user?.id || hasFetchedBooks.current || !isMounted.current || fetchingInProgress.current) {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
     try {
+      fetchingInProgress.current = true;
+      setIsLoading(true);
+      setError(null);
+      
       const books = await getBooksInProgressFromAPI(user.id);
       
       if (!isMounted.current) return;
@@ -100,6 +119,7 @@ export default function Home() {
     } finally {
       if (isMounted.current) {
         setIsLoading(false);
+        fetchingInProgress.current = false;
       }
     }
   }, [user?.id]);
@@ -107,20 +127,26 @@ export default function Home() {
   useEffect(() => {
     // Set mounted flag
     isMounted.current = true;
-    hasFetchedBooks.current = false;
     
-    // Fetch books if user is available
+    // Reset this flag when user changes
     if (user?.id) {
-      fetchInProgressBooks();
-    } else {
-      // Reset loading state if no user
-      setIsLoading(false);
+      hasFetchedBooks.current = false;
     }
     
     // Cleanup
     return () => {
       isMounted.current = false;
     };
+  }, [user]);
+
+  useEffect(() => {
+    // Only fetch books if user is available and we haven't fetched yet
+    if (user?.id && !hasFetchedBooks.current && !fetchingInProgress.current) {
+      fetchInProgressBooks();
+    } else if (!user?.id) {
+      // Reset loading state if no user
+      setIsLoading(false);
+    }
   }, [user, fetchInProgressBooks]);
 
   const handleSearch = (query: string) => {
@@ -161,11 +187,14 @@ export default function Home() {
         setCurrentBook(updatedBook);
       }
       
-      const books = await getBooksInProgressFromAPI(user.id);
-      
-      if (!isMounted.current) return;
-      
-      setInProgressBooks(books);
+      // Only fetch books if we need to
+      if (!fetchingInProgress.current) {
+        const books = await getBooksInProgressFromAPI(user.id);
+        
+        if (!isMounted.current) return;
+        
+        setInProgressBooks(books);
+      }
     } catch (error) {
       console.error("Error updating progress:", error);
       if (isMounted.current) {

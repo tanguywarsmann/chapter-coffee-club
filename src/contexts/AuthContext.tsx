@@ -43,7 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: currentSession.user.email 
         }));
       } else if (event === 'SIGNED_OUT') {
+        // FIX: Ensure localStorage is cleared on logout
         localStorage.removeItem("user");
+        
+        // FIX: Log the auth state to make debugging easier
+        console.log("User signed out, localStorage cleared");
+        
+        // Force session to null for consistency
+        setSession(null);
+        setUser(null);
       }
 
       // Mark initialization as complete
@@ -82,6 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: currentSession.user.id,
             email: currentSession.user.email 
           }));
+        } else {
+          // FIX: Make sure localStorage is clean if no session
+          localStorage.removeItem("user");
         }
 
         // Mark initialization as complete and end loading state

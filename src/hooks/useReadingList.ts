@@ -7,10 +7,26 @@ import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useRef } from "react";
 
 export const useReadingList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  
+  // FIX: Use a ref to track if we're currently fetching
+  const isFetching = useRef(false);
+
+  // FIX: Invalidate queries when user changes (login/logout)
+  useEffect(() => {
+    // Clear reading list queries when user changes
+    if (user?.id) {
+      // If user logs in, invalidate to fetch fresh data
+      queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+    } else {
+      // If user logs out, reset cache
+      queryClient.resetQueries({ queryKey: ["reading_list"] });
+    }
+  }, [user?.id, queryClient]);
 
   const { data: readingList, isLoading: isLoadingReadingList, error: readingListError } = useQuery({
     queryKey: ["reading_list", user?.id],
@@ -22,6 +38,9 @@ export const useReadingList = () => {
       }
 
       try {
+        // Set fetching state
+        isFetching.current = true;
+        
         // Get reading list directly from Supabase instead of localStorage
         const { data: readingProgressData, error } = await supabase
           .from("reading_progress")
@@ -37,9 +56,12 @@ export const useReadingList = () => {
         if (process.env.NODE_ENV === 'development') {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
+        
+        isFetching.current = false;
         return readingProgressData || [];
       } catch (error) {
         console.error("Exception while fetching reading list:", error);
+        isFetching.current = false;
         throw error; // Re-throw to be caught by React Query's error handling
       }
     },
@@ -108,7 +130,15 @@ export const useReadingList = () => {
       return [];
     }
     
+    // FIX: Don't allow concurrent fetches of the same data
+    if (isFetching.current) {
+      console.log("Already fetching books, skipping duplicate request");
+      return [];
+    }
+    
     try {
+      isFetching.current = true;
+      
       // Filter reading list entries by status
       const filteredList = Array.isArray(readingList) 
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
@@ -120,6 +150,7 @@ export const useReadingList = () => {
       }
       
       if (filteredList.length === 0) {
+        isFetching.current = false;
         return [];
       }
       
@@ -184,10 +215,12 @@ export const useReadingList = () => {
       
       // Wait for all promises to resolve or reject
       const books = await Promise.all(booksPromises);
+      isFetching.current = false;
       return books;
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
       toast.error(`Erreur lors du chargement des livres "${status}"`);
+      isFetching.current = false;
       return [];
     }
   };
