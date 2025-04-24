@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
@@ -25,24 +25,85 @@ import {
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ReadingProgress } from "@/components/home/ReadingProgress";
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
   const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const isMounted = useRef(true);
+  const hasFetchedBooks = useRef(false);
   
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
     return !onboardingFlag;
   });
 
+  // Memoized function to fetch in-progress books
+  const fetchInProgressBooks = useCallback(async () => {
+    // Don't fetch if no user or already fetched
+    if (!user?.id || hasFetchedBooks.current || !isMounted.current) {
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const books = await getBooksInProgressFromAPI(user.id);
+      
+      if (!isMounted.current) return;
+      
+      setInProgressBooks(books);
+      
+      // Set current book to the first in-progress book if available
+      if (books && books.length > 0) {
+        setCurrentBook(books[0]);
+      }
+      
+      hasFetchedBooks.current = true;
+    } catch (error) {
+      console.error("Error fetching in-progress books:", error);
+      if (isMounted.current) {
+        setError("Erreur lors du chargement des livres en cours");
+        toast.error("Erreur lors du chargement de vos lectures en cours");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    // Set mounted flag
+    isMounted.current = true;
+    hasFetchedBooks.current = false;
+    
+    // Fetch books if user is available
+    if (user?.id) {
+      fetchInProgressBooks();
+    } else {
+      // Reset loading state if no user
+      setIsLoading(false);
+    }
+    
+    // Cleanup
+    return () => {
+      isMounted.current = false;
+    };
+  }, [user, fetchInProgressBooks]);
+
   const handleSearch = (query: string) => {
     // Simple search implementation
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
     
     const allBooks = [
       ...getPopularBooks(),
@@ -62,24 +123,37 @@ export default function Home() {
   };
 
   const handleProgressUpdate = async (bookId: string) => {
-    if (!user) return;
+    if (!user?.id) {
+      toast.error("Vous devez être connecté pour mettre à jour votre progression");
+      return;
+    }
     
     try {
       setIsLoading(true);
       // Re-fetch the current book to update progress
       const updatedBook = await syncBookWithAPI(user.id, bookId);
+      
+      if (!isMounted.current) return;
+      
       if (updatedBook) {
         setCurrentBook(updatedBook);
       }
       
       // Refresh in-progress books
       const books = await getBooksInProgressFromAPI(user.id);
+      
+      if (!isMounted.current) return;
+      
       setInProgressBooks(books);
     } catch (error) {
       console.error("Error updating progress:", error);
-      toast.error("Erreur lors de la mise à jour de la progression");
+      if (isMounted.current) {
+        toast.error("Erreur lors de la mise à jour de la progression");
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -89,7 +163,7 @@ export default function Home() {
         <AppHeader />
         <WelcomeModal 
           open={showWelcome} 
-          onClose={(skipFlag?: boolean) => setShowWelcome(false)}
+          onClose={() => setShowWelcome(false)}
         />
         <main className="container py-6 space-y-8">
           <div className="max-w-2xl mx-auto">
@@ -112,6 +186,9 @@ export default function Home() {
                           src={book.coverImage} 
                           alt={book.title} 
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.svg';
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
@@ -167,6 +244,11 @@ export default function Home() {
                       <GoalsPreview />
                     </div>
                   </div>
+                  
+                  <ReadingProgress 
+                    inProgressBooks={inProgressBooks} 
+                    isLoading={isLoading} 
+                  />
                 </div>
                 <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
                   <ActivityFeed activities={getUserActivities()} />

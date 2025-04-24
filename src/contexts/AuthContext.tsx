@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,17 +23,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const authChecked = useRef(false);
   
   useEffect(() => {
-    // Important: Établir d'abord l'écouteur de changement d'état d'auth
+    // Important: First establish the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession?.user?.id);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Auth state changed:", event, currentSession?.user?.id);
+      }
       
-      // Mettre à jour l'état avec les nouvelles données de session
+      // Update state with new session data
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
-      // Pour compatibilité avec le code existant qui utilise localStorage
+      // For compatibility with existing code that uses localStorage
       if (currentSession?.user) {
         localStorage.setItem("user", JSON.stringify({ 
           id: currentSession.user.id,
@@ -42,37 +45,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem("user");
       }
+
+      // Mark initialization as complete
+      if (!isInitialized) {
+        setIsInitialized(true);
+      }
+
+      // End loading state once we have a definitive answer
+      setIsLoading(false);
     });
 
-    // Ensuite, vérifier si une session existe déjà
+    // Then, check if a session already exists
     const initializeAuth = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Initial session check:", currentSession?.user?.id || "No session found");
+        if (authChecked.current) return;
+        authChecked.current = true;
         
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Initial session check:", currentSession?.user?.id || "No session found");
+        }
+        
+        // Only update if we haven't received an auth state change event yet
+        // This prevents race conditions where the event fires before the getSession completes
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Pour compatibilité avec le code existant qui utilise localStorage
+        // For compatibility with existing code that uses localStorage
         if (currentSession?.user) {
           localStorage.setItem("user", JSON.stringify({ 
             id: currentSession.user.id,
             email: currentSession.user.email 
           }));
         }
+
+        // Mark initialization as complete and end loading state
+        setIsInitialized(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching session:", error);
         toast.error("Erreur de connexion à Supabase");
-      } finally {
-        setIsLoading(false);
+        
+        // Even on error, mark initialization complete and end loading
         setIsInitialized(true);
+        setIsLoading(false);
       }
     };
 
     initializeAuth();
 
     return () => {
-      // Nettoyer l'écouteur lors du démontage du composant
+      // Clean up the listener when component unmounts
       subscription.unsubscribe();
     };
   }, []);

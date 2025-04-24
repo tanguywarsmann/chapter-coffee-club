@@ -17,9 +17,6 @@ export const useReadingList = () => {
     queryFn: async () => {
       // Strict defensive check - stop immediately if no user
       if (!user || !user.id) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("No user found, returning empty reading list");
-        }
         return [];
       }
 
@@ -35,7 +32,7 @@ export const useReadingList = () => {
           throw error;
         }
 
-        // Utiliser un log conditionnel pour éviter de spammer en production
+        // Only log in development
         if (process.env.NODE_ENV === 'development') {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
@@ -46,13 +43,18 @@ export const useReadingList = () => {
       }
     },
     enabled: !!user?.id, // Only run query when user ID is available
-    staleTime: 600000, // Increase staleTime to 10 minutes to reduce unnecessary refetches
-    refetchOnWindowFocus: false, // Disable refetch on window focus to avoid flickering
-    retry: 1, // Limit retries to avoid excessive requests on failure
+    staleTime: 600000, // 10 minutes to reduce unnecessary refetches
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    retry: 1, // Limit retries
+    onError: (error) => {
+      toast.error("Impossible de récupérer votre liste de lecture");
+      console.error("Reading list query failed:", error);
+      return []; // Return empty array on error
+    }
   });
 
   const addToReadingList = async (book: Book) => {
-    if (!user) {
+    if (!user || !user.id) {
       toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
       console.error("Missing user ID when adding to reading list");
       return;
@@ -60,25 +62,25 @@ export const useReadingList = () => {
 
     const userId = user.id;
     
-    // Check if book already exists in reading list
-    const { data: existingEntries, error: checkError } = await supabase
-      .from("reading_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("book_id", book.id);
-    
-    if (checkError) {
-      toast.error("Erreur lors de la vérification de votre liste de lecture");
-      console.error("Error checking reading list:", checkError);
-      return;
-    }
-    
-    if (existingEntries && existingEntries.length > 0) {
-      toast.error("Ce livre est déjà dans votre liste");
-      return;
-    }
-    
     try {
+      // Check if book already exists in reading list
+      const { data: existingEntries, error: checkError } = await supabase
+        .from("reading_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("book_id", book.id);
+      
+      if (checkError) {
+        toast.error("Erreur lors de la vérification de votre liste de lecture");
+        console.error("Error checking reading list:", checkError);
+        return;
+      }
+      
+      if (existingEntries && existingEntries.length > 0) {
+        toast.error("Ce livre est déjà dans votre liste");
+        return;
+      }
+      
       toast.info("Initialisation de la lecture en cours...");
       
       const progress = await initializeNewBookReading(userId, book.id);
@@ -94,16 +96,13 @@ export const useReadingList = () => {
     } catch (error) {
       console.error('Error adding book to reading list:', error);
       toast.error("Une erreur est survenue lors de l'ajout du livre: " + 
-                 (error instanceof Error ? error.message : String(error)));
+                (error instanceof Error ? error.message : String(error)));
     }
   };
 
   const getBooksByStatus = async (status: ReadingList["status"]) => {
     // Strong defensive check - return empty array immediately if no user or readingList
     if (!user?.id || !readingList) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`No user or reading list available for status: ${status}`);
-      }
       return [];
     }
     
@@ -113,8 +112,8 @@ export const useReadingList = () => {
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
       
+      // Only log once in development
       if (process.env.NODE_ENV === 'development') {
-        // Log only once per status to avoid console spam
         console.log(`Filtered list for status ${status}:`, filteredList.length);
       }
       
@@ -134,8 +133,6 @@ export const useReadingList = () => {
           const book = await Promise.race([bookPromise, timeoutPromise]) as Book | null;
           
           if (!book) {
-            console.warn(`Book not found for ID: ${item.book_id}, creating fallback entry`);
-            
             // Return a fallback book object with the data we do have
             const fallbackBook: Book = {
               id: item.book_id,
@@ -188,6 +185,7 @@ export const useReadingList = () => {
       return books;
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
+      toast.error(`Erreur lors du chargement des livres "${status}"`);
       return [];
     }
   };
