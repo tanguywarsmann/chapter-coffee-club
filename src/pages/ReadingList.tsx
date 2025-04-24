@@ -12,6 +12,7 @@ import { BookSortSelect } from "@/components/reading/BookSortSelect";
 import { BookListSection } from "@/components/reading/BookListSection";
 import { LoadingBookList } from "@/components/reading/LoadingBookList";
 import { useBookSorting } from "@/hooks/useBookSorting";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ReadingList() {
   const navigate = useNavigate();
@@ -23,13 +24,20 @@ export default function ReadingList() {
   const [completedBooks, setCompletedBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log("ReadingList component mounted, user:", user?.id);
+    
     const fetchBooks = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log("No user found, skipping book fetch");
+        return;
+      }
       
       setIsLoading(true);
       setIsFetching(true);
+      setError(null);
       
       try {
         console.log("Fetching books for ReadingList page...");
@@ -44,8 +52,9 @@ export default function ReadingList() {
         setToReadBooks(sortBooks(toReadResult || [], sortBy));
         setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
         setCompletedBooks(sortBooks(completedResult || [], sortBy));
-      } catch (error) {
-        console.error("Error fetching books:", error);
+      } catch (err) {
+        console.error("Error fetching books:", err);
+        setError(err);
         toast.error("Erreur lors du chargement de vos livres");
       } finally {
         setIsLoading(false);
@@ -111,13 +120,26 @@ export default function ReadingList() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <AuthGuard>
-        <LoadingBookList />
-      </AuthGuard>
-    );
-  }
+  // Render empty state if no user or if there's an error
+  const renderEmptyState = () => (
+    <Card className="border-coffee-light">
+      <CardHeader>
+        <CardTitle className="text-xl font-serif text-coffee-darker">Aucune lecture trouvée</CardTitle>
+        <CardDescription>
+          {error ? "Une erreur est survenue lors du chargement de vos livres." : "Vous n'avez pas encore de livres dans votre liste de lecture."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center py-8">
+        <Button 
+          className="bg-coffee-dark hover:bg-coffee-darker" 
+          onClick={() => navigate("/explore")}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Découvrir des livres
+        </Button>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <AuthGuard>
@@ -145,32 +167,50 @@ export default function ReadingList() {
               Mise à jour de votre liste de lecture...
             </div>
           )}
-          
-          <BookListSection
-            title="En cours de lecture"
-            description="Reprenez où vous vous êtes arrêté"
-            books={inProgressBooks}
-            showProgress
-            actionLabel="Continuer la lecture"
-            onAction={(bookId) => navigate(`/books/${bookId}`)}
-          />
-          
-          <BookListSection
-            title="À lire"
-            description="Votre liste de lecture à venir"
-            books={toReadBooks}
-            actionLabel="Commencer la lecture"
-            onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
-          />
-          
-          <BookListSection
-            title="Livres terminés"
-            description="Vos lectures complétées"
-            books={completedBooks}
-            showDate
-            actionLabel="Relire"
-            onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
-          />
+
+          {isLoading ? (
+            <LoadingBookList />
+          ) : error ? (
+            renderEmptyState()
+          ) : (
+            <>
+              {inProgressBooks.length > 0 ? (
+                <BookListSection
+                  title="En cours de lecture"
+                  description="Reprenez où vous vous êtes arrêté"
+                  books={inProgressBooks}
+                  showProgress
+                  actionLabel="Continuer la lecture"
+                  onAction={(bookId) => navigate(`/books/${bookId}`)}
+                />
+              ) : null}
+              
+              {toReadBooks.length > 0 ? (
+                <BookListSection
+                  title="À lire"
+                  description="Votre liste de lecture à venir"
+                  books={toReadBooks}
+                  actionLabel="Commencer la lecture"
+                  onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+                />
+              ) : null}
+              
+              {completedBooks.length > 0 ? (
+                <BookListSection
+                  title="Livres terminés"
+                  description="Vos lectures complétées"
+                  books={completedBooks}
+                  showDate
+                  actionLabel="Relire"
+                  onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+                />
+              ) : null}
+              
+              {!isLoading && !error && inProgressBooks.length === 0 && toReadBooks.length === 0 && completedBooks.length === 0 && (
+                renderEmptyState()
+              )}
+            </>
+          )}
         </main>
       </div>
     </AuthGuard>

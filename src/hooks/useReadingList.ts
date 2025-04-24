@@ -30,14 +30,14 @@ export const useReadingList = () => {
 
         if (error) {
           console.error("Error fetching reading list from Supabase:", error);
-          return [];
+          throw error;
         }
 
         console.log("Reading progress data from Supabase:", readingProgressData);
         return readingProgressData || [];
       } catch (error) {
         console.error("Exception while fetching reading list:", error);
-        return [];
+        throw error; // Re-throw to be caught by React Query's error handling
       }
     },
     enabled: !!user,
@@ -118,7 +118,13 @@ export const useReadingList = () => {
         try {
           // Fetch book from Supabase
           console.log(`Fetching book with ID: ${item.book_id}`);
-          const book = await getBookById(item.book_id);
+          let book = null;
+          
+          try {
+            book = await getBookById(item.book_id);
+          } catch (bookError) {
+            console.error(`Error in getBookById for ${item.book_id}:`, bookError);
+          }
           
           // Even if the book is not found or incomplete, return basic information
           if (!book) {
@@ -127,9 +133,9 @@ export const useReadingList = () => {
             // Return a fallback book object with the data we do have
             return {
               id: item.book_id,
-              title: "Chargement...",
-              author: "...",
-              description: "",
+              title: "Livre indisponible",
+              author: "Auteur inconnu",
+              description: "Les détails de ce livre ne sont pas disponibles pour le moment.",
               chaptersRead: Math.floor(item.current_page / 30),
               totalChapters: Math.ceil(item.total_pages / 30) || 1,
               isCompleted: item.status === "completed",
@@ -149,7 +155,7 @@ export const useReadingList = () => {
             isCompleted: item.status === "completed"
           };
         } catch (error) {
-          console.error(`Error fetching book ${item.book_id}:`, error);
+          console.error(`Error processing book ${item.book_id}:`, error);
           
           // Return a fallback book object on error
           return {
@@ -168,12 +174,17 @@ export const useReadingList = () => {
         }
       });
       
-      // Wait for all promises to resolve
-      const books = await Promise.all(booksPromises);
-      console.log(`Retrieved ${books.length} books for status ${status}:`, books);
-      
-      // Always return the array, even if some entries are fallbacks
-      return books;
+      try {
+        // Wait for all promises to resolve
+        const books = await Promise.all(booksPromises);
+        console.log(`Retrieved ${books.length} books for status ${status}:`, books);
+        
+        // Always return the array, even if some entries are fallbacks
+        return books;
+      } catch (promiseError) {
+        console.error(`Error in Promise.all for books with status ${status}:`, promiseError);
+        return [];
+      }
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
       return [];
