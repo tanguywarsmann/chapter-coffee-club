@@ -12,11 +12,12 @@ export const useReadingList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  const { data: readingList, isLoading: isLoadingReadingList } = useQuery({
+  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: async () => {
       // Strict defensive check - stop immediately if no user
       if (!user || !user.id) {
+        console.warn("Attempted to fetch reading list without a user ID");
         return [];
       }
 
@@ -46,12 +47,13 @@ export const useReadingList = () => {
     staleTime: 600000, // 10 minutes to reduce unnecessary refetches
     refetchOnWindowFocus: false, // Disable refetch on window focus
     retry: 1, // Limit retries
-    onError: (error) => {
-      toast.error("Impossible de récupérer votre liste de lecture");
-      console.error("Reading list query failed:", error);
-      return []; // Return empty array on error
-    }
   });
+
+  // Handle errors from the query using the error returned by useQuery
+  if (readingListError) {
+    toast.error("Impossible de récupérer votre liste de lecture");
+    console.error("Reading list query failed:", readingListError);
+  }
 
   const addToReadingList = async (book: Book) => {
     if (!user || !user.id) {
@@ -195,6 +197,7 @@ export const useReadingList = () => {
     getBooksByStatus,
     readingList,
     isLoadingReadingList,
+    readingListError,
     userId: user?.id // Safe access with optional chaining
   };
 };
