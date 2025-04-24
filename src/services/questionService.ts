@@ -50,22 +50,22 @@ export const getQuestionForBookSegment = async (
     console.log(`Querying Supabase for book slug ${bookSlug}, segment ${segment}`);
     
     // Utiliser le slug pour interroger la table reading_questions
+    // Changement : Ne plus utiliser .maybeSingle() mais récupérer toutes les questions
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')
       .eq('book_slug', bookSlug)
-      .eq('segment', segment)
-      .maybeSingle();
+      .eq('segment', segment);
 
     if (error) {
       console.error('Error fetching question from Supabase:', error);
       throw new Error(`Database error: ${error.message}`);
     }
 
-    // Si nous avons trouvé une question dans la base de données, la retourner
-    if (data) {
-      console.log('Question found in Supabase:', data);
-      return data;
+    // Si nous avons trouvé des questions, retourner la première
+    if (data && data.length > 0) {
+      console.log(`Found ${data.length} questions, returning the first one:`, data[0]);
+      return data[0];
     }
 
     // Si aucune question n'a été trouvée, journaliser et retourner null
