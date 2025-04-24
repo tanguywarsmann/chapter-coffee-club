@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getBookById } from "@/services/books/bookQueries"; // Import the getBookById function
 
 type SortOption = "date" | "author" | "pages";
 
@@ -84,8 +86,17 @@ export default function ReadingList() {
   };
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
-    const storedList = localStorage.getItem("reading_list");
-    const readingList = storedList ? JSON.parse(storedList) : [];
+    // Get the book from one of the existing book arrays instead of calling getBookById
+    const bookToUpdate = 
+      toReadBooks.find(b => b.id === bookId) || 
+      inProgressBooks.find(b => b.id === bookId) || 
+      completedBooks.find(b => b.id === bookId);
+    
+    if (!bookToUpdate) {
+      console.error("Book not found for ID:", bookId);
+      return;
+    }
+
     const userId = user?.id;
     
     if (!userId) {
@@ -93,48 +104,47 @@ export default function ReadingList() {
       return;
     }
     
-    const updatedList = readingList.map((item: any) => {
-      if (item.user_id === userId && item.book_id === bookId) {
-        return { ...item, status: newStatus };
-      }
-      return item;
-    });
-    
-    localStorage.setItem("reading_list", JSON.stringify(updatedList));
-    
-    const book = getBookById(bookId);
-    if (book) {
-      toast.success(`${book.title} déplacé vers "${
-        newStatus === "to_read" ? "À lire" :
-        newStatus === "in_progress" ? "En cours" :
-        "Terminés"
-      }"`);
+    // Update reading progress in localStorage for backward compatibility
+    try {
+      const storedList = localStorage.getItem("reading_list");
+      const readingList = storedList ? JSON.parse(storedList) : [];
       
-      const moveBook = (book: BookType) => {
-        if (newStatus === "to_read") {
-          setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-          setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-          setToReadBooks(prev => [...prev, book]);
-        } else if (newStatus === "in_progress") {
-          setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-          setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-          setInProgressBooks(prev => [...prev, book]);
-        } else if (newStatus === "completed") {
-          setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-          setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-          setCompletedBooks(prev => [...prev, book]);
+      const updatedList = readingList.map((item: any) => {
+        if (item.user_id === userId && item.book_id === bookId) {
+          return { ...item, status: newStatus };
         }
-      };
+        return item;
+      });
       
-      const foundBook = 
-        toReadBooks.find(b => b.id === bookId) || 
-        inProgressBooks.find(b => b.id === bookId) || 
-        completedBooks.find(b => b.id === bookId);
-        
-      if (foundBook) {
-        moveBook(foundBook);
-      }
+      localStorage.setItem("reading_list", JSON.stringify(updatedList));
+    } catch (err) {
+      console.error("Error updating localStorage:", err);
+      // Continue execution even if localStorage fails
     }
+    
+    // Provide feedback to the user
+    toast.success(`${bookToUpdate.title} déplacé vers "${
+      newStatus === "to_read" ? "À lire" :
+      newStatus === "in_progress" ? "En cours" :
+      "Terminés"
+    }"`);
+    
+    // Update the state to move the book between categories
+    if (newStatus === "to_read") {
+      setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+      setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+      setToReadBooks(prev => [...prev, bookToUpdate]);
+    } else if (newStatus === "in_progress") {
+      setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+      setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
+      setInProgressBooks(prev => [...prev, bookToUpdate]);
+    } else if (newStatus === "completed") {
+      setToReadBooks(prev => prev.filter(b => b.id !== bookId));
+      setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
+      setCompletedBooks(prev => [...prev, bookToUpdate]);
+    }
+    
+    // Could also trigger a re-fetch of books here if needed
   };
 
   if (isLoading) {
