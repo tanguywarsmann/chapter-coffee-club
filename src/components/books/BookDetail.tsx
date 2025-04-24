@@ -28,8 +28,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   
   const {
     isValidating,
-    showQuizModal,
-    setShowQuizModal,
+    showQuiz,
+    setShowQuiz,
     validationSegment,
     setValidationSegment,
     currentQuestion,
@@ -102,13 +102,13 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         <BookValidationModals
           book={currentBook}
           showValidationModal={showValidationModal}
-          showQuizModal={showQuizModal}
+          showQuizModal={showQuiz}
           validationSegment={validationSegment}
           currentQuestion={currentQuestion}
           isValidating={isValidating}
           onValidationClose={() => setShowValidationModal(false)}
           onValidationConfirm={handleValidationModalConfirm}
-          onQuizClose={() => setShowQuizModal(false)}
+          onQuizClose={() => setShowQuiz(false)}
           onQuizComplete={handleQuizComplete}
         />
       </CardContent>
