@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
@@ -201,7 +202,8 @@ export const useReadingList = () => {
                 language: "fr",
                 categories: [],
                 pages: item.total_pages || 0,
-                publicationYear: 0
+                publicationYear: 0,
+                isUnavailable: true, // Added new flag to identify fallback books
               };
               
               return fallbackBook;
@@ -229,6 +231,7 @@ export const useReadingList = () => {
                 "Erreur lors du chargement" : 
               "Erreur inconnue";
             
+            // IMPORTANT: Always return a fallback book instead of filtering it out
             const errorBook: Book = {
               id: item.book_id,
               title: errorMessage,
@@ -240,7 +243,8 @@ export const useReadingList = () => {
               language: "fr",
               categories: [],
               pages: item.total_pages || 0,
-              publicationYear: 0
+              publicationYear: 0,
+              isUnavailable: true, // Added new flag to identify fallback books
             };
             
             return errorBook;
