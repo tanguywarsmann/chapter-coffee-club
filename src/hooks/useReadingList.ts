@@ -1,38 +1,27 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ReadingList } from "@/types/reading";
 import { Book } from "@/types/book";
-import { getBookById } from "@/services/books/bookQueries";
 import { initializeNewBookReading } from "@/services/reading";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef } from "react";
-
-// Cache pour stocker les IDs des livres qui ont échoué lors du chargement
-// Cette variable est définie en dehors du hook pour persister même si le hook est réinitialisé
-const failedBookIds = new Set<string>();
+import { useBookFetching } from "./useBookFetching";
+import { bookFailureCache } from "@/utils/bookFailureCache";
 
 export const useReadingList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { fetchBookWithTimeout } = useBookFetching();
   
-  // Use a ref to track if we're currently fetching
   const isFetching = useRef(false);
-  
-  // Track error count to avoid overwhelming the user with error toasts
   const errorCount = useRef(0);
 
-  // Invalidate queries when user changes (login/logout)
   useEffect(() => {
-    // Clear reading list queries when user changes
     if (user?.id) {
-      // If user logs in, invalidate to fetch fresh data
       queryClient.invalidateQueries({ queryKey: ["reading_list"] });
     } else {
-      // If user logs out, reset cache
       queryClient.resetQueries({ queryKey: ["reading_list"] });
-      // Reset error count on user change
       errorCount.current = 0;
     }
   }, [user?.id, queryClient]);
@@ -40,17 +29,14 @@ export const useReadingList = () => {
   const { data: readingList, isLoading: isLoadingReadingList, error: readingListError } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: async () => {
-      // Strict defensive check - stop immediately if no user
       if (!user || !user.id) {
         console.warn("Attempted to fetch reading list without a user ID");
         return [];
       }
 
       try {
-        // Set fetching state
         isFetching.current = true;
         
-        // Get reading list directly from Supabase instead of localStorage
         const { data: readingProgressData, error } = await supabase
           .from("reading_progress")
           .select("*")
@@ -61,7 +47,6 @@ export const useReadingList = () => {
           throw error;
         }
 
-        // Only log in development
         if (process.env.NODE_ENV === 'development') {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
@@ -71,18 +56,16 @@ export const useReadingList = () => {
       } catch (error) {
         console.error("Exception while fetching reading list:", error);
         isFetching.current = false;
-        throw error; // Re-throw to be caught by React Query's error handling
+        throw error;
       }
     },
-    enabled: !!user?.id, // Only run query when user ID is available
-    staleTime: 600000, // 10 minutes to reduce unnecessary refetches
-    refetchOnWindowFocus: false, // Disable refetch on window focus
-    retry: 1, // Limit retries
+    enabled: !!user?.id,
+    staleTime: 600000,
+    refetchOnWindowFocus: false,
+    retry: 1,
   });
 
-  // Handle errors from the query using the error returned by useQuery
   if (readingListError) {
-    // Only show toast for the first error to avoid overwhelming the user
     if (errorCount.current === 0) {
       toast.error("Impossible de récupérer votre liste de lecture");
       errorCount.current++;
@@ -97,14 +80,11 @@ export const useReadingList = () => {
       return;
     }
 
-    const userId = user.id;
-    
     try {
-      // Check if book already exists in reading list
       const { data: existingEntries, error: checkError } = await supabase
         .from("reading_progress")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", user.id)
         .eq("book_id", book.id);
       
       if (checkError) {
@@ -120,14 +100,14 @@ export const useReadingList = () => {
       
       toast.info("Initialisation de la lecture en cours...");
       
-      const progress = await initializeNewBookReading(userId, book.id);
+      const progress = await initializeNewBookReading(user.id, book.id);
       if (!progress) {
         toast.error("Erreur lors de l'initialisation de la lecture. Vérifiez votre connexion et réessayez.");
         console.error('Failed to initialize reading progress:', book.id);
         return;
       }
       
-      queryClient.invalidateQueries({ queryKey: ["reading_list", userId] });
+      queryClient.invalidateQueries({ queryKey: ["reading_list", user.id] });
       
       toast.success(`${book.title} ajouté à votre liste de lecture`);
     } catch (error) {
@@ -137,15 +117,11 @@ export const useReadingList = () => {
     }
   };
 
-  // Debounced fetching to prevent rapid-fire requests
-  // and allow books to load in batches for better performance
-  const getBooksByStatus = async (status: ReadingList["status"]) => {
-    // Strong defensive check - return empty array immediately if no user or readingList
+  const getBooksByStatus = async (status: string) => {
     if (!user?.id || !readingList) {
       return [];
     }
     
-    // Don't allow concurrent fetches of the same data
     if (isFetching.current) {
       console.log("Already fetching books, skipping duplicate request");
       return [];
@@ -154,12 +130,10 @@ export const useReadingList = () => {
     try {
       isFetching.current = true;
       
-      // Filter reading list entries by status
       const filteredList = Array.isArray(readingList) 
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
       
-      // Only log once in development
       if (process.env.NODE_ENV === 'development') {
         console.log(`Filtered list for status ${status}:`, filteredList.length);
       }
@@ -169,89 +143,33 @@ export const useReadingList = () => {
         return [];
       }
 
-      // IMPROVEMENT: Process books in batches for better performance
-      const BATCH_SIZE = 3; // Process 3 books at a time
+      const BATCH_SIZE = 3;
       const books: Book[] = [];
       const batches = [];
       
-      // Create batches of book IDs for parallel processing
       for (let i = 0; i < filteredList.length; i += BATCH_SIZE) {
         batches.push(filteredList.slice(i, i + BATCH_SIZE));
       }
       
-      // Process batches sequentially, but books within each batch in parallel
       for (const batch of batches) {
-        // Process each batch in parallel with proper error handling
-        const batchPromises = batch.map(async (item: any) => {
-          try {
-            // IMPORTANT: Si le livre a déjà échoué précédemment, ne pas réessayer de le récupérer
-            if (failedBookIds.has(item.book_id)) {
-              console.log(`Skipping known failed book ID: ${item.book_id}`);
-              return createFallbackBook(item, "Livre précédemment indisponible");
-            }
-            
-            // FIX: Increased timeout to 15 seconds for more stability
-            const timeoutDuration = 15000; // 15 secondes
-            const bookPromise = getBookById(item.book_id);
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout fetching book')), timeoutDuration)
-            );
-            
-            // Race between fetch and timeout
-            const book = await Promise.race([bookPromise, timeoutPromise]) as Book | null;
-            
-            if (!book) {
-              // Ajouter l'ID à la liste des échecs pour ne plus jamais le réessayer
-              failedBookIds.add(item.book_id);
-              console.warn(`Book not found: ${item.book_id}, adding to failed books cache`);
-              return createFallbackBook(item, "Livre indisponible");
-            }
-            
-            // Add reading progress information to the book
-            return {
-              ...book,
-              chaptersRead: Math.floor(item.current_page / 30),
-              totalChapters: Math.ceil(book.pages / 30) || 1,
-              isCompleted: item.status === "completed"
-            } as Book;
-          } catch (error) {
-            // Ajouter l'ID à la liste des échecs pour ne plus jamais le réessayer
-            failedBookIds.add(item.book_id);
-            
-            // FIX: Improved error handling with better error reporting
-            if (error instanceof Error && error.message === 'Timeout fetching book') {
-              console.warn(`Timeout fetching book ${item.book_id} - added to failed books cache`);
-            } else {
-              console.error(`Error processing book ${item.book_id}:`, error);
-            }
-            
-            // Return a fallback book object on error with special indication of error type
-            return createFallbackBook(item, error instanceof Error ? error.message : "Erreur inconnue");
-          }
-        });
+        const batchPromises = batch.map((item: any) => fetchBookWithTimeout(item.book_id, item));
         
         try {
-          // Add successfully fetched books from this batch to the results
           const batchResults = await Promise.allSettled(batchPromises);
           
-          // Process the results of the batch, including both successful and failed fetches
           batchResults.forEach((result) => {
             if (result.status === 'fulfilled') {
               books.push(result.value);
             } else if (process.env.NODE_ENV === 'development') {
-              // Only log in development to avoid console spam in production
               console.warn("Failed to process a book in batch:", result.reason);
             }
           });
           
-          // Small delay between batches to prevent overwhelming the API
           if (batches.length > 1) {
             await new Promise(resolve => setTimeout(resolve, 100));
           }
         } catch (batchError) {
-          // Batch error handling - this should rarely happen
           console.error("Error processing batch of books:", batchError);
-          // Continue to next batch instead of failing completely
         }
       }
       
@@ -259,7 +177,6 @@ export const useReadingList = () => {
       return books;
     } catch (error) {
       console.error(`Error processing books with status ${status}:`, error);
-      // Only show one toast error, not per book
       if (errorCount.current < 3) {
         toast.error(`Erreur lors du chargement des livres "${status}"`);
         errorCount.current++;
@@ -269,32 +186,13 @@ export const useReadingList = () => {
     }
   };
 
-  // Helper function to create consistent fallback books
-  const createFallbackBook = (item: any, errorMessage: string): Book => {
-    return {
-      id: item.book_id,
-      title: "Livre indisponible",
-      author: "Auteur inconnu",
-      description: `Les détails de ce livre ne sont pas disponibles. (${errorMessage})`,
-      chaptersRead: Math.floor(item.current_page / 30),
-      totalChapters: Math.ceil(item.total_pages / 30) || 1,
-      isCompleted: item.status === "completed",
-      language: "fr",
-      categories: [],
-      pages: item.total_pages || 0,
-      publicationYear: 0,
-      isUnavailable: true, // Explicitly marked flag to identify fallback books
-    };
-  };
-
   return {
     addToReadingList,
     getBooksByStatus,
     readingList,
     isLoadingReadingList,
     readingListError,
-    userId: user?.id, // Safe access with optional chaining
-    // Exposer la liste des livres en échec pour debugging
-    getFailedBookIds: () => Array.from(failedBookIds)
+    userId: user?.id,
+    getFailedBookIds: () => bookFailureCache.getAll()
   };
 };
