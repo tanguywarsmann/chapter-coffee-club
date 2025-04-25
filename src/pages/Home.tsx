@@ -52,7 +52,20 @@ export default function Home() {
         
         // Get the most recently updated book
         if (inProgressBooks && inProgressBooks.length > 0) {
-          setCurrentReading(inProgressBooks[0]);
+          // Filtrer les livres marqués comme indisponibles pour éviter le clignotement
+          const availableBooks = inProgressBooks.filter(book => !book.isUnavailable);
+          if (availableBooks.length > 0) {
+            setCurrentReading(availableBooks[0]);
+          } else if (inProgressBooks.length > 0) {
+            // Si tous les livres sont indisponibles, utiliser le premier mais avec un flag stable
+            const stableUnavailableBook = {
+              ...inProgressBooks[0],
+              isStableUnavailable: true // Flag pour éviter les refetch inutiles
+            };
+            setCurrentReading(stableUnavailableBook);
+          } else {
+            setCurrentReading(null);
+          }
         } else {
           setCurrentReading(null);
         }
@@ -80,6 +93,11 @@ export default function Home() {
 
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
+      // Ne pas naviguer vers les livres indisponibles
+      if (currentReading.isUnavailable) {
+        toast.error("Ce livre n'est pas disponible actuellement");
+        return;
+      }
       navigate(`/books/${currentReading.id}?segment=${Math.floor(currentReading.chaptersRead)}`);
     }
   }, [currentReading, navigate]);
@@ -102,11 +120,24 @@ export default function Home() {
       
       if (!isMounted.current) return;
       
-      setInProgressBooks(books);
+      // Filtrer les livres non disponibles pour éviter les clignotements
+      const stableBooks = books.map(book => {
+        if (book.isUnavailable) {
+          return {
+            ...book,
+            isStableUnavailable: true // Flag pour éviter les refetch inutiles
+          };
+        }
+        return book;
+      });
+      
+      setInProgressBooks(stableBooks);
       
       // Set current book to the first in-progress book if available
-      if (books && books.length > 0) {
-        setCurrentBook(books[0]);
+      if (stableBooks && stableBooks.length > 0) {
+        // Préférer un livre disponible comme livre courant
+        const availableBook = stableBooks.find(b => !b.isUnavailable);
+        setCurrentBook(availableBook || stableBooks[0]);
       }
       
       hasFetchedBooks.current = true;
@@ -172,6 +203,12 @@ export default function Home() {
   };
 
   const handleProgressUpdate = async (bookId: string) => {
+    // Ne pas mettre à jour les livres indisponibles
+    if (currentBook?.isUnavailable) {
+      toast.error("Ce livre n'est pas disponible actuellement");
+      return;
+    }
+    
     if (!user?.id) {
       toast.error("Vous devez être connecté pour mettre à jour votre progression");
       return;

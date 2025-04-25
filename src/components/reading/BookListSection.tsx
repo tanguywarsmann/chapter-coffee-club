@@ -111,6 +111,7 @@ export function BookListSection({
                     size="sm" 
                     onClick={() => onAction(book.id)}
                     className="mt-2"
+                    disabled={book.isUnavailable}
                   >
                     {actionLabel}
                   </Button>

@@ -14,9 +14,12 @@ import { LoadingBookList } from "@/components/reading/LoadingBookList";
 import { useBookSorting } from "@/hooks/useBookSorting";
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
 
+// Liste locale pour éviter les re-fetchs de livres indisponibles
+const unavailableBookIds = new Set<string>();
+
 export default function ReadingList() {
   const navigate = useNavigate();
-  const { getBooksByStatus, isLoadingReadingList } = useReadingList();
+  const { getBooksByStatus, isLoadingReadingList, getFailedBookIds } = useReadingList();
   const { user } = useAuth();
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
   const [toReadBooks, setToReadBooks] = useState([]);
@@ -48,6 +51,10 @@ export default function ReadingList() {
     setIsFetching(true);
     
     try {
+      // Synchroniser avec la liste globale des livres en échec
+      const failedIds = getFailedBookIds ? getFailedBookIds() : [];
+      failedIds.forEach(id => unavailableBookIds.add(id));
+      
       // Fetch books in parallel for better performance
       const [toReadResult, inProgressResult, completedResult] = await Promise.all([
         getBooksByStatus("to_read"),
@@ -57,10 +64,33 @@ export default function ReadingList() {
       
       // Update only if component is still mounted
       if (isMounted.current) {
-        setToReadBooks(sortBooks(toReadResult || [], sortBy));
-        setInProgressBooks(sortBooks(inProgressResult || [], sortBy));
-        setCompletedBooks(sortBooks(completedResult || [], sortBy));
+        // Marquer explicitement les livres indisponibles pour stabiliser l'interface
+        const stabilizeBooks = (books) => {
+          return books.map(book => {
+            // Si le livre est déjà marqué comme indisponible ou son ID est connu comme problématique
+            if (book.isUnavailable || unavailableBookIds.has(book.id)) {
+              unavailableBookIds.add(book.id); // Mettre à jour notre cache local
+              return {
+                ...book,
+                isUnavailable: true, // S'assurer que le flag est toujours défini
+                isStableUnavailable: true // Drapeau pour éviter les refetch inutiles
+              };
+            }
+            return book;
+          });
+        };
+        
+        setToReadBooks(sortBooks(stabilizeBooks(toReadResult || []), sortBy));
+        setInProgressBooks(sortBooks(stabilizeBooks(inProgressResult || []), sortBy));
+        setCompletedBooks(sortBooks(stabilizeBooks(completedResult || []), sortBy));
         hasFetchedOnMount.current = true;
+        
+        // Debug pour voir quels livres sont marqués comme indisponibles
+        if (process.env.NODE_ENV === 'development') {
+          const totalUnavailable = [...toReadResult, ...inProgressResult, ...completedResult]
+            .filter(b => b.isUnavailable).length;
+          console.log(`Total unavailable books: ${totalUnavailable}, IDs cached: ${unavailableBookIds.size}`);
+        }
       }
     } catch (err) {
       console.error("Error fetching books:", err);
@@ -74,7 +104,7 @@ export default function ReadingList() {
         setIsFetching(false);
       }
     }
-  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching]);
+  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching, getFailedBookIds]);
   
   // Effect for initial loading - triggered only if user is available
   useEffect(() => {
@@ -103,16 +133,22 @@ export default function ReadingList() {
   }, [sortBy, sortBooks]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
+    // Ne pas permettre d'actions sur les livres indisponibles
+    const bookToUpdate = 
+      toReadBooks.find(b => b.id === bookId) || 
+      inProgressBooks.find(b => b.id === bookId) || 
+      completedBooks.find(b => b.id === bookId);
+      
+    if (bookToUpdate?.isUnavailable) {
+      toast.error("Ce livre n'est pas disponible actuellement");
+      return;
+    }
+    
     // DEFENSIVE: Don't execute if user is not authenticated
     if (!user) {
       toast.error("Vous devez être connecté pour cette action");
       return;
     }
-    
-    const bookToUpdate = 
-      toReadBooks.find(b => b.id === bookId) || 
-      inProgressBooks.find(b => b.id === bookId) || 
-      completedBooks.find(b => b.id === bookId);
     
     if (!bookToUpdate) {
       console.error("Book not found for ID:", bookId);
@@ -197,7 +233,14 @@ export default function ReadingList() {
                   books={inProgressBooks}
                   showProgress
                   actionLabel="Continuer la lecture"
-                  onAction={(bookId) => navigate(`/books/${bookId}`)}
+                  onAction={(bookId) => {
+                    const book = inProgressBooks.find(b => b.id === bookId);
+                    if (book?.isUnavailable) {
+                      toast.error("Ce livre n'est pas disponible actuellement");
+                      return;
+                    }
+                    navigate(`/books/${bookId}`)
+                  }}
                 />
               )}
               
@@ -207,7 +250,14 @@ export default function ReadingList() {
                   description="Votre liste de lecture à venir"
                   books={toReadBooks}
                   actionLabel="Commencer la lecture"
-                  onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+                  onAction={(bookId) => {
+                    const book = toReadBooks.find(b => b.id === bookId);
+                    if (book?.isUnavailable) {
+                      toast.error("Ce livre n'est pas disponible actuellement");
+                      return;
+                    }
+                    updateBookStatus(bookId, "in_progress")
+                  }}
                 />
               )}
               
@@ -218,7 +268,14 @@ export default function ReadingList() {
                   books={completedBooks}
                   showDate
                   actionLabel="Relire"
-                  onAction={(bookId) => updateBookStatus(bookId, "in_progress")}
+                  onAction={(bookId) => {
+                    const book = completedBooks.find(b => b.id === bookId);
+                    if (book?.isUnavailable) {
+                      toast.error("Ce livre n'est pas disponible actuellement");
+                      return;
+                    }
+                    updateBookStatus(bookId, "in_progress")
+                  }}
                 />
               )}
               

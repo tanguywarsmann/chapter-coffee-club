@@ -9,6 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef } from "react";
 
+// Cache pour stocker les IDs des livres qui ont échoué lors du chargement
+// Cette variable est définie en dehors du hook pour persister même si le hook est réinitialisé
+const failedBookIds = new Set<string>();
+
 export const useReadingList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -180,33 +184,27 @@ export const useReadingList = () => {
         // Process each batch in parallel with proper error handling
         const batchPromises = batch.map(async (item: any) => {
           try {
-            // FIX: Increased timeout to 10 seconds for more stability
+            // IMPORTANT: Si le livre a déjà échoué précédemment, ne pas réessayer de le récupérer
+            if (failedBookIds.has(item.book_id)) {
+              console.log(`Skipping known failed book ID: ${item.book_id}`);
+              return createFallbackBook(item, "Livre précédemment indisponible");
+            }
+            
+            // FIX: Increased timeout to 15 seconds for more stability
+            const timeoutDuration = 15000; // 15 secondes
             const bookPromise = getBookById(item.book_id);
             const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout fetching book')), 10000) // Increased from 8s to 10s
+              setTimeout(() => reject(new Error('Timeout fetching book')), timeoutDuration)
             );
             
             // Race between fetch and timeout
             const book = await Promise.race([bookPromise, timeoutPromise]) as Book | null;
             
             if (!book) {
-              // Return a fallback book object with the data we do have
-              const fallbackBook: Book = {
-                id: item.book_id,
-                title: "Livre indisponible",
-                author: "Auteur inconnu",
-                description: "Les détails de ce livre ne sont pas disponibles pour le moment.",
-                chaptersRead: Math.floor(item.current_page / 30),
-                totalChapters: Math.ceil(item.total_pages / 30) || 1,
-                isCompleted: item.status === "completed",
-                language: "fr",
-                categories: [],
-                pages: item.total_pages || 0,
-                publicationYear: 0,
-                isUnavailable: true, // Added new flag to identify fallback books
-              };
-              
-              return fallbackBook;
+              // Ajouter l'ID à la liste des échecs pour ne plus jamais le réessayer
+              failedBookIds.add(item.book_id);
+              console.warn(`Book not found: ${item.book_id}, adding to failed books cache`);
+              return createFallbackBook(item, "Livre indisponible");
             }
             
             // Add reading progress information to the book
@@ -217,37 +215,18 @@ export const useReadingList = () => {
               isCompleted: item.status === "completed"
             } as Book;
           } catch (error) {
+            // Ajouter l'ID à la liste des échecs pour ne plus jamais le réessayer
+            failedBookIds.add(item.book_id);
+            
             // FIX: Improved error handling with better error reporting
             if (error instanceof Error && error.message === 'Timeout fetching book') {
-              console.warn(`Timeout fetching book ${item.book_id} - will use fallback`);
+              console.warn(`Timeout fetching book ${item.book_id} - added to failed books cache`);
             } else {
               console.error(`Error processing book ${item.book_id}:`, error);
             }
             
             // Return a fallback book object on error with special indication of error type
-            const errorMessage = error instanceof Error ? 
-              error.message.includes('Timeout') ? 
-                "Temps d'attente dépassé lors du chargement" : 
-                "Erreur lors du chargement" : 
-              "Erreur inconnue";
-            
-            // IMPORTANT: Always return a fallback book instead of filtering it out
-            const errorBook: Book = {
-              id: item.book_id,
-              title: errorMessage,
-              author: "Contenu indisponible",
-              description: "Impossible de charger les détails de ce livre. Veuillez rafraîchir la page ou réessayer plus tard.",
-              chaptersRead: item.current_page ? Math.floor(item.current_page / 30) : 0,
-              totalChapters: item.total_pages ? Math.ceil(item.total_pages / 30) : 1,
-              isCompleted: item.status === "completed",
-              language: "fr",
-              categories: [],
-              pages: item.total_pages || 0,
-              publicationYear: 0,
-              isUnavailable: true, // Added new flag to identify fallback books
-            };
-            
-            return errorBook;
+            return createFallbackBook(item, error instanceof Error ? error.message : "Erreur inconnue");
           }
         });
         
@@ -290,12 +269,32 @@ export const useReadingList = () => {
     }
   };
 
+  // Helper function to create consistent fallback books
+  const createFallbackBook = (item: any, errorMessage: string): Book => {
+    return {
+      id: item.book_id,
+      title: "Livre indisponible",
+      author: "Auteur inconnu",
+      description: `Les détails de ce livre ne sont pas disponibles. (${errorMessage})`,
+      chaptersRead: Math.floor(item.current_page / 30),
+      totalChapters: Math.ceil(item.total_pages / 30) || 1,
+      isCompleted: item.status === "completed",
+      language: "fr",
+      categories: [],
+      pages: item.total_pages || 0,
+      publicationYear: 0,
+      isUnavailable: true, // Explicitly marked flag to identify fallback books
+    };
+  };
+
   return {
     addToReadingList,
     getBooksByStatus,
     readingList,
     isLoadingReadingList,
     readingListError,
-    userId: user?.id // Safe access with optional chaining
+    userId: user?.id, // Safe access with optional chaining
+    // Exposer la liste des livres en échec pour debugging
+    getFailedBookIds: () => Array.from(failedBookIds)
   };
 };

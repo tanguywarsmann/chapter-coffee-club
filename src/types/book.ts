@@ -13,5 +13,5 @@ export interface Book {
   categories: string[];
   pages: number;
   publicationYear: number;
-  isUnavailable?: boolean; // Added flag to identify fallback books
+  isUnavailable?: boolean; // Explicitly marked flag to identify fallback books
 }
