@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useRef } from "react";
 
 interface ReadingProgressProps {
   inProgressBooks: Book[];
@@ -12,6 +13,17 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingProgressProps) {
+  // Utilisation d'une ref pour éviter le log à chaque rendu
+  const hasLogged = useRef(false);
+  
+  // Loggez uniquement au montage ou lorsque inProgressBooks change
+  useEffect(() => {
+    if (!hasLogged.current && process.env.NODE_ENV === 'development') {
+      console.log("Rendering ReadingProgress with books:", inProgressBooks);
+      hasLogged.current = true;
+    }
+  }, [inProgressBooks]);
+  
   // Si nous sommes en train de charger, afficher un squelette
   if (isLoading) {
     return (
@@ -43,7 +55,6 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   
   // We ensure inProgressBooks is always an array, even if undefined
   const books = Array.isArray(inProgressBooks) ? inProgressBooks : [];
-  console.log("Rendering ReadingProgress with books:", books);
 
   return (
     <Card className="border-coffee-light">

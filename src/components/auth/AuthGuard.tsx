@@ -27,7 +27,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   // Handle auth state changes and navigate accordingly
   useEffect(() => {
-    // FIX: Log auth state for debugging
+    // FIX: Log auth state for debugging only in development
     if (process.env.NODE_ENV === 'development') {
       console.log("AuthGuard: user=", user?.id, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
@@ -35,7 +35,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
     // Initialization is complete and user is not authenticated
     if (isInitialized && !isLoading && !user && !isRedirecting) {
       setIsRedirecting(true);
-      console.log("AuthGuard: redirecting to /auth due to no user");
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log("AuthGuard: redirecting to /auth due to no user");
+      }
       
       // A short delay to prevent flash of content
       const timer = setTimeout(() => {
@@ -46,7 +49,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     }
   }, [user, isLoading, isInitialized, navigate, isRedirecting]);
 
-  // Show loading state while checking auth
+  // Show loading state while checking auth - prevent render during loading
   if (isLoading || !isInitialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

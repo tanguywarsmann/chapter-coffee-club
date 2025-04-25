@@ -24,10 +24,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const authChecked = useRef(false);
+  const stateChangeHandled = useRef(false);
   
   useEffect(() => {
     // Important: First establish the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      // FIX: Prevent multiple state changes in one render cycle
+      if (!stateChangeHandled.current) {
+        stateChangeHandled.current = true;
+        
+        setTimeout(() => {
+          stateChangeHandled.current = false;
+        }, 100);
+      }
+      
       if (process.env.NODE_ENV === 'development') {
         console.log("Auth state changed:", event, currentSession?.user?.id);
       }
