@@ -16,7 +16,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     return [];
   }
   
-  console.log('Getting reading progress for userId:', userId);
+  console.log('[DIAGNOSTIQUE] Récupération de la progression pour userId:', userId);
   
   try {
     const { data, error } = await supabase
@@ -25,16 +25,17 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       .eq('user_id', userId);
 
     if (error) {
-      console.error('Error fetching reading progress:', error);
+      console.error('[DIAGNOSTIQUE] Erreur lors de la récupération de la progression:', error);
       return [];
     }
 
+    console.log('[DIAGNOSTIQUE] Progression récupérée:', data?.length || 0, 'entrées');
     return (data || []).map(item => ({
       ...item,
       validations: []
     }));
   } catch (error) {
-    console.error('Exception fetching reading progress:', error);
+    console.error('[DIAGNOSTIQUE] Exception pendant la récupération de la progression:', error);
     return [];
   }
 };
@@ -53,7 +54,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     return null;
   }
   
-  console.log('Getting book progress for userId:', userId, 'bookId:', bookId);
+  console.log('[DIAGNOSTIQUE] Récupération de la progression du livre - userId:', userId, 'bookId:', bookId);
   
   try {
     const { data, error } = await supabase
@@ -64,13 +65,14 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching book progress:', error);
+      console.error('[DIAGNOSTIQUE] Erreur lors de la récupération de la progression du livre:', error);
       return null;
     }
 
+    console.log('[DIAGNOSTIQUE] Progression du livre récupérée:', data ? 'trouvée' : 'non trouvée');
     return data ? { ...data, validations: [] } : null;
   } catch (error) {
-    console.error('Exception fetching book progress:', error);
+    console.error('[DIAGNOSTIQUE] Exception pendant la récupération de la progression du livre:', error);
     return null;
   }
 };

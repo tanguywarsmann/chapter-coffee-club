@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -22,10 +21,10 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
   }
 
   // First check if a reading progress already exists
-  console.log('Checking for existing progress with userId:', userId, 'bookId:', book.id);
+  console.log('[DIAGNOSTIQUE] Vérification de progression existante - userId:', userId, 'bookId:', book.id);
   const existingProgress = await getBookReadingProgress(userId, book.id);
   if (existingProgress) {
-    console.log('Reading progress already exists for:', book.id);
+    console.log('[DIAGNOSTIQUE] Progression de lecture existante trouvée pour:', book.id);
     return existingProgress;
   }
 
@@ -41,7 +40,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
     streak_best: 0
   };
 
-  console.log('Creating new reading progress with data:', newProgress);
+  console.log('[DIAGNOSTIQUE] Création d\'une nouvelle progression avec données:', newProgress);
 
   try {
     const { data, error } = await supabase
@@ -51,21 +50,21 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
       .single();
 
     if (error) {
-      console.error('Error initializing reading progress:', error);
+      console.error('[DIAGNOSTIQUE] Erreur d\'initialisation de progression de lecture:', error);
       return null;
     }
 
-    console.log('Successfully created reading progress:', data);
+    console.log('[DIAGNOSTIQUE] Progression créée avec succès:', data);
     return { ...data, validations: [] };
   } catch (error) {
-    console.error('Exception during reading progress initialization:', error);
+    console.error('[DIAGNOSTIQUE] Exception pendant l\'initialisation:', error);
     return null;
   }
 };
 
 // Utility to initialize reading progress for a new book
 export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
-  console.log('Initializing new book reading with userId:', userId, 'bookId:', bookId);
+  console.log('[DIAGNOSTIQUE] Initialisation d\'une nouvelle lecture - userId:', userId, 'bookId:', bookId);
   
   if (!userId) {
     console.error('Missing user ID for book initialization');
@@ -83,14 +82,14 @@ export const initializeNewBookReading = async (userId: string, bookId: string): 
     // Fetch book from Supabase instead of mock data
     const book = await getBookById(bookId);
     if (!book) {
-      console.error('Book not found in Supabase:', bookId);
+      console.error('[DIAGNOSTIQUE] Livre non trouvé dans Supabase:', bookId);
       return null;
     }
     
-    console.log('Book found in Supabase:', book);
+    console.log('[DIAGNOSTIQUE] Livre trouvé dans Supabase:', book);
     return initializeBookReading(userId, book);
   } catch (error) {
-    console.error('Error fetching book from Supabase:', error);
+    console.error('[DIAGNOSTIQUE] Erreur lors de la récupération du livre depuis Supabase:', error);
     return null;
   }
 };

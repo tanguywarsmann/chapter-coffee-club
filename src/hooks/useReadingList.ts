@@ -38,6 +38,8 @@ export const useReadingList = () => {
       try {
         isFetching.current = true;
         
+        console.log("[DIAGNOSTIQUE] Récupération de la liste de lecture pour l'utilisateur:", user.id);
+        
         const { data: readingProgressData, error } = await supabase
           .from("reading_progress")
           .select("*")
@@ -48,6 +50,8 @@ export const useReadingList = () => {
           throw error;
         }
 
+        console.log("[DIAGNOSTIQUE] Données récupérées de reading_progress:", readingProgressData);
+        
         if (process.env.NODE_ENV === 'development') {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
@@ -83,6 +87,9 @@ export const useReadingList = () => {
       return;
     }
 
+    console.log("[DIAGNOSTIQUE] Tentative d'ajout du livre à la liste:", book.id, book.title);
+    console.log("[DIAGNOSTIQUE] User ID:", user.id);
+
     try {
       const { data: existingEntries, error: checkError } = await supabase
         .from("reading_progress")
@@ -96,6 +103,8 @@ export const useReadingList = () => {
         return;
       }
       
+      console.log("[DIAGNOSTIQUE] Vérification des entrées existantes:", existingEntries);
+      
       if (existingEntries && existingEntries.length > 0) {
         toast.error("Ce livre est déjà dans votre liste");
         return;
@@ -104,15 +113,29 @@ export const useReadingList = () => {
       toast.info("Initialisation de la lecture en cours...");
       
       const progress = await initializeNewBookReading(user.id, book.id);
+      console.log("[DIAGNOSTIQUE] Résultat de l'initialisation:", progress);
+      
       if (!progress) {
         toast.error("Erreur lors de l'initialisation de la lecture. Vérifiez votre connexion et réessayez.");
         console.error('Failed to initialize reading progress:', book.id);
         return;
       }
       
+      // Force le rafraîchissement des données
       queryClient.invalidateQueries({ queryKey: ["reading_list", user.id] });
       
       toast.success(`${book.title} ajouté à votre liste de lecture`);
+
+      // Vérification supplémentaire après l'ajout
+      setTimeout(async () => {
+        const { data: verificationData } = await supabase
+          .from("reading_progress")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("book_id", book.id);
+        
+        console.log("[DIAGNOSTIQUE] Vérification après ajout:", verificationData);
+      }, 1000);
     } catch (error) {
       console.error('Error adding book to reading list:', error);
       toast.error("Une erreur est survenue lors de l'ajout du livre: " + 

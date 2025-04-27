@@ -38,7 +38,7 @@ export function BookCard({
       const { data } = await supabase.auth.getUser();
       
       if (data?.user?.id) {
-        console.log("User authenticated in BookCard:", data.user.id);
+        console.log("[DIAGNOSTIQUE] Utilisateur authentifié dans BookCard:", data.user.id);
         setUserId(data.user.id);
       } else {
         console.warn("No authenticated user found in BookCard");
@@ -85,10 +85,12 @@ export function BookCard({
     }
 
     try {
+      console.log("[DIAGNOSTIQUE] Début du processus d'ajout pour le livre:", book.title);
       setIsAdding(true);
       await addToReadingList(book);
+      console.log("[DIAGNOSTIQUE] Fin du processus d'ajout");
     } catch (error) {
-      console.error("Error in handleAddToReadingList:", error);
+      console.error("[DIAGNOSTIQUE] Erreur dans handleAddToReadingList:", error);
       toast.error(
         "Une erreur est survenue: " +
           (error instanceof Error ? error.message : String(error))

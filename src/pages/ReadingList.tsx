@@ -19,7 +19,7 @@ const unavailableBookIds = new Set<string>();
 
 export default function ReadingList() {
   const navigate = useNavigate();
-  const { getBooksByStatus, isLoadingReadingList, getFailedBookIds } = useReadingList();
+  const { getBooksByStatus, isLoadingReadingList, getFailedBookIds, readingList } = useReadingList();
   const { user } = useAuth();
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
   const [toReadBooks, setToReadBooks] = useState([]);
@@ -33,6 +33,11 @@ export default function ReadingList() {
   const isMounted = useRef(true);
   const hasFetchedOnMount = useRef(false);
   
+  // Log reading list data for diagnostics
+  useEffect(() => {
+    console.log("[DIAGNOSTIQUE] Données brutes de reading_list:", readingList);
+  }, [readingList]);
+  
   // Memoized function for fetching books to prevent unnecessary recreations
   const fetchBooks = useCallback(async () => {
     // DEFENSIVE: Don't execute if user is not authenticated
@@ -43,8 +48,8 @@ export default function ReadingList() {
     // Don't run if component is unmounted or already fetching
     if (!isMounted.current || isFetching) return;
     
-    // Skip fetch if we've already fetched on mount
-    if (hasFetchedOnMount.current) return;
+    // Pour diagnostiquer le problème, on réinitialise cet état pour forcer un refetch
+    console.log('[DIAGNOSTIQUE] État de hasFetchedOnMount:', hasFetchedOnMount.current);
     
     setIsLoading(true);
     setError(null);
@@ -55,12 +60,20 @@ export default function ReadingList() {
       const failedIds = getFailedBookIds ? getFailedBookIds() : [];
       failedIds.forEach(id => unavailableBookIds.add(id));
       
+      console.log('[DIAGNOSTIQUE] Récupération des livres pour userId:', user.id);
+      
       // Fetch books in parallel for better performance
       const [toReadResult, inProgressResult, completedResult] = await Promise.all([
         getBooksByStatus("to_read"),
         getBooksByStatus("in_progress"), 
         getBooksByStatus("completed")
       ]);
+      
+      console.log('[DIAGNOSTIQUE] Résultats:', {
+        toReadResult: toReadResult?.length || 0,
+        inProgressResult: inProgressResult?.length || 0, 
+        completedResult: completedResult?.length || 0
+      });
       
       // Update only if component is still mounted
       if (isMounted.current) {
@@ -93,7 +106,7 @@ export default function ReadingList() {
         }
       }
     } catch (err) {
-      console.error("Error fetching books:", err);
+      console.error("[DIAGNOSTIQUE] Erreur lors de la récupération des livres:", err);
       if (isMounted.current) {
         setError(err);
         toast.error("Erreur lors du chargement de vos livres");
@@ -111,8 +124,12 @@ export default function ReadingList() {
     // Reset mount ref on each mount
     isMounted.current = true;
     
-    // Only fetch if user is available and we haven't fetched yet
-    if (user?.id && !hasFetchedOnMount.current) {
+    // Force refetch on component mount
+    hasFetchedOnMount.current = false;
+    
+    // Only fetch if user is available
+    if (user?.id) {
+      console.log('[DIAGNOSTIQUE] Composant monté, démarrage du fetch pour userId:', user.id);
       fetchBooks();
     }
     
