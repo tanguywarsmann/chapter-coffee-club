@@ -1,14 +1,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Book } from "@/types/book";
-import { getBooksInProgressFromAPI } from "@/services/reading";
+import { getBooksInProgressFromAPI, syncBookWithAPI } from "@/services/reading";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export const useInProgressBooks = (userId: string | undefined) => {
+export const useInProgressBooks = () => {
+  const { user } = useAuth();
+  const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentBook, setCurrentBook] = useState<Book | null>(null);
   
   const isMounted = useRef(true);
   const hasFetchedBooks = useRef(false);
@@ -17,17 +19,17 @@ export const useInProgressBooks = (userId: string | undefined) => {
   useEffect(() => {
     isMounted.current = true;
     
-    if (userId) {
+    if (user?.id) {
       hasFetchedBooks.current = false;
     }
     
     return () => {
       isMounted.current = false;
     };
-  }, [userId]);
+  }, [user]);
 
   const fetchInProgressBooks = async () => {
-    if (!userId || hasFetchedBooks.current || !isMounted.current || fetchingInProgress.current) {
+    if (!user?.id || hasFetchedBooks.current || !isMounted.current || fetchingInProgress.current) {
       return;
     }
     
@@ -36,7 +38,7 @@ export const useInProgressBooks = (userId: string | undefined) => {
       setIsLoading(true);
       setError(null);
       
-      const books = await getBooksInProgressFromAPI(userId);
+      const books = await getBooksInProgressFromAPI(user.id);
       
       if (!isMounted.current) return;
       
@@ -73,20 +75,58 @@ export const useInProgressBooks = (userId: string | undefined) => {
   };
 
   useEffect(() => {
-    if (userId && !hasFetchedBooks.current && !fetchingInProgress.current) {
+    if (user?.id && !hasFetchedBooks.current && !fetchingInProgress.current) {
       fetchInProgressBooks();
-    } else if (!userId) {
+    } else if (!user?.id) {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [user]);
+
+  const handleProgressUpdate = async (bookId: string) => {
+    if (currentBook?.isUnavailable) {
+      toast.error("Ce livre n'est pas disponible actuellement");
+      return;
+    }
+    
+    if (!user?.id) {
+      toast.error("Vous devez être connecté pour mettre à jour votre progression");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const updatedBook = await syncBookWithAPI(user.id, bookId);
+      
+      if (!isMounted.current) return;
+      
+      if (updatedBook) {
+        setCurrentBook(updatedBook);
+      }
+      
+      if (!fetchingInProgress.current) {
+        const books = await getBooksInProgressFromAPI(user.id);
+        
+        if (!isMounted.current) return;
+        
+        setInProgressBooks(books);
+      }
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      if (isMounted.current) {
+        toast.error("Erreur lors de la mise à jour de la progression");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  };
 
   return {
+    currentBook,
     inProgressBooks,
     isLoading,
     error,
-    currentBook,
-    setCurrentBook,
-    setInProgressBooks,
-    fetchInProgressBooks
+    handleProgressUpdate,
   };
 };
