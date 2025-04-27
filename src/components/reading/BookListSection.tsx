@@ -24,6 +24,8 @@ export function BookListSection({
   showProgress = false,
   showDate = false
 }: BookListSectionProps) {
+  console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${books.length} books`);
+  
   return (
     <div className="space-y-6">
       <div>
@@ -33,10 +35,10 @@ export function BookListSection({
       
       <div className="space-y-6">
         {books.map((book) => {
-          // Calculate progress percentage
-          const progressPercentage = book.totalChapters > 0
-            ? (book.chaptersRead / book.totalChapters) * 100
-            : 0;
+          // Calculate progress percentage safely
+          const chaptersRead = book.chaptersRead || 0;
+          const totalChapters = book.totalChapters || 1;
+          const progressPercentage = (chaptersRead / totalChapters) * 100;
             
           return (
             <div key={book.id} className="flex gap-6 p-4 bg-background rounded-lg border border-border">
@@ -45,7 +47,7 @@ export function BookListSection({
                 {book.coverImage ? (
                   <img 
                     src={book.coverImage} 
-                    alt={book.title} 
+                    alt={book.title || "Couverture"} 
                     className="w-full h-full object-cover" 
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
@@ -54,7 +56,7 @@ export function BookListSection({
                 ) : (
                   <div className={`w-full h-full flex items-center justify-center ${book.isUnavailable ? "bg-gray-300" : "bg-chocolate-medium"}`}>
                     <span className={`font-serif text-xl italic ${book.isUnavailable ? "text-gray-500" : "text-white"}`}>
-                      {book.title.substring(0, 1)}
+                      {(book.title || "?").substring(0, 1)}
                     </span>
                   </div>
                 )}
@@ -70,7 +72,7 @@ export function BookListSection({
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className={`font-semibold ${book.isUnavailable ? "text-gray-500" : "text-coffee-darker"}`}>
-                    {book.title}
+                    {book.title || "Livre sans titre"}
                   </h3>
                   {book.isUnavailable && (
                     <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
@@ -79,7 +81,7 @@ export function BookListSection({
                   )}
                 </div>
                 
-                <p className="text-sm text-muted-foreground mb-2">{book.author}</p>
+                <p className="text-sm text-muted-foreground mb-2">{book.author || "Auteur inconnu"}</p>
                 
                 {/* Book progress */}
                 {showProgress && (
@@ -92,7 +94,7 @@ export function BookListSection({
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{Math.round(progressPercentage)}% terminé</span>
-                      <span>{book.chaptersRead}/{book.totalChapters} chapitres</span>
+                      <span>{chaptersRead}/{totalChapters} chapitres</span>
                     </div>
                   </div>
                 )}

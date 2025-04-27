@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +13,7 @@ import { BookListSection } from "@/components/reading/BookListSection";
 import { LoadingBookList } from "@/components/reading/LoadingBookList";
 import { useBookSorting } from "@/hooks/useBookSorting";
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
+import { Book } from "@/types/book";
 
 // Liste locale pour éviter les re-fetchs de livres indisponibles
 const unavailableBookIds = new Set<string>();
@@ -27,9 +29,9 @@ export default function ReadingList() {
   } = useReadingList();
   const { user } = useAuth();
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
-  const [toReadBooks, setToReadBooks] = useState([]);
-  const [inProgressBooks, setInProgressBooks] = useState([]);
-  const [completedBooks, setCompletedBooks] = useState([]);
+  const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
+  const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -39,7 +41,15 @@ export default function ReadingList() {
   
   // Log reading list data for diagnostics
   useEffect(() => {
-    console.log("[DIAGNOSTIQUE] Données brutes de reading_list:", readingList);
+    if (readingList && Array.isArray(readingList)) {
+      console.log("[DIAGNOSTIQUE] Données brutes de reading_list:", readingList.length, "items");
+      console.log("[DIAGNOSTIQUE] Statuts dans reading_list:", 
+        readingList.reduce((stats: any, item: any) => {
+          stats[item.status] = (stats[item.status] || 0) + 1;
+          return stats;
+        }, {})
+      );
+    }
   }, [readingList]);
   
   // Memoized function for fetching books to prevent unnecessary recreations
@@ -54,10 +64,15 @@ export default function ReadingList() {
     
     // Check if we already fetched initial data - use the hook's method
     console.log('[DIAGNOSTIQUE] État de hasFetchedInitialData:', hasFetchedInitialData());
+    console.log('[DIAGNOSTIQUE] État de isLoadingReadingList:', isLoadingReadingList);
+    console.log('[DIAGNOSTIQUE] Données de readingList disponibles:', Array.isArray(readingList) ? readingList.length : 'non');
     
-    // Don't fetch if we've already loaded initial data unless explicitly forced
-    if (hasFetchedInitialData() && !isLoadingReadingList) {
+    // Don't fetch if we've already loaded initial data and have some books, unless explicitly forced
+    if (hasFetchedInitialData() && !isLoadingReadingList && 
+        ((toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0) || 
+         (readingList && Array.isArray(readingList) && readingList.length === 0))) {
       console.log("[DIAGNOSTIQUE] Évitement du re-fetch car les données initiales sont déjà chargées");
+      setIsLoading(false);
       return;
     }
     
@@ -71,8 +86,22 @@ export default function ReadingList() {
       failedIds.forEach(id => unavailableBookIds.add(id));
       
       console.log('[DIAGNOSTIQUE] Récupération des livres pour userId:', user.id);
+      console.log('[DIAGNOSTIQUE] Données de readingList à utiliser:', 
+        readingList ? `${(readingList as any[]).length} items` : 'aucune');
+      
+      // Si nous n'avons pas de données, ne pas tenter de récupérer les livres
+      if (!readingList || !Array.isArray(readingList) || readingList.length === 0) {
+        console.log("[DIAGNOSTIQUE] Pas de données de lecture disponibles, on met à zéro les listes");
+        setToReadBooks([]);
+        setInProgressBooks([]);
+        setCompletedBooks([]);
+        setIsLoading(false);
+        setIsFetching(false);
+        return;
+      }
       
       // Fetch books in parallel for better performance
+      console.log("[DIAGNOSTIQUE] Début de la récupération parallèle des livres");
       const [toReadResult, inProgressResult, completedResult] = await Promise.all([
         getBooksByStatus("to_read"),
         getBooksByStatus("in_progress"), 
@@ -88,7 +117,7 @@ export default function ReadingList() {
       // Update only if component is still mounted
       if (isMounted.current) {
         // Marquer explicitement les livres indisponibles pour stabiliser l'interface
-        const stabilizeBooks = (books) => {
+        const stabilizeBooks = (books: Book[]) => {
           return books.map(book => {
             // Si le livre est déjà marqué comme indisponible ou son ID est connu comme problématique
             if (book.isUnavailable || unavailableBookIds.has(book.id)) {
@@ -109,7 +138,7 @@ export default function ReadingList() {
         
         // Debug pour voir quels livres sont marqués comme indisponibles
         if (process.env.NODE_ENV === 'development') {
-          const totalUnavailable = [...toReadResult, ...inProgressResult, ...completedResult]
+          const totalUnavailable = [...(toReadResult || []), ...(inProgressResult || []), ...(completedResult || [])]
             .filter(b => b.isUnavailable).length;
           console.log(`Total unavailable books: ${totalUnavailable}, IDs cached: ${unavailableBookIds.size}`);
         }
@@ -117,7 +146,7 @@ export default function ReadingList() {
     } catch (err) {
       console.error("[DIAGNOSTIQUE] Erreur lors de la récupération des livres:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as any);
         toast.error("Erreur lors du chargement de vos livres");
       }
     } finally {
@@ -126,7 +155,7 @@ export default function ReadingList() {
         setIsFetching(false);
       }
     }
-  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching, getFailedBookIds, hasFetchedInitialData, isLoadingReadingList]);
+  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching, getFailedBookIds, hasFetchedInitialData, isLoadingReadingList, readingList, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
   
   // Effect for initial loading - triggered only if user is available
   useEffect(() => {
@@ -155,65 +184,76 @@ export default function ReadingList() {
     setCompletedBooks(prev => sortBooks([...prev], sortBy));
   }, [sortBy, sortBooks, isLoading]);
 
-  const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
-    // Ne pas permettre d'actions sur les livres indisponibles
-    const bookToUpdate = 
-      toReadBooks.find(b => b.id === bookId) || 
-      inProgressBooks.find(b => b.id === bookId) || 
-      completedBooks.find(b => b.id === bookId);
-      
-    if (bookToUpdate?.isUnavailable) {
-      toast.error("Ce livre n'est pas disponible actuellement");
-      return;
+  // Display content based on loading state and data availability
+  const renderContent = () => {
+    // Si les données sont en cours de chargement, afficher l'indicateur de chargement
+    if (isLoading || isLoadingReadingList) {
+      return <LoadingBookList />;
     }
     
-    // DEFENSIVE: Don't execute if user is not authenticated
-    if (!user) {
-      toast.error("Vous devez être connecté pour cette action");
-      return;
+    // Si une erreur s'est produite, afficher l'état d'erreur
+    if (error) {
+      return <BookEmptyState hasError={true} />;
     }
     
-    if (!bookToUpdate) {
-      console.error("Book not found for ID:", bookId);
-      return;
+    // Si aucun livre n'est présent dans aucune liste, afficher l'état vide
+    if (toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
+      // Vérifiez dans les logs les données brutes de reading_list
+      console.log("[DIAGNOSTIQUE] Aucun livre à afficher mais readingList contient:", 
+        readingList ? `${Array.isArray(readingList) ? (readingList as any[]).length : 0} items` : 'undefined');
+      
+      return (
+        <BookEmptyState 
+          hasError={false} 
+          title="Aucune lecture trouvée" 
+          description="Vous n'avez pas encore de livres dans votre liste de lecture."
+        />
+      );
     }
     
-    try {
-      // Indicate action in progress
-      setIsFetching(true);
-      
-      // Local update without refetch
-      if (newStatus === "to_read") {
-        setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-        setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-        setToReadBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
-      } else if (newStatus === "in_progress") {
-        setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-        setCompletedBooks(prev => prev.filter(b => b.id !== bookId));
-        setInProgressBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
-      } else if (newStatus === "completed") {
-        setToReadBooks(prev => prev.filter(b => b.id !== bookId));
-        setInProgressBooks(prev => prev.filter(b => b.id !== bookId));
-        setCompletedBooks(prev => sortBooks([...prev, bookToUpdate], sortBy));
-      }
-      
-      toast.success(`${bookToUpdate.title} déplacé vers "${
-        newStatus === "to_read" ? "À lire" :
-        newStatus === "in_progress" ? "En cours" :
-        "Terminés"
-      }"`);
-      
-      // Clean up loading indicator after update
-      if (isMounted.current) {
-        setIsFetching(false);
-      }
-    } catch (err) {
-      console.error("Error updating book status:", err);
-      if (isMounted.current) {
-        setIsFetching(false);
-        toast.error("Erreur lors de la mise à jour du statut");
-      }
-    }
+    // Afficher les sections de livres disponibles
+    return (
+      <>
+        {inProgressBooks.length > 0 && (
+          <BookListSection
+            title="En cours de lecture"
+            description="Reprenez où vous vous êtes arrêté"
+            books={inProgressBooks}
+            showProgress
+            actionLabel="Continuer la lecture"
+            onAction={(bookId) => {
+              navigate(`/books/${bookId}`);
+            }}
+          />
+        )}
+        
+        {toReadBooks.length > 0 && (
+          <BookListSection
+            title="À lire"
+            description="Votre liste de lecture à venir"
+            books={toReadBooks}
+            actionLabel="Commencer la lecture"
+            onAction={(bookId) => {
+              const book = toReadBooks.find(b => b.id === bookId);
+              navigate(`/books/${bookId}`);
+            }}
+          />
+        )}
+        
+        {completedBooks.length > 0 && (
+          <BookListSection
+            title="Livres terminés"
+            description="Vos lectures complétées"
+            books={completedBooks}
+            showDate
+            actionLabel="Relire"
+            onAction={(bookId) => {
+              navigate(`/books/${bookId}`);
+            }}
+          />
+        )}
+      </>
+    );
   };
 
   return (
@@ -243,75 +283,7 @@ export default function ReadingList() {
             </div>
           )}
 
-          {isLoading || isLoadingReadingList ? (
-            <LoadingBookList />
-          ) : error ? (
-            <BookEmptyState hasError={true} />
-          ) : (
-            <>
-              {inProgressBooks.length > 0 && (
-                <BookListSection
-                  title="En cours de lecture"
-                  description="Reprenez où vous vous êtes arrêté"
-                  books={inProgressBooks}
-                  showProgress
-                  actionLabel="Continuer la lecture"
-                  onAction={(bookId) => {
-                    const book = inProgressBooks.find(b => b.id === bookId);
-                    if (book?.isUnavailable) {
-                      toast.error("Ce livre n'est pas disponible actuellement");
-                      return;
-                    }
-                    navigate(`/books/${bookId}`)
-                  }}
-                />
-              )}
-              
-              {toReadBooks.length > 0 && (
-                <BookListSection
-                  title="À lire"
-                  description="Votre liste de lecture à venir"
-                  books={toReadBooks}
-                  actionLabel="Commencer la lecture"
-                  onAction={(bookId) => {
-                    const book = toReadBooks.find(b => b.id === bookId);
-                    if (book?.isUnavailable) {
-                      toast.error("Ce livre n'est pas disponible actuellement");
-                      return;
-                    }
-                    updateBookStatus(bookId, "in_progress")
-                  }}
-                />
-              )}
-              
-              {completedBooks.length > 0 && (
-                <BookListSection
-                  title="Livres terminés"
-                  description="Vos lectures complétées"
-                  books={completedBooks}
-                  showDate
-                  actionLabel="Relire"
-                  onAction={(bookId) => {
-                    const book = completedBooks.find(b => b.id === bookId);
-                    if (book?.isUnavailable) {
-                      toast.error("Ce livre n'est pas disponible actuellement");
-                      return;
-                    }
-                    updateBookStatus(bookId, "in_progress")
-                  }}
-                />
-              )}
-              
-              {!isLoading && !error && 
-                (inProgressBooks.length === 0 && toReadBooks.length === 0 && completedBooks.length === 0) && (
-                <BookEmptyState 
-                  hasError={false} 
-                  title="Aucune lecture trouvée" 
-                  description="Vous n'avez pas encore de livres dans votre liste de lecture."
-                />
-              )}
-            </>
-          )}
+          {renderContent()}
         </main>
       </div>
     </AuthGuard>

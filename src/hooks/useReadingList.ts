@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Book } from "@/types/book";
 import { initializeNewBookReading } from "@/services/reading";
@@ -165,6 +166,7 @@ export const useReadingList = () => {
     try {
       isFetching.current = true;
       
+      // Filter the reading list by status
       const filteredList = Array.isArray(readingList) 
         ? readingList.filter((item: any) => item.user_id === user.id && item.status === status)
         : [];
@@ -182,12 +184,51 @@ export const useReadingList = () => {
       const books: Book[] = [];
       const batches = [];
       
+      // Create batches of book IDs to fetch
       for (let i = 0; i < filteredList.length; i += BATCH_SIZE) {
         batches.push(filteredList.slice(i, i + BATCH_SIZE));
       }
       
+      // Process each batch
       for (const batch of batches) {
-        const batchPromises = batch.map((item: any) => fetchBookWithTimeout(item.book_id, item));
+        const batchPromises = batch.map((item: any) => {
+          // Immediately create a fallback book object that will be used if fetch fails
+          const fallbackBook: Book = {
+            id: item.book_id,
+            title: "Chargement...",
+            author: "...",
+            description: "Chargement des détails du livre...",
+            totalChapters: Math.ceil(item.total_pages / 30) || 1,
+            chaptersRead: Math.floor(item.current_page / 30),
+            isCompleted: item.status === "completed",
+            language: "fr",
+            categories: [],
+            pages: item.total_pages || 0,
+            publicationYear: new Date().getFullYear(),
+            isUnavailable: false // Will be set to true if fetch fails
+          };
+          
+          // Skip known failed books and return the fallback immediately
+          if (bookFailureCache.has(item.book_id)) {
+            console.log(`Using cached fallback for known failed book ID: ${item.book_id}`);
+            fallbackBook.isUnavailable = true;
+            fallbackBook.title = "Livre indisponible";
+            fallbackBook.author = "Auteur inconnu";
+            fallbackBook.description = "Les détails de ce livre ne sont pas disponibles.";
+            return Promise.resolve(fallbackBook);
+          }
+          
+          return fetchBookWithTimeout(item.book_id, item)
+            .catch(error => {
+              console.error(`Error fetching book ${item.book_id}:`, error);
+              bookFailureCache.add(item.book_id);
+              fallbackBook.isUnavailable = true;
+              fallbackBook.title = "Livre indisponible";
+              fallbackBook.author = "Auteur inconnu";
+              fallbackBook.description = "Les détails de ce livre ne sont pas disponibles.";
+              return fallbackBook;
+            });
+        });
         
         try {
           const batchResults = await Promise.allSettled(batchPromises);
@@ -207,6 +248,8 @@ export const useReadingList = () => {
           console.error("Error processing batch of books:", batchError);
         }
       }
+      
+      console.log(`[DIAGNOSTIQUE] Livres récupérés pour le statut ${status}:`, books.length);
       
       // Mark fetch as complete after processing all batches
       isFetching.current = false;

@@ -20,7 +20,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   // Loggez uniquement au montage ou lorsque inProgressBooks change
   useEffect(() => {
     if (!hasLogged.current && process.env.NODE_ENV === 'development') {
-      console.log("Rendering ReadingProgress with books:", inProgressBooks);
+      console.log("[DIAGNOSTIQUE] Rendering ReadingProgress with books:", inProgressBooks);
       hasLogged.current = true;
     }
   }, [inProgressBooks]);
@@ -56,6 +56,8 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   
   // We ensure inProgressBooks is always an array, even if undefined
   const books = Array.isArray(inProgressBooks) ? inProgressBooks : [];
+  
+  console.log("[DIAGNOSTIQUE] Nombre de livres en cours dans ReadingProgress:", books.length);
 
   return (
     <Card className="border-coffee-light">
@@ -97,7 +99,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                     {book.coverImage ? (
                       <img 
                         src={book.coverImage} 
-                        alt={book.title} 
+                        alt={book.title || "Couverture"} 
                         className="w-full h-full object-cover" 
                         onError={(e) => {
                           // Replace broken image with placeholder
@@ -107,7 +109,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                     ) : (
                       <div className={`w-full h-full flex items-center justify-center ${book.isUnavailable ? "bg-gray-300" : "bg-chocolate-medium"}`}>
                         <span className={`font-serif italic ${book.isUnavailable ? "text-gray-500" : "text-white"}`}>
-                          {book.title?.substring(0, 1) || "?"}
+                          {(book.title?.substring(0, 1) || "?") }
                         </span>
                       </div>
                     )}
