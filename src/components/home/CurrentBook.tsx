@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState } from "react"; // Adding the React import that might be missing
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";

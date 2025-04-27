@@ -1,4 +1,5 @@
 
+import { useState } from "react"; // Adding potentially missing React import
 import { Book } from "@/types/book";
 import { StatsCards } from "./StatsCards";
 import { CurrentBook } from "./CurrentBook";

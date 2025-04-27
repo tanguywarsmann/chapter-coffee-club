@@ -1,5 +1,6 @@
 
 import { Book } from "@/types/book";
+import { useState } from "react"; // Adding missing React import
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
@@ -27,6 +28,7 @@ export function MainContent({
   onProgressUpdate,
   onContinueReading
 }: MainContentProps) {
+  // useState might be used inside the component
   if (searchResults) {
     return (
       <SearchResults 
