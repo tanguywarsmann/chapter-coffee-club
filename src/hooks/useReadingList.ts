@@ -17,6 +17,7 @@ export const useReadingList = () => {
   const isFetching = useRef(false);
   const errorCount = useRef(0);
 
+  // Effect to invalidate query when user changes
   useEffect(() => {
     if (user?.id) {
       queryClient.invalidateQueries({ queryKey: ["reading_list"] });
@@ -60,9 +61,11 @@ export const useReadingList = () => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 600000,
-    refetchOnWindowFocus: false,
-    retry: 1,
+    staleTime: 600000, // Consider data stale after 10 minutes
+    refetchOnMount: true, // Force refetch when component mounts
+    refetchOnReconnect: true, // Force refetch when reconnecting
+    refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary calls
+    retry: 1, // Only retry once on failure
   });
 
   if (readingListError) {
