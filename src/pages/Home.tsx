@@ -1,6 +1,7 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
@@ -9,6 +10,8 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useReadingList } from "@/hooks/useReadingList";
 import { MainContent } from "@/components/home/MainContent";
 import { useHomeSearch } from "@/hooks/useHomeSearch";
+import { Book } from "@/types/book";
+import { getBooksInProgressFromAPI, syncBookWithAPI } from "@/services/reading";
 
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -146,7 +149,7 @@ export default function Home() {
     } else if (!user?.id) {
       setIsLoading(false);
     }
-  }, [user, fetchInProgressBooks]);
+  }, [user]);
 
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
