@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Book } from "@/types/book";
 import { initializeNewBookReading } from "@/services/reading";
@@ -29,7 +28,7 @@ export const useReadingList = () => {
     }
   }, [user?.id, queryClient]);
 
-  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError } = useQuery({
+  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError, isSuccess } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: async () => {
       if (!user || !user.id) {
@@ -58,10 +57,6 @@ export const useReadingList = () => {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
         
-        // Set the flag to indicate successful fetch
-        hasFetchedOnMount.current = true;
-        console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set to:", hasFetchedOnMount.current);
-        
         isFetching.current = false;
         return readingProgressData || [];
       } catch (error) {
@@ -76,19 +71,15 @@ export const useReadingList = () => {
     refetchOnReconnect: true, // Force refetch when reconnecting
     refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary calls
     retry: 1, // Only retry once on failure
-    onSuccess: () => {
-      // Double ensure the flag is set even in case the setting in queryFn is missed
-      hasFetchedOnMount.current = true;
-      console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set in onSuccess:", hasFetchedOnMount.current);
-    },
-    onError: () => {
-      // Don't reset the flag on error to prevent infinite retries
-      if (errorCount.current === 0) {
-        toast.error("Impossible de récupérer votre liste de lecture");
-        errorCount.current++;
-      }
-    },
   });
+
+  // Effect to set hasFetchedOnMount when query is successful
+  useEffect(() => {
+    if (isSuccess) {
+      hasFetchedOnMount.current = true;
+      console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set in success effect:", hasFetchedOnMount.current);
+    }
+  }, [isSuccess]);
 
   if (readingListError) {
     if (errorCount.current === 0) {
