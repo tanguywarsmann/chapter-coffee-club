@@ -16,6 +16,7 @@ export const useReadingList = () => {
   
   const isFetching = useRef(false);
   const errorCount = useRef(0);
+  const hasFetchedOnMount = useRef(false);
 
   // Effect to invalidate query when user changes
   useEffect(() => {
@@ -24,6 +25,7 @@ export const useReadingList = () => {
     } else {
       queryClient.resetQueries({ queryKey: ["reading_list"] });
       errorCount.current = 0;
+      hasFetchedOnMount.current = false;
     }
   }, [user?.id, queryClient]);
 
@@ -56,6 +58,10 @@ export const useReadingList = () => {
           console.log("Reading progress data from Supabase:", readingProgressData?.length || 0);
         }
         
+        // Set the flag to indicate successful fetch
+        hasFetchedOnMount.current = true;
+        console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set to:", hasFetchedOnMount.current);
+        
         isFetching.current = false;
         return readingProgressData || [];
       } catch (error) {
@@ -70,6 +76,18 @@ export const useReadingList = () => {
     refetchOnReconnect: true, // Force refetch when reconnecting
     refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary calls
     retry: 1, // Only retry once on failure
+    onSuccess: () => {
+      // Double ensure the flag is set even in case the setting in queryFn is missed
+      hasFetchedOnMount.current = true;
+      console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set in onSuccess:", hasFetchedOnMount.current);
+    },
+    onError: () => {
+      // Don't reset the flag on error to prevent infinite retries
+      if (errorCount.current === 0) {
+        toast.error("Impossible de récupérer votre liste de lecture");
+        errorCount.current++;
+      }
+    },
   });
 
   if (readingListError) {
@@ -199,6 +217,7 @@ export const useReadingList = () => {
         }
       }
       
+      // Mark fetch as complete after processing all batches
       isFetching.current = false;
       return books;
     } catch (error) {
@@ -219,6 +238,8 @@ export const useReadingList = () => {
     isLoadingReadingList,
     readingListError,
     userId: user?.id,
-    getFailedBookIds: () => bookFailureCache.getAll()
+    getFailedBookIds: () => bookFailureCache.getAll(),
+    // Expose this flag for components to check if data has been fetched
+    hasFetchedInitialData: () => hasFetchedOnMount.current
   };
 };

@@ -19,6 +19,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   console.log('[DIAGNOSTIQUE] Récupération de la progression pour userId:', userId);
   
   try {
+    console.log('[DIAGNOSTIQUE] Envoi de la requête à Supabase pour reading_progress');
     const { data, error } = await supabase
       .from('reading_progress')
       .select('*')
@@ -30,6 +31,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     }
 
     console.log('[DIAGNOSTIQUE] Progression récupérée:', data?.length || 0, 'entrées');
+    console.log('[DIAGNOSTIQUE] Entrées de progression:', data);
     return (data || []).map(item => ({
       ...item,
       validations: []

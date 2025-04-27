@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -19,7 +18,13 @@ const unavailableBookIds = new Set<string>();
 
 export default function ReadingList() {
   const navigate = useNavigate();
-  const { getBooksByStatus, isLoadingReadingList, getFailedBookIds, readingList } = useReadingList();
+  const { 
+    getBooksByStatus, 
+    isLoadingReadingList, 
+    getFailedBookIds, 
+    readingList,
+    hasFetchedInitialData 
+  } = useReadingList();
   const { user } = useAuth();
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
   const [toReadBooks, setToReadBooks] = useState([]);
@@ -31,7 +36,6 @@ export default function ReadingList() {
   
   // References to prevent updates on unmounted components and repeated fetching
   const isMounted = useRef(true);
-  const hasFetchedOnMount = useRef(false);
   
   // Log reading list data for diagnostics
   useEffect(() => {
@@ -48,8 +52,14 @@ export default function ReadingList() {
     // Don't run if component is unmounted or already fetching
     if (!isMounted.current || isFetching) return;
     
-    // Pour diagnostiquer le problème, on réinitialise cet état pour forcer un refetch
-    console.log('[DIAGNOSTIQUE] État de hasFetchedOnMount:', hasFetchedOnMount.current);
+    // Check if we already fetched initial data - use the hook's method
+    console.log('[DIAGNOSTIQUE] État de hasFetchedInitialData:', hasFetchedInitialData());
+    
+    // Don't fetch if we've already loaded initial data unless explicitly forced
+    if (hasFetchedInitialData() && !isLoadingReadingList) {
+      console.log("[DIAGNOSTIQUE] Évitement du re-fetch car les données initiales sont déjà chargées");
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -96,7 +106,6 @@ export default function ReadingList() {
         setToReadBooks(sortBooks(stabilizeBooks(toReadResult || []), sortBy));
         setInProgressBooks(sortBooks(stabilizeBooks(inProgressResult || []), sortBy));
         setCompletedBooks(sortBooks(stabilizeBooks(completedResult || []), sortBy));
-        hasFetchedOnMount.current = true;
         
         // Debug pour voir quels livres sont marqués comme indisponibles
         if (process.env.NODE_ENV === 'development') {
@@ -117,15 +126,12 @@ export default function ReadingList() {
         setIsFetching(false);
       }
     }
-  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching, getFailedBookIds]);
+  }, [user?.id, getBooksByStatus, sortBy, sortBooks, isFetching, getFailedBookIds, hasFetchedInitialData, isLoadingReadingList]);
   
   // Effect for initial loading - triggered only if user is available
   useEffect(() => {
     // Reset mount ref on each mount
     isMounted.current = true;
-    
-    // Force refetch on component mount
-    hasFetchedOnMount.current = false;
     
     // Only fetch if user is available
     if (user?.id) {
@@ -142,12 +148,12 @@ export default function ReadingList() {
   // Separate effect for sort updates only - doesn't trigger new fetch
   useEffect(() => {
     // Don't update if component is unmounted or books haven't been loaded
-    if (!isMounted.current || !hasFetchedOnMount.current) return;
+    if (!isMounted.current || isLoading) return;
     
     setToReadBooks(prev => sortBooks([...prev], sortBy));
     setInProgressBooks(prev => sortBooks([...prev], sortBy));
     setCompletedBooks(prev => sortBooks([...prev], sortBy));
-  }, [sortBy, sortBooks]);
+  }, [sortBy, sortBooks, isLoading]);
 
   const updateBookStatus = (bookId: string, newStatus: "to_read" | "in_progress" | "completed") => {
     // Ne pas permettre d'actions sur les livres indisponibles
