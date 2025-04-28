@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -30,7 +29,10 @@ export const useBookFetching = ({
   const isFetchingRef = useRef(false);
   const { stabilizeBooks } = useBookStabilization();
   
-  // Effet pour tracer chaque changement de dépendance importante
+  const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
+  const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<Book[]>([]);
+  
   useEffect(() => {
     console.log("[DEBUG] Dépendance modifiée - userId:", user?.id);
     console.log("[DEBUG] Dépendance modifiée - readingList:", readingList?.length ?? 0, "éléments");
@@ -87,7 +89,6 @@ export const useBookFetching = ({
         getBooksByStatus("completed")
       ]);
       
-      // Ajout d'un log des résultats bruts directement retournés par Supabase
       console.log("[DEBUG] RÉPONSES BRUTES DE SUPABASE:");
       console.log("[DEBUG] toReadResult brut:", JSON.stringify(toReadResult));
       console.log("[DEBUG] inProgressResult brut:", JSON.stringify(inProgressResult));
@@ -99,36 +100,30 @@ export const useBookFetching = ({
         completed: completedResult?.length || 0
       });
       
-      // Ajout des logs détaillés pour le contenu des listes
       console.log("[DEBUG] Détail des livres à lire:", toReadResult);
       console.log("[DEBUG] Détail des livres en cours:", inProgressResult);
       console.log("[DEBUG] Détail des livres terminés:", completedResult);
       
-      // Log AVANT stabilisation
       console.log("[DEBUG] AVANT STABILISATION:", {
         toRead: toReadResult ? [...toReadResult] : [],
         inProgress: inProgressResult ? [...inProgressResult] : [],
         completed: completedResult ? [...completedResult] : []
       });
       
-      // Application de la stabilisation
       const stabilizedToRead = stabilizeBooks(toReadResult || []);
       const stabilizedInProgress = stabilizeBooks(inProgressResult || []);
       const stabilizedCompleted = stabilizeBooks(completedResult || []);
       
-      // Log APRÈS stabilisation mais AVANT tri
       console.log("[DEBUG] APRÈS STABILISATION:", {
         toRead: stabilizedToRead,
         inProgress: stabilizedInProgress,
         completed: stabilizedCompleted
       });
       
-      // Application du tri
       const sortedToRead = sortBooks(stabilizedToRead, sortBy);
       const sortedInProgress = sortBooks(stabilizedInProgress, sortBy);
       const sortedCompleted = sortBooks(stabilizedCompleted, sortBy);
 
-      // Log des résultats après tri et stabilisation
       console.log("[DEBUG] APRÈS TRI:", {
         toRead: sortedToRead.length,
         inProgress: sortedInProgress.length,
@@ -139,7 +134,6 @@ export const useBookFetching = ({
       setInProgressBooks(sortedInProgress);
       setCompletedBooks(sortedCompleted);
       
-      // Ajout du log juste avant le return final
       console.log("[DEBUG] useBookFetching RÉSULTAT FINAL qui va être retourné:", {
         toReadBooks: sortedToRead.length,
         inProgressBooks: sortedInProgress.length,
@@ -157,13 +151,22 @@ export const useBookFetching = ({
     }
   };
 
-  // Log avant le return du hook
-  console.log("[DEBUG] État final de useBookFetching:", { isLoading, isFetching, hasError: !!error });
+  console.log("[DEBUG] État final de useBookFetching:", { 
+    isLoading, 
+    isFetching, 
+    hasError: !!error,
+    toReadLength: toReadBooks.length,
+    inProgressLength: inProgressBooks.length,
+    completedLength: completedBooks.length 
+  });
 
   return {
     isLoading,
     isFetching,
     error,
-    fetchBooks
+    fetchBooks,
+    toRead: toReadBooks,
+    inProgress: inProgressBooks,
+    completed: completedBooks
   };
 };
