@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Book } from "@/types/book";
 import { StatsCards } from "./StatsCards";
 import { CurrentBook } from "./CurrentBook";
@@ -32,20 +32,19 @@ export function HomeContent({
 }: HomeContentProps) {
   const isMobile = useIsMobile();
   
-  // Memoïser les livres en cours valides pour éviter les re-rendus inutiles
+  // Mémoïser les livres en cours valides pour éviter les re-rendus inutiles
   const validInProgressBooks = useMemo(() => {
-    console.log("[DIAGNOSTIQUE] Filtrage inProgressBooks:", inProgressBooks?.length || 0);
     return Array.isArray(inProgressBooks) 
       ? inProgressBooks.filter(book => book && !book.isUnavailable)
       : [];
   }, [inProgressBooks]);
   
-  // Memoïser le livre actuel valide
+  // Mémoïser le livre actuel valide
   const validCurrentBook = useMemo(() => {
     return currentBook && !currentBook.isUnavailable ? currentBook : null;
   }, [currentBook]);
   
-  // Memoïser le livre en cours de lecture valide
+  // Mémoïser le livre en cours de lecture valide
   const validCurrentReading = useMemo(() => {
     return currentReading && !currentReading.isUnavailable ? currentReading : null;
   }, [currentReading]);
@@ -59,6 +58,7 @@ export function HomeContent({
           </div>
         ) : validCurrentReading ? (
           <CurrentReadingCard
+            key={validCurrentReading.id}
             book={validCurrentReading}
             currentPage={validCurrentReading.chaptersRead * 30}
             onContinueReading={onContinueReading}

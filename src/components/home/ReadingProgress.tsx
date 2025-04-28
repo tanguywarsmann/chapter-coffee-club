@@ -2,10 +2,10 @@
 import { Book } from "@/types/book";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, AlertTriangle } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useRef, useMemo } from "react";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface ReadingProgressProps {
@@ -14,23 +14,11 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingProgressProps) {
-  // Utilisation d'une ref pour éviter le log à chaque rendu
-  const hasLogged = useRef(false);
-  
   // Filtrer les livres pour ignorer les livres cassés ou indisponibles pour l'UI principale
   // Utiliser useMemo pour éviter la recréation du tableau à chaque rendu
   const availableBooks = useMemo(() => {
     return inProgressBooks?.filter(book => !book.isUnavailable) || [];
   }, [inProgressBooks]);
-  
-  // Loggez uniquement au montage ou lorsque inProgressBooks change de manière significative
-  useEffect(() => {
-    if (!hasLogged.current && process.env.NODE_ENV === 'development') {
-      console.log("[DIAGNOSTIQUE] Rendering ReadingProgress with books:", inProgressBooks?.length || 0);
-      console.log("[DIAGNOSTIQUE] Available books:", availableBooks.length);
-      hasLogged.current = true;
-    }
-  }, [availableBooks.length]); // Dépend uniquement de la longueur du tableau, pas du tableau lui-même
   
   // Si nous sommes en train de charger, afficher un squelette
   if (isLoading) {
@@ -63,9 +51,6 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   
   // Utiliser les livres disponibles (non indisponibles) pour l'affichage principal
   const books = availableBooks;
-  
-  // Éviter de logger à chaque rendu pour réduire le bruit dans la console
-  // et éviter les opérations inutiles qui pourraient provoquer des re-rendus
   
   return (
     <Card className="border-coffee-light">

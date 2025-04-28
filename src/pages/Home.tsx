@@ -1,5 +1,5 @@
 
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -49,6 +49,9 @@ export default function Home() {
       navigate(`/books/${currentReading.id}?segment=${Math.floor(currentReading.chaptersRead)}`);
     }
   }, [currentReading, navigate]);
+
+  // Mémoiser l'état de recherche pour éviter des rendus inutiles
+  const showSearchResults = useMemo(() => !!searchResults, [searchResults]);
 
   return (
     <AuthGuard>
