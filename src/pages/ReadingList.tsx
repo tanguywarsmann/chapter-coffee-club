@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -10,6 +9,8 @@ import { FetchingStatus } from "@/components/reading/FetchingStatus";
 import { useReadingListPage } from "@/hooks/useReadingListPage";
 
 export default function ReadingList() {
+  console.log("[DEBUG] Montage du composant ReadingList");
+  
   const {
     books,
     loading,
@@ -21,6 +22,7 @@ export default function ReadingList() {
   } = useReadingListPage();
 
   useEffect(() => {
+    console.log("[DEBUG] Effet de montage dans ReadingList - appel fetchBooks");
     fetchBooks();
   }, [fetchBooks]);
 

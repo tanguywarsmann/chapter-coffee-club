@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Book } from "@/types/book";
 import { useNavigate } from "react-router-dom";
 import { useReadingList } from "@/hooks/useReadingList";
@@ -8,8 +8,12 @@ import { useBookSorting } from "@/hooks/useBookSorting";
 import { useBookFetching } from "./useBookFetching";
 
 export const useReadingListPage = () => {
+  console.log("[DEBUG] Initialisation useReadingListPage");
+  
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userId = user?.id;
+  
   const { 
     getBooksByStatus, 
     isLoadingReadingList, 
@@ -17,6 +21,7 @@ export const useReadingListPage = () => {
     readingList,
     hasFetchedInitialData 
   } = useReadingList();
+  
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
   
   const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
@@ -36,6 +41,8 @@ export const useReadingListPage = () => {
   }, [navigate]);
 
   const handleFetchBooks = useCallback(async () => {
+    console.log("[DEBUG] handleFetchBooks appelé - userId:", userId);
+    
     await fetchBooks(
       setToReadBooks,
       setInProgressBooks,
@@ -43,7 +50,30 @@ export const useReadingListPage = () => {
       hasFetchedInitialData,
       isLoadingReadingList
     );
-  }, [fetchBooks, hasFetchedInitialData, isLoadingReadingList]);
+  }, [
+    fetchBooks, 
+    hasFetchedInitialData, 
+    isLoadingReadingList,
+    userId // Ajout explicite de userId comme dépendance
+  ]);
+
+  // Effet de montage pour la première récupération de données
+  useEffect(() => {
+    console.log("[DEBUG] Effet de montage initial useReadingListPage - userId:", userId);
+    
+    if (userId) {
+      console.log("[DEBUG] Lancement de la récupération initiale des livres");
+      handleFetchBooks();
+    }
+  }, [userId, handleFetchBooks]);
+
+  // Effet pour les changements de readingList
+  useEffect(() => {
+    if (userId && readingList) {
+      console.log("[DEBUG] Mise à jour de la liste de lecture détectée");
+      handleFetchBooks();
+    }
+  }, [userId, readingList, handleFetchBooks]);
 
   return {
     user,
