@@ -4,9 +4,31 @@ import { ReadingProgress } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
 import { bookFailureCache } from "@/utils/bookFailureCache";
 import { createFallbackBook } from "@/utils/createFallbackBook";
-import { fetchBookWithTimeout } from "@/services/books/bookQueries";
+import { getBookById } from "@/services/books/bookQueries";
 
 const BATCH_SIZE = 3;
+const TIMEOUT_MS = 5000;
+
+// Add timeout wrapper for book fetching
+const fetchBookWithTimeout = async (bookId: string): Promise<Book | null> => {
+  try {
+    // Create a promise that rejects after the timeout
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(`Fetch for book ${bookId} timed out`)), TIMEOUT_MS);
+    });
+
+    // Race the actual fetch against the timeout
+    const book = await Promise.race([
+      getBookById(bookId),
+      timeoutPromise
+    ]) as Book | null;
+
+    return book;
+  } catch (error) {
+    console.error(`Book fetch timed out or failed for ID ${bookId}:`, error);
+    return null;
+  }
+};
 
 export const fetchReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) {

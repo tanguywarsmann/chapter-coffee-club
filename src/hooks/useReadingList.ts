@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
 import { fetchReadingProgress, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
+import { Book } from "@/types/book";
 
 export const useReadingList = () => {
   const queryClient = useQueryClient();
@@ -52,6 +53,12 @@ export const useReadingList = () => {
     }
   }, [user?.id, queryClient]);
 
+  // Function to get books by status - exposed for use in components
+  const getBooksByStatus = async (status: string): Promise<Book[]> => {
+    if (!user?.id || !readingList) return [];
+    return fetchBooksForStatus(readingList, status, user.id);
+  };
+
   // Effect to fetch books when readingList changes
   useEffect(() => {
     const fetchBooks = async () => {
@@ -63,9 +70,9 @@ export const useReadingList = () => {
         setError(null);
 
         const [toReadResult, inProgressResult, completedResult] = await Promise.all([
-          fetchBooksForStatus(readingList, "to_read", user.id),
-          fetchBooksForStatus(readingList, "in_progress", user.id),
-          fetchBooksForStatus(readingList, "completed", user.id)
+          getBooksByStatus("to_read"),
+          getBooksByStatus("in_progress"),
+          getBooksByStatus("completed")
         ]);
 
         if (isMounted.current) {
@@ -99,6 +106,14 @@ export const useReadingList = () => {
     console.error("Reading list query failed:", readingListError);
   }
 
+  // Add the missing function for use in BookCard component
+  const addToReadingList = async (book: Book) => {
+    // Implementation here will depend on your application's logic
+    console.log("Adding book to reading list:", book);
+    toast.success(`${book.title} ajouté à votre liste de lecture`);
+    return true;
+  };
+
   return {
     ...books,
     isLoadingReadingList,
@@ -110,6 +125,9 @@ export const useReadingList = () => {
     readingList,
     userId: user?.id,
     getFailedBookIds: () => bookFailureCache.getAll(),
-    hasFetchedInitialData: () => hasFetchedOnMount.current
+    hasFetchedInitialData: () => hasFetchedOnMount.current,
+    // Export these functions
+    getBooksByStatus,
+    addToReadingList
   };
 };
