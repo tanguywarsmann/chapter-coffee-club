@@ -1,6 +1,6 @@
 
 import { Book } from "@/types/book";
-import { useRef, useEffect } from "react"; 
+import { useRef, useEffect, useMemo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
@@ -30,20 +30,53 @@ export function MainContent({
 }: MainContentProps) {
   const renderCount = useRef(0);
   
+  // Memoize the current reading ID for stable comparisons
+  const stableIds = useMemo(() => ({
+    currentReadingId: currentReading?.id || null,
+    currentBookId: currentBook?.id || null,
+    inProgressCount: inProgressBooks?.length || 0
+  }), [currentReading?.id, currentBook?.id, inProgressBooks?.length]);
+  
   // Logging pour diagnostic
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       renderCount.current++;
       console.log(`[MAIN CONTENT DIAGNOSTIQUE] Render #${renderCount.current}`, {
         hasSearchResults: !!searchResults,
-        currentReadingId: currentReading?.id || null,
-        currentBookId: currentBook?.id || null,
-        inProgressBooksCount: inProgressBooks?.length || 0,
+        currentReadingId: stableIds.currentReadingId,
+        currentBookId: stableIds.currentBookId,
+        inProgressBooksCount: stableIds.inProgressCount,
         isLoadingCurrentBook,
         isLoading
       });
     }
   });
+
+  // Memoize the home content to prevent unnecessary re-renders
+  const homeContent = useMemo(() => (
+    <>
+      <StatsCards />
+      <HomeContent
+        key={`home-content-${stableIds.currentReadingId || 'none'}`}
+        currentReading={currentReading}
+        isLoadingCurrentBook={isLoadingCurrentBook}
+        currentBook={currentBook}
+        inProgressBooks={inProgressBooks}
+        isLoading={isLoading}
+        onProgressUpdate={onProgressUpdate}
+        onContinueReading={onContinueReading}
+      />
+    </>
+  ), [
+    currentReading, 
+    isLoadingCurrentBook, 
+    currentBook, 
+    inProgressBooks, 
+    isLoading, 
+    onProgressUpdate, 
+    onContinueReading,
+    stableIds
+  ]);
 
   if (searchResults) {
     return (
@@ -54,18 +87,5 @@ export function MainContent({
     );
   }
 
-  return (
-    <>
-      <StatsCards />
-      <HomeContent
-        currentReading={currentReading}
-        isLoadingCurrentBook={isLoadingCurrentBook}
-        currentBook={currentBook}
-        inProgressBooks={inProgressBooks}
-        isLoading={isLoading}
-        onProgressUpdate={onProgressUpdate}
-        onContinueReading={onContinueReading}
-      />
-    </>
-  );
+  return homeContent;
 }
