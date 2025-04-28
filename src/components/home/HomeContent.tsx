@@ -4,6 +4,7 @@ import { Book } from "@/types/book";
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
+import { getUserActivities } from "@/mock/activities";
 import { CurrentReadingCard } from "./CurrentReadingCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
