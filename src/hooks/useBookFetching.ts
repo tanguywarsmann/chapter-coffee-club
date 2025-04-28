@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -27,6 +28,7 @@ export const useBookFetching = ({
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const isFetchingRef = useRef(false);
+  const alreadyFetchedRef = useRef(false);
   const { stabilizeBooks } = useBookStabilization();
   
   const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
@@ -44,23 +46,39 @@ export const useBookFetching = ({
     setCompletedBooks: (books: Book[]) => void,
     isLoadingReadingList: boolean
   ) => {
-    console.log("[DEBUG] fetchBooks appelé - userId:", user?.id);
+    console.log("[DEBUG] fetchBooks appelé - vérification des conditions - userId:", user?.id);
     
-    if (!user?.id || !readingList || isFetchingRef.current) {
-      console.log("[DEBUG] Fetch ignoré - conditions non remplies:", {
+    // Vérification des conditions qui empêchent le fetch
+    if (!user?.id || !readingList) {
+      console.log("[DEBUG] Fetch ignoré - user ou readingList manquant:", {
         "userId présent": !!user?.id,
         "readingList disponible": !!readingList,
-        "fetch déjà en cours": isFetchingRef.current
       });
+      setIsLoading(false);
       return;
     }
     
+    // Vérification si un fetch est déjà en cours
+    if (isFetchingRef.current) {
+      console.log("[DEBUG] Fetch ignoré - fetch déjà en cours");
+      return;
+    }
+    
+    // Vérification si les données sont déjà chargées
     if (!isLoadingReadingList && (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0)) {
       console.log("[DEBUG] Données déjà présentes et readingList non en chargement");
       setIsLoading(false);
       return;
     }
     
+    // Vérification si nous avons déjà fetché une fois avec succès
+    if (alreadyFetchedRef.current && (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0)) {
+      console.log("[DEBUG] Fetch ignoré - données déjà récupérées avec succès");
+      setIsLoading(false);
+      return;
+    }
+    
+    console.log("[DEBUG] fetchBooks vraiment appelé - lancement du fetch");
     setIsLoading(true);
     setError(null);
     setIsFetching(true);
@@ -99,24 +117,14 @@ export const useBookFetching = ({
         completed: completedResult?.length || 0
       });
       
-      console.log("[DEBUG] Détail des livres à lire:", toReadResult);
-      console.log("[DEBUG] Détail des livres en cours:", inProgressResult);
-      console.log("[DEBUG] Détail des livres terminés:", completedResult);
-      
-      console.log("[DEBUG] AVANT STABILISATION:", {
-        toRead: toReadResult ? [...toReadResult] : [],
-        inProgress: inProgressResult ? [...inProgressResult] : [],
-        completed: completedResult ? [...completedResult] : []
-      });
-      
       const stabilizedToRead = stabilizeBooks(toReadResult || []);
       const stabilizedInProgress = stabilizeBooks(inProgressResult || []);
       const stabilizedCompleted = stabilizeBooks(completedResult || []);
       
       console.log("[DEBUG] APRÈS STABILISATION:", {
-        toRead: stabilizedToRead,
-        inProgress: stabilizedInProgress,
-        completed: stabilizedCompleted
+        toRead: stabilizedToRead.length,
+        inProgress: stabilizedInProgress.length,
+        completed: stabilizedCompleted.length
       });
       
       const sortedToRead = sortBooks(stabilizedToRead, sortBy);
@@ -132,6 +140,9 @@ export const useBookFetching = ({
       setToReadBooks(sortedToRead);
       setInProgressBooks(sortedInProgress);
       setCompletedBooks(sortedCompleted);
+      
+      // Marquer que nous avons déjà chargé les données avec succès
+      alreadyFetchedRef.current = true;
       
       console.log("[DEBUG] useBookFetching RÉSULTAT FINAL qui va être retourné:", {
         toReadBooks: sortedToRead.length,
@@ -150,8 +161,16 @@ export const useBookFetching = ({
     }
   };
 
+  // Nous avons déplacé cet useEffect après la déclaration de fetchBooks
   useEffect(() => {
-    if (user?.id && !isFetchingRef.current) {
+    // N'appelons fetchBooks que si:
+    // 1. L'utilisateur est connecté
+    // 2. Aucun fetch n'est en cours
+    // 3. Nous n'avons pas encore de données
+    // 4. Nous n'avons pas déjà effectué un fetch avec succès
+    if (user?.id && !isFetchingRef.current && 
+        toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0 && 
+        !alreadyFetchedRef.current) {
       console.log("[DEBUG] userId disponible, déclenchement automatique de fetchBooks");
       fetchBooks(
         setToReadBooks,
@@ -159,8 +178,10 @@ export const useBookFetching = ({
         setCompletedBooks,
         false // isLoadingReadingList forcé à false pour ce cas spécifique
       );
+    } else {
+      console.log("[DEBUG] Déclenchement automatique ignoré - conditions non remplies");
     }
-  }, [user?.id, fetchBooks]);
+  }, [user?.id, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
 
   console.log("[DEBUG] État final de useBookFetching:", { 
     isLoading, 

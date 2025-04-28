@@ -23,9 +23,15 @@ export default function ReadingList() {
   } = useReadingListPage();
 
   useEffect(() => {
-    console.log("[DEBUG] Effet de montage dans ReadingList - appel fetchBooks");
-    fetchBooks();
-  }, [fetchBooks]);
+    // N'appelons fetchBooks que si nous n'avons pas de données et que nous ne sommes pas déjà en train de charger
+    if (!loading.isLoading && !loading.isFetching && 
+        !books.toRead?.length && !books.inProgress?.length && !books.completed?.length) {
+      console.log("[DEBUG] fetchBooks vraiment appelé - données initiales manquantes");
+      fetchBooks();
+    } else {
+      console.log("[DEBUG] fetchBooks ignoré - données déjà présentes ou chargement en cours");
+    }
+  }, [fetchBooks, loading.isLoading, loading.isFetching, books.toRead?.length, books.inProgress?.length, books.completed?.length]);
 
   // Log spécifique pour le débogage des listes de livres
   console.log("[DEBUG] État des listes dans ReadingList.tsx", {

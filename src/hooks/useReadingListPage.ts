@@ -18,8 +18,7 @@ export const useReadingListPage = () => {
     getBooksByStatus, 
     isLoadingReadingList, 
     getFailedBookIds,
-    readingList,
-    hasFetchedInitialData 
+    readingList
   } = useReadingList();
   
   const { sortBy, setSortBy, sortBooks } = useBookSorting();
@@ -49,7 +48,19 @@ export const useReadingListPage = () => {
   }, [navigate]);
 
   const handleFetchBooks = useCallback(async () => {
-    console.log("[DEBUG] handleFetchBooks appelé - userId:", userId);
+    // N'effectuer le fetch que si aucun chargement n'est en cours et que userId existe
+    if (!userId || isFetching || isLoading) {
+      console.log("[DEBUG] handleFetchBooks ignoré - chargement déjà en cours ou userId absent");
+      return;
+    }
+
+    // Si les données sont déjà chargées, ne pas refetch
+    if (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0) {
+      console.log("[DEBUG] handleFetchBooks ignoré - données déjà présentes");
+      return;
+    }
+    
+    console.log("[DEBUG] handleFetchBooks vraiment appelé - userId:", userId);
     
     await fetchBooks(
       setToReadBooks,
@@ -58,31 +69,40 @@ export const useReadingListPage = () => {
       isLoadingReadingList
     );
     
-    // Log après l'exécution de fetchBooks pour voir si les setters ont été appelés
     console.log("[DEBUG] Post-fetchBooks - État des setters appelés");
   }, [
     fetchBooks, 
     isLoadingReadingList,
-    userId // Ajout explicite de userId comme dépendance
+    userId,
+    isFetching,
+    isLoading,
+    toReadBooks.length,
+    inProgressBooks.length,
+    completedBooks.length
   ]);
 
   // Effet de montage pour la première récupération de données
   useEffect(() => {
     console.log("[DEBUG] Effet de montage initial useReadingListPage - userId:", userId);
     
-    if (userId) {
+    // Ne déclencher que si userId existe, qu'aucun chargement n'est en cours et qu'il n'y a pas déjà des données
+    if (userId && !isLoading && !isFetching && 
+       toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
       console.log("[DEBUG] Lancement de la récupération initiale des livres");
       handleFetchBooks();
+    } else {
+      console.log("[DEBUG] Récupération initiale ignorée - conditions non remplies");
     }
-  }, [userId, handleFetchBooks]);
+  }, [userId, handleFetchBooks, isLoading, isFetching, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
 
   // Effet pour les changements de readingList
   useEffect(() => {
-    if (userId && readingList) {
+    if (userId && readingList && !isLoading && !isFetching) {
       console.log("[DEBUG] Mise à jour de la liste de lecture détectée");
+      // Ne déclencher que si readingList change réellement (il faudrait idéalement comparer les IDs)
       handleFetchBooks();
     }
-  }, [userId, readingList, handleFetchBooks]);
+  }, [userId, readingList, handleFetchBooks, isLoading, isFetching]);
 
   // Ajout du console.log pour vérifier le contenu final des tableaux
   console.log('[DEBUG] Contenu final dans ReadingListPage', { 
