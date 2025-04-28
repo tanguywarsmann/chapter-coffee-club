@@ -4,6 +4,7 @@ import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
 import { useBookStabilization } from "./useBookStabilization";
 import { bookFailureCache } from "@/utils/bookFailureCache";
+import { unavailableBooksCache } from "@/utils/unavailableBooksCache";
 import { SortOption } from "@/components/reading/BookSortSelect";
 
 interface UseBookFetchingProps {
