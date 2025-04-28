@@ -9,15 +9,12 @@ import { getBookById } from "@/services/books/bookQueries";
 const BATCH_SIZE = 3;
 const TIMEOUT_MS = 5000;
 
-// Add timeout wrapper for book fetching
 const fetchBookWithTimeout = async (bookId: string): Promise<Book | null> => {
   try {
-    // Create a promise that rejects after the timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Fetch for book ${bookId} timed out`)), TIMEOUT_MS);
     });
 
-    // Race the actual fetch against the timeout
     const book = await Promise.race([
       getBookById(bookId),
       timeoutPromise
@@ -25,34 +22,27 @@ const fetchBookWithTimeout = async (bookId: string): Promise<Book | null> => {
 
     return book;
   } catch (error) {
-    console.error(`Book fetch timed out or failed for ID ${bookId}:`, error);
     return null;
   }
 };
 
 export const fetchReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) {
-    console.warn("Attempted to fetch reading list without a user ID");
     return [];
   }
 
   try {
-    console.log("[DIAGNOSTIQUE] Récupération de la liste de lecture pour l'utilisateur:", userId);
-    
     const { data: readingProgressData, error } = await supabase
       .from("reading_progress")
       .select("*")
       .eq("user_id", userId);
 
     if (error) {
-      console.error("Error fetching reading list from Supabase:", error);
       throw error;
     }
 
-    console.log("[DIAGNOSTIQUE] Données récupérées de reading_progress:", readingProgressData);
     return readingProgressData || [];
   } catch (error) {
-    console.error("Exception while fetching reading list:", error);
     throw error;
   }
 };
@@ -73,16 +63,13 @@ export const fetchBooksForStatus = async (
   const books: Book[] = [];
   const batches = [];
 
-  // Create batches of book IDs to fetch
   for (let i = 0; i < filteredList.length; i += BATCH_SIZE) {
     batches.push(filteredList.slice(i, i + BATCH_SIZE));
   }
 
-  // Process each batch
   for (const batch of batches) {
     const batchPromises = batch.map(async (item) => {
       if (bookFailureCache.has(item.book_id)) {
-        console.log(`Using cached fallback for known failed book ID: ${item.book_id}`);
         return createFallbackBook(item, "Livre précédemment indisponible");
       }
 

@@ -1,12 +1,10 @@
-
 import { Book } from "@/types/book";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo, useEffect, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useMemo } from "react";
 
 interface ReadingProgressProps {
   inProgressBooks: Book[];
@@ -14,43 +12,10 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingProgressProps) {
-  const renderCount = useRef(0);
-  const bookIdsRef = useRef<string[]>([]);
-  
-  // Logging pour diagnostic
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      renderCount.current++;
-      const bookIds = inProgressBooks?.map(book => book.id) || [];
-      const hasChanged = JSON.stringify(bookIds) !== JSON.stringify(bookIdsRef.current);
-      
-      console.log(`[READING PROGRESS DIAGNOSTIQUE] Render #${renderCount.current}`, {
-        booksCount: inProgressBooks?.length || 0,
-        isLoading,
-        hasDataChanged: hasChanged
-      });
-      
-      if (hasChanged) {
-        console.log('[READING PROGRESS DIAGNOSTIQUE] Book data changed:', 
-          JSON.stringify(bookIds));
-        bookIdsRef.current = bookIds;
-      }
-    }
-  });
-  
-  // Filtrer les livres pour ignorer les livres cassés ou indisponibles pour l'UI principale
-  // Utiliser useMemo pour éviter la recréation du tableau à chaque rendu
   const availableBooks = useMemo(() => {
-    const filtered = inProgressBooks?.filter(book => !book.isUnavailable) || [];
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[READING PROGRESS DIAGNOSTIQUE] Filtered ${filtered.length} available books from ${inProgressBooks?.length || 0} total`);
-    }
-    
-    return filtered;
+    return inProgressBooks?.filter(book => !book.isUnavailable) || [];
   }, [inProgressBooks]);
   
-  // Si nous sommes en train de charger, afficher un squelette
   if (isLoading) {
     return (
       <Card className="border-coffee-light">
@@ -79,7 +44,6 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
     );
   }
   
-  // Utiliser les livres disponibles (non indisponibles) pour l'affichage principal
   const books = availableBooks;
   
   return (

@@ -14,14 +14,12 @@ export const useCurrentReading = () => {
   const fetchingCurrentReading = useRef(false);
   const lastFetchedId = useRef<string | null>(null);
   
-  // Memorize the current reading book based on inProgress books if available
   const memoizedCurrentReading = useMemo(() => {
     if (inProgress && inProgress.length > 0) {
       const availableBooks = inProgress.filter(book => !book.isUnavailable);
       if (availableBooks.length > 0) {
         return availableBooks[0];
       } else if (inProgress.length > 0) {
-        // Mark as stable unavailable if all books are unavailable
         return {
           ...inProgress[0],
           isStableUnavailable: true
@@ -31,21 +29,14 @@ export const useCurrentReading = () => {
     return null;
   }, [inProgress]);
   
-  // Update state from memoized value only when it changes
   useEffect(() => {
     if (isMounted.current && memoizedCurrentReading) {
       const currentId = currentReading?.id;
       const newId = memoizedCurrentReading.id;
       
       if (currentId !== newId || !currentReading) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[CURRENT READING DIAGNOSTIQUE] Updating from memoized value:', {
-            from: currentId,
-            to: newId
-          });
-        }
         setCurrentReading(memoizedCurrentReading);
-        setIsLoadingCurrentBook(false); // We already have the book, so not loading
+        setIsLoadingCurrentBook(false);
       }
     }
   }, [memoizedCurrentReading, currentReading]);
@@ -54,15 +45,10 @@ export const useCurrentReading = () => {
     const fetchCurrentReading = async () => {
       if (!user?.id || fetchingCurrentReading.current) return;
       
-      // If we already have a reading, don't fetch again unless forced
       if (inProgress && inProgress.length > 0 && !fetchingCurrentReading.current) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[CURRENT READING DIAGNOSTIQUE] Using in-memory progress books');
-        }
         return;
       }
       
-      // Exit if we've already fetched this user's books recently
       if (user.id === lastFetchedId.current && currentReading) {
         setIsLoadingCurrentBook(false);
         return;
@@ -92,13 +78,9 @@ export const useCurrentReading = () => {
           setCurrentReading(null);
         }
         
-        // Record that we fetched for this user
         lastFetchedId.current = user.id;
       } catch (error) {
-        console.error("Error fetching current reading:", error);
-        if (isMounted.current) {
-          toast.error("Impossible de charger votre lecture en cours");
-        }
+        toast.error("Impossible de charger votre lecture en cours");
       } finally {
         if (isMounted.current) {
           setIsLoadingCurrentBook(false);
@@ -108,11 +90,9 @@ export const useCurrentReading = () => {
     };
 
     if (user?.id && isMounted.current) {
-      // Only fetch if we don't have memoized data
       if (!memoizedCurrentReading) {
         fetchCurrentReading();
       } else {
-        // We already have data, so we're not loading
         setIsLoadingCurrentBook(false);
       }
     } else {
@@ -126,16 +106,6 @@ export const useCurrentReading = () => {
       isMounted.current = false;
     };
   }, []);
-
-  // Add debugging for loading state changes
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[CURRENT READING DIAGNOSTIQUE] Loading state changed:', {
-        isLoadingCurrentBook,
-        currentReadingId: currentReading?.id || 'none'
-      });
-    }
-  }, [isLoadingCurrentBook, currentReading]);
 
   return {
     currentReading,
