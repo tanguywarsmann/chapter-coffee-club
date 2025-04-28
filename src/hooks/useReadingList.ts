@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -35,14 +34,12 @@ export const useReadingList = () => {
     retry: 1, // Limiter les tentatives de nouvelle récupération
   });
 
-  // Set hasFetchedOnMount when query succeeds
   useEffect(() => {
     if (isSuccess && !hasFetchedOnMount.current) {
       hasFetchedOnMount.current = true;
     }
   }, [isSuccess]);
 
-  // Effect to invalidate query when user changes
   useEffect(() => {
     if (user?.id) {
       queryClient.invalidateQueries({ queryKey: ["reading_list"] });
@@ -53,23 +50,18 @@ export const useReadingList = () => {
     }
   }, [user?.id, queryClient]);
 
-  // Function to get books by status - exposed for use in components
   const getBooksByStatus = async (status: string): Promise<Book[]> => {
     if (!user?.id || !readingList) return [];
     return fetchBooksForStatus(readingList, status, user.id);
   };
 
-  // Effect to fetch books when readingList changes - avec protection contre les appels multiples
   useEffect(() => {
-    // Protection contre les refetch multiples et inutiles
     if (!user?.id || !readingList || isFetchingRef.current || isFetching) return;
     
-    // Ne pas refaire de fetch si on a déjà les données et qu'on n'est pas en train de rafraîchir
-    if (books.inProgressBooks.length > 0 && hasFetchedOnMount.current && isSuccess) return;
+    if (books.inProgress.length > 0 && hasFetchedOnMount.current && isSuccess) return;
     
     const fetchBooks = async () => {
       try {
-        // Marquer que nous sommes en train de récupérer des données
         isFetchingRef.current = true;
         setIsFetching(true);
         setIsLoading(true);
@@ -98,7 +90,6 @@ export const useReadingList = () => {
           setIsLoading(false);
           setIsFetching(false);
         }
-        // Réinitialiser le flag de récupération
         isFetchingRef.current = false;
       }
     };
@@ -114,9 +105,7 @@ export const useReadingList = () => {
     console.error("Reading list query failed:", readingListError);
   }
 
-  // Add the missing function for use in BookCard component
   const addToReadingList = async (book: Book) => {
-    // Implementation here will depend on your application's logic
     console.log("Adding book to reading list:", book);
     toast.success(`${book.title} ajouté à votre liste de lecture`);
     return true;
@@ -134,7 +123,6 @@ export const useReadingList = () => {
     userId: user?.id,
     getFailedBookIds: () => bookFailureCache.getAll(),
     hasFetchedInitialData: () => hasFetchedOnMount.current,
-    // Export these functions
     getBooksByStatus,
     addToReadingList
   };
