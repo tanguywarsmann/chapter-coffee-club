@@ -55,7 +55,6 @@ export const useReadingListPage = () => {
       setToReadBooks,
       setInProgressBooks,
       setCompletedBooks,
-      hasFetchedInitialData,
       isLoadingReadingList
     );
     
@@ -63,7 +62,6 @@ export const useReadingListPage = () => {
     console.log("[DEBUG] Post-fetchBooks - État des setters appelés");
   }, [
     fetchBooks, 
-    hasFetchedInitialData, 
     isLoadingReadingList,
     userId // Ajout explicite de userId comme dépendance
   ]);
