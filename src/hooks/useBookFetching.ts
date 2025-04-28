@@ -93,9 +93,25 @@ export const useBookFetching = ({
         completed: completedResult?.length || 0
       });
       
-      setToReadBooks(sortBooks(stabilizeBooks(toReadResult || []), sortBy));
-      setInProgressBooks(sortBooks(stabilizeBooks(inProgressResult || []), sortBy));
-      setCompletedBooks(sortBooks(stabilizeBooks(completedResult || []), sortBy));
+      // Ajout des logs détaillés pour le contenu des listes
+      console.log("[DEBUG] Détail des livres à lire:", toReadResult);
+      console.log("[DEBUG] Détail des livres en cours:", inProgressResult);
+      console.log("[DEBUG] Détail des livres terminés:", completedResult);
+      
+      const sortedToRead = sortBooks(stabilizeBooks(toReadResult || []), sortBy);
+      const sortedInProgress = sortBooks(stabilizeBooks(inProgressResult || []), sortBy);
+      const sortedCompleted = sortBooks(stabilizeBooks(completedResult || []), sortBy);
+
+      // Log des résultats après tri et stabilisation
+      console.log("[DEBUG] Livres après tri:", {
+        toRead: sortedToRead.length,
+        inProgress: sortedInProgress.length,
+        completed: sortedCompleted.length
+      });
+      
+      setToReadBooks(sortedToRead);
+      setInProgressBooks(sortedInProgress);
+      setCompletedBooks(sortedCompleted);
       
     } catch (err) {
       console.error("[ERREUR] Échec de récupération des livres:", err);
