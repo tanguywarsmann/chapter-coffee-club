@@ -87,6 +87,12 @@ export const useBookFetching = ({
         getBooksByStatus("completed")
       ]);
       
+      // Ajout d'un log des résultats bruts directement retournés par Supabase
+      console.log("[DEBUG] RÉPONSES BRUTES DE SUPABASE:");
+      console.log("[DEBUG] toReadResult brut:", JSON.stringify(toReadResult));
+      console.log("[DEBUG] inProgressResult brut:", JSON.stringify(inProgressResult));
+      console.log("[DEBUG] completedResult brut:", JSON.stringify(completedResult));
+      
       console.log("[DEBUG] Livres récupérés:", {
         toRead: toReadResult?.length || 0,
         inProgress: inProgressResult?.length || 0,
@@ -98,12 +104,32 @@ export const useBookFetching = ({
       console.log("[DEBUG] Détail des livres en cours:", inProgressResult);
       console.log("[DEBUG] Détail des livres terminés:", completedResult);
       
-      const sortedToRead = sortBooks(stabilizeBooks(toReadResult || []), sortBy);
-      const sortedInProgress = sortBooks(stabilizeBooks(inProgressResult || []), sortBy);
-      const sortedCompleted = sortBooks(stabilizeBooks(completedResult || []), sortBy);
+      // Log AVANT stabilisation
+      console.log("[DEBUG] AVANT STABILISATION:", {
+        toRead: toReadResult ? [...toReadResult] : [],
+        inProgress: inProgressResult ? [...inProgressResult] : [],
+        completed: completedResult ? [...completedResult] : []
+      });
+      
+      // Application de la stabilisation
+      const stabilizedToRead = stabilizeBooks(toReadResult || []);
+      const stabilizedInProgress = stabilizeBooks(inProgressResult || []);
+      const stabilizedCompleted = stabilizeBooks(completedResult || []);
+      
+      // Log APRÈS stabilisation mais AVANT tri
+      console.log("[DEBUG] APRÈS STABILISATION:", {
+        toRead: stabilizedToRead,
+        inProgress: stabilizedInProgress,
+        completed: stabilizedCompleted
+      });
+      
+      // Application du tri
+      const sortedToRead = sortBooks(stabilizedToRead, sortBy);
+      const sortedInProgress = sortBooks(stabilizedInProgress, sortBy);
+      const sortedCompleted = sortBooks(stabilizedCompleted, sortBy);
 
       // Log des résultats après tri et stabilisation
-      console.log("[DEBUG] Livres après tri:", {
+      console.log("[DEBUG] APRÈS TRI:", {
         toRead: sortedToRead.length,
         inProgress: sortedInProgress.length,
         completed: sortedCompleted.length
