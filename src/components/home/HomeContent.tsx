@@ -1,5 +1,5 @@
 
-import { useState } from "react"; // Adding potentially missing React import
+import { useState, useMemo } from "react";
 import { Book } from "@/types/book";
 import { StatsCards } from "./StatsCards";
 import { CurrentBook } from "./CurrentBook";
@@ -31,6 +31,18 @@ export function HomeContent({
   onContinueReading
 }: HomeContentProps) {
   const isMobile = useIsMobile();
+  
+  // Ne montrer que les livres valides dans inProgressBooks
+  const validInProgressBooks = useMemo(() => {
+    return Array.isArray(inProgressBooks) 
+      ? inProgressBooks.filter(book => book && !book.isUnavailable)
+      : [];
+  }, [inProgressBooks]);
+  
+  // Assurer que currentBook est valide et disponible
+  const validCurrentBook = useMemo(() => {
+    return currentBook && !currentBook.isUnavailable ? currentBook : null;
+  }, [currentBook]);
 
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -39,7 +51,7 @@ export function HomeContent({
           <div className="flex items-center justify-center p-8">
             <Loader2 className="h-6 w-6 animate-spin text-coffee-dark" />
           </div>
-        ) : currentReading ? (
+        ) : currentReading && !currentReading.isUnavailable ? (
           <CurrentReadingCard
             book={currentReading}
             currentPage={currentReading.chaptersRead * 30}
@@ -49,7 +61,7 @@ export function HomeContent({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <CurrentBook 
-            book={currentBook} 
+            book={validCurrentBook}
             onProgressUpdate={onProgressUpdate} 
           />
           <div className="space-y-6">
@@ -58,7 +70,7 @@ export function HomeContent({
         </div>
         
         <ReadingProgress 
-          inProgressBooks={inProgressBooks} 
+          inProgressBooks={validInProgressBooks}
           isLoading={isLoading} 
         />
       </div>

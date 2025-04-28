@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface ReadingProgressProps {
@@ -17,13 +17,19 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   // Utilisation d'une ref pour éviter le log à chaque rendu
   const hasLogged = useRef(false);
   
+  // Filtrer les livres pour ignorer les livres cassés ou indisponibles pour l'UI principale
+  const availableBooks = useMemo(() => {
+    return inProgressBooks?.filter(book => !book.isUnavailable) || [];
+  }, [inProgressBooks]);
+  
   // Loggez uniquement au montage ou lorsque inProgressBooks change
   useEffect(() => {
     if (!hasLogged.current && process.env.NODE_ENV === 'development') {
       console.log("[DIAGNOSTIQUE] Rendering ReadingProgress with books:", inProgressBooks);
+      console.log("[DIAGNOSTIQUE] Available books:", availableBooks.length);
       hasLogged.current = true;
     }
-  }, [inProgressBooks]);
+  }, [inProgressBooks, availableBooks]);
   
   // Si nous sommes en train de charger, afficher un squelette
   if (isLoading) {
@@ -54,10 +60,10 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
     );
   }
   
-  // We ensure inProgressBooks is always an array, even if undefined
-  const books = Array.isArray(inProgressBooks) ? inProgressBooks : [];
+  // Utiliser les livres disponibles (non indisponibles) pour l'affichage principal
+  const books = availableBooks;
   
-  console.log("[DIAGNOSTIQUE] Nombre de livres en cours dans ReadingProgress:", books.length);
+  console.log("[DIAGNOSTIQUE] Livres effectivement affichés dans ReadingProgress:", books.length);
 
   return (
     <Card className="border-coffee-light">
@@ -107,32 +113,19 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                         }}
                       />
                     ) : (
-                      <div className={`w-full h-full flex items-center justify-center ${book.isUnavailable ? "bg-gray-300" : "bg-chocolate-medium"}`}>
-                        <span className={`font-serif italic ${book.isUnavailable ? "text-gray-500" : "text-white"}`}>
+                      <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+                        <span className="font-serif italic text-white">
                           {(book.title?.substring(0, 1) || "?") }
                         </span>
-                      </div>
-                    )}
-                    {/* Add unavailable badge for fallback books */}
-                    {book.isUnavailable && (
-                      <div className="absolute top-0 right-0 bg-amber-500 p-0.5 rounded-bl">
-                        <AlertTriangle className="h-3 w-3 text-white" />
                       </div>
                     )}
                   </div>
                   
                   <div className="flex-1">
                     <Link to={`/books/${book.id}`} className="block">
-                      <div className="flex items-center gap-1">
-                        <h3 className={`font-medium line-clamp-1 hover:underline ${book.isUnavailable ? "text-gray-500" : "text-coffee-darker"}`}>
-                          {book.title || "Chargement..."}
-                        </h3>
-                        {book.isUnavailable && (
-                          <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
-                            Indisponible
-                          </Badge>
-                        )}
-                      </div>
+                      <h3 className="font-medium line-clamp-1 hover:underline text-coffee-darker">
+                        {book.title || "Chargement..."}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         {book.author || "..."}
                       </p>
@@ -140,7 +133,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                       <div className="mt-2 space-y-1">
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                           <div 
-                            className={`h-full rounded-full ${book.isUnavailable ? "bg-gray-400" : "bg-coffee-dark"}`}
+                            className="h-full rounded-full bg-coffee-dark"
                             style={{ width: `${Math.max(0, Math.min(100, progressPercentage))}%` }}
                           ></div>
                         </div>

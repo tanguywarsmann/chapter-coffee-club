@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
@@ -13,6 +13,7 @@ interface BookListSectionProps {
   onAction?: (bookId: string) => void;
   showProgress?: boolean;
   showDate?: boolean;
+  hideUnavailableBooks?: boolean;
 }
 
 export function BookListSection({
@@ -22,9 +23,32 @@ export function BookListSection({
   actionLabel,
   onAction,
   showProgress = false,
-  showDate = false
+  showDate = false,
+  hideUnavailableBooks = false
 }: BookListSectionProps) {
-  console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${books.length} books`);
+  // Filtrer les livres à afficher selon le paramètre hideUnavailableBooks
+  const displayBooks = useMemo(() => {
+    const validBooks = Array.isArray(books) ? books : [];
+    return hideUnavailableBooks 
+      ? validBooks.filter(book => !book.isUnavailable)
+      : validBooks;
+  }, [books, hideUnavailableBooks]);
+
+  console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${displayBooks.length} books`);
+  
+  if (displayBooks.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-serif font-medium text-coffee-darker">{title}</h2>
+          {description && <p className="text-muted-foreground">{description}</p>}
+        </div>
+        <div className="text-center p-6 border border-dashed rounded-lg">
+          <p className="text-muted-foreground">Aucun livre dans cette catégorie</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -34,7 +58,7 @@ export function BookListSection({
       </div>
       
       <div className="space-y-6">
-        {books.map((book) => {
+        {displayBooks.map((book) => {
           // Calculate progress percentage safely
           const chaptersRead = book.chaptersRead || 0;
           const totalChapters = book.totalChapters || 1;

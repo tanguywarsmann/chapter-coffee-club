@@ -27,11 +27,11 @@ export const useReadingList = () => {
     queryKey: ["reading_list", user?.id],
     queryFn: () => fetchReadingProgress(user?.id || ""),
     enabled: !!user?.id,
-    staleTime: 600000,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-    refetchOnWindowFocus: false,
-    retry: 1,
+    staleTime: 600000, // Augmenter staleTime pour réduire les refetch automatiques
+    refetchOnMount: !hasFetchedOnMount.current, // Ne re-fetch que si c'est la première fois
+    refetchOnReconnect: false, // Désactiver le refetch lors de la reconnexion
+    refetchOnWindowFocus: false, // Désactiver le refetch lors du focus de la fenêtre
+    retry: 1, // Limiter les tentatives de nouvelle récupération
   });
 
   // Set hasFetchedOnMount when query succeeds
