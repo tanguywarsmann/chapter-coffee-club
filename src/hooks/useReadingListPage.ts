@@ -36,6 +36,14 @@ export const useReadingListPage = () => {
     sortBy
   });
 
+  // Log après l'appel de useBookFetching pour voir les valeurs retournées
+  console.log("[DEBUG] useReadingListPage - valeurs retournées par useBookFetching:", {
+    fetchBooks: typeof fetchBooks === 'function',
+    isLoading,
+    isFetching, 
+    hasError: !!error
+  });
+
   const navigateToBook = useCallback((bookId: string) => {
     navigate(`/books/${bookId}`);
   }, [navigate]);
@@ -50,6 +58,9 @@ export const useReadingListPage = () => {
       hasFetchedInitialData,
       isLoadingReadingList
     );
+    
+    // Log après l'exécution de fetchBooks pour voir si les setters ont été appelés
+    console.log("[DEBUG] Post-fetchBooks - État des setters appelés");
   }, [
     fetchBooks, 
     hasFetchedInitialData, 

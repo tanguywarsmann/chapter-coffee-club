@@ -139,6 +139,14 @@ export const useBookFetching = ({
       setInProgressBooks(sortedInProgress);
       setCompletedBooks(sortedCompleted);
       
+      // Ajout du log juste avant le return final
+      console.log("[DEBUG] useBookFetching RÉSULTAT FINAL qui va être retourné:", {
+        toReadBooks: sortedToRead.length,
+        inProgressBooks: sortedInProgress.length,
+        completedBooks: sortedCompleted.length,
+        livresOK: sortedToRead.length > 0 || sortedInProgress.length > 0 || sortedCompleted.length > 0
+      });
+      
     } catch (err) {
       console.error("[ERREUR] Échec de récupération des livres:", err);
       setError(err as Error);
@@ -148,6 +156,9 @@ export const useBookFetching = ({
       isFetchingRef.current = false;
     }
   };
+
+  // Log avant le return du hook
+  console.log("[DEBUG] État final de useBookFetching:", { isLoading, isFetching, hasError: !!error });
 
   return {
     isLoading,
