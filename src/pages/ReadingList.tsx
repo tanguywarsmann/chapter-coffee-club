@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -35,6 +36,7 @@ export default function ReadingList() {
   const [isFetching, setIsFetching] = useState(false);
   
   const isMounted = useRef(true);
+  const isFetchingRef = useRef(false);
   
   const fetchBooks = useCallback(async () => {
     if (!user?.id || !readingList || isFetchingRef.current) return;
