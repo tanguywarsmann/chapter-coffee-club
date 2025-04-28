@@ -39,12 +39,16 @@ export default function ReadingList() {
     inProgressCount: books.inProgress?.length || 0,
     completedCount: books.completed?.length || 0,
     isLoading: loading.isLoading,
-    isLoadingReadingList: loading.isLoadingReadingList
+    isLoadingReadingList: loading.isLoadingReadingList,
+    isDataReady: loading.isDataReady
   });
 
   const renderContent = () => {
-    if (loading.isLoading || loading.isLoadingReadingList) {
-      console.log("[DEBUG] Affichage de LoadingBookList, chargement en cours");
+    // Afficher toujours le loader si les données ne sont pas prêtes
+    if (loading.isLoading || loading.isLoadingReadingList || !loading.isDataReady) {
+      console.log("[DEBUG] Affichage de LoadingBookList - isLoading:", loading.isLoading, 
+                 "isLoadingReadingList:", loading.isLoadingReadingList,
+                 "isDataReady:", loading.isDataReady);
       return <LoadingBookList />;
     }
     

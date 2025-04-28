@@ -26,6 +26,7 @@ export const useReadingListPage = () => {
   const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
   const [completedBooks, setCompletedBooks] = useState<Book[]>([]);
+  const [isDataReady, setIsDataReady] = useState<boolean>(false);
 
   const { isLoading, isFetching, error, fetchBooks } = useBookFetching({
     user,
@@ -42,6 +43,17 @@ export const useReadingListPage = () => {
     isFetching, 
     hasError: !!error
   });
+
+  // Effet pour suivre l'état des données et mettre à jour isDataReady
+  useEffect(() => {
+    if (!isLoading && !isFetching) {
+      // Marquer les données comme prêtes seulement quand le chargement est terminé
+      // et qu'au moins une des listes contient des données
+      const hasData = toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0;
+      console.log("[DEBUG] Mise à jour isDataReady:", { hasData, isLoading, isFetching });
+      setIsDataReady(hasData);
+    }
+  }, [toReadBooks, inProgressBooks, completedBooks, isLoading, isFetching]);
 
   const navigateToBook = useCallback((bookId: string) => {
     navigate(`/books/${bookId}`);
@@ -111,7 +123,8 @@ export const useReadingListPage = () => {
     completed: completedBooks,
     toReadLength: toReadBooks.length,
     inProgressLength: inProgressBooks.length,
-    completedLength: completedBooks.length
+    completedLength: completedBooks.length,
+    isDataReady
   });
 
   return {
@@ -124,7 +137,8 @@ export const useReadingListPage = () => {
     loading: {
       isLoading,
       isLoadingReadingList,
-      isFetching
+      isFetching,
+      isDataReady
     },
     error,
     sortBy,
