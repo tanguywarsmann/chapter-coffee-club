@@ -38,6 +38,19 @@ export const useBookFetching = ({
     console.log("[DEBUG] Dépendance modifiée - readingList:", readingList?.length ?? 0, "éléments");
   }, [user?.id, readingList]);
 
+  useEffect(() => {
+    if (user?.id && !isFetchingRef.current) {
+      console.log("[DEBUG] userId disponible, déclenchement automatique de fetchBooks");
+      fetchBooks(
+        setToReadBooks,
+        setInProgressBooks,
+        setCompletedBooks,
+        hasFetchedInitialData,
+        false // isLoadingReadingList forcé à false pour ce cas spécifique
+      );
+    }
+  }, [user?.id, fetchBooks]);
+
   const fetchBooks = async (
     setToReadBooks: (books: Book[]) => void,
     setInProgressBooks: (books: Book[]) => void,
