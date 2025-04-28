@@ -32,17 +32,23 @@ export function HomeContent({
 }: HomeContentProps) {
   const isMobile = useIsMobile();
   
-  // Ne montrer que les livres valides dans inProgressBooks
+  // Memoïser les livres en cours valides pour éviter les re-rendus inutiles
   const validInProgressBooks = useMemo(() => {
+    console.log("[DIAGNOSTIQUE] Filtrage inProgressBooks:", inProgressBooks?.length || 0);
     return Array.isArray(inProgressBooks) 
       ? inProgressBooks.filter(book => book && !book.isUnavailable)
       : [];
   }, [inProgressBooks]);
   
-  // Assurer que currentBook est valide et disponible
+  // Memoïser le livre actuel valide
   const validCurrentBook = useMemo(() => {
     return currentBook && !currentBook.isUnavailable ? currentBook : null;
   }, [currentBook]);
+  
+  // Memoïser le livre en cours de lecture valide
+  const validCurrentReading = useMemo(() => {
+    return currentReading && !currentReading.isUnavailable ? currentReading : null;
+  }, [currentReading]);
 
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -51,10 +57,10 @@ export function HomeContent({
           <div className="flex items-center justify-center p-8">
             <Loader2 className="h-6 w-6 animate-spin text-coffee-dark" />
           </div>
-        ) : currentReading && !currentReading.isUnavailable ? (
+        ) : validCurrentReading ? (
           <CurrentReadingCard
-            book={currentReading}
-            currentPage={currentReading.chaptersRead * 30}
+            book={validCurrentReading}
+            currentPage={validCurrentReading.chaptersRead * 30}
             onContinueReading={onContinueReading}
           />
         ) : null}

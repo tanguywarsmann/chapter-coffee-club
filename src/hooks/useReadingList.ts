@@ -13,6 +13,7 @@ export const useReadingList = () => {
   const { user } = useAuth();
   const hasFetchedOnMount = useRef(false);
   const errorCount = useRef(0);
+  const isFetchingRef = useRef(false);
   
   const {
     books,
@@ -27,7 +28,7 @@ export const useReadingList = () => {
     queryKey: ["reading_list", user?.id],
     queryFn: () => fetchReadingProgress(user?.id || ""),
     enabled: !!user?.id,
-    staleTime: 600000, // Augmenter staleTime pour réduire les refetch automatiques
+    staleTime: 600000, // 10 minutes - Réduire les refetch automatiques
     refetchOnMount: !hasFetchedOnMount.current, // Ne re-fetch que si c'est la première fois
     refetchOnReconnect: false, // Désactiver le refetch lors de la reconnexion
     refetchOnWindowFocus: false, // Désactiver le refetch lors du focus de la fenêtre
@@ -36,9 +37,8 @@ export const useReadingList = () => {
 
   // Set hasFetchedOnMount when query succeeds
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !hasFetchedOnMount.current) {
       hasFetchedOnMount.current = true;
-      console.log("[DIAGNOSTIQUE] Flag hasFetchedOnMount set in success effect:", hasFetchedOnMount.current);
     }
   }, [isSuccess]);
 
@@ -59,12 +59,18 @@ export const useReadingList = () => {
     return fetchBooksForStatus(readingList, status, user.id);
   };
 
-  // Effect to fetch books when readingList changes
+  // Effect to fetch books when readingList changes - avec protection contre les appels multiples
   useEffect(() => {
+    // Protection contre les refetch multiples et inutiles
+    if (!user?.id || !readingList || isFetchingRef.current || isFetching) return;
+    
+    // Ne pas refaire de fetch si on a déjà les données et qu'on n'est pas en train de rafraîchir
+    if (books.inProgressBooks.length > 0 && hasFetchedOnMount.current && isSuccess) return;
+    
     const fetchBooks = async () => {
-      if (!user?.id || !readingList || isFetching) return;
-      
       try {
+        // Marquer que nous sommes en train de récupérer des données
+        isFetchingRef.current = true;
         setIsFetching(true);
         setIsLoading(true);
         setError(null);
@@ -92,11 +98,13 @@ export const useReadingList = () => {
           setIsLoading(false);
           setIsFetching(false);
         }
+        // Réinitialiser le flag de récupération
+        isFetchingRef.current = false;
       }
     };
 
     fetchBooks();
-  }, [user?.id, readingList, isFetching]);
+  }, [user?.id, readingList, isSuccess]);
 
   if (readingListError) {
     if (errorCount.current === 0) {

@@ -18,18 +18,19 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   const hasLogged = useRef(false);
   
   // Filtrer les livres pour ignorer les livres cassés ou indisponibles pour l'UI principale
+  // Utiliser useMemo pour éviter la recréation du tableau à chaque rendu
   const availableBooks = useMemo(() => {
     return inProgressBooks?.filter(book => !book.isUnavailable) || [];
   }, [inProgressBooks]);
   
-  // Loggez uniquement au montage ou lorsque inProgressBooks change
+  // Loggez uniquement au montage ou lorsque inProgressBooks change de manière significative
   useEffect(() => {
     if (!hasLogged.current && process.env.NODE_ENV === 'development') {
-      console.log("[DIAGNOSTIQUE] Rendering ReadingProgress with books:", inProgressBooks);
+      console.log("[DIAGNOSTIQUE] Rendering ReadingProgress with books:", inProgressBooks?.length || 0);
       console.log("[DIAGNOSTIQUE] Available books:", availableBooks.length);
       hasLogged.current = true;
     }
-  }, [inProgressBooks, availableBooks]);
+  }, [availableBooks.length]); // Dépend uniquement de la longueur du tableau, pas du tableau lui-même
   
   // Si nous sommes en train de charger, afficher un squelette
   if (isLoading) {
@@ -63,8 +64,9 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
   // Utiliser les livres disponibles (non indisponibles) pour l'affichage principal
   const books = availableBooks;
   
-  console.log("[DIAGNOSTIQUE] Livres effectivement affichés dans ReadingProgress:", books.length);
-
+  // Éviter de logger à chaque rendu pour réduire le bruit dans la console
+  // et éviter les opérations inutiles qui pourraient provoquer des re-rendus
+  
   return (
     <Card className="border-coffee-light">
       <CardHeader className="flex flex-row items-center justify-between">

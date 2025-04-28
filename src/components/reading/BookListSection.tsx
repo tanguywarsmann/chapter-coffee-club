@@ -27,6 +27,7 @@ export function BookListSection({
   hideUnavailableBooks = false
 }: BookListSectionProps) {
   // Filtrer les livres à afficher selon le paramètre hideUnavailableBooks
+  // en utilisant useMemo pour éviter des recalculs inutiles
   const displayBooks = useMemo(() => {
     const validBooks = Array.isArray(books) ? books : [];
     return hideUnavailableBooks 
@@ -34,7 +35,10 @@ export function BookListSection({
       : validBooks;
   }, [books, hideUnavailableBooks]);
 
-  console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${displayBooks.length} books`);
+  // Ne logguer qu'une seule fois par rendu, pas en boucle
+  React.useEffect(() => {
+    console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${displayBooks.length} books`);
+  }, [title, displayBooks.length]);
   
   if (displayBooks.length === 0) {
     return (

@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -13,6 +13,22 @@ import { useCurrentReading } from "@/hooks/useCurrentReading";
 import { useInProgressBooks } from "@/hooks/useInProgressBooks";
 
 export default function Home() {
+  // Utiliser une référence pour suivre les montages/démontages
+  const mountCount = useRef(0);
+  
+  // Console.log uniquement au premier montage
+  useEffect(() => {
+    mountCount.current++;
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DIAGNOSTIQUE] Home component mounted (count: ${mountCount.current})`);
+    }
+    return () => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DIAGNOSTIQUE] Home component unmounted');
+      }
+    };
+  }, []);
+  
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
     return !onboardingFlag;
@@ -23,6 +39,7 @@ export default function Home() {
   const { currentBook, inProgressBooks, isLoading, handleProgressUpdate } = useInProgressBooks();
   const navigate = useNavigate();
 
+  // Mémoiser cette fonction pour éviter les re-rendus inutiles
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
       if (currentReading.isUnavailable) {
