@@ -52,13 +52,23 @@ export const fetchBooksForStatus = async (
   status: string,
   userId: string
 ): Promise<Book[]> => {
-  if (!readingList?.length) return [];
+  console.log(`[DEBUG] getBooksByStatus démarré avec status=${status}, userId=${userId}`);
+  
+  if (!readingList?.length) {
+    console.log(`[DEBUG] readingList vide ou invalide pour status=${status}`);
+    return [];
+  }
 
   const filteredList = readingList.filter(
     item => item.user_id === userId && item.status === status
   );
 
-  if (filteredList.length === 0) return [];
+  console.log(`[DEBUG] filteredList pour status=${status}:`, JSON.stringify(filteredList));
+  
+  if (filteredList.length === 0) {
+    console.log(`[DEBUG] Aucun livre trouvé avec status=${status} pour userId=${userId}`);
+    return [];
+  }
 
   const books: Book[] = [];
   const batches = [];
@@ -67,19 +77,31 @@ export const fetchBooksForStatus = async (
     batches.push(filteredList.slice(i, i + BATCH_SIZE));
   }
 
+  console.log(`[DEBUG] Préparation de ${batches.length} batches pour récupérer ${filteredList.length} livres`);
+
   for (const batch of batches) {
     const batchPromises = batch.map(async (item) => {
+      console.log(`[DEBUG] Préparation requête Supabase pour book_id=${item.book_id}`);
+      
       if (bookFailureCache.has(item.book_id)) {
+        console.log(`[DEBUG] book_id=${item.book_id} dans le cache d'échec, création d'un fallback`);
         return createFallbackBook(item, "Livre précédemment indisponible");
       }
 
       try {
+        // Log juste avant l'appel à Supabase
+        console.log(`[DEBUG] Exécution requête Supabase: getBookById("${item.book_id}")`);
+        
         const book = await fetchBookWithTimeout(item.book_id);
+        
         if (!book) {
+          console.error(`[ERREUR] Échec récupération livre id=${item.book_id}: livre non trouvé ou null`);
           bookFailureCache.add(item.book_id);
           return createFallbackBook(item, "Livre indisponible");
         }
 
+        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${book.title}`);
+        
         return {
           ...book,
           chaptersRead: Math.floor(item.current_page / 30),
@@ -87,6 +109,7 @@ export const fetchBooksForStatus = async (
           isCompleted: item.status === "completed"
         } as Book;
       } catch (error) {
+        console.error(`[ERREUR] Exception lors de la récupération du livre id=${item.book_id}:`, error);
         bookFailureCache.add(item.book_id);
         return createFallbackBook(item, error instanceof Error ? error.message : "Erreur inconnue");
       }
@@ -104,5 +127,6 @@ export const fetchBooksForStatus = async (
     }
   }
 
+  console.log(`[DEBUG] Résultat final pour status=${status}: ${books.length} livres récupérés`);
   return books;
 };

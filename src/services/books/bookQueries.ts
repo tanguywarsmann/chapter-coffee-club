@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
@@ -28,6 +27,9 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   }
   
   try {
+    console.log(`[DEBUG] getBookById: Construction requête pour id=${id}`);
+    console.log(`[DEBUG] getBookById: Requête Supabase: from('books').select('*').eq('id', '${id}').maybeSingle()`);
+    
     const { data, error } = await supabase
       .from('books')
       .select('*')
@@ -35,15 +37,19 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching book by ID:', error);
+      console.error(`[ERREUR] Error fetching book ID ${id}:`, error);
       return null;
     }
 
-    if (!data) return null;
+    if (!data) {
+      console.log(`[DEBUG] getBookById: Aucune donnée trouvée pour id=${id}`);
+      return null;
+    }
 
+    console.log(`[DEBUG] getBookById: Livre trouvé pour id=${id}:`, JSON.stringify(data));
     return mapBookFromRecord(data);
   } catch (error) {
-    console.error(`Exception fetching book ID ${id}:`, error);
+    console.error(`[ERREUR] Exception fetching book ID ${id}:`, error);
     return null;
   }
 };
