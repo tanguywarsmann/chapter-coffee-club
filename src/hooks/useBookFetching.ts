@@ -38,24 +38,10 @@ export const useBookFetching = ({
     console.log("[DEBUG] Dépendance modifiée - readingList:", readingList?.length ?? 0, "éléments");
   }, [user?.id, readingList]);
 
-  useEffect(() => {
-    if (user?.id && !isFetchingRef.current) {
-      console.log("[DEBUG] userId disponible, déclenchement automatique de fetchBooks");
-      fetchBooks(
-        setToReadBooks,
-        setInProgressBooks,
-        setCompletedBooks,
-        hasFetchedInitialData,
-        false // isLoadingReadingList forcé à false pour ce cas spécifique
-      );
-    }
-  }, [user?.id, fetchBooks]);
-
   const fetchBooks = async (
     setToReadBooks: (books: Book[]) => void,
     setInProgressBooks: (books: Book[]) => void,
     setCompletedBooks: (books: Book[]) => void,
-    hasFetchedInitialData: () => boolean,
     isLoadingReadingList: boolean
   ) => {
     console.log("[DEBUG] fetchBooks appelé - userId:", user?.id);
@@ -69,8 +55,8 @@ export const useBookFetching = ({
       return;
     }
     
-    if (hasFetchedInitialData() && !isLoadingReadingList) {
-      console.log("[DEBUG] Données initiales déjà récupérées et readingList non en chargement");
+    if (!isLoadingReadingList && (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0)) {
+      console.log("[DEBUG] Données déjà présentes et readingList non en chargement");
       setIsLoading(false);
       return;
     }
@@ -163,6 +149,18 @@ export const useBookFetching = ({
       isFetchingRef.current = false;
     }
   };
+
+  useEffect(() => {
+    if (user?.id && !isFetchingRef.current) {
+      console.log("[DEBUG] userId disponible, déclenchement automatique de fetchBooks");
+      fetchBooks(
+        setToReadBooks,
+        setInProgressBooks,
+        setCompletedBooks,
+        false // isLoadingReadingList forcé à false pour ce cas spécifique
+      );
+    }
+  }, [user?.id, fetchBooks]);
 
   console.log("[DEBUG] État final de useBookFetching:", { 
     isLoading, 
