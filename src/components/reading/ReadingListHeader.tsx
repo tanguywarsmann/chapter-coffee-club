@@ -1,12 +1,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { BookSortSelect } from "./BookSortSelect";
+import { BookSortSelect, SortOption } from "./BookSortSelect";
 import { useNavigate } from "react-router-dom";
 
 interface ReadingListHeaderProps {
-  sortBy: string;
-  onSortChange: (value: any) => void;
+  sortBy: SortOption;
+  onSortChange: (value: SortOption) => void;
 }
 
 export function ReadingListHeader({ sortBy, onSortChange }: ReadingListHeaderProps) {
