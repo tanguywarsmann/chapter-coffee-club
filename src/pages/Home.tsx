@@ -15,19 +15,28 @@ import { useInProgressBooks } from "@/hooks/useInProgressBooks";
 export default function Home() {
   // Utiliser une référence pour suivre les montages/démontages
   const mountCount = useRef(0);
+  const renderCount = useRef(0);
   
-  // Console.log uniquement au premier montage
+  // Console.log uniquement au premier montage et pour le suivi des rendus
   useEffect(() => {
     mountCount.current++;
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[DIAGNOSTIQUE] Home component mounted (count: ${mountCount.current})`);
+      console.log(`[HOME DIAGNOSTIQUE] Home component mounted (count: ${mountCount.current})`);
     }
     return () => {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[DIAGNOSTIQUE] Home component unmounted');
+        console.log('[HOME DIAGNOSTIQUE] Home component unmounted');
       }
     };
   }, []);
+  
+  // Logger chaque render pour diagnostic
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      renderCount.current++;
+      console.log(`[HOME DIAGNOSTIQUE] Home render count: ${renderCount.current}`);
+    }
+  });
   
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
@@ -52,6 +61,29 @@ export default function Home() {
 
   // Mémoiser l'état de recherche pour éviter des rendus inutiles
   const showSearchResults = useMemo(() => !!searchResults, [searchResults]);
+  
+  // Mémoiser les props passées à MainContent pour assurer la stabilité
+  const mainContentProps = useMemo(() => ({
+    searchResults,
+    onResetSearch: () => setSearchResults(null),
+    currentReading,
+    isLoadingCurrentBook,
+    currentBook,
+    inProgressBooks,
+    isLoading,
+    onProgressUpdate: handleProgressUpdate,
+    onContinueReading: handleContinueReading
+  }), [
+    searchResults, 
+    setSearchResults, 
+    currentReading, 
+    isLoadingCurrentBook, 
+    currentBook, 
+    inProgressBooks, 
+    isLoading, 
+    handleProgressUpdate, 
+    handleContinueReading
+  ]);
 
   return (
     <AuthGuard>
@@ -67,17 +99,7 @@ export default function Home() {
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          <MainContent
-            searchResults={searchResults}
-            onResetSearch={() => setSearchResults(null)}
-            currentReading={currentReading}
-            isLoadingCurrentBook={isLoadingCurrentBook}
-            currentBook={currentBook}
-            inProgressBooks={inProgressBooks}
-            isLoading={isLoading}
-            onProgressUpdate={handleProgressUpdate}
-            onContinueReading={handleContinueReading}
-          />
+          <MainContent {...mainContentProps} />
         </main>
       </div>
     </AuthGuard>

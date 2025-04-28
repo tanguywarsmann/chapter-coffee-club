@@ -1,6 +1,6 @@
 
 import { Book } from "@/types/book";
-import { useState } from "react"; // Adding missing React import
+import { useRef, useEffect } from "react"; 
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
@@ -28,7 +28,23 @@ export function MainContent({
   onProgressUpdate,
   onContinueReading
 }: MainContentProps) {
-  // useState might be used inside the component
+  const renderCount = useRef(0);
+  
+  // Logging pour diagnostic
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      renderCount.current++;
+      console.log(`[MAIN CONTENT DIAGNOSTIQUE] Render #${renderCount.current}`, {
+        hasSearchResults: !!searchResults,
+        currentReadingId: currentReading?.id || null,
+        currentBookId: currentBook?.id || null,
+        inProgressBooksCount: inProgressBooks?.length || 0,
+        isLoadingCurrentBook,
+        isLoading
+      });
+    }
+  });
+
   if (searchResults) {
     return (
       <SearchResults 

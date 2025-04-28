@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { Book } from "@/types/book";
 import { StatsCards } from "./StatsCards";
 import { CurrentBook } from "./CurrentBook";
@@ -31,9 +31,45 @@ export function HomeContent({
   onContinueReading
 }: HomeContentProps) {
   const isMobile = useIsMobile();
+  const renderCount = useRef(0);
+  const stableDataRef = useRef({
+    currentReadingId: currentReading?.id || null,
+    currentBookId: currentBook?.id || null,
+    inProgressCount: inProgressBooks?.length || 0
+  });
+  
+  // Logging pour diagnostic seulement en dev
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      renderCount.current++;
+      console.log(`[HOME CONTENT DIAGNOSTIQUE] Render count: ${renderCount.current}`);
+      
+      // Vérifier si les données ont réellement changé
+      const newState = {
+        currentReadingId: currentReading?.id || null,
+        currentBookId: currentBook?.id || null,
+        inProgressCount: inProgressBooks?.length || 0
+      };
+      
+      if (JSON.stringify(newState) !== JSON.stringify(stableDataRef.current)) {
+        console.log('[HOME CONTENT DIAGNOSTIQUE] Data change detected:', {
+          prevState: stableDataRef.current,
+          newState
+        });
+        stableDataRef.current = newState;
+      } else {
+        console.log('[HOME CONTENT DIAGNOSTIQUE] Re-render with same data');
+      }
+    }
+  });
   
   // Mémoïser les livres en cours valides pour éviter les re-rendus inutiles
   const validInProgressBooks = useMemo(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[HOME CONTENT DIAGNOSTIQUE] Computing validInProgressBooks from', 
+        inProgressBooks?.length || 0, 'books');
+    }
+    
     return Array.isArray(inProgressBooks) 
       ? inProgressBooks.filter(book => book && !book.isUnavailable)
       : [];
@@ -48,6 +84,9 @@ export function HomeContent({
   const validCurrentReading = useMemo(() => {
     return currentReading && !currentReading.isUnavailable ? currentReading : null;
   }, [currentReading]);
+  
+  // Mémoïser les activités pour éviter les re-rendus inutiles
+  const activities = useMemo(() => getUserActivities(), []);
 
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -76,12 +115,13 @@ export function HomeContent({
         </div>
         
         <ReadingProgress 
+          key={`reading-progress-${validInProgressBooks.length}`}
           inProgressBooks={validInProgressBooks}
           isLoading={isLoading} 
         />
       </div>
       <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
-        <ActivityFeed activities={getUserActivities()} />
+        <ActivityFeed activities={activities} />
       </div>
     </div>
   );
