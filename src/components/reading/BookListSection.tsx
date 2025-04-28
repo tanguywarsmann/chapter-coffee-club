@@ -30,10 +30,16 @@ export function BookListSection({
   // en utilisant useMemo pour éviter des recalculs inutiles
   const displayBooks = useMemo(() => {
     const validBooks = Array.isArray(books) ? books : [];
+    console.log(`[DIAGNOSTIQUE] BookListSection "${title}" - Books reçus:`, validBooks.length, 'livres, valides:', validBooks !== null && Array.isArray(validBooks));
+    
+    if (validBooks.length > 0) {
+      console.log(`[DIAGNOSTIQUE] Premier livre dans "${title}":`, validBooks[0]);
+    }
+    
     return hideUnavailableBooks 
       ? validBooks.filter(book => !book.isUnavailable)
       : validBooks;
-  }, [books, hideUnavailableBooks]);
+  }, [books, hideUnavailableBooks, title]);
 
   // Ne logguer qu'une seule fois par rendu, pas en boucle
   React.useEffect(() => {

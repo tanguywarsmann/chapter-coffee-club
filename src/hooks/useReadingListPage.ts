@@ -75,6 +75,16 @@ export const useReadingListPage = () => {
     }
   }, [userId, readingList, handleFetchBooks]);
 
+  // Ajout du console.log pour vérifier le contenu final des tableaux
+  console.log('[DEBUG] Contenu final dans ReadingListPage', { 
+    toRead: toReadBooks,
+    inProgress: inProgressBooks,
+    completed: completedBooks,
+    toReadLength: toReadBooks.length,
+    inProgressLength: inProgressBooks.length,
+    completedLength: completedBooks.length
+  });
+
   return {
     user,
     books: {

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -26,16 +27,28 @@ export default function ReadingList() {
     fetchBooks();
   }, [fetchBooks]);
 
+  // Log spécifique pour le débogage des listes de livres
+  console.log("[DEBUG] État des listes dans ReadingList.tsx", {
+    toReadCount: books.toRead?.length || 0,
+    inProgressCount: books.inProgress?.length || 0,
+    completedCount: books.completed?.length || 0,
+    isLoading: loading.isLoading,
+    isLoadingReadingList: loading.isLoadingReadingList
+  });
+
   const renderContent = () => {
     if (loading.isLoading || loading.isLoadingReadingList) {
+      console.log("[DEBUG] Affichage de LoadingBookList, chargement en cours");
       return <LoadingBookList />;
     }
     
     if (error) {
+      console.log("[DEBUG] Affichage de BookEmptyState - erreur détectée");
       return <BookEmptyState hasError={true} />;
     }
     
-    if (books.toRead.length === 0 && books.inProgress.length === 0 && books.completed.length === 0) {
+    if (!books.toRead?.length && !books.inProgress?.length && !books.completed?.length) {
+      console.log("[DEBUG] Toutes les listes sont vides, affichage de l'état vide");
       return (
         <BookEmptyState 
           hasError={false} 
@@ -45,9 +58,15 @@ export default function ReadingList() {
       );
     }
     
+    console.log("[DEBUG] Rendu des sections de livre avec:", {
+      inProgress: books.inProgress?.length || 0,
+      toRead: books.toRead?.length || 0,
+      completed: books.completed?.length || 0
+    });
+    
     return (
       <>
-        {books.inProgress.length > 0 && (
+        {(books.inProgress?.length > 0) && (
           <BookListSection
             title="En cours de lecture"
             description="Reprenez où vous vous êtes arrêté"
@@ -58,7 +77,7 @@ export default function ReadingList() {
           />
         )}
         
-        {books.toRead.length > 0 && (
+        {(books.toRead?.length > 0) && (
           <BookListSection
             title="À lire"
             description="Votre liste de lecture à venir"
@@ -68,7 +87,7 @@ export default function ReadingList() {
           />
         )}
         
-        {books.completed.length > 0 && (
+        {(books.completed?.length > 0) && (
           <BookListSection
             title="Livres terminés"
             description="Vos lectures complétées"
