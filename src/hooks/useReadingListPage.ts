@@ -33,7 +33,16 @@ export const useReadingListPage = () => {
   // Nouvelle référence pour suivre si le premier useEffect spécifique à userId a été exécuté
   const initialUserIdFetchDone = useRef(false);
 
-  const { isLoading, isFetching, error, fetchBooks } = useBookFetching({
+  // Récupérons les données depuis useBookFetching y compris les listes déjà récupérées
+  const { 
+    isLoading, 
+    isFetching, 
+    error, 
+    fetchBooks,
+    toRead: fetchedToRead,
+    inProgress: fetchedInProgress,
+    completed: fetchedCompleted
+  } = useBookFetching({
     user,
     readingList,
     getBooksByStatus,
@@ -46,8 +55,32 @@ export const useReadingListPage = () => {
     fetchBooks: typeof fetchBooks === 'function',
     isLoading,
     isFetching, 
-    hasError: !!error
+    hasError: !!error,
+    fetchedToReadLength: fetchedToRead?.length || 0,
+    fetchedInProgressLength: fetchedInProgress?.length || 0, 
+    fetchedCompletedLength: fetchedCompleted?.length || 0
   });
+
+  // NOUVEAU: Effet pour synchroniser les états locaux avec les données fetchées
+  useEffect(() => {
+    console.log("[DEBUG] Synchronisation des états avec les données fetchées:", {
+      toReadLength: fetchedToRead?.length || 0,
+      inProgressLength: fetchedInProgress?.length || 0,
+      completedLength: fetchedCompleted?.length || 0
+    });
+    
+    if (fetchedToRead && fetchedToRead.length > 0) {
+      setToReadBooks(fetchedToRead);
+    }
+    
+    if (fetchedInProgress && fetchedInProgress.length > 0) {
+      setInProgressBooks(fetchedInProgress);
+    }
+    
+    if (fetchedCompleted && fetchedCompleted.length > 0) {
+      setCompletedBooks(fetchedCompleted);
+    }
+  }, [fetchedToRead, fetchedInProgress, fetchedCompleted]);
 
   // Effet pour suivre l'état des données et mettre à jour isDataReady
   useEffect(() => {
@@ -113,7 +146,7 @@ export const useReadingListPage = () => {
         console.log("[DEBUG] NOUVEAU useEffect - listes non vides, pas de fetch nécessaire");
       }
     }
-  }, [userId]); // Dépend UNIQUEMENT de userId pour éviter les boucles
+  }, [userId, handleFetchBooks]); // Ajout de handleFetchBooks à la liste des dépendances
 
   // NOUVEL EFFET: Surveiller spécifiquement l'apparition d'un userId
   // et déclencher le fetch initial si nécessaire
