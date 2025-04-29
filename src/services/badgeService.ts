@@ -5,7 +5,11 @@ import { ReadingStreak } from "@/types/reading";
 import { getUserStreak } from "./streakService";
 import { supabase } from "@/integrations/supabase/client";
 import { UserBadge } from "./books/types";
-import { supabaseExtended } from "@/types/supabase-extensions";
+import { ExtendedDatabase } from "@/types/supabase-extensions";
+import { SupabaseClient } from "@supabase/supabase-js";
+
+// Create a local extended Supabase client with proper typing support for user_badges
+const supabaseExtended = supabase as SupabaseClient<ExtendedDatabase>;
 
 // Interface pour les sessions de lecture
 interface ReadingSession {
@@ -166,7 +170,6 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
-    // Using supabaseExtended for proper typing
     const { data, error } = await supabaseExtended
       .from('user_badges')
       .select('badge_key, unlocked_at')
@@ -204,7 +207,6 @@ export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<
   if (!userId) return false;
   
   try {
-    // Using supabaseExtended for proper typing
     const { data, error } = await supabaseExtended
       .from('user_badges')
       .select('id')
@@ -231,7 +233,6 @@ export const resetAllBadges = async (userId: string): Promise<boolean> => {
   }
 
   try {
-    // Using supabaseExtended for proper typing
     const { error } = await supabaseExtended
       .from('user_badges')
       .delete()
@@ -271,7 +272,6 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
 
   // Débloquer le badge dans Supabase
   try {
-    // Using supabaseExtended for proper typing
     const { error } = await supabaseExtended
       .from('user_badges')
       .insert({

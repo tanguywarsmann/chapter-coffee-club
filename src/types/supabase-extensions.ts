@@ -38,18 +38,3 @@ export type ExtendedDatabase = {
     CompositeTypes: OriginalDatabase["public"]["CompositeTypes"];
   };
 };
-
-// Type-safe client for extended Supabase usage
-export type ExtendedSupabaseClient = ReturnType<typeof createExtendedSupabaseClient>;
-
-// Function to create a client that knows about our extended schema
-export function createExtendedSupabaseClient() {
-  return supabase as unknown as ReturnType<typeof supabase.from> & {
-    from<T extends keyof ExtendedDatabase['public']['Tables']>(
-      table: T
-    ): ReturnType<typeof supabase.from<T>>;
-  };
-}
-
-// Helper to access the extended client
-export const supabaseExtended = createExtendedSupabaseClient();
