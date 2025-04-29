@@ -26,6 +26,16 @@ export default function Achievements() {
     }
   };
 
+  // Fonction pour tester l'ajout du badge spécifique demandé
+  const testSpecificBadge = async () => {
+    if (userId && process.env.NODE_ENV === 'development') {
+      const success = await unlockBadge(userId, "badge_test_insertion");
+      if (success) {
+        console.log("Badge test_insertion ajouté avec succès");
+      }
+    }
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
@@ -50,7 +60,7 @@ export default function Achievements() {
           <BadgesSection />
           <ChallengesSection />
 
-          {/* Bouton de test visible uniquement en mode développement */}
+          {/* Boutons de test visibles uniquement en mode développement */}
           {process.env.NODE_ENV === 'development' && (
             <div className="border-t pt-4 mt-8 border-gray-100">
               <p className="text-sm text-muted-foreground mb-2">Outils de développement :</p>
@@ -60,6 +70,13 @@ export default function Achievements() {
                 size="sm" 
                 className="text-xs mr-2">
                 Tester l'ajout d'un badge
+              </Button>
+              <Button 
+                onClick={testSpecificBadge} 
+                variant="outline" 
+                size="sm" 
+                className="text-xs">
+                Tester badge_test_insertion
               </Button>
             </div>
           )}
