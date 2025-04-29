@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { toast } from "sonner";
+import { checkBadgesForUser } from "@/services/badgeService";
 
 interface BookDetailProps {
   book: Book;
@@ -35,7 +36,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     currentQuestion,
     prepareAndShowQuestion,
     handleQuizComplete
-  } = useBookValidation(currentBook, user?.id, onChapterComplete);
+  } = useBookValidation(currentBook, user?.id, (bookId) => {
+    // Appeler le callback original si fourni
+    if (onChapterComplete) {
+      onChapterComplete(bookId);
+    }
+    
+    // Vérifier les badges après avoir complété un chapitre
+    if (user?.id) {
+      checkBadgesForUser(user.id);
+    }
+  });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
 
@@ -75,6 +86,12 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     const segment = getCurrentSegmentToValidate();
     setValidationSegment(segment);
     setShowValidationModal(true);
+    
+    // Enregistrer le début d'une session de lecture (pour badges)
+    if (!lectureInit) {
+      // Stocker l'heure de début en localStorage pour la récupérer plus tard
+      localStorage.setItem(`reading_start_${user.id}_${currentBook.id}`, new Date().toISOString());
+    }
   };
 
   const handleValidationModalConfirm = () => {
@@ -109,9 +126,42 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           onValidationClose={() => setShowValidationModal(false)}
           onValidationConfirm={handleValidationModalConfirm}
           onQuizClose={() => setShowQuiz(false)}
-          onQuizComplete={handleQuizComplete}
+          onQuizComplete={(correct) => {
+            handleQuizComplete(correct);
+            
+            // Vérifier les badges après avoir complété un quiz
+            if (user?.id) {
+              checkBadgesForUser(user.id);
+              
+              // Si le livre est terminé, stocker dans la liste des livres terminés
+              if (currentBook.isCompleted) {
+                const completedBooks = localStorage.getItem(`completed_books_${user.id}`) 
+                  ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
+                  : [];
+                  
+                if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
+                  completedBooks.push(currentBook);
+                  localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
+                  
+                  // Terminer la session de lecture
+                  const startTimeStr = localStorage.getItem(`reading_start_${user.id}_${currentBook.id}`);
+                  if (startTimeStr) {
+                    const startTime = new Date(startTimeStr);
+                    const endTime = new Date();
+                    
+                    // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
+                    const { recordReadingSession } = require('@/services/badgeService');
+                    recordReadingSession(user.id, startTime, endTime);
+                    
+                    // Supprimer l'heure de début
+                    localStorage.removeItem(`reading_start_${user.id}_${currentBook.id}`);
+                  }
+                }
+              }
+            }
+          }}
         />
       </CardContent>
     </Card>
   );
-};
+}

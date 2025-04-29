@@ -3,12 +3,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/types/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useEffect, useState } from "react";
+import { getUserBadges } from "@/services/badgeService";
 
 interface ProfileBadgesProps {
-  badges: Badge[];
+  badges?: Badge[];
 }
 
-export function ProfileBadges({ badges }: ProfileBadgesProps) {
+export function ProfileBadges({ badges: propBadges }: ProfileBadgesProps) {
+  const [badges, setBadges] = useState<Badge[]>(propBadges || []);
+  
+  useEffect(() => {
+    if (!propBadges) {
+      // Si les badges ne sont pas fournis en prop, les récupérer du service
+      const userBadges = getUserBadges();
+      setBadges(userBadges);
+    }
+  }, [propBadges]);
+
   if (!badges.length) {
     return (
       <Card className="border-coffee-light">

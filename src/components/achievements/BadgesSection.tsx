@@ -2,8 +2,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BadgeGrid } from "./BadgeGrid";
-import { getUserBadges } from "@/mock/badges";
+import { getUserBadges } from "@/services/badgeService";
 import { Badge } from "@/types/badge";
+import { useEffect, useState } from "react";
 
 const lockedBadges: Omit<Badge, "dateEarned">[] = [
   {
@@ -44,7 +45,13 @@ const lockedBadges: Omit<Badge, "dateEarned">[] = [
 ];
 
 export function BadgesSection() {
-  const badges = getUserBadges();
+  const [badges, setBadges] = useState<Badge[]>([]);
+  
+  useEffect(() => {
+    // Récupérer les badges de l'utilisateur
+    const userBadges = getUserBadges();
+    setBadges(userBadges);
+  }, []);
 
   return (
     <Card className="border-coffee-light">
