@@ -5,6 +5,7 @@ import { ReadingStreak } from "@/types/reading";
 import { getUserStreak } from "./streakService";
 import { supabase } from "@/integrations/supabase/client";
 import { UserBadge } from "./books/types";
+import { supabaseExtended } from "@/types/supabase-extensions";
 
 // Interface pour les sessions de lecture
 interface ReadingSession {
@@ -165,7 +166,8 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
-    const { data, error } = await supabase
+    // Using supabaseExtended for proper typing
+    const { data, error } = await supabaseExtended
       .from('user_badges')
       .select('badge_key, unlocked_at')
       .eq('user_id', userId);
@@ -202,7 +204,8 @@ export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<
   if (!userId) return false;
   
   try {
-    const { data, error } = await supabase
+    // Using supabaseExtended for proper typing
+    const { data, error } = await supabaseExtended
       .from('user_badges')
       .select('id')
       .eq('user_id', userId)
@@ -228,7 +231,8 @@ export const resetAllBadges = async (userId: string): Promise<boolean> => {
   }
 
   try {
-    const { error } = await supabase
+    // Using supabaseExtended for proper typing
+    const { error } = await supabaseExtended
       .from('user_badges')
       .delete()
       .eq('user_id', userId);
@@ -267,7 +271,8 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
 
   // Débloquer le badge dans Supabase
   try {
-    const { error } = await supabase
+    // Using supabaseExtended for proper typing
+    const { error } = await supabaseExtended
       .from('user_badges')
       .insert({
         user_id: userId,

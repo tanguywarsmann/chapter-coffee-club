@@ -13,25 +13,4 @@ export type UserBadge = {
   unlocked_at: string;
 };
 
-// Extend the Database type to include the user_badges table definition
-declare module "@/integrations/supabase/types" {
-  interface Database {
-    public: {
-      Tables: {
-        user_badges: {
-          Row: UserBadge;
-          Insert: Omit<UserBadge, "id" | "unlocked_at">;
-          Update: Partial<UserBadge>;
-          Relationships: [
-            {
-              foreignKeyName: "user_badges_user_id_fkey";
-              columns: ["user_id"];
-              referencedRelation: "users";
-              referencedColumns: ["id"];
-            }
-          ];
-        };
-      } & Database["public"]["Tables"];
-    };
-  }
-}
+// We're no longer using module augmentation here to avoid duplicate identifier errors
