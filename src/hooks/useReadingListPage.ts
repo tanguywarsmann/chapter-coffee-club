@@ -30,6 +30,8 @@ export const useReadingListPage = () => {
 
   // Add reference to track if initial fetch was triggered
   const initialFetchTriggered = useRef(false);
+  // Nouvelle référence pour suivre si le premier useEffect spécifique à userId a été exécuté
+  const initialUserIdFetchDone = useRef(false);
 
   const { isLoading, isFetching, error, fetchBooks } = useBookFetching({
     user,
@@ -95,6 +97,23 @@ export const useReadingListPage = () => {
     inProgressBooks.length,
     completedBooks.length
   ]);
+
+  // NOUVEL EFFET: Surveiller spécifiquement UNIQUEMENT l'apparition d'un userId
+  // sans dépendre des listes pour éviter les boucles
+  useEffect(() => {
+    if (userId && !initialUserIdFetchDone.current) {
+      console.log("[DEBUG] NOUVEAU useEffect - userId détecté pour la première fois:", userId);
+      initialUserIdFetchDone.current = true;
+      
+      // Vérifier si les listes sont vides avant de déclencher le fetch
+      if (toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
+        console.log("[DEBUG] NOUVEAU useEffect - listes vides, déclenchement fetchBooks");
+        handleFetchBooks();
+      } else {
+        console.log("[DEBUG] NOUVEAU useEffect - listes non vides, pas de fetch nécessaire");
+      }
+    }
+  }, [userId]); // Dépend UNIQUEMENT de userId pour éviter les boucles
 
   // NOUVEL EFFET: Surveiller spécifiquement l'apparition d'un userId
   // et déclencher le fetch initial si nécessaire
