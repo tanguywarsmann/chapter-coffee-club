@@ -2,8 +2,9 @@
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
-import { ReadingStreak, ReadingActivity } from "@/types/reading";
+import { ReadingStreak } from "@/types/reading";
 import { getUserStreak } from "./streakService";
+import { supabase } from "@/integrations/supabase/client";
 
 // Interface pour les sessions de lecture
 interface ReadingSession {
@@ -152,62 +153,140 @@ export const availableBadges: Omit<Badge, "dateEarned">[] = [
   }
 ];
 
-// Récupérer les badges de l'utilisateur depuis le localStorage
-export const getUserBadges = (): Badge[] => {
-  const storedBadges = localStorage.getItem('user_badges');
-  if (storedBadges) {
-    return JSON.parse(storedBadges);
-  }
-  // Retourner un tableau vide pour éviter les badges débloqués automatiquement
-  return [];
-};
+// Récupérer les badges de l'utilisateur depuis Supabase
+export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
+  if (!userId) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('user_badges')
+      .select('badge_key, unlocked_at')
+      .eq('user_id', userId);
 
-// Sauvegarder les badges de l'utilisateur dans le localStorage
-export const saveUserBadges = (badges: Badge[]): void => {
-  localStorage.setItem('user_badges', JSON.stringify(badges));
+    if (error) {
+      console.error('Error fetching badges from Supabase:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Transformer les données de Supabase en objets Badge
+    const badges = data.map(item => {
+      const badgeInfo = availableBadges.find(b => b.id === item.badge_key);
+      if (!badgeInfo) return null;
+      
+      return {
+        ...badgeInfo,
+        dateEarned: new Date(item.unlocked_at).toLocaleDateString('fr-FR')
+      };
+    }).filter(Boolean) as Badge[];
+
+    return badges;
+  } catch (error) {
+    console.error('Unexpected error fetching badges:', error);
+    return [];
+  }
 };
 
 // Vérifier si un badge est déjà débloqué
-export const isBadgeUnlocked = (badgeId: string): boolean => {
-  const badges = getUserBadges();
-  return badges.some(badge => badge.id === badgeId);
+export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<boolean> => {
+  if (!userId) return false;
+  
+  try {
+    const { data, error } = await supabase
+      .from('user_badges')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('badge_key', badgeId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking badge status:', error);
+      return false;
+    }
+
+    return !!data;
+  } catch (error) {
+    console.error('Unexpected error checking badge status:', error);
+    return false;
+  }
 };
 
-// Effacer tous les badges (pour tests ou réinitialisation)
-export const resetAllBadges = (): void => {
-  localStorage.removeItem('user_badges');
+// Réinitialiser tous les badges (pour tests ou réinitialisation en mode DEV)
+export const resetAllBadges = async (userId: string): Promise<boolean> => {
+  if (!userId || process.env.NODE_ENV !== 'development') {
+    return false;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('user_badges')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error resetting badges:', error);
+      toast.error("Erreur lors de la réinitialisation des badges");
+      return false;
+    }
+
+    toast.success("Tous les badges ont été réinitialisés");
+    return true;
+  } catch (error) {
+    console.error('Unexpected error resetting badges:', error);
+    toast.error("Erreur lors de la réinitialisation des badges");
+    return false;
+  }
 };
 
 // Débloquer un badge
-export const unlockBadge = (badgeId: string): boolean => {
-  if (isBadgeUnlocked(badgeId)) {
-    return false; // Badge déjà débloqué
-  }
-
-  // Trouver le badge dans la liste des badges disponibles
-  const badgeToUnlock = availableBadges.find(badge => badge.id === badgeId);
-  if (!badgeToUnlock) {
+export const unlockBadge = async (userId: string, badgeId: string): Promise<boolean> => {
+  if (!userId || !badgeId) return false;
+  
+  // Vérifier si le badge existe
+  const badgeExists = availableBadges.some(badge => badge.id === badgeId);
+  if (!badgeExists) {
     console.error(`Badge with id ${badgeId} not found`);
     return false;
   }
 
-  // Créer un nouveau badge avec la date actuelle
-  const newBadge: Badge = {
-    ...badgeToUnlock,
-    dateEarned: new Date().toLocaleDateString('fr-FR')
-  };
+  // Vérifier si le badge est déjà débloqué
+  const isAlreadyUnlocked = await isBadgeUnlocked(userId, badgeId);
+  if (isAlreadyUnlocked) {
+    return false; // Badge déjà débloqué
+  }
 
-  // Ajouter le badge à la liste des badges débloqués
-  const userBadges = getUserBadges();
-  userBadges.push(newBadge);
-  saveUserBadges(userBadges);
+  // Débloquer le badge dans Supabase
+  try {
+    const { error } = await supabase
+      .from('user_badges')
+      .insert({
+        user_id: userId,
+        badge_key: badgeId,
+        unlocked_at: new Date().toISOString()
+      });
 
-  // Informer l'utilisateur
-  toast.success(`Badge débloqué : ${newBadge.name}`, {
-    description: newBadge.description
-  });
+    if (error) {
+      console.error('Error unlocking badge:', error);
+      return false;
+    }
 
-  return true;
+    // Trouver les infos du badge pour l'affichage toast
+    const badge = availableBadges.find(b => b.id === badgeId);
+    if (badge) {
+      // Informer l'utilisateur
+      toast.success(`Badge débloqué : ${badge.name}`, {
+        description: badge.description
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Unexpected error unlocking badge:', error);
+    return false;
+  }
 };
 
 // Récupérer les sessions de lecture de l'utilisateur
@@ -238,8 +317,10 @@ export const getUserRecommendations = (userId: string): any[] => {
 };
 
 // Vérifier et débloquer les badges en fonction des conditions
-export const checkAndUnlockBadges = (userData: UserBadgeData): void => {
+export const checkAndUnlockBadges = async (userData: UserBadgeData): Promise<void> => {
   const { id, completedBooks, readingSessions } = userData;
+  if (!id) return;
+  
   const streak = getUserStreak(id);
   const reviews = userData.reviews || getUserReviews(id);
   const recommendations = userData.recommendations || getUserRecommendations(id);
@@ -247,34 +328,34 @@ export const checkAndUnlockBadges = (userData: UserBadgeData): void => {
 
   // Premier livre terminé
   if (completedBooks.length >= 1) {
-    unlockBadge("premier-livre");
+    await unlockBadge(id, "premier-livre");
   }
 
   // Lecteur Classique
   const classics = completedBooks.filter(b => b.categories.includes("classique")).length;
   if (classics >= 3) {
-    unlockBadge("lecteur-classique");
+    await unlockBadge(id, "lecteur-classique");
   }
 
   // Série de 7 jours
   if (streak.current_streak >= 7) {
-    unlockBadge("serie-7-jours");
+    await unlockBadge(id, "serie-7-jours");
   }
 
   // Lecteur Nocturne
   const nocturnes = readingSessions.filter(s => s.startHour >= 22 && s.duration >= 120).length;
   if (nocturnes >= 1) {
-    unlockBadge("lecteur-nocturne");
+    await unlockBadge(id, "lecteur-nocturne");
   }
 
   // Critique Littéraire
   if (reviews.length >= 5) {
-    unlockBadge("critique-litteraire");
+    await unlockBadge(id, "critique-litteraire");
   }
 
   // Marathon Lecture
   if (readingSessions.some(s => s.duration >= 300)) {
-    unlockBadge("marathon-lecture");
+    await unlockBadge(id, "marathon-lecture");
   }
 
   // Globe-trotter
@@ -288,53 +369,53 @@ export const checkAndUnlockBadges = (userData: UserBadgeData): void => {
     }));
   
   if (continents.size >= 3) {
-    unlockBadge("globe-trotter");
+    await unlockBadge(id, "globe-trotter");
   }
 
   // Polyglotte
   if (completedBooks.some(b => b.language && b.language !== preferredLanguage)) {
-    unlockBadge("polyglotte");
+    await unlockBadge(id, "polyglotte");
   }
 
   // Mentor
   if (recommendations.length >= 3) {
-    unlockBadge("mentor");
+    await unlockBadge(id, "mentor");
   }
 
   // Expert en Poésie
   const poesie = completedBooks.filter(b => b.categories.includes("poésie")).length;
   if (poesie >= 5) {
-    unlockBadge("expert-poesie");
+    await unlockBadge(id, "expert-poesie");
   }
 
   // Badges à débloquer plus tard (même logique mais seuils plus élevés)
   
   // Lecteur Assidu
   if (streak.current_streak >= 30) {
-    unlockBadge("lecteur-assidu");
+    await unlockBadge(id, "lecteur-assidu");
   }
 
   // Explorateur Littéraire
   const categories = new Set(completedBooks.flatMap(b => b.categories));
   if (categories.size >= 5) {
-    unlockBadge("explorateur-litteraire");
+    await unlockBadge(id, "explorateur-litteraire");
   }
 
   // Marathonien (10 livres en un mois)
   // Pour simplifier, nous vérifions juste si l'utilisateur a terminé 10 livres
   if (completedBooks.length >= 10) {
-    unlockBadge("marathonien");
+    await unlockBadge(id, "marathonien");
   }
 
   // Expert en Classiques
   if (classics >= 10) {
-    unlockBadge("expert-classiques");
+    await unlockBadge(id, "expert-classiques");
   }
 
   // Lecteur Nocturne (niveau avancé)
   const advancedNocturnes = readingSessions.filter(s => s.startHour >= 22 && s.duration >= 180).length;
   if (advancedNocturnes >= 1) {
-    unlockBadge("lecteur-nocturne-v2");
+    await unlockBadge(id, "lecteur-nocturne-v2");
   }
 };
 
@@ -383,7 +464,7 @@ export const checkBadgesForUser = async (userId: string): Promise<void> => {
     const recommendations = getUserRecommendations(userId);
     
     // Vérifier et débloquer les badges
-    checkAndUnlockBadges({
+    await checkAndUnlockBadges({
       id: userId,
       completedBooks,
       readingSessions,
@@ -398,4 +479,3 @@ export const checkBadgesForUser = async (userId: string): Promise<void> => {
 
 // Exporter une liste de badges mockés pour la compatibilité
 export const mockBadges: Badge[] = [];
-

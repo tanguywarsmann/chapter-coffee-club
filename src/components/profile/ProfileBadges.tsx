@@ -5,6 +5,8 @@ import { Badge } from "@/types/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { getUserBadges } from "@/services/badgeService";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileBadgesProps {
   badges?: Badge[];
@@ -12,14 +14,52 @@ interface ProfileBadgesProps {
 
 export function ProfileBadges({ badges: propBadges }: ProfileBadgesProps) {
   const [badges, setBadges] = useState<Badge[]>(propBadges || []);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   
   useEffect(() => {
     if (!propBadges) {
-      // Si les badges ne sont pas fournis en prop, les récupérer du service
-      const userBadges = getUserBadges();
-      setBadges(userBadges);
+      const fetchBadges = async () => {
+        if (!user?.id) return;
+        
+        setLoading(true);
+        try {
+          // Récupérer les badges de l'utilisateur depuis Supabase
+          const userBadges = await getUserBadges(user.id);
+          setBadges(userBadges);
+        } catch (error) {
+          console.error("Erreur lors du chargement des badges:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchBadges();
     }
-  }, [propBadges]);
+  }, [propBadges, user?.id]);
+
+  if (loading) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges</CardTitle>
+          <CardDescription>Chargement des badges...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[180px] pr-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex flex-col items-center space-y-2">
+                  <Skeleton className="w-16 h-16 rounded-full" />
+                  <Skeleton className="w-16 h-3" />
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!badges.length) {
     return (

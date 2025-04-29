@@ -1,5 +1,4 @@
 
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { StreakStats } from "@/components/achievements/StreakStats";
@@ -14,10 +13,11 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Achievements() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = user?.id || localStorage.getItem("user") || "user123";
+  const userId = user?.id || "";
   const streak = getUserStreak(userId);
 
-  // Nous supprimons l'appel à checkBadgesForUser ici pour éviter la vérification automatique
+  // La vérification des badges est désormais faite dynamiquement via checkBadgesForUser qui est appelé
+  // uniquement lors d'actions spécifiques (fin de lecture, etc.) et non plus au chargement de la page
 
   return (
     <AuthGuard>
