@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Book } from "@/types/book";
 import { useNavigate } from "react-router-dom";
 import { useReadingList } from "@/hooks/useReadingList";
@@ -27,6 +27,9 @@ export const useReadingListPage = () => {
   const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
   const [completedBooks, setCompletedBooks] = useState<Book[]>([]);
   const [isDataReady, setIsDataReady] = useState<boolean>(false);
+
+  // Add reference to track if initial fetch was triggered
+  const initialFetchTriggered = useRef(false);
 
   const { isLoading, isFetching, error, fetchBooks } = useBookFetching({
     user,
@@ -92,6 +95,16 @@ export const useReadingListPage = () => {
     inProgressBooks.length,
     completedBooks.length
   ]);
+
+  // NOUVEL EFFET: Surveiller spécifiquement l'apparition d'un userId
+  // et déclencher le fetch initial si nécessaire
+  useEffect(() => {
+    if (userId && !initialFetchTriggered.current && !isLoading && !isFetching) {
+      console.log("[DEBUG] userId détecté, déclenchement initial de fetchBooks");
+      initialFetchTriggered.current = true;
+      handleFetchBooks();
+    }
+  }, [userId, handleFetchBooks, isLoading, isFetching]);
 
   // Effet de montage pour la première récupération de données
   useEffect(() => {
