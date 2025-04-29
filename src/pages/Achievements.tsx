@@ -9,6 +9,9 @@ import { ChallengesSection } from "@/components/achievements/ChallengesSection";
 import { getUserStreak } from "@/services/streakService";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
+import { unlockBadge } from "@/services/badgeService";
+import { Button } from "@/components/ui/button";
 
 export default function Achievements() {
   const navigate = useNavigate();
@@ -16,8 +19,12 @@ export default function Achievements() {
   const userId = user?.id || "";
   const streak = getUserStreak(userId);
 
-  // La vérification des badges est désormais faite dynamiquement via checkBadgesForUser qui est appelé
-  // uniquement lors d'actions spécifiques (fin de lecture, etc.) et non plus au chargement de la page
+  // Fonction pour tester l'ajout d'un badge en mode développement
+  const testAddBadge = async () => {
+    if (userId && process.env.NODE_ENV === 'development') {
+      await unlockBadge(userId, "premier-livre");
+    }
+  };
 
   return (
     <AuthGuard>
@@ -42,6 +49,20 @@ export default function Achievements() {
           <StatsCards />
           <BadgesSection />
           <ChallengesSection />
+
+          {/* Bouton de test visible uniquement en mode développement */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="border-t pt-4 mt-8 border-gray-100">
+              <p className="text-sm text-muted-foreground mb-2">Outils de développement :</p>
+              <Button 
+                onClick={testAddBadge} 
+                variant="outline" 
+                size="sm" 
+                className="text-xs mr-2">
+                Tester l'ajout d'un badge
+              </Button>
+            </div>
+          )}
         </main>
       </div>
     </AuthGuard>

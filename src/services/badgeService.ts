@@ -5,6 +5,7 @@ import { Badge } from "@/types/badge";
 import { ReadingStreak } from "@/types/reading";
 import { getUserStreak } from "./streakService";
 import { supabase } from "@/integrations/supabase/client";
+import { ExtendedDatabase } from "./books/types";
 
 // Interface pour les sessions de lecture
 interface ReadingSession {
@@ -158,7 +159,14 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
-    const { data, error } = await supabase
+    // Utiliser un cast explicite pour permettre l'accès à "user_badges"
+    const supabaseTyped = supabase as unknown as ReturnType<typeof supabase> & {
+      from: <T extends keyof ExtendedDatabase['public']['Tables']>(
+        table: T
+      ) => any;
+    };
+
+    const { data, error } = await supabaseTyped
       .from('user_badges')
       .select('badge_key, unlocked_at')
       .eq('user_id', userId);
@@ -195,7 +203,14 @@ export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<
   if (!userId) return false;
   
   try {
-    const { data, error } = await supabase
+    // Utiliser un cast explicite pour permettre l'accès à "user_badges"
+    const supabaseTyped = supabase as unknown as ReturnType<typeof supabase> & {
+      from: <T extends keyof ExtendedDatabase['public']['Tables']>(
+        table: T
+      ) => any;
+    };
+
+    const { data, error } = await supabaseTyped
       .from('user_badges')
       .select('id')
       .eq('user_id', userId)
@@ -221,7 +236,14 @@ export const resetAllBadges = async (userId: string): Promise<boolean> => {
   }
 
   try {
-    const { error } = await supabase
+    // Utiliser un cast explicite pour permettre l'accès à "user_badges"
+    const supabaseTyped = supabase as unknown as ReturnType<typeof supabase> & {
+      from: <T extends keyof ExtendedDatabase['public']['Tables']>(
+        table: T
+      ) => any;
+    };
+
+    const { error } = await supabaseTyped
       .from('user_badges')
       .delete()
       .eq('user_id', userId);
@@ -260,7 +282,14 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
 
   // Débloquer le badge dans Supabase
   try {
-    const { error } = await supabase
+    // Utiliser un cast explicite pour permettre l'accès à "user_badges"
+    const supabaseTyped = supabase as unknown as ReturnType<typeof supabase> & {
+      from: <T extends keyof ExtendedDatabase['public']['Tables']>(
+        table: T
+      ) => any;
+    };
+
+    const { error } = await supabaseTyped
       .from('user_badges')
       .insert({
         user_id: userId,
