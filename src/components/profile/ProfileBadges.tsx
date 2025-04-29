@@ -34,6 +34,7 @@ export function ProfileBadges({ badges: propBadges }: ProfileBadgesProps) {
               <span className="text-2xl text-muted-foreground">🏆</span>
             </div>
             <p className="text-muted-foreground">Vous n'avez pas encore de badges</p>
+            <p className="text-xs text-muted-foreground">Continuez votre parcours de lecture pour en débloquer!</p>
           </div>
         </CardContent>
       </Card>

@@ -9,7 +9,6 @@ import { BadgesSection } from "@/components/achievements/BadgesSection";
 import { ChallengesSection } from "@/components/achievements/ChallengesSection";
 import { getUserStreak } from "@/services/streakService";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { checkBadgesForUser } from "@/services/badgeService";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Achievements() {
@@ -18,12 +17,7 @@ export default function Achievements() {
   const userId = user?.id || localStorage.getItem("user") || "user123";
   const streak = getUserStreak(userId);
 
-  useEffect(() => {
-    // Vérifier les badges au chargement de la page
-    if (userId) {
-      checkBadgesForUser(userId);
-    }
-  }, [userId]);
+  // Nous supprimons l'appel à checkBadgesForUser ici pour éviter la vérification automatique
 
   return (
     <AuthGuard>

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { toast } from "sonner";
-import { checkBadgesForUser } from "@/services/badgeService";
+import { checkBadgesForUser, recordReadingSession } from "@/services/badgeService";
 
 interface BookDetailProps {
   book: Book;
@@ -49,6 +49,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const sessionStartTimeRef = useRef<Date | null>(null);
 
   useEffect(() => {
     if (currentBook && currentBook.totalChapters) {
@@ -89,8 +90,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     
     // Enregistrer le début d'une session de lecture (pour badges)
     if (!lectureInit) {
-      // Stocker l'heure de début en localStorage pour la récupérer plus tard
-      localStorage.setItem(`reading_start_${user.id}_${currentBook.id}`, new Date().toISOString());
+      // Stocker l'heure de début pour la session en cours
+      sessionStartTimeRef.current = new Date();
     }
   };
 
@@ -142,21 +143,18 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                 if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
                   completedBooks.push(currentBook);
                   localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
-                  
-                  // Terminer la session de lecture
-                  const startTimeStr = localStorage.getItem(`reading_start_${user.id}_${currentBook.id}`);
-                  if (startTimeStr) {
-                    const startTime = new Date(startTimeStr);
-                    const endTime = new Date();
-                    
-                    // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
-                    const { recordReadingSession } = require('@/services/badgeService');
-                    recordReadingSession(user.id, startTime, endTime);
-                    
-                    // Supprimer l'heure de début
-                    localStorage.removeItem(`reading_start_${user.id}_${currentBook.id}`);
-                  }
                 }
+              }
+              
+              // Terminer la session de lecture si elle a été démarrée
+              if (sessionStartTimeRef.current) {
+                const endTime = new Date();
+                
+                // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
+                recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
+                
+                // Réinitialiser l'heure de début
+                sessionStartTimeRef.current = null;
               }
             }
           }}
