@@ -27,14 +27,14 @@ export default function Login() {
           />
           
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
-            Remets-toi à la lecture, challenge après challenge
+            Reprends goût à la lecture, page après page
           </p>
         </div>
         
         <LoginForm />
         
         <p className="mt-8 text-center text-sm text-logo-text/80">
-          READ est une application pensée pour réconcilier les actifs avec la lecture,
+          READ est une application pensée pour te réconcilier avec la lecture,
           en s'inspirant des mécanismes de motivation utilisés dans le sport connecté.
         </p>
       </div>

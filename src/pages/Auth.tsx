@@ -76,7 +76,7 @@ export default function Auth() {
           />
           
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
-            Remets-toi à la lecture, challenge après challenge
+            Reprends goût à la lecture, page après page
           </p>
         </div>
         
