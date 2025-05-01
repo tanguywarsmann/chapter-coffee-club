@@ -8,6 +8,7 @@ import { useReadingList } from "@/hooks/useReadingList";
 import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
 import { supabase } from "@/integrations/supabase/client";
+import { BookOpen, BookMarked, CheckCircle } from "lucide-react";
 
 interface BookCardProps {
   book: Book;
@@ -112,11 +113,25 @@ export function BookCard({
 
     onAction?.();
   };
+  
+  // Determine book status icon
+  const getBookStatusIcon = () => {
+    if (book.isCompleted) {
+      return <CheckCircle className="h-5 w-5 text-green-600 absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-0.5" />;
+    } else if (book.chaptersRead && book.chaptersRead > 0) {
+      return <BookOpen className="h-5 w-5 text-coffee-dark absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-0.5" />;
+    } else {
+      return <BookMarked className="h-5 w-5 text-coffee-medium absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-0.5" />;
+    }
+  };
 
   return (
     <Link to={`/books/${book.id}`} className="block group">
-      <div className="book-card flex flex-col h-full bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative">
-        <BookCover book={book} showProgress={showProgress} />
+      <div className="book-card flex flex-col h-full bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium">
+        <div className="relative">
+          <BookCover book={book} showProgress={showProgress} />
+          {getBookStatusIcon()}
+        </div>
         <div className="p-3 flex-grow flex flex-col">
           <h3 className="font-medium text-coffee-darker mb-1">
             {truncateTitle(book.title)}
