@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  optimizeDeps: {
+    include: ['canvas-confetti']
+  },
   plugins: [
     react(),
     mode === 'development' &&
@@ -18,7 +21,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       manifest: {
         short_name: "READ",
-        name: "READ — Remets-toi à la lecture, challenge après challenge",
+        name: "READ — Reprends goût à la lecture, page après page",
         icons: [
           { src: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
           { src: "/icons/icon-384.png", type: "image/png", sizes: "384x384" },
