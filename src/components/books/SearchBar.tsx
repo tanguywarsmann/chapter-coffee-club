@@ -2,14 +2,19 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
+  isSearching?: boolean;
 }
 
-export function SearchBar({ onSearch, placeholder = "Rechercher un livre par titre, auteur..." }: SearchBarProps) {
+export function SearchBar({ 
+  onSearch, 
+  placeholder = "Rechercher un livre par titre, auteur...", 
+  isSearching = false 
+}: SearchBarProps) {
   const [query, setQuery] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,9 +35,14 @@ export function SearchBar({ onSearch, placeholder = "Rechercher un livre par tit
         type="submit" 
         size="icon" 
         className="absolute right-1 top-1 h-10 w-10 bg-coffee-dark hover:bg-coffee-darker"
+        disabled={isSearching}
       >
-        <Search className="h-5 w-5" />
-        <span className="sr-only">Rechercher</span>
+        {isSearching ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <Search className="h-5 w-5" />
+        )}
+        <span className="sr-only">{isSearching ? "Recherche en cours..." : "Rechercher"}</span>
       </Button>
     </form>
   );

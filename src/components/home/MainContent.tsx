@@ -13,6 +13,7 @@ interface MainContentProps {
   currentBook: Book | null;
   inProgressBooks: Book[];
   isLoading: boolean;
+  isSearching?: boolean;
   onProgressUpdate: (bookId: string) => void;
   onContinueReading: () => void;
 }
@@ -25,6 +26,7 @@ export function MainContent({
   currentBook,
   inProgressBooks,
   isLoading,
+  isSearching = false,
   onProgressUpdate,
   onContinueReading
 }: MainContentProps) {
@@ -47,7 +49,8 @@ export function MainContent({
         currentBookId: stableIds.currentBookId,
         inProgressBooksCount: stableIds.inProgressCount,
         isLoadingCurrentBook,
-        isLoading
+        isLoading,
+        isSearching
       });
     }
   });
@@ -77,6 +80,19 @@ export function MainContent({
     onContinueReading,
     stableIds
   ]);
+
+  if (isSearching) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-2">
+          <div className="animate-pulse flex justify-center">
+            <Search className="h-8 w-8 text-coffee-dark" />
+          </div>
+          <p className="text-coffee-dark">Recherche en cours...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (searchResults) {
     return (
