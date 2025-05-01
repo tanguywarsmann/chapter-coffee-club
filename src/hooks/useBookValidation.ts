@@ -20,6 +20,8 @@ export const useBookValidation = (
     setShowQuiz,
     quizChapter,
     currentQuestion,
+    showSuccessMessage,
+    setShowSuccessMessage,
     prepareAndShowQuestion,
     handleQuizComplete
   } = useBookQuiz(book, userId, onProgressUpdate);
@@ -60,11 +62,8 @@ export const useBookValidation = (
     try {
       setIsValidating(true);
       
-      // Before directly validating, check if there's a question to show
+      // Show question for current segment
       await prepareAndShowQuestion(validationSegment);
-      
-      // If there's no question to show, we handle it in the prepareAndShowQuestion function
-      // This means we won't immediately validate unless prepareAndShowQuestion decides to
       
       setValidationSegment(null);
     } catch (error) {
@@ -84,9 +83,12 @@ export const useBookValidation = (
     validationSegment,
     setValidationSegment,
     currentQuestion,
+    showSuccessMessage,
+    setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
     handleQuizComplete,
-    handleValidationConfirm
+    handleValidationConfirm,
+    showConfetti
   };
 };

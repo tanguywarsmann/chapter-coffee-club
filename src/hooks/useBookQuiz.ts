@@ -15,6 +15,7 @@ export const useBookQuiz = (
   const [quizChapter, setQuizChapter] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId || !book) {
@@ -24,6 +25,7 @@ export const useBookQuiz = (
 
     try {
       setIsLoading(true);
+      setShowSuccessMessage(false);
       
       // First, check if segment is already validated
       const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, segment);
@@ -34,14 +36,6 @@ export const useBookQuiz = (
         
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
-        }
-        
-        // Check for next segment question
-        const nextSegment = segment + 1;
-        const hasNextSegment = await getQuestionForBookSegment(book.id, nextSegment);
-        
-        if (hasNextSegment) {
-          await prepareAndShowQuestion(nextSegment);
         }
         
         return;
@@ -71,8 +65,6 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (passed: boolean) => {
-    setShowQuiz(false);
-    
     if (!passed) {
       toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
       return;
@@ -93,14 +85,16 @@ export const useBookQuiz = (
       
       console.log("Quiz completed, validation result:", validationResult);
       
+      // Show success message instead of next question
+      setShowSuccessMessage(true);
+      
       if (onProgressUpdate && book) {
         onProgressUpdate(book.id);
       }
       
-      // Check if there is a next segment question
-      if (!validationResult.already_validated && validationResult.next_segment_question) {
-        await prepareAndShowQuestion(quizChapter + 1);
-      }
+      // No longer automatically show next question
+      // Instead, close the quiz modal and show success message
+      setShowQuiz(false);
     } catch (error) {
       console.error("Error during quiz completion:", error);
       toast.error("Erreur lors de la validation du quiz");
@@ -113,6 +107,8 @@ export const useBookQuiz = (
     quizChapter,
     currentQuestion,
     isLoading,
+    showSuccessMessage,
+    setShowSuccessMessage,
     prepareAndShowQuestion,
     handleQuizComplete
   };

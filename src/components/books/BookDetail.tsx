@@ -34,9 +34,12 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     validationSegment,
     setValidationSegment,
     currentQuestion,
+    showSuccessMessage,
+    setShowSuccessMessage,
     prepareAndShowQuestion,
     handleQuizComplete,
-    handleValidationConfirm
+    handleValidationConfirm,
+    showConfetti
   } = useBookValidation(currentBook, user?.id, (bookId) => {
     // Appeler le callback original si fourni
     if (onChapterComplete) {
@@ -96,6 +99,43 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
+  const handleQuizCompleteWrapper = (correct: boolean) => {
+    handleQuizComplete(correct);
+    
+    if (correct) {
+      // Afficher les confettis lors d'une réponse correcte
+      showConfetti();
+      
+      // Vérifier les badges après avoir complété un quiz
+      if (user?.id) {
+        checkBadgesForUser(user.id);
+        
+        // Si le livre est terminé, stocker dans la liste des livres terminés
+        if (currentBook.isCompleted) {
+          const completedBooks = localStorage.getItem(`completed_books_${user.id}`) 
+            ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
+            : [];
+            
+          if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
+            completedBooks.push(currentBook);
+            localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
+          }
+        }
+        
+        // Terminer la session de lecture si elle a été démarrée
+        if (sessionStartTimeRef.current) {
+          const endTime = new Date();
+          
+          // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
+          recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
+          
+          // Réinitialiser l'heure de début
+          sessionStartTimeRef.current = null;
+        }
+      }
+    }
+  };
+
   return (
     <Card className="border-coffee-light">
       <BookDetailHeader title={currentBook.title} />
@@ -115,6 +155,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           book={currentBook}
           showValidationModal={showValidationModal}
           showQuizModal={showQuiz}
+          showSuccessMessage={showSuccessMessage}
           validationSegment={validationSegment}
           currentQuestion={currentQuestion}
           isValidating={isValidating}
@@ -124,37 +165,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             handleValidationConfirm();
           }}
           onQuizClose={() => setShowQuiz(false)}
-          onQuizComplete={(correct) => {
-            handleQuizComplete(correct);
-            
-            // Vérifier les badges après avoir complété un quiz
-            if (user?.id) {
-              checkBadgesForUser(user.id);
-              
-              // Si le livre est terminé, stocker dans la liste des livres terminés
-              if (currentBook.isCompleted) {
-                const completedBooks = localStorage.getItem(`completed_books_${user.id}`) 
-                  ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
-                  : [];
-                  
-                if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
-                  completedBooks.push(currentBook);
-                  localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
-                }
-              }
-              
-              // Terminer la session de lecture si elle a été démarrée
-              if (sessionStartTimeRef.current) {
-                const endTime = new Date();
-                
-                // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
-                recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
-                
-                // Réinitialiser l'heure de début
-                sessionStartTimeRef.current = null;
-              }
-            }
-          }}
+          onQuizComplete={handleQuizCompleteWrapper}
+          onSuccessClose={() => setShowSuccessMessage(false)}
         />
       </CardContent>
     </Card>

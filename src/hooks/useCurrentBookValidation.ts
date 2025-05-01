@@ -27,5 +27,37 @@ export const useCurrentBookValidation = (
     }
   }, [userId]);
   
-  return useBookValidation(book, currentUserId, onProgressUpdate);
+  const {
+    isValidating,
+    showQuiz,
+    setShowQuiz,
+    quizChapter,
+    validationSegment,
+    setValidationSegment,
+    currentQuestion,
+    showSuccessMessage,
+    setShowSuccessMessage,
+    prepareAndShowQuestion,
+    handleQuizComplete,
+    handleValidationConfirm,
+    handleValidateReading,
+    showConfetti
+  } = useBookValidation(book, currentUserId, onProgressUpdate);
+
+  return {
+    isValidating,
+    showQuiz,
+    setShowQuiz,
+    quizChapter,
+    validationSegment,
+    setValidationSegment,
+    currentQuestion,
+    showSuccessMessage,
+    setShowSuccessMessage,
+    prepareAndShowQuestion,
+    handleQuizComplete,
+    handleValidationConfirm,
+    handleValidateReading,
+    showConfetti
+  };
 };
