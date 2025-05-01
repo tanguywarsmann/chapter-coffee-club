@@ -41,10 +41,10 @@ export const BookValidationModals = ({
           onValidate={onValidationConfirm}
         />
       )}
-      {showQuizModal && currentQuestion && validationSegment && (
+      {showQuizModal && currentQuestion && (
         <QuizModal
           bookTitle={book.title}
-          chapterNumber={validationSegment}
+          chapterNumber={currentQuestion.segment || 0}
           onComplete={onQuizComplete}
           onClose={onQuizClose}
           question={currentQuestion}

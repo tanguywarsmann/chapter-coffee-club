@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { ReadingQuestion } from "@/types/reading";
-import { getQuestionForBookSegment, getFallbackQuestion } from "@/services/questionService";
+import { getQuestionForBookSegment, getFallbackQuestion, isSegmentAlreadyValidated } from "@/services/questionService";
 import { validateReading } from "@/services/reading/validationService";
 
 export const useBookQuiz = (
@@ -14,6 +14,7 @@ export const useBookQuiz = (
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId || !book) {
@@ -22,6 +23,30 @@ export const useBookQuiz = (
     }
 
     try {
+      setIsLoading(true);
+      
+      // First, check if segment is already validated
+      const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, segment);
+      
+      if (alreadyValidated) {
+        console.log("Segment already validated:", segment);
+        toast.info("Ce segment a déjà été validé");
+        
+        if (onProgressUpdate) {
+          onProgressUpdate(book.id);
+        }
+        
+        // Check for next segment question
+        const nextSegment = segment + 1;
+        const hasNextSegment = await getQuestionForBookSegment(book.id, nextSegment);
+        
+        if (hasNextSegment) {
+          await prepareAndShowQuestion(nextSegment);
+        }
+        
+        return;
+      }
+
       console.log("Preparing question for segment:", segment);
       const question = await getQuestionForBookSegment(book.id, segment);
       
@@ -40,6 +65,8 @@ export const useBookQuiz = (
     } catch (error) {
       console.error("Error preparing question:", error);
       toast.error("Erreur lors de la préparation de la validation");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,6 +112,7 @@ export const useBookQuiz = (
     setShowQuiz,
     quizChapter,
     currentQuestion,
+    isLoading,
     prepareAndShowQuestion,
     handleQuizComplete
   };

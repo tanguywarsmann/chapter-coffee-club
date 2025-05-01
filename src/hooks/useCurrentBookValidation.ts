@@ -22,8 +22,10 @@ export const useCurrentBookValidation = (
       };
       
       fetchUser();
+    } else {
+      setCurrentUserId(userId);
     }
   }, [userId]);
   
-  return useBookValidation(book, currentUserId || userId, onProgressUpdate);
+  return useBookValidation(book, currentUserId, onProgressUpdate);
 };
