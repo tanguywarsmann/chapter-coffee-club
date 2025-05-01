@@ -163,9 +163,9 @@ export function AdminBookList() {
                 {book.missingSegments.length} segment{book.missingSegments.length > 1 ? 's' : ''} sur {book.expectedSegments} manquant{book.missingSegments.length > 1 ? 's' : ''} :
               </p>
               <div className="flex flex-wrap gap-2">
-                {book.missingSegments.map(segment => (
-                  <Badge key={segment} variant="secondary" className="px-3 py-1">
-                    Segment {segment}
+                {book.missingSegments.map(segmentNum => (
+                  <Badge key={segmentNum} variant="secondary" className="px-3 py-1">
+                    Segment {segmentNum}
                   </Badge>
                 ))}
               </div>
@@ -173,7 +173,7 @@ export function AdminBookList() {
                 <p className="text-sm flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span>
-                    Rappel : le segment {segment} correspond aux pages {segment * 30} à {segment * 30 + 29}
+                    Rappel : le segment 0 correspond aux pages 0 à 29, le segment 1 aux pages 30 à 59, etc.
                   </span>
                 </p>
               </div>
