@@ -35,7 +35,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     setValidationSegment,
     currentQuestion,
     prepareAndShowQuestion,
-    handleQuizComplete
+    handleQuizComplete,
+    handleValidationConfirm
   } = useBookValidation(currentBook, user?.id, (bookId) => {
     // Appeler le callback original si fourni
     if (onChapterComplete) {
@@ -95,13 +96,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  const handleValidationModalConfirm = () => {
-    setShowValidationModal(false);
-    if (validationSegment) {
-      prepareAndShowQuestion(validationSegment);
-    }
-  };
-
   return (
     <Card className="border-coffee-light">
       <BookDetailHeader title={currentBook.title} />
@@ -125,7 +119,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           currentQuestion={currentQuestion}
           isValidating={isValidating}
           onValidationClose={() => setShowValidationModal(false)}
-          onValidationConfirm={handleValidationModalConfirm}
+          onValidationConfirm={() => {
+            setShowValidationModal(false);
+            handleValidationConfirm();
+          }}
           onQuizClose={() => setShowQuiz(false)}
           onQuizComplete={(correct) => {
             handleQuizComplete(correct);
