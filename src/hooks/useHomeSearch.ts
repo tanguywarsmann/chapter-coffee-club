@@ -4,10 +4,13 @@ import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { mapBookFromRecord } from "@/services/books/bookMapper";
+import { useNavigate } from "react-router-dom";
 
 export const useHomeSearch = () => {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -15,6 +18,7 @@ export const useHomeSearch = () => {
     }
     
     setIsSearching(true);
+    setIsRedirecting(false);
     
     try {
       // Recherche dans la base de données Supabase
@@ -31,10 +35,21 @@ export const useHomeSearch = () => {
       
       const books: Book[] = data ? data.map(mapBookFromRecord) : [];
       
-      setSearchResults(books);
-      
-      if (books.length === 0) {
-        toast.info("Aucun livre ne correspond à votre recherche");
+      // Si un seul livre est trouvé, rediriger après une courte animation
+      if (books.length === 1) {
+        setIsRedirecting(true);
+        setSearchResults(books); // Afficher brièvement le résultat
+        
+        // Attendre 300ms pour l'animation avant de rediriger
+        setTimeout(() => {
+          navigate(`/books/${books[0].id}`);
+        }, 300);
+      } else {
+        setSearchResults(books);
+        
+        if (books.length === 0) {
+          toast.info("Aucun livre ne correspond à votre recherche");
+        }
       }
     } catch (err) {
       console.error("Exception lors de la recherche:", err);
@@ -48,6 +63,7 @@ export const useHomeSearch = () => {
     searchResults,
     setSearchResults,
     handleSearch,
-    isSearching
+    isSearching,
+    isRedirecting
   };
 };

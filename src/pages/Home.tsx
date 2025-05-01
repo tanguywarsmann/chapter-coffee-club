@@ -43,7 +43,7 @@ export default function Home() {
     return !onboardingFlag;
   });
 
-  const { searchResults, setSearchResults, handleSearch, isSearching } = useHomeSearch();
+  const { searchResults, setSearchResults, handleSearch, isSearching, isRedirecting } = useHomeSearch();
   const { currentReading, isLoadingCurrentBook } = useCurrentReading();
   const { currentBook, inProgressBooks, isLoading, handleProgressUpdate } = useInProgressBooks();
   const navigate = useNavigate();
@@ -72,6 +72,7 @@ export default function Home() {
     inProgressBooks,
     isLoading,
     isSearching,
+    isRedirecting,
     onProgressUpdate: handleProgressUpdate,
     onContinueReading: handleContinueReading
   }), [
@@ -83,6 +84,7 @@ export default function Home() {
     inProgressBooks, 
     isLoading,
     isSearching,
+    isRedirecting,
     handleProgressUpdate, 
     handleContinueReading
   ]);

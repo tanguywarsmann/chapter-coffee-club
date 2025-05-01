@@ -4,6 +4,7 @@ import { useRef, useEffect, useMemo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
+import { Search } from "lucide-react";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -14,6 +15,7 @@ interface MainContentProps {
   inProgressBooks: Book[];
   isLoading: boolean;
   isSearching?: boolean;
+  isRedirecting?: boolean;
   onProgressUpdate: (bookId: string) => void;
   onContinueReading: () => void;
 }
@@ -27,6 +29,7 @@ export function MainContent({
   inProgressBooks,
   isLoading,
   isSearching = false,
+  isRedirecting = false,
   onProgressUpdate,
   onContinueReading
 }: MainContentProps) {
@@ -50,7 +53,8 @@ export function MainContent({
         inProgressBooksCount: stableIds.inProgressCount,
         isLoadingCurrentBook,
         isLoading,
-        isSearching
+        isSearching,
+        isRedirecting
       });
     }
   });
@@ -89,6 +93,21 @@ export function MainContent({
             <Search className="h-8 w-8 text-coffee-dark" />
           </div>
           <p className="text-coffee-dark">Recherche en cours...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isRedirecting && searchResults && searchResults.length === 1) {
+    return (
+      <div className="animate-fade-out transition-all duration-300 ease-in-out">
+        <SearchResults 
+          searchResults={searchResults} 
+          onReset={onResetSearch}
+          redirecting={true}
+        />
+        <div className="mt-6 text-center text-coffee-dark animate-pulse">
+          <p>Redirection vers {searchResults[0].title}...</p>
         </div>
       </div>
     );

@@ -7,15 +7,16 @@ import { BookGrid } from "@/components/books/BookGrid";
 interface SearchResultsProps {
   searchResults: Book[] | null;
   onReset: () => void;
+  redirecting?: boolean;
 }
 
-export function SearchResults({ searchResults, onReset }: SearchResultsProps) {
+export function SearchResults({ searchResults, onReset, redirecting = false }: SearchResultsProps) {
   const navigate = useNavigate();
 
   if (!searchResults) return null;
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${redirecting ? 'opacity-80 transition-opacity duration-300' : ''}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-serif font-medium text-coffee-darker">
           {searchResults.length > 0 
@@ -25,6 +26,7 @@ export function SearchResults({ searchResults, onReset }: SearchResultsProps) {
         <button 
           className="text-coffee-dark hover:text-coffee-darker font-medium flex items-center"
           onClick={onReset}
+          disabled={redirecting}
         >
           Retour à l'accueil
         </button>
