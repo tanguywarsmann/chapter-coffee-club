@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { User, Home, LogOut, Trophy, BookCheck, Settings, Menu } from "lucide-react";
+import { User, Home, LogOut, Trophy, BookCheck, Settings, Menu, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
@@ -14,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 export function AppHeader() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   
   const handleLogout = async () => {
     try {
@@ -82,6 +83,14 @@ export function AppHeader() {
                 Ma liste
               </Button>
             </li>
+            {isAdmin && (
+              <li>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/admin")}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Administration
+                </Button>
+              </li>
+            )}
           </ul>
         </nav>
       </SheetContent>
@@ -128,6 +137,14 @@ export function AppHeader() {
                 Ma liste
               </Link>
             </li>
+            {isAdmin && (
+              <li>
+                <Link to="/admin" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+                  <Shield className="h-4 w-4 mr-1" />
+                  Administration
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
         
@@ -157,6 +174,12 @@ export function AppHeader() {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profil</span>
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem onClick={() => navigate("/admin")}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Administration</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => navigate("/settings")}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>

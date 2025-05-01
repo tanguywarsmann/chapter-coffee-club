@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import ReadingList from "./pages/ReadingList";
 import Explore from "./pages/Explore";
 import Achievements from "./pages/Achievements";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => {
               <Route path="/reading-list" element={<ReadingList />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/achievements" element={<Achievements />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

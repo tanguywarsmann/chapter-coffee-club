@@ -9,13 +9,15 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isInitialized: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   isLoading: true,
-  isInitialized: false
+  isInitialized: false,
+  isAdmin: false
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -23,8 +25,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const authChecked = useRef(false);
   const stateChangeHandled = useRef(false);
+  
+  // Fonction pour récupérer le statut d'administrateur
+  const fetchAdminStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Erreur lors de la récupération du statut admin:', error);
+        return false;
+      }
+      
+      return data?.is_admin || false;
+    } catch (error) {
+      console.error('Exception lors de la récupération du statut admin:', error);
+      return false;
+    }
+  };
   
   useEffect(() => {
     // Important: First establish the auth state change listener
@@ -46,8 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
-      // For compatibility with existing code that uses localStorage
+      // Récupérer le statut d'administrateur
       if (currentSession?.user) {
+        fetchAdminStatus(currentSession.user.id).then(isAdmin => {
+          setIsAdmin(isAdmin);
+        });
+        
         localStorage.setItem("user", JSON.stringify({ 
           id: currentSession.user.id,
           email: currentSession.user.email 
@@ -62,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Force session to null for consistency
         setSession(null);
         setUser(null);
+        setIsAdmin(false);
       }
 
       // Mark initialization as complete
@@ -94,8 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // For compatibility with existing code that uses localStorage
+        // Récupérer le statut d'administrateur
         if (currentSession?.user) {
+          const adminStatus = await fetchAdminStatus(currentSession.user.id);
+          setIsAdmin(adminStatus);
+          
           localStorage.setItem("user", JSON.stringify({ 
             id: currentSession.user.id,
             email: currentSession.user.email 
@@ -127,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, isInitialized }}>
+    <AuthContext.Provider value={{ session, user, isLoading, isInitialized, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
