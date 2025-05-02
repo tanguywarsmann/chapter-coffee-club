@@ -1,9 +1,8 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info, Trash, ArrowDownToLine } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info, Trash, ArrowDownToLine, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
@@ -29,7 +28,8 @@ export function AdminBookList() {
   const [error, setError] = useState<string | null>(null);
   const [bookToDelete, setBookToDelete] = useState<{id: string; title: string} | null>(null);
   const [isFixingSegments, setIsFixingSegments] = useState(false);
-  const [updateTrigger, setUpdateTrigger] = useState(0); // Nouveau state pour forcer les rafraîchissements
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
   // Fonction pour calculer le nombre de segments basé sur le nombre de pages
   const calculateExpectedSegments = (totalPages: number): number => {
@@ -126,8 +126,8 @@ export function AdminBookList() {
   };
 
   // Fonction pour obtenir l'état de validation des livres
-  const fetchBooksValidationStatus = async () => {
-    console.log("Fetching books validation status...");
+  const fetchBooksValidationStatus = useCallback(async () => {
+    console.log("Fetching books validation status...", new Date().toISOString());
     setIsLoading(true);
     setError(null);
     
@@ -199,24 +199,32 @@ export function AdminBookList() {
       setError(err.message || "Erreur lors de la récupération des données");
     } finally {
       setIsLoading(false);
+      setIsManuallyRefreshing(false);
     }
-  };
+  }, []);
 
   // Force refresh when updateTrigger changes
   useEffect(() => {
+    console.log("updateTrigger changed:", updateTrigger);
     fetchBooksValidationStatus();
-  }, [updateTrigger]);
+  }, [updateTrigger, fetchBooksValidationStatus]);
 
   // Initial fetch
   useEffect(() => {
     fetchBooksValidationStatus();
-  }, []);
+  }, [fetchBooksValidationStatus]);
 
   // Fonction pour mettre à jour la liste après une modification
-  const handleBookUpdate = () => {
-    console.log("Book updated, refreshing list...");
-    // Utilise le state de updateTrigger pour forcer un rafraîchissement
+  const handleBookUpdate = useCallback(() => {
+    console.log("handleBookUpdate called - forcing refresh");
     setUpdateTrigger(prev => prev + 1);
+  }, []);
+
+  // Fonction pour recharger manuellement les données
+  const handleManualRefresh = () => {
+    console.log("Manual refresh requested");
+    setIsManuallyRefreshing(true);
+    fetchBooksValidationStatus();
   };
 
   // Fonction pour afficher le statut avec une icône
@@ -299,7 +307,7 @@ export function AdminBookList() {
     </Dialog>
   );
 
-  if (isLoading) {
+  if (isLoading && !isManuallyRefreshing) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
@@ -332,6 +340,20 @@ export function AdminBookList() {
           État des questions de validation ({books.length} livres)
         </h2>
         <div className="flex items-center gap-2">
+          <Button 
+            onClick={handleManualRefresh} 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
+            disabled={isManuallyRefreshing}
+          >
+            {isManuallyRefreshing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCcw className="h-4 w-4" />
+            )}
+            Recharger manuellement
+          </Button>
           <Button 
             onClick={fixSegmentIndexing} 
             variant="outline" 

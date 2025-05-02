@@ -70,6 +70,7 @@ export function DeleteBookDialog({
           title: "Livre supprimé",
           description: `"${bookTitle}" et ses données associées ont été supprimés avec succès.`,
         });
+        console.log("Update triggered from DeleteBookDialog");
         onDeleted();
         onOpenChange(false);
       }

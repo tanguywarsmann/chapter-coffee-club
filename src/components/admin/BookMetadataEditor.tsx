@@ -109,6 +109,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       // Fermer le dialogue et actualiser les données
       setIsOpen(false);
+      console.log("Update triggered from generateMissingSegments");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la génération des segments:", error);
@@ -144,6 +145,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       // Fermer le dialogue et actualiser les données
       setIsOpen(false);
+      console.log("Update triggered from saveBookChanges");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
@@ -231,6 +233,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       // Fermer le dialogue et actualiser les données
       setIsOpen(false);
+      console.log("Update triggered from addValidationQuestion");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de la question:", error);

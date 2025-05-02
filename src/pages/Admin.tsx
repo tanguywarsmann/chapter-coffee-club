@@ -32,6 +32,11 @@ export default function Admin() {
     }
   };
 
+  // Ajout d'une trace de débogage pour l'initialisation de la page
+  useEffect(() => {
+    console.log("Admin page initialized");
+  }, []);
+
   return (
     <AuthGuard>
       <AdminGuard>
