@@ -1,3 +1,4 @@
+
 import { User } from "@/types/user";
 import type { Comment } from "@/types/comment";
 
@@ -7,6 +8,7 @@ const mockUsers: User[] = [
     name: "Sophie Martin",
     email: "sophie@example.com",
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+    is_admin: false,
     preferences: {
       favoriteGenres: ["Romans classiques", "Poésie"],
       readingGoal: 30
@@ -17,6 +19,7 @@ const mockUsers: User[] = [
     name: "Thomas Dubois",
     email: "thomas@example.com",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+    is_admin: false,
     preferences: {
       favoriteGenres: ["Science-fiction", "Thriller"],
       readingGoal: 24
@@ -27,6 +30,7 @@ const mockUsers: User[] = [
     name: "Emma Petit",
     email: "emma@example.com",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    is_admin: false,
     preferences: {
       favoriteGenres: ["Romance", "Biographies"],
       readingGoal: 20
@@ -37,6 +41,7 @@ const mockUsers: User[] = [
     name: "Lucas Bernard",
     email: "lucas@example.com",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+    is_admin: false,
     preferences: {
       favoriteGenres: ["Fantasy", "Policier"],
       readingGoal: 15
@@ -47,6 +52,7 @@ const mockUsers: User[] = [
     name: "Camille Roux",
     email: "camille@example.com",
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+    is_admin: false,
     preferences: {
       favoriteGenres: ["Philosophie", "Essais"],
       readingGoal: 40
