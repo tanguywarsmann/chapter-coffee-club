@@ -47,14 +47,17 @@ export const getQuestionForBookSegment = async (
       return null;
     }
     
-    console.log(`Querying Supabase for book slug ${bookSlug}, segment ${segment}`);
+    // S'assurer que segment est au moins 1
+    const validSegment = Math.max(1, segment);
+    
+    console.log(`Querying Supabase for book slug ${bookSlug}, segment ${validSegment}`);
     
     // Utiliser le slug pour interroger la table reading_questions
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')
       .eq('book_slug', bookSlug)
-      .eq('segment', segment);
+      .eq('segment', validSegment);
 
     if (error) {
       console.error('Error fetching question from Supabase:', error);
@@ -68,7 +71,7 @@ export const getQuestionForBookSegment = async (
     }
 
     // Si aucune question n'a été trouvée, journaliser et retourner null
-    console.warn(`No question found in Supabase for book slug ${bookSlug}, segment ${segment}`);
+    console.warn(`No question found in Supabase for book slug ${bookSlug}, segment ${validSegment}`);
     return null;
   } catch (error) {
     console.error('Exception fetching question from Supabase:', error);
@@ -80,7 +83,7 @@ export const getQuestionForBookSegment = async (
 export const getFallbackQuestion = (): ReadingQuestion => ({
   id: 'fallback',
   book_slug: '',
-  segment: 0,
+  segment: 1, // Modifier de 0 à 1
   question: "Quel est l'élément principal de ce passage ?",
   answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
 });
@@ -94,12 +97,15 @@ export const isSegmentAlreadyValidated = async (
   console.log(`Checking if segment ${segment} is already validated for book ${bookId} by user ${userId}`);
   
   try {
+    // S'assurer que segment est au moins 1
+    const validSegment = Math.max(1, segment);
+    
     const { data, error } = await supabase
       .from('reading_validations')
       .select('id')
       .eq('user_id', userId)
       .eq('book_id', bookId)
-      .eq('segment', segment)
+      .eq('segment', validSegment)
       .maybeSingle();
       
     if (error) {
@@ -108,7 +114,7 @@ export const isSegmentAlreadyValidated = async (
     }
     
     const isValidated = !!data;
-    console.log(`Segment ${segment} validation status:`, isValidated ? 'already validated' : 'not validated yet');
+    console.log(`Segment ${validSegment} validation status:`, isValidated ? 'already validated' : 'not validated yet');
     return isValidated;
   } catch (error) {
     console.error('Exception checking segment validation:', error);

@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info, Trash } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info, Trash, ArrowDownToLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 import { AddBookForm } from "@/components/admin/AddBookForm";
 import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
+import { toast } from "@/hooks/use-toast";
 
 interface BookValidationStatus {
   id: string;
@@ -27,10 +28,100 @@ export function AdminBookList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookToDelete, setBookToDelete] = useState<{id: string; title: string} | null>(null);
+  const [isFixingSegments, setIsFixingSegments] = useState(false);
 
   // Fonction pour calculer le nombre de segments basé sur le nombre de pages
   const calculateExpectedSegments = (totalPages: number): number => {
     return Math.ceil(totalPages / 30);
+  };
+
+  // Fonction pour corriger les segments commençant à 0
+  const fixSegmentIndexing = async () => {
+    setIsFixingSegments(true);
+    
+    try {
+      // Récupérer tous les segments avec index 0
+      const { data: segmentsAtZero, error: fetchError } = await supabase
+        .from('reading_questions')
+        .select('id, book_slug, segment')
+        .eq('segment', 0);
+      
+      if (fetchError) throw fetchError;
+      
+      if (!segmentsAtZero || segmentsAtZero.length === 0) {
+        toast({
+          title: "Information",
+          description: "Aucun segment avec index 0 n'a été trouvé.",
+        });
+        setIsFixingSegments(false);
+        return;
+      }
+      
+      // Pour chaque segment avec index 0, vérifiez s'il existe déjà un segment avec index 1
+      const updatedCount = { success: 0, skipped: 0, failed: 0 };
+      
+      for (const segment of segmentsAtZero) {
+        // Vérifier si un segment 1 existe déjà pour ce livre
+        const { data: existingSegments, error: checkError } = await supabase
+          .from('reading_questions')
+          .select('id')
+          .eq('book_slug', segment.book_slug)
+          .eq('segment', 1)
+          .maybeSingle();
+        
+        if (checkError) {
+          console.error(`Erreur lors de la vérification du segment 1 pour ${segment.book_slug}:`, checkError);
+          updatedCount.failed++;
+          continue;
+        }
+        
+        if (existingSegments) {
+          // Si un segment 1 existe déjà, supprimer le segment 0
+          const { error: deleteError } = await supabase
+            .from('reading_questions')
+            .delete()
+            .eq('id', segment.id);
+          
+          if (deleteError) {
+            console.error(`Erreur lors de la suppression du segment 0 pour ${segment.book_slug}:`, deleteError);
+            updatedCount.failed++;
+          } else {
+            updatedCount.skipped++;
+          }
+        } else {
+          // Si aucun segment 1 n'existe, mettre à jour le segment 0 en segment 1
+          const { error: updateError } = await supabase
+            .from('reading_questions')
+            .update({ segment: 1 })
+            .eq('id', segment.id);
+          
+          if (updateError) {
+            console.error(`Erreur lors de la mise à jour du segment 0 vers 1 pour ${segment.book_slug}:`, updateError);
+            updatedCount.failed++;
+          } else {
+            updatedCount.success++;
+          }
+        }
+      }
+      
+      toast({
+        title: "Correction des segments terminée",
+        description: `${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`,
+      });
+      
+      // Rafraîchir les données
+      fetchBooksValidationStatus();
+      
+    } catch (error: any) {
+      console.error("Erreur lors de la correction des segments:", error);
+      toast({
+        title: "Erreur",
+        description: `Impossible de corriger les segments: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsFixingSegments(false);
+    }
   };
 
   // Fonction pour obtenir l'état de validation des livres
@@ -63,9 +154,9 @@ export function AdminBookList() {
         const segments = bookQuestions.map(q => q.segment);
         const uniqueSegments = [...new Set(segments)];
         
-        // Calculer les segments manquants
+        // Calculer les segments manquants (en commençant à 1, pas 0)
         const missingSegments = [];
-        for (let i = 0; i < expectedSegments; i++) {
+        for (let i = 1; i <= expectedSegments; i++) {
           if (!uniqueSegments.includes(i)) {
             missingSegments.push(i);
           }
@@ -74,7 +165,7 @@ export function AdminBookList() {
         let status: 'complete' | 'incomplete' | 'missing';
         if (uniqueSegments.length === 0) {
           status = 'missing';
-        } else if (uniqueSegments.length === expectedSegments) {
+        } else if (uniqueSegments.length === expectedSegments && !missingSegments.length) {
           status = 'complete';
         } else {
           status = 'incomplete';
@@ -181,7 +272,7 @@ export function AdminBookList() {
                 <p className="text-sm flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span>
-                    Rappel : le segment 0 correspond aux pages 0 à 29, le segment 1 aux pages 30 à 59, etc.
+                    Rappel : le segment 1 correspond aux pages 1 à 30, le segment 2 aux pages 31 à 60, etc.
                   </span>
                 </p>
               </div>
@@ -225,6 +316,20 @@ export function AdminBookList() {
           État des questions de validation ({books.length} livres)
         </h2>
         <div className="flex items-center gap-2">
+          <Button 
+            onClick={fixSegmentIndexing} 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            disabled={isFixingSegments}
+          >
+            {isFixingSegments ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowDownToLine className="h-4 w-4" />
+            )}
+            {isFixingSegments ? "Correction..." : "Corriger les segments à zéro"}
+          </Button>
           <AddBookForm onBookAdded={fetchBooksValidationStatus} />
           <Button onClick={fetchBooksValidationStatus} size="sm" variant="outline" className="gap-2">
             <Loader2 className="h-4 w-4" />

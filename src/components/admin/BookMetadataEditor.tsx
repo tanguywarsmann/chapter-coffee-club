@@ -91,7 +91,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       const segmentEntries = book.missingSegments.map(segmentNum => ({
         book_slug: bookData.slug,
-        segment: segmentNum,
+        segment: segmentNum, // Déjà indexé à partir de 1 depuis le composant parent
         question: "",
         answer: ""
       }));
