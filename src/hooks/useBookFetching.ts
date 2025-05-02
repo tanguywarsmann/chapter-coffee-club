@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Book } from "@/types/book";
 import { getAllBooks } from "@/services/books/bookQueries";
@@ -8,9 +9,11 @@ export const useBookFetching = (includeUnpublished = false) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   const fetchBooks = useCallback(async () => {
     setIsLoading(true);
+    setIsFetching(true);
     setError(null);
 
     try {
@@ -28,6 +31,7 @@ export const useBookFetching = (includeUnpublished = false) => {
       setError("Failed to load books. Please try again later.");
     } finally {
       setIsLoading(false);
+      setIsFetching(false);
     }
   }, [includeUnpublished]);
 
@@ -35,5 +39,12 @@ export const useBookFetching = (includeUnpublished = false) => {
     fetchBooks();
   }, [fetchBooks]);
 
-  return { books, isLoading, error, hasLoaded, refetch: fetchBooks };
+  return { 
+    books, 
+    isLoading, 
+    error, 
+    hasLoaded, 
+    refetch: fetchBooks, 
+    isFetching 
+  };
 };

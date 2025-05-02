@@ -304,7 +304,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
               <Checkbox 
                 id="isPublished"
                 checked={isPublished} 
-                onCheckedChange={setIsPublished}
+                onCheckedChange={(checked) => setIsPublished(checked === true)}
               />
               <Label htmlFor="isPublished" className="font-medium cursor-pointer">
                 Publier ce livre

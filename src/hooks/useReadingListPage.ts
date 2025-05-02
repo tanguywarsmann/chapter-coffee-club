@@ -33,54 +33,22 @@ export const useReadingListPage = () => {
   // Nouvelle référence pour suivre si le premier useEffect spécifique à userId a été exécuté
   const initialUserIdFetchDone = useRef(false);
 
-  // Récupérons les données depuis useBookFetching y compris les listes déjà récupérées
+  // Utilisons directement useBookFetching avec la bonne signature
   const { 
     isLoading, 
     isFetching, 
-    error, 
-    fetchBooks,
-    toRead: fetchedToRead,
-    inProgress: fetchedInProgress,
-    completed: fetchedCompleted
-  } = useBookFetching({
-    user,
-    readingList,
-    getBooksByStatus,
-    sortBooks,
-    sortBy
-  });
+    error,
+    refetch,
+    hasLoaded
+  } = useBookFetching();
 
   // Log après l'appel de useBookFetching pour voir les valeurs retournées
   console.log("[DEBUG] useReadingListPage - valeurs retournées par useBookFetching:", {
-    fetchBooks: typeof fetchBooks === 'function',
+    refetch: typeof refetch === 'function',
     isLoading,
     isFetching, 
-    hasError: !!error,
-    fetchedToReadLength: fetchedToRead?.length || 0,
-    fetchedInProgressLength: fetchedInProgress?.length || 0, 
-    fetchedCompletedLength: fetchedCompleted?.length || 0
+    hasError: !!error
   });
-
-  // NOUVEAU: Effet pour synchroniser les états locaux avec les données fetchées
-  useEffect(() => {
-    console.log("[DEBUG] Synchronisation des états avec les données fetchées:", {
-      toReadLength: fetchedToRead?.length || 0,
-      inProgressLength: fetchedInProgress?.length || 0,
-      completedLength: fetchedCompleted?.length || 0
-    });
-    
-    if (fetchedToRead && fetchedToRead.length > 0) {
-      setToReadBooks(fetchedToRead);
-    }
-    
-    if (fetchedInProgress && fetchedInProgress.length > 0) {
-      setInProgressBooks(fetchedInProgress);
-    }
-    
-    if (fetchedCompleted && fetchedCompleted.length > 0) {
-      setCompletedBooks(fetchedCompleted);
-    }
-  }, [fetchedToRead, fetchedInProgress, fetchedCompleted]);
 
   // Effet pour suivre l'état des données et mettre à jour isDataReady
   useEffect(() => {
@@ -112,23 +80,34 @@ export const useReadingListPage = () => {
     
     console.log("[DEBUG] handleFetchBooks vraiment appelé - userId:", userId);
     
-    await fetchBooks(
-      setToReadBooks,
-      setInProgressBooks,
-      setCompletedBooks,
-      isLoadingReadingList
-    );
+    try {
+      // Récupérer les livres par statut en utilisant directement getBooksByStatus
+      const [toRead, inProgress, completed] = await Promise.all([
+        getBooksByStatus('to_read'),
+        getBooksByStatus('in_progress'),
+        getBooksByStatus('completed')
+      ]);
+      
+      // Appliquer le tri
+      setToReadBooks(sortBooks(toRead, sortBy));
+      setInProgressBooks(sortBooks(inProgress, sortBy));
+      setCompletedBooks(sortBooks(completed, sortBy));
+      
+      console.log("[DEBUG] Données récupérées et triées");
+    } catch (error) {
+      console.error("[ERROR] Erreur lors de la récupération des livres:", error);
+    }
     
-    console.log("[DEBUG] Post-fetchBooks - État des setters appelés");
   }, [
-    fetchBooks, 
-    isLoadingReadingList,
+    getBooksByStatus, 
     userId,
     isFetching,
     isLoading,
     toReadBooks.length,
     inProgressBooks.length,
-    completedBooks.length
+    completedBooks.length,
+    sortBooks,
+    sortBy
   ]);
 
   // NOUVEL EFFET: Surveiller spécifiquement UNIQUEMENT l'apparition d'un userId
