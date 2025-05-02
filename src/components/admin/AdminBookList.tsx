@@ -404,7 +404,7 @@ export function AdminBookList() {
             {books.map(book => (
               <TableRow key={book.id}>
                 <TableCell className="font-medium">{book.title}</TableCell>
-                <TableCell className="text-right">{book.totalPages}</TableCell>
+                <TableCell className="text-right">{book.total_pages}</TableCell>
                 <TableCell className="text-right">{book.expectedSegments}</TableCell>
                 <TableCell className="text-right">{book.availableQuestions}</TableCell>
                 <TableCell className="text-right">
