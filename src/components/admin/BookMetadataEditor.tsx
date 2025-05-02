@@ -53,7 +53,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     try {
       const { data, error } = await supabase
         .from('books')
-        .select('description, is_published')
+        .select('description, is_published, total_pages')
         .eq('id', book.id)
         .single();
         
@@ -62,6 +62,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       if (data) {
         if (data.description) setDescription(data.description);
         setIsPublished(data.is_published !== false); // Default to true if undefined
+        // S'assurer que totalPages est correctement défini à partir des données de la base
+        if (data.total_pages) setTotalPages(data.total_pages);
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du livre:", error);
@@ -127,10 +129,17 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const saveBookChanges = async () => {
     setIsSaving(true);
     try {
+      // Convertir totalPages en nombre entier pour s'assurer que c'est un nombre valide
+      const parsedTotalPages = parseInt(String(totalPages), 10);
+      
+      if (isNaN(parsedTotalPages)) {
+        throw new Error("Le nombre de pages doit être un nombre valide");
+      }
+      
       const { error } = await supabase
         .from('books')
         .update({
-          total_pages: totalPages,
+          total_pages: parsedTotalPages,
           description: description || null,
           is_published: isPublished
         })
