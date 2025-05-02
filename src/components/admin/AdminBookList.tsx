@@ -1,12 +1,12 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Book } from "@/types/book";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 
 interface BookValidationStatus {
   id: string;
@@ -249,7 +249,8 @@ export function AdminBookList() {
                   {renderStatus(book.status)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end items-center">
+                  <div className="flex justify-end items-center gap-2">
+                    <BookMetadataEditor book={book} onUpdate={fetchBooksValidationStatus} />
                     <MissingSegmentsDialog book={book} />
                   </div>
                 </TableCell>

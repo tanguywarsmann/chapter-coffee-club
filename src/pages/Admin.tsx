@@ -7,10 +7,30 @@ import { AdminBookList } from "@/components/admin/AdminBookList";
 import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, AlertTriangle, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BookOpen, AlertTriangle, Settings, FileText } from "lucide-react";
+import { generateCsvExport } from "@/components/admin/utils/csvExport";
+import { toast } from "@/hooks/use-toast";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
+  
+  const handleExportCsv = async () => {
+    try {
+      await generateCsvExport();
+      toast({
+        title: "Export réussi",
+        description: "Le fichier CSV des segments manquants a été téléchargé",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'export CSV:", error);
+      toast({
+        title: "Erreur d'export",
+        description: "Impossible de générer le fichier CSV",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <AuthGuard>
@@ -20,6 +40,10 @@ export default function Admin() {
         <main className="container py-6 space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">Administration</h1>
+            <Button onClick={handleExportCsv} variant="outline" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Exporter les segments manquants
+            </Button>
           </div>
           
           {/* Debug panel - can be removed after testing */}
