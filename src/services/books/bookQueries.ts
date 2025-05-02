@@ -2,11 +2,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
 
-export const getAllBooks = async (): Promise<Book[]> => {
+export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> => {
   try {
-    const { data, error } = await supabase
-      .from('books')
-      .select('*');
+    let query = supabase.from('books').select('*');
+    
+    // Filter out unpublished books if requested
+    if (!includeUnpublished) {
+      query = query.eq('is_published', true);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching books:', error);
@@ -54,17 +59,24 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   }
 };
 
-export const getBooksByCategory = async (category: string): Promise<Book[]> => {
+export const getBooksByCategory = async (category: string, includeUnpublished = false): Promise<Book[]> => {
   if (!category) {
     console.error('Invalid category provided (empty)');
     return [];
   }
   
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('books')
       .select('*')
       .contains('tags', `{${category}}`);
+    
+    // Filter out unpublished books if requested
+    if (!includeUnpublished) {
+      query = query.eq('is_published', true);
+    }
+    
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching books by category:', error);

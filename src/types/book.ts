@@ -15,4 +15,5 @@ export interface Book {
   publicationYear: number;
   isUnavailable?: boolean; // Explicitly marked flag to identify fallback books
   isStableUnavailable?: boolean; // Flag to mark books that are consistently unavailable
+  isPublished?: boolean; // Flag to mark if a book is published or in draft status
 }

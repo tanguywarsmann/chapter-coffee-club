@@ -1,6 +1,5 @@
 
-import React, { useState } from "react";
-import { Book } from "@/types/book";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, SquarePen, Save } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BookMetadataEditorProps {
   book: {
@@ -34,6 +34,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const [totalPages, setTotalPages] = useState(book.totalPages);
   const [expectedSegments, setExpectedSegments] = useState(book.expectedSegments);
   const [description, setDescription] = useState("");
+  const [isPublished, setIsPublished] = useState(true);
   
   // Pour l'ajout rapide de questions
   const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
@@ -47,6 +48,78 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     setExpectedSegments(calculated);
   };
   
+  // Load book data when opening the dialog
+  const loadBookData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('description, is_published')
+        .eq('id', book.id)
+        .single();
+        
+      if (error) throw error;
+      
+      if (data) {
+        if (data.description) setDescription(data.description);
+        setIsPublished(data.is_published !== false); // Default to true if undefined
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données du livre:", error);
+    }
+  };
+  
+  // Generate empty segments for any missing ones
+  const generateMissingSegments = async () => {
+    if (book.missingSegments.length === 0) {
+      toast({
+        title: "Information",
+        description: "Tous les segments ont déjà été créés pour ce livre.",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Get the book slug
+      const { data: bookData, error: bookError } = await supabase
+        .from('books')
+        .select('slug')
+        .eq('id', book.id)
+        .single();
+      
+      if (bookError) throw bookError;
+      
+      const segmentEntries = book.missingSegments.map(segmentNum => ({
+        book_slug: bookData.slug,
+        segment: segmentNum,
+        question: "",
+        answer: ""
+      }));
+      
+      const { error } = await supabase
+        .from("reading_questions")
+        .upsert(segmentEntries, { onConflict: 'book_slug,segment' });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Segments générés",
+        description: `${book.missingSegments.length} segments vides ont été générés avec succès.`,
+      });
+      
+      onUpdate();
+    } catch (error: any) {
+      console.error("Erreur lors de la génération des segments:", error);
+      toast({
+        title: "Erreur",
+        description: `Impossible de générer les segments: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
   // Fonction pour enregistrer les modifications du livre
   const saveBookChanges = async () => {
     setIsSaving(true);
@@ -55,7 +128,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         .from('books')
         .update({
           total_pages: totalPages,
-          description: description || null
+          description: description || null,
+          is_published: isPublished
         })
         .eq('id', book.id);
         
@@ -164,30 +238,11 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       setIsAddingQuestion(false);
     }
   };
-  
-  // Récupérer la description du livre au moment de l'ouverture de la modale
-  const loadBookDescription = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('books')
-        .select('description')
-        .eq('id', book.id)
-        .single();
-        
-      if (error) throw error;
-      
-      if (data && data.description) {
-        setDescription(data.description);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération de la description:", error);
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       setIsOpen(open);
-      if (open) loadBookDescription();
+      if (open) loadBookData();
     }}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
@@ -245,23 +300,49 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
               />
             </div>
             
-            <Button 
-              onClick={saveBookChanges} 
-              disabled={isSaving}
-              className="w-full sm:w-auto"
-            >
-              {isSaving ? (
-                <>
+            <div className="flex items-center space-x-2 py-2">
+              <Checkbox 
+                id="isPublished"
+                checked={isPublished} 
+                onCheckedChange={setIsPublished}
+              />
+              <Label htmlFor="isPublished" className="font-medium cursor-pointer">
+                Publier ce livre
+              </Label>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button 
+                onClick={saveBookChanges} 
+                disabled={isSaving}
+                className="w-full sm:w-auto"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Sauvegarder les modifications
+                  </>
+                )}
+              </Button>
+              
+              <Button
+                onClick={generateMissingSegments}
+                disabled={isSaving || book.missingSegments.length === 0}
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                {isSaving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Sauvegarder les modifications
-                </>
-              )}
-            </Button>
+                ) : (
+                  "Générer les segments manquants"
+                )}
+              </Button>
+            </div>
           </div>
           
           <Separator />

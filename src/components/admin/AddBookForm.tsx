@@ -12,6 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/services/books/utils";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const addBookSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
@@ -19,6 +21,7 @@ const addBookSchema = z.object({
   total_pages: z.coerce.number().min(1, "Le nombre de pages est requis"),
   description: z.string().optional(),
   cover_url: z.string().optional(),
+  is_published: z.boolean().default(true),
 });
 
 type AddBookFormValues = z.infer<typeof addBookSchema>;
@@ -41,6 +44,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       total_pages: undefined,
       description: "",
       cover_url: "",
+      is_published: true,
     },
   });
 
@@ -87,6 +91,42 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     return publicUrlData.publicUrl;
   };
 
+  // Function to generate empty segments for the book
+  const generateEmptySegments = async (bookSlug: string, totalPages: number): Promise<void> => {
+    const expectedSegments = Math.ceil(totalPages / 30);
+    
+    if (expectedSegments <= 0) return;
+    
+    try {
+      const segmentEntries = [];
+      
+      for (let i = 0; i < expectedSegments; i++) {
+        segmentEntries.push({
+          book_slug: bookSlug,
+          segment: i,
+          question: "",
+          answer: ""
+        });
+      }
+      
+      const { error } = await supabase
+        .from("reading_questions")
+        .upsert(segmentEntries, { onConflict: 'book_slug,segment' });
+        
+      if (error) throw error;
+      
+      console.log(`${expectedSegments} segments vides générés pour le livre ${bookSlug}`);
+    } catch (error) {
+      console.error("Erreur lors de la génération des segments vides:", error);
+      // We don't want the whole book creation process to fail if segment generation fails
+      toast({
+        title: "Attention",
+        description: "Le livre a été créé, mais la génération automatique des segments a échoué.",
+        variant: "default",
+      });
+    }
+  };
+
   const onSubmit = async (data: AddBookFormValues) => {
     setIsLoading(true);
     try {
@@ -112,6 +152,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
         cover_url: coverUrl || null,
         slug,
         tags: [], // Default empty tags array
+        is_published: data.is_published,
       };
       
       const { error } = await supabase
@@ -119,6 +160,9 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
         .insert(bookData);
       
       if (error) throw error;
+      
+      // Generate empty segments for the book
+      await generateEmptySegments(slug, data.total_pages);
       
       toast({
         title: "Livre ajouté avec succès",
@@ -272,6 +316,25 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </div>
               </div>
             </div>
+            
+            <FormField
+              control={form.control}
+              name="is_published"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Publier ce livre</FormLabel>
+                    <FormMessage />
+                  </div>
+                  <FormControl>
+                    <Checkbox 
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 

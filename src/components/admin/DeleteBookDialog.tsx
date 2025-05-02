@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,21 +32,29 @@ export function DeleteBookDialog({
 }: DeleteBookDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasRelatedQuestions, setHasRelatedQuestions] = useState(false);
+  const [questionsCount, setQuestionsCount] = useState(0);
 
   // Check if book has related questions when dialog opens
+  useEffect(() => {
+    if (open) {
+      checkForRelatedQuestions();
+    }
+  }, [open, bookId]);
+
   const checkForRelatedQuestions = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from("reading_questions")
-        .select("id")
-        .eq("book_slug", bookId)
-        .limit(1);
+        .select("id", { count: 'exact' })
+        .eq("book_slug", bookId);
 
       if (error) {
         throw error;
       }
 
-      setHasRelatedQuestions(data && data.length > 0);
+      const hasQuestions = !!count && count > 0;
+      setHasRelatedQuestions(hasQuestions);
+      setQuestionsCount(count || 0);
     } catch (error) {
       console.error("Erreur lors de la vérification des questions:", error);
     }
@@ -91,7 +99,7 @@ export function DeleteBookDialog({
               <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5" />
                 <span className="text-amber-800">
-                  Ce livre contient des questions de validation qui seront également supprimées.
+                  Ce livre contient {questionsCount} question{questionsCount > 1 ? 's' : ''} de validation qui {questionsCount > 1 ? 'seront également supprimées' : 'sera également supprimée'}.
                 </span>
               </div>
             )}
@@ -113,7 +121,7 @@ export function DeleteBookDialog({
                 Suppression...
               </>
             ) : (
-              "Supprimer définitivement"
+              hasRelatedQuestions ? "Supprimer tout" : "Supprimer définitivement"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
