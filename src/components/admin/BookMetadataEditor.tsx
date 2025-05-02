@@ -16,6 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, SquarePen, Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Book } from "@/types/book";
 
 interface BookMetadataEditorProps {
   book: {
@@ -24,6 +25,7 @@ interface BookMetadataEditorProps {
     totalPages: number;
     expectedSegments: number;
     missingSegments: number[];
+    slug?: string; // Added slug property to fix TypeScript errors
   };
   onUpdate: () => void;
 }
@@ -35,6 +37,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const [expectedSegments, setExpectedSegments] = useState(book.expectedSegments);
   const [description, setDescription] = useState("");
   const [isPublished, setIsPublished] = useState(true);
+  const [bookSlug, setBookSlug] = useState<string | undefined>(book.slug);
   
   // Pour l'ajout rapide de questions
   const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
@@ -53,7 +56,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     try {
       const { data, error } = await supabase
         .from('books')
-        .select('description, is_published, total_pages, id, slug')
+        .select('description, is_published, total_pages, id, slug, title, author, cover_url, created_at, updated_at')
         .eq('id', book.id)
         .single();
         
@@ -64,6 +67,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         setIsPublished(data.is_published !== false); // Default to true if undefined
         // S'assurer que totalPages est correctement défini à partir des données de la base
         if (data.total_pages) setTotalPages(data.total_pages);
+        if (data.slug) setBookSlug(data.slug);
         console.log("Données chargées depuis Supabase:", data);
       }
     } catch (error) {
@@ -138,7 +142,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       }
       
       // Ajouter les logs de débogage pour vérifier l'identifiant utilisé
-      console.log("Tentative de mise à jour pour ID:", book.id, "Slug:", book.slug);
+      console.log("Tentative de mise à jour pour ID:", book.id, "Slug:", bookSlug);
       
       // Requête Supabase temporaire pour vérifier si l'ID existe
       const test = await supabase.from("books").select("*").eq("id", book.id);
@@ -146,11 +150,11 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       // Si aucune ligne trouvée par ID, essayer avec le slug récupéré
       let targetId = book.id;
-      let targetSlug = book.slug;
+      let targetSlug = bookSlug;
       
       if (!test.data || test.data.length === 0) {
         // Récupérer d'abord le slug s'il n'est pas disponible
-        if (!book.slug) {
+        if (!bookSlug) {
           // Rechercher par d'autres moyens, comme le titre
           const titleSearch = await supabase.from("books").select("slug").eq("title", book.title).single();
           if (titleSearch.data) {
@@ -158,7 +162,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
             console.log("Slug récupéré depuis le titre:", targetSlug);
           }
         } else {
-          targetSlug = book.slug;
+          targetSlug = bookSlug;
         }
         
         // Tester si le slug existe

@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +10,7 @@ import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 import { AddBookForm } from "@/components/admin/AddBookForm";
 import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
 import { toast } from "@/hooks/use-toast";
+import { Book } from "@/types/book";
 
 interface BookValidationStatus {
   id: string;

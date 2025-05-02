@@ -14,6 +14,7 @@ import { Loader2, Trash, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { deleteBook } from "@/services/books/deleteBook";
+import { Book } from "@/types/book";
 
 interface DeleteBookDialogProps {
   open: boolean;

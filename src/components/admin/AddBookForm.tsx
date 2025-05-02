@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/services/books/utils";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Book } from "@/types/book";
 
 const addBookSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
