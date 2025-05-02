@@ -50,7 +50,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       const { data, error } = await supabase
         .from('books')
         .select('id, title, author, description, cover_url, slug, is_published, total_pages')
-        .eq('id', book.id)
+        .eq('slug', book.slug)
         .single();
         
       if (error || !data) {
@@ -137,40 +137,12 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         throw new Error("Le nombre de pages doit être un nombre valide");
       }
       
-      // Ajouter les logs de débogage pour vérifier l'identifiant utilisé
-      console.log("Tentative de mise à jour pour ID:", book.id, "Slug:", bookSlug);
-      
-      // Requête Supabase temporaire pour vérifier si l'ID existe
-      const test = await supabase.from("books").select("*").eq("id", book.id);
-      console.log("Résultat recherche par ID:", test.data);
-      
-      // Si aucune ligne trouvée par ID, essayer avec le slug récupéré
-      let targetId = book.id;
-      let targetSlug = bookSlug;
-      
-      if (!test.data || test.data.length === 0) {
-        // Récupérer d'abord le slug s'il n'est pas disponible
-        if (!bookSlug) {
-          // Rechercher par d'autres moyens, comme le titre
-          const titleSearch = await supabase.from("books").select("slug").eq("title", book.title).single();
-          if (titleSearch.data) {
-            targetSlug = titleSearch.data.slug;
-            console.log("Slug récupéré depuis le titre:", targetSlug);
-          }
-        } else {
-          targetSlug = bookSlug;
-        }
-        
-        // Tester si le slug existe
-        const fallback = await supabase.from("books").select("*").eq("slug", targetSlug);
-        console.log("Résultat recherche par slug:", fallback.data);
-        
-        if (fallback.data && fallback.data.length > 0) {
-          // Utiliser l'ID récupéré pour la mise à jour
-          targetId = fallback.data[0].id;
-          console.log("Utilisation de l'ID récupéré depuis le slug:", targetId);
-        }
+      if (!bookSlug) {
+        throw new Error("Le slug du livre est manquant");
       }
+      
+      // Log de debug simplifié
+      console.log("Mise à jour du livre via slug:", bookSlug);
       
       // Préparer l'objet de mise à jour
       const updatePayload = {
@@ -180,114 +152,30 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       };
       
       console.log("Payload envoyé à Supabase:", updatePayload);
-      console.log("ID final ciblé:", targetId);
-      console.log("Slug final ciblé:", targetSlug);
       
-      // Récupérer les infos complètes du livre pour debug
-      const { data: bookInfo, error: bookInfoError } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', targetId);
-        
-      if (bookInfoError) {
-        console.error("Erreur lors de la récupération des infos du livre:", bookInfoError);
-      } else {
-        console.log("Infos du livre avant mise à jour:", bookInfo);
-      }
-      
-      // Exécuter la requête de mise à jour avec sélection pour voir ce qui est retourné
-      let success = false;
-      
-      // Essayer d'abord avec l'ID
-      const { data, error, count } = await supabase
+      // Exécuter la requête de mise à jour directement avec le slug
+      const { data, error } = await supabase
         .from('books')
         .update(updatePayload)
-        .eq('id', targetId)
+        .eq('slug', bookSlug)
         .select();
         
       if (error) {
-        console.error("Erreur Supabase avec ID:", error);
-      } else {
-        console.log("Réponse de Supabase (ID):", { data, count, affectedRows: data?.length });
-        if (data && data.length > 0) {
-          success = true;
-        }
+        console.error("Erreur Supabase lors de la mise à jour:", error);
+        throw error;
       }
       
-      // Si l'ID n'a pas fonctionné, essayer avec le slug
-      if (!success && targetSlug) {
-        const { data: dataBySlug, error: errorBySlug } = await supabase
-          .from('books')
-          .update(updatePayload)
-          .eq('slug', targetSlug)
-          .select();
-          
-        console.log("Résultat avec slug:", { data: dataBySlug, error: errorBySlug });
-        
-        if (errorBySlug) {
-          console.error("Erreur Supabase (avec slug):", errorBySlug);
-          throw errorBySlug;
-        }
-        
-        if (dataBySlug && dataBySlug.length > 0) {
-          success = true;
-          toast({
-            title: "Modifications enregistrées (via slug)",
-            description: `Les informations du livre "${book.title}" ont été mises à jour.`
-          });
-        }
-      }
+      console.log("Réponse de Supabase:", { data, affectedRows: data?.length });
       
-      // Si aucune des deux méthodes n'a fonctionné
-      if (!success) {
-        // Dernier recours: tenter de trouver le livre par son titre
-        const { data: findByTitle } = await supabase
-          .from('books')
-          .select('id, slug')
-          .eq('title', book.title);
-          
-        console.log("Recherche par titre:", findByTitle);
-        
-        if (findByTitle && findByTitle.length > 0) {
-          // Essayer une mise à jour avec cet ID
-          const { data: finalAttempt, error: finalError } = await supabase
-            .from('books')
-            .update(updatePayload)
-            .eq('id', findByTitle[0].id)
-            .select();
-            
-          console.log("Dernière tentative par titre:", { data: finalAttempt, error: finalError });
-          
-          if (finalError) {
-            throw finalError;
-          }
-          
-          if (finalAttempt && finalAttempt.length > 0) {
-            success = true;
-            toast({
-              title: "Modifications enregistrées (via titre)",
-              description: `Les informations du livre "${book.title}" ont été mises à jour.`
-            });
-          }
-        }
-      }
+      toast({
+        title: "Modifications enregistrées",
+        description: `Les informations du livre "${book.title}" ont été mises à jour.`
+      });
       
-      if (!success) {
-        throw new Error("Impossible de mettre à jour le livre : aucune ligne correspondante trouvée");
-      }
-      
-      // Si on est arrivé jusqu'ici sans erreur, c'est un succès
-      if (success) {
-        // Fermer le dialogue et actualiser les données
-        setIsOpen(false);
-        console.log("Update triggered from saveBookChanges");
-        onUpdate();
-      } else {
-        toast({
-          title: "Modifications enregistrées",
-          description: `Les informations du livre "${book.title}" ont été mises à jour.`
-        });
-      }
+      // Fermer le dialogue et actualiser les données
+      setIsOpen(false);
+      console.log("Update triggered from saveBookChanges");
+      onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
       toast({
