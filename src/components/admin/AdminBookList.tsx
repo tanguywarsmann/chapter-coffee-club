@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle, BookOpen, Info, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
+import { AddBookForm } from "@/components/admin/AddBookForm";
+import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
 
 interface BookValidationStatus {
   id: string;
@@ -24,6 +26,7 @@ export function AdminBookList() {
   const [books, setBooks] = useState<BookValidationStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookToDelete, setBookToDelete] = useState<{id: string; title: string} | null>(null);
 
   // Fonction pour calculer le nombre de segments basé sur le nombre de pages
   const calculateExpectedSegments = (totalPages: number): number => {
@@ -136,6 +139,11 @@ export function AdminBookList() {
     }
   };
 
+  // Handler pour ouvrir la boîte de dialogue de suppression
+  const handleDeleteClick = (book: {id: string; title: string}) => {
+    setBookToDelete(book);
+  };
+
   // Composant pour afficher les segments manquants
   const MissingSegmentsDialog = ({ book }: { book: BookValidationStatus }) => (
     <Dialog>
@@ -216,10 +224,13 @@ export function AdminBookList() {
         <h2 className="text-xl font-serif font-medium text-coffee-darker">
           État des questions de validation ({books.length} livres)
         </h2>
-        <Button onClick={fetchBooksValidationStatus} size="sm" variant="outline" className="gap-2">
-          <Loader2 className="h-4 w-4" />
-          Actualiser
-        </Button>
+        <div className="flex items-center gap-2">
+          <AddBookForm onBookAdded={fetchBooksValidationStatus} />
+          <Button onClick={fetchBooksValidationStatus} size="sm" variant="outline" className="gap-2">
+            <Loader2 className="h-4 w-4" />
+            Actualiser
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">
@@ -252,6 +263,15 @@ export function AdminBookList() {
                   <div className="flex justify-end items-center gap-2">
                     <BookMetadataEditor book={book} onUpdate={fetchBooksValidationStatus} />
                     <MissingSegmentsDialog book={book} />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      onClick={() => handleDeleteClick({id: book.id, title: book.title})}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Supprimer</span>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -266,6 +286,16 @@ export function AdminBookList() {
           </TableBody>
         </Table>
       </div>
+
+      {bookToDelete && (
+        <DeleteBookDialog
+          open={!!bookToDelete}
+          onOpenChange={(open) => !open && setBookToDelete(null)}
+          bookId={bookToDelete.id}
+          bookTitle={bookToDelete.title}
+          onDeleted={fetchBooksValidationStatus}
+        />
+      )}
     </div>
   );
 }
