@@ -8,7 +8,7 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
     const { error: questionsError } = await supabase
       .from("reading_questions")
       .delete()
-      .eq("book_id", bookId);
+      .eq("book_slug", bookId);
 
     if (questionsError) {
       throw questionsError;

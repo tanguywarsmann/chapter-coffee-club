@@ -10,10 +10,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { Loader2, Trash, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { deleteBook } from "@/services/books/deleteBook";
 
 interface DeleteBookDialogProps {
   open: boolean;
@@ -55,45 +55,16 @@ export function DeleteBookDialog({
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      // First delete related questions if any
-      if (hasRelatedQuestions) {
-        const { error: questionsError } = await supabase
-          .from("reading_questions")
-          .delete()
-          .eq("book_slug", bookId);
-
-        if (questionsError) {
-          throw questionsError;
-        }
+      const success = await deleteBook(bookId);
+      
+      if (success) {
+        toast({
+          title: "Livre supprimé",
+          description: `"${bookTitle}" et ses données associées ont été supprimés avec succès.`,
+        });
+        onDeleted();
+        onOpenChange(false);
       }
-
-      // Then delete validations related to the book
-      const { error: validationsError } = await supabase
-        .from("reading_validations")
-        .delete()
-        .eq("book_id", bookId);
-
-      if (validationsError) {
-        throw validationsError;
-      }
-
-      // Finally delete the book
-      const { error: bookError } = await supabase
-        .from("books")
-        .delete()
-        .eq("id", bookId);
-
-      if (bookError) {
-        throw bookError;
-      }
-
-      toast({
-        title: "Livre supprimé",
-        description: `"${bookTitle}" et ses données associées ont été supprimés avec succès.`,
-      });
-
-      onDeleted();
-      onOpenChange(false);
     } catch (error: any) {
       console.error("Erreur lors de la suppression:", error);
       toast({
