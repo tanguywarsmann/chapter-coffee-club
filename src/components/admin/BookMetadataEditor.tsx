@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,21 +18,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Book } from "@/types/book";
 
 interface BookMetadataEditorProps {
-  book: {
-    id: string;
-    title: string;
-    totalPages: number;
-    expectedSegments: number;
-    missingSegments: number[];
-    slug?: string; // Added slug property to fix TypeScript errors
-  };
+  book: Book;
   onUpdate: () => void;
 }
 
 export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [totalPages, setTotalPages] = useState<number | string>(book.totalPages || 0);
+  const [totalPages, setTotalPages] = useState<number | string>(book.total_pages || 0);
   const [expectedSegments, setExpectedSegments] = useState(book.expectedSegments);
   const [description, setDescription] = useState("");
   const [isPublished, setIsPublished] = useState(true);
@@ -54,21 +46,25 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   // Load book data when opening the dialog
   const loadBookData = async () => {
     try {
+      // Only select columns that we know exist in the books table
       const { data, error } = await supabase
         .from('books')
-        .select('description, is_published, total_pages, id, slug, title, author, cover_url, created_at, updated_at')
+        .select('id, title, author, description, cover_url, slug, is_published, total_pages')
         .eq('id', book.id)
         .single();
         
-      if (error) throw error;
+      if (error || !data) {
+        console.error("Erreur lors du chargement du livre :", error);
+        return;
+      }
+      
+      console.log("Données chargées depuis Supabase:", data);
       
       if (data) {
         if (data.description) setDescription(data.description);
         setIsPublished(data.is_published !== false); // Default to true if undefined
-        // S'assurer que totalPages est correctement défini à partir des données de la base
         if (data.total_pages) setTotalPages(data.total_pages);
         if (data.slug) setBookSlug(data.slug);
-        console.log("Données chargées depuis Supabase:", data);
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du livre:", error);
@@ -485,7 +481,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
               
               <Button
                 onClick={generateMissingSegments}
-                disabled={isSaving || book.missingSegments.length === 0}
+                disabled={isSaving || book.missingSegments?.length === 0}
                 variant="outline"
                 className="w-full sm:w-auto"
               >
@@ -504,7 +500,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Ajouter une question de validation</h3>
             
-            {book.missingSegments.length > 0 ? (
+            {book.missingSegments && book.missingSegments.length > 0 ? (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="segment">Segment manquant</Label>
