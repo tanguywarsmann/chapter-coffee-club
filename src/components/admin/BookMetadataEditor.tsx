@@ -31,7 +31,7 @@ interface BookMetadataEditorProps {
 export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [totalPages, setTotalPages] = useState(book.totalPages);
+  const [totalPages, setTotalPages] = useState<number | string>(book.totalPages || 0);
   const [expectedSegments, setExpectedSegments] = useState(book.expectedSegments);
   const [description, setDescription] = useState("");
   const [isPublished, setIsPublished] = useState(true);
@@ -44,7 +44,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
 
   // Fonction pour recalculer automatiquement les segments
   const recalculateSegments = () => {
-    const calculated = Math.ceil(totalPages / 30);
+    const calculated = Math.ceil(Number(totalPages) / 30);
     setExpectedSegments(calculated);
   };
   
