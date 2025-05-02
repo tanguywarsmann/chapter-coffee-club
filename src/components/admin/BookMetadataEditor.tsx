@@ -64,6 +64,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         setIsPublished(data.is_published !== false); // Default to true if undefined
         // S'assurer que totalPages est correctement défini à partir des données de la base
         if (data.total_pages) setTotalPages(data.total_pages);
+        console.log("Données chargées depuis Supabase:", data);
       }
     } catch (error) {
       console.error("Erreur lors de la récupération des données du livre:", error);
@@ -136,16 +137,28 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         throw new Error("Le nombre de pages doit être un nombre valide");
       }
       
-      const { error } = await supabase
+      // Préparer l'objet de mise à jour
+      const updatePayload = {
+        total_pages: parsedTotalPages,
+        description: description || null,
+        is_published: isPublished
+      };
+      
+      console.log("Payload envoyé à Supabase:", updatePayload);
+      console.log("ID du livre ciblé:", book.id);
+      
+      // Exécuter la requête de mise à jour
+      const { error, data } = await supabase
         .from('books')
-        .update({
-          total_pages: parsedTotalPages,
-          description: description || null,
-          is_published: isPublished
-        })
+        .update(updatePayload)
         .eq('id', book.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
+      
+      console.log("Réponse de Supabase:", data);
       
       toast({
         title: "Modifications enregistrées",
