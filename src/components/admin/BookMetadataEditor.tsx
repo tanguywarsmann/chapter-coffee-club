@@ -107,6 +107,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         description: `${book.missingSegments.length} segments vides ont été générés avec succès.`,
       });
       
+      // Fermer le dialogue et actualiser les données
+      setIsOpen(false);
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la génération des segments:", error);
@@ -140,6 +142,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         description: `Les informations du livre "${book.title}" ont été mises à jour.`
       });
       
+      // Fermer le dialogue et actualiser les données
+      setIsOpen(false);
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
@@ -225,7 +229,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       setQuestion("");
       setAnswer("");
       
-      // Rafraîchir les données
+      // Fermer le dialogue et actualiser les données
+      setIsOpen(false);
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de la question:", error);

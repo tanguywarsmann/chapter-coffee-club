@@ -29,6 +29,7 @@ export function AdminBookList() {
   const [error, setError] = useState<string | null>(null);
   const [bookToDelete, setBookToDelete] = useState<{id: string; title: string} | null>(null);
   const [isFixingSegments, setIsFixingSegments] = useState(false);
+  const [updateTrigger, setUpdateTrigger] = useState(0); // Nouveau state pour forcer les rafraîchissements
 
   // Fonction pour calculer le nombre de segments basé sur le nombre de pages
   const calculateExpectedSegments = (totalPages: number): number => {
@@ -126,6 +127,7 @@ export function AdminBookList() {
 
   // Fonction pour obtenir l'état de validation des livres
   const fetchBooksValidationStatus = async () => {
+    console.log("Fetching books validation status...");
     setIsLoading(true);
     setError(null);
     
@@ -191,6 +193,7 @@ export function AdminBookList() {
       });
       
       setBooks(booksWithStatus);
+      console.log("Fetched", booksWithStatus.length, "books");
     } catch (err: any) {
       console.error('Erreur lors de la récupération des données:', err);
       setError(err.message || "Erreur lors de la récupération des données");
@@ -199,9 +202,22 @@ export function AdminBookList() {
     }
   };
 
+  // Force refresh when updateTrigger changes
+  useEffect(() => {
+    fetchBooksValidationStatus();
+  }, [updateTrigger]);
+
+  // Initial fetch
   useEffect(() => {
     fetchBooksValidationStatus();
   }, []);
+
+  // Fonction pour mettre à jour la liste après une modification
+  const handleBookUpdate = () => {
+    console.log("Book updated, refreshing list...");
+    // Utilise le state de updateTrigger pour forcer un rafraîchissement
+    setUpdateTrigger(prev => prev + 1);
+  };
 
   // Fonction pour afficher le statut avec une icône
   const renderStatus = (status: 'complete' | 'incomplete' | 'missing') => {
@@ -330,7 +346,7 @@ export function AdminBookList() {
             )}
             {isFixingSegments ? "Correction..." : "Corriger les segments à zéro"}
           </Button>
-          <AddBookForm onBookAdded={fetchBooksValidationStatus} />
+          <AddBookForm onBookAdded={handleBookUpdate} />
           <Button onClick={fetchBooksValidationStatus} size="sm" variant="outline" className="gap-2">
             <Loader2 className="h-4 w-4" />
             Actualiser
@@ -366,7 +382,7 @@ export function AdminBookList() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-2">
-                    <BookMetadataEditor book={book} onUpdate={fetchBooksValidationStatus} />
+                    <BookMetadataEditor book={book} onUpdate={handleBookUpdate} />
                     <MissingSegmentsDialog book={book} />
                     <Button 
                       variant="outline" 
@@ -398,7 +414,7 @@ export function AdminBookList() {
           onOpenChange={(open) => !open && setBookToDelete(null)}
           bookId={bookToDelete.id}
           bookTitle={bookToDelete.title}
-          onDeleted={fetchBooksValidationStatus}
+          onDeleted={handleBookUpdate}
         />
       )}
     </div>
