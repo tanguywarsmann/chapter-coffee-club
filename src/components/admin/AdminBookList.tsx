@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,16 +11,15 @@ import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
 import { toast } from "@/hooks/use-toast";
 import { Book } from "@/types/book";
 
-interface BookValidationStatus {
-  id: string;
-  title: string;
-  slug: string;
-  totalPages: number;
-  expectedSegments: number;
-  availableQuestions: number;
-  segments: number[];
-  missingSegments: number[];
-  status: 'complete' | 'incomplete' | 'missing';
+// Define BookValidationStatus as an extension of the Book type
+interface BookValidationStatus extends Book {
+  slug: string; // Make slug required in this context
+  total_pages: number; // Make total_pages required in this context
+  expectedSegments: number; // Already in Book but as optional, here it's required
+  availableQuestions: number; // Specific to validation status
+  segments: number[]; // Available segments
+  missingSegments: number[]; // Missing segments
+  status: 'complete' | 'incomplete' | 'missing'; // Validation status
 }
 
 export function AdminBookList() {
@@ -175,16 +173,27 @@ export function AdminBookList() {
           status = 'incomplete';
         }
         
+        // Create a BookValidationStatus object with all required fields
         return {
           id: book.id,
           title: book.title,
           slug: book.slug,
-          totalPages: totalPages,
+          total_pages: totalPages,
           expectedSegments: expectedSegments,
           availableQuestions: uniqueSegments.length,
           segments: uniqueSegments,
           missingSegments: missingSegments,
-          status: status
+          status: status,
+          // Add required fields from Book
+          author: "", // Default value since it might not be available
+          description: "", // Default value
+          totalChapters: expectedSegments, // Use expectedSegments as totalChapters
+          chaptersRead: uniqueSegments.length, // Use availableQuestions as chaptersRead
+          isCompleted: status === 'complete', // Mark as completed if all segments are available
+          language: "fr", // Default value
+          categories: [], // Default empty array
+          pages: totalPages, // Use total_pages as pages
+          publicationYear: new Date().getFullYear(), // Default to current year
         };
       });
       
