@@ -55,14 +55,15 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const sessionStartTimeRef = useRef<Date | null>(null);
 
-  useEffect(() => {
-    if (currentBook && currentBook.totalChapters) {
-      setProgressPercent(calculateReadingProgress(
-        currentBook.chaptersRead || 0,
-        currentBook.totalChapters
-      ));
-    }
-  }, [currentBook]);
+useEffect(() => {
+  if (currentBook && currentBook.totalChapters) {
+    console.log("BookDetail → totalChapters:", currentBook.totalChapters, "chaptersRead:", currentBook.chaptersRead);
+    setProgressPercent(calculateReadingProgress(
+      currentBook.chaptersRead || 0,
+      currentBook.totalChapters
+    ));
+  }
+}, [currentBook]);
 
   useEffect(() => {
     const fetchProgress = async () => {
