@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,13 +49,17 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       </Card>
     );
   }
-console.log("Progress debug →", {
-  title: book.title,
-  chaptersRead: book.chaptersRead,
-  totalChapters: book.totalChapters,
-});
-  
-  const progressPercentage = calculateReadingProgress(book.chaptersRead, book.totalChapters);
+
+  const chaptersRead = book.chaptersRead || 0;
+  const totalChapters = book.totalChapters || book.expectedSegments || 1;
+
+  console.log("Progress debug →", {
+    title: book.title,
+    chaptersRead,
+    totalChapters
+  });
+
+  const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
   const handleNavigateToBook = () => navigate(`/books/${book.id}`);
 
   return (
