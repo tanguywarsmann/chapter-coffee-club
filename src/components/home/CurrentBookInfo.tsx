@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,14 @@ export const CurrentBookInfo = ({
   onValidate,
   onNavigate
 }: CurrentBookInfoProps) => {
-  const totalPages = book.totalChapters * 30;
-  const pagesRead = book.chaptersRead * 30;
+  const chaptersRead = book.chaptersRead || 0;
+  const chaptersTotal = book.totalChapters || book.expectedSegments || 1;
+
+  console.log("📘 CurrentBookInfo debug:", {
+    title: book.title,
+    chaptersRead,
+    chaptersTotal
+  });
 
   return (
     <div className="flex-1">
@@ -36,7 +41,9 @@ export const CurrentBookInfo = ({
       <div className="mt-3 space-y-1">
         <div className="flex justify-between text-sm">
           <span className="text-coffee-darker">Progression</span>
-          <span className="text-muted-foreground">{pagesRead} sur {totalPages} pages</span>
+          <span className="text-muted-foreground">
+            {chaptersRead} chapitres sur {chaptersTotal}
+          </span>
         </div>
         <Progress value={progressPercentage} className="h-2" />
       </div>
