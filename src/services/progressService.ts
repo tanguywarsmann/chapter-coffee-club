@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/services/bookService"; // Make sure this import exists
+import { ReadingProgress, ReadingValidation } from "@/types/reading";
 
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
@@ -10,17 +9,28 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   if (!validUuidPattern.test(userId)) return [];
 
   try {
-    const { data: progressData, error } = await supabase
+    console.log("Fetching reading progress for user:", userId);
+    
+    // 1. Récupérer toutes les progressions de lecture
+    const { data: progressData, error: progressError } = await supabase
       .from("reading_progress")
       .select("*")
       .eq("user_id", userId);
 
-    if (error || !progressData) return [];
+    if (progressError) {
+      console.error("Error fetching reading progress:", progressError);
+      return [];
+    }
 
-    // Get all book IDs from progress data
+    if (!progressData || progressData.length === 0) {
+      console.log("No reading progress found for user:", userId);
+      return [];
+    }
+
+    // 2. Récupérer les IDs de livres pour les requêtes suivantes
     const bookIds = [...new Set(progressData.map(item => item.book_id))];
-
-    // Fetch all books in one query for better performance
+    
+    // 3. Récupérer tous les livres correspondants en une seule requête
     const { data: booksData, error: booksError } = await supabase
       .from("books")
       .select("id, title, author, slug, cover_url, expected_segments, total_chapters")
@@ -30,28 +40,50 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       console.error("Error fetching books:", booksError);
     }
 
-    // Create a map of books for quick lookups
+    // Créer une map pour un accès rapide aux données des livres
     const booksMap = (booksData || []).reduce((map, book) => {
       map[book.id] = book;
       return map;
     }, {});
 
-    // Enrich progress data with book information
-    const enrichedProgress = progressData.map((item) => {
-      const book = booksMap[item.book_id];
+    // 4. Récupérer toutes les validations pour cet utilisateur et ces livres
+    const { data: validationsData, error: validationsError } = await supabase
+      .from("reading_validations")
+      .select("*")
+      .eq("user_id", userId)
+      .in("book_id", bookIds);
+
+    if (validationsError) {
+      console.error("Error fetching validations:", validationsError);
+    }
+
+    // Grouper les validations par book_id pour un accès facile
+    const validationsMap = (validationsData || []).reduce((map, validation) => {
+      if (!map[validation.book_id]) {
+        map[validation.book_id] = [];
+      }
+      map[validation.book_id].push(validation);
+      return map;
+    }, {});
+
+    // 5. Enrichir chaque item de progression avec les données du livre et les validations
+    const enrichedProgresses = progressData.map(progress => {
+      const book = booksMap[progress.book_id];
+      const validations = validationsMap[progress.book_id] || [];
       
       return {
-        ...item,
+        ...progress,
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "",
         book_cover: book?.cover_url ?? null,
         total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-        validations: [],
+        validations: validations
       };
     });
 
-    return enrichedProgress;
+    console.log(`Retrieved ${enrichedProgresses.length} enriched reading progresses`);
+    return enrichedProgresses;
   } catch (error) {
     console.error("Error in getUserReadingProgress:", error);
     return [];
@@ -65,17 +97,21 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   if (!validUuidPattern.test(userId)) return null;
 
   try {
-    const { data, error } = await supabase
+    // 1. Récupérer la progression de lecture spécifique
+    const { data: progress, error: progressError } = await supabase
       .from("reading_progress")
       .select("*")
       .eq("user_id", userId)
       .eq("book_id", bookId)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (progressError || !progress) {
+      console.error("Error fetching book reading progress:", progressError);
+      return null;
+    }
 
-    // Get book information
-    const { data: bookData, error: bookError } = await supabase
+    // 2. Récupérer les informations du livre
+    const { data: book, error: bookError } = await supabase
       .from("books")
       .select("title, author, slug, cover_url, expected_segments, total_chapters")
       .eq("id", bookId)
@@ -85,14 +121,26 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       console.error("Error fetching book:", bookError);
     }
 
+    // 3. Récupérer les validations pour ce livre et cet utilisateur
+    const { data: validations, error: validationsError } = await supabase
+      .from("reading_validations")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("book_id", bookId);
+
+    if (validationsError) {
+      console.error("Error fetching validations:", validationsError);
+    }
+
+    // 4. Construire l'objet enrichi
     return {
-      ...data,
-      book_title: bookData?.title ?? "Titre inconnu",
-      book_author: bookData?.author ?? "Auteur inconnu",
-      book_slug: bookData?.slug ?? "",
-      book_cover: bookData?.cover_url ?? null,
-      total_chapters: bookData?.total_chapters ?? bookData?.expected_segments ?? 1,
-      validations: [],
+      ...progress,
+      book_title: book?.title ?? "Titre inconnu",
+      book_author: book?.author ?? "Auteur inconnu",
+      book_slug: book?.slug ?? "",
+      book_cover: book?.cover_url ?? null,
+      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
+      validations: validations || []
     };
   } catch (error) {
     console.error("Error in getBookReadingProgress:", error);
