@@ -50,7 +50,12 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       </Card>
     );
   }
-
+console.log("Progress debug →", {
+  title: book.title,
+  chaptersRead: book.chaptersRead,
+  totalChapters: book.totalChapters,
+});
+  
   const progressPercentage = calculateReadingProgress(book.chaptersRead, book.totalChapters);
   const handleNavigateToBook = () => navigate(`/books/${book.id}`);
 
