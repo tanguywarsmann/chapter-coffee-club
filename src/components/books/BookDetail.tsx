@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -156,7 +155,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           </Button>
         )}
         
-        <BookProgressBar progressPercent={progressPercent} />
+        <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
         
         <BookValidationModals
           book={currentBook}
