@@ -23,24 +23,18 @@ interface MainContentProps {
 export function MainContent({
   searchResults,
   onResetSearch,
-  currentReading,
-  isLoadingCurrentBook,
-  currentBook,
   inProgressBooks,
   isLoading,
   isSearching = false,
   isRedirecting = false,
-  onProgressUpdate,
-  onContinueReading
+  onProgressUpdate
 }: MainContentProps) {
   const renderCount = useRef(0);
   
-  // Memoize the current reading ID for stable comparisons
+  // Memoize the inProgressBooks count for stable comparisons
   const stableIds = useMemo(() => ({
-    currentReadingId: currentReading?.id || null,
-    currentBookId: currentBook?.id || null,
     inProgressCount: inProgressBooks?.length || 0
-  }), [currentReading?.id, currentBook?.id, inProgressBooks?.length]);
+  }), [inProgressBooks?.length]);
   
   // Logging pour diagnostic
   useEffect(() => {
@@ -48,10 +42,7 @@ export function MainContent({
       renderCount.current++;
       console.log(`[MAIN CONTENT DIAGNOSTIQUE] Render #${renderCount.current}`, {
         hasSearchResults: !!searchResults,
-        currentReadingId: stableIds.currentReadingId,
-        currentBookId: stableIds.currentBookId,
         inProgressBooksCount: stableIds.inProgressCount,
-        isLoadingCurrentBook,
         isLoading,
         isSearching,
         isRedirecting
@@ -64,24 +55,16 @@ export function MainContent({
     <>
       <StatsCards />
       <HomeContent
-        key={`home-content-${stableIds.currentReadingId || 'none'}`}
-        currentReading={currentReading}
-        isLoadingCurrentBook={isLoadingCurrentBook}
-        currentBook={currentBook}
+        key={`home-content-${stableIds.inProgressCount}`}
         inProgressBooks={inProgressBooks}
         isLoading={isLoading}
         onProgressUpdate={onProgressUpdate}
-        onContinueReading={onContinueReading}
       />
     </>
   ), [
-    currentReading, 
-    isLoadingCurrentBook, 
-    currentBook, 
     inProgressBooks, 
     isLoading, 
-    onProgressUpdate, 
-    onContinueReading,
+    onProgressUpdate,
     stableIds
   ]);
 

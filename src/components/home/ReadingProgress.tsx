@@ -2,7 +2,7 @@
 import { Book } from "@/types/book";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, BookMarked, CheckCircle } from "lucide-react";
+import { ArrowRight, BookOpen, BookMarked, CheckCircle, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
@@ -78,7 +78,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           <div className="space-y-4">
             {books.slice(0, 3).map((book) => {
               // Calculate progress using the centralized function
-            console.log("Book debug in ReadingProgress:", book);
+              console.log("Book debug in ReadingProgress:", book);
               const chaptersRead = book.chaptersRead || 0;
               const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
               const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
@@ -150,6 +150,20 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                         </div>
                       </div>
                     </Link>
+                    
+                    {/* New Resume button - only show for books that are in progress but not completed */}
+                    {chaptersRead > 0 && !book.isCompleted && (
+                      <Button
+                        size="sm"
+                        className="mt-2 bg-coffee-dark hover:bg-coffee-darker"
+                        asChild
+                      >
+                        <Link to={`/books/${book.id}`}>
+                          <PlayCircle className="h-4 w-4 mr-1" />
+                          Reprendre
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               );

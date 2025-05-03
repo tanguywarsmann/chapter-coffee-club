@@ -15,11 +15,13 @@ export type Database = {
           cover_url: string | null
           created_at: string | null
           description: string | null
+          expected_segments: number | null
           id: string
           is_published: boolean
           slug: string
           tags: string[] | null
           title: string
+          total_chapters: number | null
           total_pages: number
         }
         Insert: {
@@ -27,11 +29,13 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
+          expected_segments?: number | null
           id: string
           is_published?: boolean
           slug: string
           tags?: string[] | null
           title: string
+          total_chapters?: number | null
           total_pages?: number
         }
         Update: {
@@ -39,11 +43,13 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
+          expected_segments?: number | null
           id?: string
           is_published?: boolean
           slug?: string
           tags?: string[] | null
           title?: string
+          total_chapters?: number | null
           total_pages?: number
         }
         Relationships: []
