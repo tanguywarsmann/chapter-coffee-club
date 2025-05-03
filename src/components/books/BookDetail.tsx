@@ -26,7 +26,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [readingProgress, setReadingProgress] = useState<any>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  
+
   const {
     isValidating,
     showQuiz,
@@ -41,12 +41,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     handleValidationConfirm,
     showConfetti
   } = useBookValidation(currentBook, user?.id, (bookId) => {
-    // Appeler le callback original si fourni
     if (onChapterComplete) {
       onChapterComplete(bookId);
     }
-    
-    // Vérifier les badges après avoir complété un chapitre
     if (user?.id) {
       checkBadgesForUser(user.id);
     }
@@ -55,15 +52,23 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const sessionStartTimeRef = useRef<Date | null>(null);
 
-useEffect(() => {
-  if (currentBook && currentBook.totalChapters) {
-    console.log("BookDetail → totalChapters:", currentBook.totalChapters, "chaptersRead:", currentBook.chaptersRead);
-    setProgressPercent(calculateReadingProgress(
-      currentBook.chaptersRead || 0,
-      currentBook.totalChapters
-    ));
-  }
-}, [currentBook]);
+  useEffect(() => {
+    if (currentBook) {
+      const chaptersRead = currentBook.chaptersRead || 0;
+      const totalChapters = currentBook.totalChapters || currentBook.expectedSegments || 1;
+
+      console.log("BookDetail → Progress debug:", {
+        title: currentBook.title,
+        chaptersRead,
+        totalChapters
+      });
+
+      setProgressPercent(calculateReadingProgress(
+        chaptersRead,
+        totalChapters
+      ));
+    }
+  }, [currentBook]);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -90,54 +95,42 @@ useEffect(() => {
     const segment = getCurrentSegmentToValidate();
     setValidationSegment(segment);
     setShowValidationModal(true);
-    
-    // Enregistrer le début d'une session de lecture (pour badges)
+
     if (!lectureInit) {
-      // Stocker l'heure de début pour la session en cours
       sessionStartTimeRef.current = new Date();
     }
   };
 
   const handleQuizCompleteWrapper = (correct: boolean) => {
     handleQuizComplete(correct);
-    
+
     if (correct) {
-      // Afficher les confettis lors d'une réponse correcte
       showConfetti();
-      
-      // Vérifier les badges après avoir complété un quiz
+
       if (user?.id) {
         checkBadgesForUser(user.id);
-        
-        // Si le livre est terminé, stocker dans la liste des livres terminés
+
         if (currentBook.isCompleted) {
-          const completedBooks = localStorage.getItem(`completed_books_${user.id}`) 
+          const completedBooks = localStorage.getItem(`completed_books_${user.id}`)
             ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
             : [];
-            
+
           if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
             completedBooks.push(currentBook);
             localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
           }
         }
-        
-        // Terminer la session de lecture si elle a été démarrée
+
         if (sessionStartTimeRef.current) {
           const endTime = new Date();
-          
-          // Enregistrer la session (ceci déclenchera aussi la vérification des badges)
           recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
-          
-          // Réinitialiser l'heure de début
           sessionStartTimeRef.current = null;
         }
       }
     }
   };
 
-  // Vérifier si le livre est complété et ne doit plus être validé
-  // Un livre n'est complété que si le nombre de chapitres lus est égal au nombre total de chapitres
-  const isBookCompleted = currentBook.chaptersRead === currentBook.totalChapters;
+  const isBookCompleted = (currentBook.chaptersRead || 0) >= (currentBook.totalChapters || currentBook.expectedSegments || 1);
   const showValidationButton = !isBookCompleted;
 
   return (
@@ -146,7 +139,7 @@ useEffect(() => {
       <CardContent className="space-y-4">
         <BookCoverInfo book={currentBook} />
         <BookDescription description={currentBook.description} />
-        
+
         {showValidationButton && (
           <Button
             disabled={isValidating}
@@ -156,9 +149,9 @@ useEffect(() => {
             {readingProgress?.current_page ? "Valider ma lecture" : "Commencer ma lecture"}
           </Button>
         )}
-        
+
         <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
-        
+
         <BookValidationModals
           book={currentBook}
           showValidationModal={showValidationModal}
@@ -179,4 +172,4 @@ useEffect(() => {
       </CardContent>
     </Card>
   );
-}
+};
