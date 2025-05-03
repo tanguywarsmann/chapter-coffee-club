@@ -32,7 +32,7 @@ export interface ReadingProgress {
   streak_current: number;
   streak_best: number;
   validations?: ReadingValidation[]; // Optional for flexibility
-   total_chapters?: number;
+  total_chapters?: number; // Added field from backend
 }
 
 export interface ValidateReadingRequest {

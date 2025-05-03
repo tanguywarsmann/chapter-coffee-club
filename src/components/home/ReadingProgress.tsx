@@ -80,7 +80,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
               // Calculate progress using the centralized function
               console.log("Book debug in ReadingProgress:", book);
               const chaptersRead = book.chaptersRead || 0;
-              const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
+              const totalChapters = book.total_chapters ?? book.totalChapters ?? book.expectedSegments ?? 1;
               const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
               
               // Book status icon based on progress
@@ -137,6 +137,11 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                         {book.author || "..."}
                       </p>
                       
+                      {/* Display total chapters information */}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Chapitres au total : {book.total_chapters ? book.total_chapters : "—"}
+                      </p>
+                      
                       <div className="mt-2 space-y-1">
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                           <div 
@@ -151,7 +156,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                       </div>
                     </Link>
                     
-                    {/* New Resume button - only show for books that are in progress but not completed */}
+                    {/* Resume button - only show for books that are in progress but not completed */}
                     {chaptersRead > 0 && !book.isCompleted && (
                       <Button
                         size="sm"
