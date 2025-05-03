@@ -134,8 +134,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  // Vérifier si le livre est complété à 100% et ne doit plus être validé
-  const isBookCompleted = progressPercent === 100;
+  // Vérifier si le livre est complété et ne doit plus être validé
+  // Un livre n'est complété que si le nombre de chapitres lus est égal au nombre total de chapitres
+  const isBookCompleted = currentBook.chaptersRead === currentBook.totalChapters;
   const showValidationButton = !isBookCompleted;
 
   return (
