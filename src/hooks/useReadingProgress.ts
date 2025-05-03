@@ -4,7 +4,7 @@ import { getUserReadingProgress } from "@/services/progressService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export const useInProgressBooks = () => {
+export const useReadingProgress = () => {
   const { user } = useAuth();
   const [readingProgress, setReadingProgress] = useState<ReadingProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
