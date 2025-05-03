@@ -78,6 +78,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           <div className="space-y-4">
             {books.slice(0, 3).map((book) => {
               // Calculate progress using the centralized function
+            console.log("Book debug in ReadingProgress:", book);
               const chaptersRead = book.chaptersRead || 0;
               const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
               const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
