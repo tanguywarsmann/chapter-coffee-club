@@ -76,21 +76,20 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
         ) : (
           <div className="space-y-4">
             {progresses.slice(0, 3).map((progress) => {
-              // Calculation of chapters read based on progress and total chapters
-              const chaptersRead = progress.total_chapters 
-                ? Math.floor(progress.current_page / (progress.total_pages / progress.total_chapters))
+              // Calcul du nombre de chapitres lus basé sur les validations
+              const chaptersRead = progress.validations?.length ?? 0;
+              const totalChapters = progress.total_chapters ?? 1;
+              
+              // Calcul du pourcentage d'avancement
+              const progressPercentage = totalChapters > 0 
+                ? Math.min(Math.floor((chaptersRead / totalChapters) * 100), 100)
                 : 0;
               
-              // Calculate a percentage for the progress bar
-              const progressPercentage = progress.total_pages > 0 
-                ? Math.min(Math.round((progress.current_page / progress.total_pages) * 100), 100)
-                : 0;
-              
-              // Book status icon based on progress status
+              // Icône de statut en fonction de l'état de lecture
               const getProgressStatusIcon = () => {
                 if (progress.status === "completed") {
                   return <CheckCircle className="h-4 w-4 text-green-600 mr-1" />;
-                } else if (progress.current_page > 0) {
+                } else if (chaptersRead > 0) {
                   return <BookOpen className="h-4 w-4 text-coffee-dark mr-1" />;
                 } else {
                   return <BookMarked className="h-4 w-4 text-coffee-medium mr-1" />;
@@ -119,7 +118,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                     <div className="absolute top-1 right-1 bg-white bg-opacity-70 rounded-full p-0.5">
                       {progress.status === "completed" ? (
                         <CheckCircle className="h-3 w-3 text-green-600" />
-                      ) : progress.current_page > 0 ? (
+                      ) : chaptersRead > 0 ? (
                         <BookOpen className="h-3 w-3 text-coffee-dark" />
                       ) : (
                         <BookMarked className="h-3 w-3 text-coffee-medium" />
@@ -146,17 +145,14 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{progressPercentage}% terminé</span>
                           <span>
-                            {progress.total_chapters 
-                              ? `${chaptersRead}/${progress.total_chapters} chapitres` 
-                              : "—/— chapitres"
-                            }
+                            {`${chaptersRead}/${totalChapters} chapitres`}
                           </span>
                         </div>
                       </div>
                     </Link>
                     
-                    {/* Resume button - only show for books that are in progress but not completed */}
-                    {progress.current_page > 0 && progress.status !== "completed" && (
+                    {/* Bouton Reprendre - uniquement pour les livres en cours non terminés */}
+                    {chaptersRead > 0 && progress.status !== "completed" && (
                       <Button
                         size="sm"
                         className="mt-2 bg-coffee-dark hover:bg-coffee-darker"
