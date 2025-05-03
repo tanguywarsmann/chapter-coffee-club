@@ -24,11 +24,10 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
 
     return (data || []).map(item => ({
       ...item,
-  totalChapters: item.totalChapters ?? item.expected_segments ?? 1,
-  validations: []
-}));
-
+      totalChapters: item.totalChapters ?? item.expected_segments ?? 1,
+      validations: []
     }));
+    
   } catch (error) {
     return [];
   }
