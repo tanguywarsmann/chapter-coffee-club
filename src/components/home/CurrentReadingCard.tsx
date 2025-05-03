@@ -36,7 +36,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
             <h3 className="font-medium text-coffee-darker">{book.title}</h3>
             <p className="text-sm text-muted-foreground">{book.author}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Page {currentPage} sur {book.pages}
+              {book.chaptersRead} sur {book.totalChapters} chapitres
             </p>
           </div>
 
