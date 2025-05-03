@@ -5,17 +5,16 @@ import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Loader2 } from "lucide-react";
-import { getUserActivities } from "@/mock/activities";
+import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 
 interface HomeContentProps {
-  inProgressBooks: Book[];
+  readingProgresses: ReadingProgressType[];
   isLoading: boolean;
   onProgressUpdate: (bookId: string) => void;
 }
 
 export function HomeContent({
-  inProgressBooks,
+  readingProgresses,
   isLoading,
   onProgressUpdate
 }: HomeContentProps) {
@@ -31,8 +30,8 @@ export function HomeContent({
         </div>
         
         <ReadingProgress 
-          key={`reading-progress-${inProgressBooks.length}`}
-          inProgressBooks={inProgressBooks}
+          key={`reading-progress-${readingProgresses.length}`}
+          progressItems={readingProgresses}
           isLoading={isLoading} 
         />
       </div>
@@ -42,3 +41,6 @@ export function HomeContent({
     </div>
   );
 }
+
+// Imported here to avoid breaking the component
+import { getUserActivities } from "@/mock/activities";

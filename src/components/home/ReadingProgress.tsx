@@ -1,22 +1,21 @@
 
-import { Book } from "@/types/book";
+import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen, BookMarked, CheckCircle, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
-import { calculateReadingProgress } from "@/lib/progress";
 
 interface ReadingProgressProps {
-  inProgressBooks: Book[];
+  progressItems: ReadingProgressType[];
   isLoading?: boolean;
 }
 
-export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingProgressProps) {
-  const availableBooks = useMemo(() => {
-    return inProgressBooks?.filter(book => !book.isUnavailable) || [];
-  }, [inProgressBooks]);
+export function ReadingProgress({ progressItems, isLoading = false }: ReadingProgressProps) {
+  const availableProgresses = useMemo(() => {
+    return progressItems || [];
+  }, [progressItems]);
   
   if (isLoading) {
     return (
@@ -46,7 +45,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
     );
   }
   
-  const books = availableBooks;
+  const progresses = availableProgresses;
   
   return (
     <Card className="border-coffee-light">
@@ -56,7 +55,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           <CardDescription>Reprenez où vous vous êtes arrêté</CardDescription>
         </div>
         
-        {books.length > 0 && (
+        {progresses.length > 0 && (
           <Button variant="ghost" size="sm" asChild>
             <Link to="/reading-list" className="text-coffee-dark hover:text-coffee-darker">
               Voir tout <ArrowRight className="ml-1 h-4 w-4" />
@@ -65,7 +64,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
         )}
       </CardHeader>
       <CardContent>
-        {books.length === 0 ? (
+        {progresses.length === 0 ? (
           <div className="text-center p-6 border border-dashed border-coffee-light rounded-lg">
             <BookOpen className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <h3 className="text-lg font-medium text-coffee-darker mb-1">Aucune lecture en cours</h3>
@@ -76,18 +75,22 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
           </div>
         ) : (
           <div className="space-y-4">
-            {books.slice(0, 3).map((book) => {
-              console.log("Book debug in ReadingProgress:", book);
-              const chaptersRead = book.chaptersRead || 0;
-              // Use totalChapters from book properties but don't reference total_chapters
-              const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
-              const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
+            {progresses.slice(0, 3).map((progress) => {
+              // Calculation of chapters read based on progress
+              const chaptersRead = progress.total_chapters 
+                ? Math.floor(progress.current_page / (progress.total_pages / progress.total_chapters))
+                : 0;
               
-              // Book status icon based on progress
-              const getBookStatusIcon = () => {
-                if (book.isCompleted) {
+              // Calculate a percentage for the progress bar
+              const progressPercentage = progress.total_pages > 0 
+                ? Math.min(Math.round((progress.current_page / progress.total_pages) * 100), 100)
+                : 0;
+              
+              // Book status icon based on progress status
+              const getProgressStatusIcon = () => {
+                if (progress.status === "completed") {
                   return <CheckCircle className="h-4 w-4 text-green-600 mr-1" />;
-                } else if (chaptersRead > 0) {
+                } else if (progress.current_page > 0) {
                   return <BookOpen className="h-4 w-4 text-coffee-dark mr-1" />;
                 } else {
                   return <BookMarked className="h-4 w-4 text-coffee-medium mr-1" />;
@@ -95,31 +98,20 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
               };
               
               return (
-                <div key={book.id} className="flex gap-4 group transition-transform duration-300 hover:scale-[1.01]">
+                <div key={progress.id} className="flex gap-4 group transition-transform duration-300 hover:scale-[1.01]">
                   <div className="book-cover w-16 h-24 overflow-hidden relative">
-                    {book.coverImage ? (
-                      <img 
-                        src={book.coverImage} 
-                        alt={book.title || "Couverture"} 
-                        className="w-full h-full object-cover" 
-                        onError={(e) => {
-                          // Replace broken image with placeholder
-                          e.currentTarget.src = '/placeholder.svg';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                        <span className="font-serif italic text-white">
-                          {(book.title?.substring(0, 1) || "?") }
-                        </span>
-                      </div>
-                    )}
+                    {/* Cover image would be handled by a separate component */}
+                    <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+                      <span className="font-serif italic text-white">
+                        {progress.book_id.substring(0, 1) || "?"}
+                      </span>
+                    </div>
                     
                     {/* Status indicator */}
                     <div className="absolute top-1 right-1 bg-white bg-opacity-70 rounded-full p-0.5">
-                      {book.isCompleted ? (
+                      {progress.status === "completed" ? (
                         <CheckCircle className="h-3 w-3 text-green-600" />
-                      ) : chaptersRead > 0 ? (
+                      ) : progress.current_page > 0 ? (
                         <BookOpen className="h-3 w-3 text-coffee-dark" />
                       ) : (
                         <BookMarked className="h-3 w-3 text-coffee-medium" />
@@ -128,18 +120,15 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                   </div>
                   
                   <div className="flex-1">
-                    <Link to={`/books/${book.id}`} className="block">
+                    <Link to={`/books/${progress.book_id}`} className="block">
                       <h3 className="font-medium line-clamp-1 group-hover:underline text-coffee-darker flex items-center">
-                        <span className="hidden md:inline-block">{getBookStatusIcon()}</span>
-                        {book.title || "Chargement..."}
+                        <span className="hidden md:inline-block">{getProgressStatusIcon()}</span>
+                        {progress.book_id} {/* This would typically be the book title */}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {book.author || "..."}
-                      </p>
                       
                       {/* Display total chapters information */}
                       <p className="text-xs text-muted-foreground mt-1">
-                        Chapitres au total : {book.totalChapters ? book.totalChapters : "—"}
+                        Chapitres au total : {progress.total_chapters ?? "—"}
                       </p>
                       
                       <div className="mt-2 space-y-1">
@@ -151,19 +140,24 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{progressPercentage}% terminé</span>
-                          <span>{chaptersRead}/{totalChapters} chapitres</span>
+                          <span>
+                            {progress.total_chapters 
+                              ? `${chaptersRead}/${progress.total_chapters} chapitres` 
+                              : "—/— chapitres"
+                            }
+                          </span>
                         </div>
                       </div>
                     </Link>
                     
                     {/* Resume button - only show for books that are in progress but not completed */}
-                    {chaptersRead > 0 && !book.isCompleted && (
+                    {progress.current_page > 0 && progress.status !== "completed" && (
                       <Button
                         size="sm"
                         className="mt-2 bg-coffee-dark hover:bg-coffee-darker"
                         asChild
                       >
-                        <Link to={`/books/${book.id}`}>
+                        <Link to={`/books/${progress.book_id}`}>
                           <PlayCircle className="h-4 w-4 mr-1" />
                           Reprendre
                         </Link>
