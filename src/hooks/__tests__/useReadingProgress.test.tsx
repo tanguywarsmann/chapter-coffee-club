@@ -1,6 +1,6 @@
 
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useInProgressBooks } from "../useInProgressBooks";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
 import { useAuth } from "@/contexts/AuthContext";
 import { getBooksInProgressFromAPI, syncBookWithAPI } from "@/services/reading";
 import { toast } from "sonner";
