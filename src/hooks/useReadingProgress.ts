@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { ReadingProgress } from "@/types/reading";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -95,4 +96,3 @@ export const useReadingProgress = () => {
     handleProgressUpdate,
   };
 };
-

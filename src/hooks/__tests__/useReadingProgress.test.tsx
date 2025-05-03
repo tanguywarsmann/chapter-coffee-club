@@ -1,9 +1,10 @@
-import { renderHook } from "@testing-library/react";
+
+import { renderHook, waitFor } from "@testing-library/react";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 // Mock Supabase ou toute fonction dépendante
-jest.mock("@/services/progressService", () => ({
+jest.mock("@/services/reading/progressService", () => ({
   getUserReadingProgress: jest.fn().mockResolvedValue([
     {
       id: "1",
@@ -28,11 +29,12 @@ describe("useReadingProgress", () => {
       <AuthProvider>{children}</AuthProvider>
     );
 
-    const { result, waitForNextUpdate } = renderHook(() => useReadingProgress(), { wrapper });
+    const { result } = renderHook(() => useReadingProgress(), { wrapper });
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
-    expect(result.current.isLoading).toBe(false);
     expect(result.current.readingProgress.length).toBe(1);
     expect(result.current.readingProgress[0].total_chapters).toBe(10);
     expect(result.current.error).toBeNull();

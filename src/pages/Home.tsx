@@ -10,7 +10,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MainContent } from "@/components/home/MainContent";
 import { useHomeSearch } from "@/hooks/useHomeSearch";
 import { useCurrentReading } from "@/hooks/useCurrentReading";
-import { useInProgressBooks } from "@/hooks/useInProgressBooks";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 export default function Home() {
   // Utiliser une référence pour suivre les montages/démontages
@@ -45,7 +45,7 @@ export default function Home() {
 
   const { searchResults, setSearchResults, handleSearch, isSearching, isRedirecting } = useHomeSearch();
   const { currentReading, isLoadingCurrentBook } = useCurrentReading();
-  const { currentBook, inProgressBooks, isLoading, handleProgressUpdate } = useInProgressBooks();
+  const { readingProgress, isLoading, handleProgressUpdate } = useReadingProgress();
   const navigate = useNavigate();
 
   // Mémoiser cette fonction pour éviter les re-rendus inutiles
@@ -68,8 +68,7 @@ export default function Home() {
     onResetSearch: () => setSearchResults(null),
     currentReading,
     isLoadingCurrentBook,
-    currentBook,
-    inProgressBooks,
+    readingProgress,
     isLoading,
     isSearching,
     isRedirecting,
@@ -79,9 +78,8 @@ export default function Home() {
     searchResults, 
     setSearchResults, 
     currentReading, 
-    isLoadingCurrentBook, 
-    currentBook, 
-    inProgressBooks, 
+    isLoadingCurrentBook,
+    readingProgress, 
     isLoading,
     isSearching,
     isRedirecting,

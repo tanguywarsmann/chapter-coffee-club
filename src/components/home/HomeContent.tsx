@@ -8,13 +8,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 
 interface HomeContentProps {
-  readingProgresses: ReadingProgressType[];
+  readingProgress: ReadingProgressType[];
   isLoading: boolean;
   onProgressUpdate: (bookId: string) => void;
 }
 
 export function HomeContent({
-  readingProgresses,
+  readingProgress,
   isLoading,
   onProgressUpdate
 }: HomeContentProps) {
@@ -30,8 +30,8 @@ export function HomeContent({
         </div>
         
         <ReadingProgress 
-          key={`reading-progress-${readingProgresses.length}`}
-          progressItems={readingProgresses}
+          key={`reading-progress-${readingProgress.length}`}
+          progressItems={readingProgress}
           isLoading={isLoading} 
         />
       </div>
