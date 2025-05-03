@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/services/bookService"; // Assure-toi que cette fonction existe
+import { getBookById } from "@/services/bookService"; // Make sure this import exists
 
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
@@ -22,7 +23,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         const book = await getBookById(item.book_id); // Récupération du livre associé
         return {
           ...item,
-          total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1, // 👈 Ajout ici
+          total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1, // Ajout du nombre de chapitres
           validations: [],
         };
       })
@@ -54,7 +55,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 
     return {
       ...data,
-      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
+      total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
       validations: [],
     };
   } catch (error) {
