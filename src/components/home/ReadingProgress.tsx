@@ -79,7 +79,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
             {books.slice(0, 3).map((book) => {
               // Calculate progress using the centralized function
               const chaptersRead = book.chaptersRead || 0;
-              const totalChapters = book.totalChapters || 1;
+              const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
               const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
               
               // Book status icon based on progress
