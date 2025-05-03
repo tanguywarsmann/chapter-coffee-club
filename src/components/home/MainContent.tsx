@@ -1,48 +1,42 @@
-
 import { Book } from "@/types/book";
 import { useRef, useEffect, useMemo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
 import { Search } from "lucide-react";
+import { ReadingProgress } from "@/types/reading";
 
 interface MainContentProps {
   searchResults: Book[] | null;
   onResetSearch: () => void;
-  currentReading: Book | null;
-  isLoadingCurrentBook: boolean;
-  currentBook: Book | null;
-  inProgressBooks: Book[];
   isLoading: boolean;
   isSearching?: boolean;
   isRedirecting?: boolean;
+  readingProgress: ReadingProgress[];
   onProgressUpdate: (bookId: string) => void;
-  onContinueReading: () => void;
 }
 
 export function MainContent({
   searchResults,
   onResetSearch,
-  inProgressBooks,
+  readingProgress,
   isLoading,
   isSearching = false,
   isRedirecting = false,
   onProgressUpdate
 }: MainContentProps) {
   const renderCount = useRef(0);
-  
-  // Memoize the inProgressBooks count for stable comparisons
+
   const stableIds = useMemo(() => ({
-    inProgressCount: inProgressBooks?.length || 0
-  }), [inProgressBooks?.length]);
-  
-  // Logging pour diagnostic
+    inProgressCount: readingProgress?.length || 0
+  }), [readingProgress?.length]);
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       renderCount.current++;
       console.log(`[MAIN CONTENT DIAGNOSTIQUE] Render #${renderCount.current}`, {
         hasSearchResults: !!searchResults,
-        inProgressBooksCount: stableIds.inProgressCount,
+        inProgressCount: stableIds.inProgressCount,
         isLoading,
         isSearching,
         isRedirecting
@@ -50,19 +44,18 @@ export function MainContent({
     }
   });
 
-  // Memoize the home content to prevent unnecessary re-renders
   const homeContent = useMemo(() => (
     <>
       <StatsCards />
       <HomeContent
         key={`home-content-${stableIds.inProgressCount}`}
-        inProgressBooks={inProgressBooks}
+        readingProgress={readingProgress}
         isLoading={isLoading}
         onProgressUpdate={onProgressUpdate}
       />
     </>
   ), [
-    inProgressBooks, 
+    readingProgress, 
     isLoading, 
     onProgressUpdate,
     stableIds
