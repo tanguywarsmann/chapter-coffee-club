@@ -105,7 +105,7 @@ export const fetchBooksForStatus = async (
         return {
           ...book,
           chaptersRead: Math.floor(item.current_page / 30),
-          totalChapters: Math.ceil(book.pages / 30) || 1,
+          totalChapters: Math.ceil(book.total_pages / 30) || 1,
           isCompleted: item.status === "completed"
         } as Book;
       } catch (error) {
