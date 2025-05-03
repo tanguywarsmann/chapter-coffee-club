@@ -33,6 +33,12 @@ export interface ReadingProgress {
   streak_best: number;
   validations?: ReadingValidation[]; // Optional for flexibility
   total_chapters?: number; // Added field from backend
+  
+  // New enriched fields
+  book_title?: string;
+  book_author?: string;
+  book_slug?: string;
+  book_cover?: string | null;
 }
 
 export interface ValidateReadingRequest {

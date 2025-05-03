@@ -76,7 +76,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
         ) : (
           <div className="space-y-4">
             {progresses.slice(0, 3).map((progress) => {
-              // Calculation of chapters read based on progress
+              // Calculation of chapters read based on progress and total chapters
               const chaptersRead = progress.total_chapters 
                 ? Math.floor(progress.current_page / (progress.total_pages / progress.total_chapters))
                 : 0;
@@ -100,12 +100,20 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
               return (
                 <div key={progress.id} className="flex gap-4 group transition-transform duration-300 hover:scale-[1.01]">
                   <div className="book-cover w-16 h-24 overflow-hidden relative">
-                    {/* Cover image would be handled by a separate component */}
-                    <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-                      <span className="font-serif italic text-white">
-                        {progress.book_id.substring(0, 1) || "?"}
-                      </span>
-                    </div>
+                    {progress.book_cover ? (
+                      <img 
+                        src={progress.book_cover} 
+                        alt={progress.book_title} 
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+                        <span className="font-serif italic text-white">
+                          {(progress.book_title || "?").substring(0, 1)}
+                        </span>
+                      </div>
+                    )}
                     
                     {/* Status indicator */}
                     <div className="absolute top-1 right-1 bg-white bg-opacity-70 rounded-full p-0.5">
@@ -123,13 +131,10 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                     <Link to={`/books/${progress.book_id}`} className="block">
                       <h3 className="font-medium line-clamp-1 group-hover:underline text-coffee-darker flex items-center">
                         <span className="hidden md:inline-block">{getProgressStatusIcon()}</span>
-                        {progress.book_id} {/* This would typically be the book title */}
+                        {progress.book_title || "Titre inconnu"}
                       </h3>
                       
-                      {/* Display total chapters information */}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Chapitres au total : {progress.total_chapters ?? "—"}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{progress.book_author || "Auteur inconnu"}</p>
                       
                       <div className="mt-2 space-y-1">
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
