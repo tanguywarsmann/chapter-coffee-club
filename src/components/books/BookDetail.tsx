@@ -1,10 +1,10 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
-import { syncBookWithAPI } from "@/services/reading";
+import { getBookReadingProgress } from "@/services/progressService";
 import { useBookValidation } from "@/hooks/useBookValidation";
-import { getBookReadingProgress } from "@/services/reading/progressService";
 import { BookDetailHeader } from "./BookDetailHeader";
 import { BookCoverInfo } from "./BookCoverInfo";
 import { BookDescription } from "./BookDescription";
@@ -14,6 +14,7 @@ import { BookValidationModals } from "./BookValidationModals";
 import { toast } from "sonner";
 import { checkBadgesForUser, recordReadingSession } from "@/services/badgeService";
 import { calculateReadingProgress } from "@/lib/progress";
+import { ReadingProgress } from "@/types/reading";
 
 interface BookDetailProps {
   book: Book;
@@ -23,9 +24,10 @@ interface BookDetailProps {
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [currentBook, setCurrentBook] = useState<Book>(book);
   const [progressPercent, setProgressPercent] = useState<number>(0);
-  const [readingProgress, setReadingProgress] = useState<any>(null);
+  const [readingProgress, setReadingProgress] = useState<ReadingProgress | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const sessionStartTimeRef = useRef<Date | null>(null);
 
   const {
     isValidating,
@@ -50,17 +52,48 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const sessionStartTimeRef = useRef<Date | null>(null);
 
+  // Fetch reading progress whenever the book or user changes
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (user?.id && currentBook?.id) {
+        try {
+          const progress = await getBookReadingProgress(user.id, currentBook.id);
+          if (progress) {
+            setReadingProgress(progress);
+            
+            // Update the book with validation data
+            const chaptersRead = progress.validations?.length || 0;
+            if (chaptersRead !== currentBook.chaptersRead) {
+              setCurrentBook(prevBook => ({
+                ...prevBook,
+                chaptersRead: chaptersRead
+              }));
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching book reading progress:", error);
+        }
+      }
+    };
+    
+    fetchProgress();
+  }, [user?.id, currentBook?.id]);
+
+  // Calculate progress percentage based on validations
   useEffect(() => {
     if (currentBook) {
-      const chaptersRead = currentBook.chaptersRead || 0;
-      const totalChapters = currentBook.totalChapters || currentBook.expectedSegments || 1;
+      const chaptersRead = readingProgress?.validations?.length || 
+                          currentBook.chaptersRead || 0;
+      const totalChapters = readingProgress?.total_chapters || 
+                          currentBook.totalChapters || 
+                          currentBook.expectedSegments || 1;
 
-      console.log("BookDetail → Progress debug:", {
+      console.log("BookDetail → Progress calculation:", {
         title: currentBook.title,
         chaptersRead,
-        totalChapters
+        totalChapters,
+        validationsLength: readingProgress?.validations?.length
       });
 
       setProgressPercent(calculateReadingProgress(
@@ -68,21 +101,11 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         totalChapters
       ));
     }
-  }, [currentBook]);
-
-  useEffect(() => {
-    const fetchProgress = async () => {
-      if (user?.id) {
-        const progress = await getBookReadingProgress(user.id, currentBook.id);
-        setReadingProgress(progress);
-      }
-    };
-    fetchProgress();
-  }, [user?.id, currentBook.id]);
+  }, [currentBook, readingProgress]);
 
   const getCurrentSegmentToValidate = () => {
-    const currentPage = readingProgress?.current_page || 0;
-    return Math.floor(currentPage / 30) + 1;
+    if (!readingProgress || !readingProgress.validations) return 1;
+    return (readingProgress.validations.length || 0) + 1;
   };
 
   const handleMainButtonClick = async () => {
@@ -91,12 +114,12 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       return;
     }
 
-    const lectureInit = !!(readingProgress?.current_page || currentBook.chaptersRead);
     const segment = getCurrentSegmentToValidate();
     setValidationSegment(segment);
     setShowValidationModal(true);
 
-    if (!lectureInit) {
+    // Start session timer if not already started
+    if (!sessionStartTimeRef.current) {
       sessionStartTimeRef.current = new Date();
     }
   };
@@ -130,7 +153,12 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  const isBookCompleted = (currentBook.chaptersRead || 0) >= (currentBook.totalChapters || currentBook.expectedSegments || 1);
+  // Check if book is completed based on validations
+  const chaptersRead = readingProgress?.validations?.length || currentBook.chaptersRead || 0;
+  const totalChapters = readingProgress?.total_chapters || 
+                       currentBook.totalChapters || 
+                       currentBook.expectedSegments || 1;
+  const isBookCompleted = chaptersRead >= totalChapters;
   const showValidationButton = !isBookCompleted;
 
   return (
@@ -140,13 +168,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         <BookCoverInfo book={currentBook} />
         <BookDescription description={currentBook.description} />
 
-        {showValidationButton && (
+        {isBookCompleted ? (
+          <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
+            <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
+          </div>
+        ) : showValidationButton && (
           <Button
             disabled={isValidating}
             onClick={handleMainButtonClick}
             className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
           >
-            {readingProgress?.current_page ? "Valider ma lecture" : "Commencer ma lecture"}
+            {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
           </Button>
         )}
 

@@ -105,8 +105,14 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       .eq("book_id", bookId)
       .maybeSingle();
 
-    if (progressError || !progress) {
+    if (progressError) {
       console.error("Error fetching book reading progress:", progressError);
+      return null;
+    }
+
+    // If no progress record exists yet, return null (first time viewing the book)
+    if (!progress) {
+      console.log(`No reading progress found for user ${userId} and book ${bookId}`);
       return null;
     }
 

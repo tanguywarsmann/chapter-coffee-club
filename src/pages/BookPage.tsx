@@ -10,6 +10,7 @@ import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
+import { getBookReadingProgress } from "@/services/progressService";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +25,7 @@ export default function BookPage() {
     // Set mounted flag
     isMounted.current = true;
     
-    // Fetch book data
+    // Fetch book data and reading progress
     const fetchBook = async () => {
       if (!id) {
         navigate("/home");
@@ -51,18 +52,44 @@ export default function BookPage() {
           return;
         }
 
+        // Set initial book data
         setBook(fetchedBook);
         
-        // Sync book with reading progress if user is authenticated
+        // Fetch reading progress if user is authenticated
         if (user?.id) {
           try {
+            // First get reading progress to get validations data
+            const progress = await getBookReadingProgress(user.id, id);
+            
+            if (!isMounted.current) return;
+            
+            // Update book with chapters read from validations
+            if (progress && progress.validations) {
+              const chaptersRead = progress.validations.length;
+              setBook(prevBook => {
+                if (!prevBook) return fetchedBook;
+                return {
+                  ...prevBook,
+                  chaptersRead,
+                  isCompleted: chaptersRead >= (prevBook.totalChapters || prevBook.expectedSegments || 1)
+                };
+              });
+            }
+            
+            // Also sync with API for good measure
             const syncedBook = await syncBookWithAPI(user.id, id);
             
-            // Safety check to prevent state updates on unmounted component
             if (!isMounted.current) return;
             
             if (syncedBook) {
-              setBook(syncedBook);
+              // Preserve chaptersRead from validations if available
+              setBook(prevBook => {
+                if (!prevBook) return syncedBook;
+                return {
+                  ...syncedBook,
+                  chaptersRead: progress?.validations?.length ?? syncedBook.chaptersRead
+                };
+              });
             }
           } catch (syncError) {
             console.error("Error syncing book with API:", syncError);
@@ -99,14 +126,40 @@ export default function BookPage() {
     }
     
     try {
+      // First get up-to-date reading progress
+      const progress = await getBookReadingProgress(user.id, bookId);
+      
+      if (!isMounted.current) return;
+      
+      // Update book with chapters read from validations
+      if (progress && progress.validations) {
+        const chaptersRead = progress.validations.length;
+        setBook(prevBook => {
+          if (!prevBook) return null;
+          return {
+            ...prevBook,
+            chaptersRead,
+            isCompleted: chaptersRead >= (prevBook.totalChapters || prevBook.expectedSegments || 1)
+          };
+        });
+      }
+      
+      // Also sync with API
       const updatedBook = await syncBookWithAPI(user.id, bookId);
       
       // Safety check to prevent state updates on unmounted component
       if (!isMounted.current) return;
       
       if (updatedBook) {
-        setBook(updatedBook);
-        toast.success("Mise à jour du livre réussie");
+        // Preserve chaptersRead from validations if available
+        setBook(prevBook => {
+          if (!prevBook) return updatedBook;
+          return {
+            ...updatedBook,
+            chaptersRead: progress?.validations?.length ?? updatedBook.chaptersRead
+          };
+        });
+        toast.success("Lecture validée avec succès");
       } else {
         toast.error("Impossible de mettre à jour le livre");
       }

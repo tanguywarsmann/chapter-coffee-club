@@ -2,7 +2,6 @@
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown } from "lucide-react";
 import { forwardRef, useEffect, ForwardedRef } from "react";
-import { calculateReadingProgress } from "@/lib/progress";
 
 interface BookProgressBarProps {
   progressPercent: number;
