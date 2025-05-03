@@ -77,10 +77,10 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
         ) : (
           <div className="space-y-4">
             {books.slice(0, 3).map((book) => {
-              // Calculate progress using the centralized function
               console.log("Book debug in ReadingProgress:", book);
               const chaptersRead = book.chaptersRead || 0;
-              const totalChapters = book.total_chapters ?? book.totalChapters ?? book.expectedSegments ?? 1;
+              // Use totalChapters from book properties but don't reference total_chapters
+              const totalChapters = book.totalChapters ?? book.expectedSegments ?? 1;
               const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
               
               // Book status icon based on progress
@@ -139,7 +139,7 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                       
                       {/* Display total chapters information */}
                       <p className="text-xs text-muted-foreground mt-1">
-                        Chapitres au total : {book.total_chapters ? book.total_chapters : "—"}
+                        Chapitres au total : {book.totalChapters ? book.totalChapters : "—"}
                       </p>
                       
                       <div className="mt-2 space-y-1">
