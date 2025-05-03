@@ -14,6 +14,7 @@ import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { toast } from "sonner";
 import { checkBadgesForUser, recordReadingSession } from "@/services/badgeService";
+import { calculateReadingProgress } from "@/lib/progress";
 
 interface BookDetailProps {
   book: Book;
@@ -57,12 +58,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   useEffect(() => {
     if (currentBook && currentBook.totalChapters) {
-      setProgressPercent(
-        Math.min(
-          100,
-          Math.round(((currentBook.chaptersRead || 0) / currentBook.totalChapters) * 100)
-        )
-      );
+      setProgressPercent(calculateReadingProgress(
+        currentBook.chaptersRead || 0,
+        currentBook.totalChapters
+      ));
     }
   }, [currentBook]);
 
@@ -136,19 +135,27 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
+  // Vérifier si le livre est complété à 100% et ne doit plus être validé
+  const isBookCompleted = progressPercent === 100;
+  const showValidationButton = !isBookCompleted;
+
   return (
     <Card className="border-coffee-light">
       <BookDetailHeader title={currentBook.title} />
       <CardContent className="space-y-4">
         <BookCoverInfo book={currentBook} />
         <BookDescription description={currentBook.description} />
-        <Button
-          disabled={isValidating}
-          onClick={handleMainButtonClick}
-          className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
-        >
-          {readingProgress?.current_page ? "Valider ma lecture" : "Commencer ma lecture"}
-        </Button>
+        
+        {showValidationButton && (
+          <Button
+            disabled={isValidating}
+            onClick={handleMainButtonClick}
+            className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
+          >
+            {readingProgress?.current_page ? "Valider ma lecture" : "Commencer ma lecture"}
+          </Button>
+        )}
+        
         <BookProgressBar progressPercent={progressPercent} />
         
         <BookValidationModals

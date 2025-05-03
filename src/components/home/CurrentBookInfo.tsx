@@ -3,6 +3,7 @@ import { Book } from "@/types/book";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight } from "lucide-react";
+import { calculateReadingProgress } from "@/lib/progress";
 
 interface CurrentBookInfoProps {
   book: Book;

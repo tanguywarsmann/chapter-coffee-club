@@ -6,6 +6,7 @@ import { ArrowRight, BookOpen, BookMarked, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
+import { calculateReadingProgress } from "@/lib/progress";
 
 interface ReadingProgressProps {
   inProgressBooks: Book[];
@@ -76,10 +77,10 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
         ) : (
           <div className="space-y-4">
             {books.slice(0, 3).map((book) => {
-              // Calculate progress safely with fallbacks for missing data
+              // Calculate progress using the centralized function
               const chaptersRead = book.chaptersRead || 0;
               const totalChapters = book.totalChapters || 1;
-              const progressPercentage = (chaptersRead / totalChapters) * 100;
+              const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
               
               // Book status icon based on progress
               const getBookStatusIcon = () => {
@@ -139,11 +140,11 @@ export function ReadingProgress({ inProgressBooks, isLoading = false }: ReadingP
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                           <div 
                             className="h-full rounded-full bg-coffee-dark transition-all duration-500 ease-out"
-                            style={{ width: `${Math.max(0, Math.min(100, progressPercentage))}%` }}
+                            style={{ width: `${progressPercentage}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{Math.round(progressPercentage)}% terminé</span>
+                          <span>{progressPercentage}% terminé</span>
                           <span>{chaptersRead}/{totalChapters} chapitres</span>
                         </div>
                       </div>

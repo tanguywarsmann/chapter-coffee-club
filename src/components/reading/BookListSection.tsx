@@ -4,6 +4,7 @@ import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { calculateReadingProgress } from '@/lib/progress';
 
 interface BookListSectionProps {
   title: string;
@@ -69,10 +70,10 @@ export function BookListSection({
       
       <div className="space-y-6">
         {displayBooks.map((book) => {
-          // Calculate progress percentage safely
+          // Calculate progress using the centralized function
           const chaptersRead = book.chaptersRead || 0;
           const totalChapters = book.totalChapters || 1;
-          const progressPercentage = (chaptersRead / totalChapters) * 100;
+          const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
             
           return (
             <div key={book.id} className="flex gap-6 p-4 bg-background rounded-lg border border-border">
@@ -123,11 +124,11 @@ export function BookListSection({
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full ${book.isUnavailable ? "bg-gray-400" : "bg-coffee-dark"}`}
-                        style={{ width: `${Math.max(0, Math.min(100, progressPercentage))}%` }}
+                        style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(progressPercentage)}% terminé</span>
+                      <span>{progressPercentage}% terminé</span>
                       <span>{chaptersRead}/{totalChapters} chapitres</span>
                     </div>
                   </div>

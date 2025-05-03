@@ -1,5 +1,5 @@
 
-import { useState } from "react"; // Adding the React import that might be missing
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
@@ -9,6 +9,7 @@ import { QuizModal } from "@/components/books/QuizModal";
 import { CurrentBookCover } from "./CurrentBookCover";
 import { CurrentBookInfo } from "./CurrentBookInfo";
 import { useCurrentBookValidation } from "@/hooks/useCurrentBookValidation";
+import { calculateReadingProgress } from "@/lib/progress";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -50,7 +51,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     );
   }
 
-  const progressPercentage = (book.chaptersRead / book.totalChapters) * 100;
+  const progressPercentage = calculateReadingProgress(book.chaptersRead, book.totalChapters);
   const handleNavigateToBook = () => navigate(`/books/${book.id}`);
 
   return (
