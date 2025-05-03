@@ -1,30 +1,12 @@
 
 import { Book } from "@/types/book";
-import { ReadingProgress } from "@/types/reading";
+import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
 import { bookFailureCache } from "@/utils/bookFailureCache";
 import { createFallbackBook } from "@/utils/createFallbackBook";
-import { getBookById } from "@/services/books/bookQueries";
 
 const BATCH_SIZE = 3;
 const TIMEOUT_MS = 5000;
-
-const fetchBookWithTimeout = async (bookId: string): Promise<Book | null> => {
-  try {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error(`Fetch for book ${bookId} timed out`)), TIMEOUT_MS);
-    });
-
-    const book = await Promise.race([
-      getBookById(bookId),
-      timeoutPromise
-    ]) as Book | null;
-
-    return book;
-  } catch (error) {
-    return null;
-  }
-};
 
 export const fetchReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) {
@@ -71,62 +53,111 @@ export const fetchBooksForStatus = async (
   }
 
   const books: Book[] = [];
-  const batches = [];
+  
+  try {
+    // 1. Récupérer les IDs de livres pour les requêtes suivantes
+    const bookIds = [...new Set(filteredList.map(item => item.book_id))];
+    
+    // 2. Récupérer tous les livres correspondants en une seule requête
+    const { data: booksData, error: booksError } = await supabase
+      .from("books")
+      .select("id, title, author, slug, cover_url, expected_segments, total_chapters, total_pages")
+      .in("id", bookIds);
 
-  for (let i = 0; i < filteredList.length; i += BATCH_SIZE) {
-    batches.push(filteredList.slice(i, i + BATCH_SIZE));
-  }
+    if (booksError) {
+      console.error("Error fetching books:", booksError);
+      // Continue with what we have
+    }
 
-  console.log(`[DEBUG] Préparation de ${batches.length} batches pour récupérer ${filteredList.length} livres`);
+    // Créer une map pour un accès rapide aux données des livres
+    const booksMap = (booksData || []).reduce((map, book) => {
+      map[book.id] = book;
+      return map;
+    }, {});
 
-  for (const batch of batches) {
-    const batchPromises = batch.map(async (item) => {
-      console.log(`[DEBUG] Préparation requête Supabase pour book_id=${item.book_id}`);
-      
-      if (bookFailureCache.has(item.book_id)) {
-        console.log(`[DEBUG] book_id=${item.book_id} dans le cache d'échec, création d'un fallback`);
-        return createFallbackBook(item, "Livre précédemment indisponible");
+    // 3. Récupérer toutes les validations pour cet utilisateur et ces livres
+    const { data: validationsData, error: validationsError } = await supabase
+      .from("reading_validations")
+      .select("*")
+      .eq("user_id", userId)
+      .in("book_id", bookIds);
+
+    if (validationsError) {
+      console.error("Error fetching validations:", validationsError);
+      // Continue with what we have
+    }
+
+    // Grouper les validations par book_id pour un accès facile
+    const validationsMap = (validationsData || []).reduce((map, validation) => {
+      if (!map[validation.book_id]) {
+        map[validation.book_id] = [];
       }
+      map[validation.book_id].push(validation);
+      return map;
+    }, {});
 
+    // 4. Convertir les données enrichies en objets Book
+    for (const item of filteredList) {
       try {
-        // Log juste avant l'appel à Supabase
-        console.log(`[DEBUG] Exécution requête Supabase: getBookById("${item.book_id}")`);
+        const bookData = booksMap[item.book_id];
+        const validations = validationsMap[item.book_id] || [];
         
-        const book = await fetchBookWithTimeout(item.book_id);
-        
-        if (!book) {
-          console.error(`[ERREUR] Échec récupération livre id=${item.book_id}: livre non trouvé ou null`);
-          bookFailureCache.add(item.book_id);
-          return createFallbackBook(item, "Livre indisponible");
+        if (!bookData && bookFailureCache.has(item.book_id)) {
+          console.log(`[DEBUG] book_id=${item.book_id} dans le cache d'échec, création d'un fallback`);
+          books.push(createFallbackBook(item, "Livre précédemment indisponible"));
+          continue;
         }
 
-        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${book.title}`);
+        if (!bookData) {
+          console.error(`[ERREUR] Livre id=${item.book_id} non trouvé dans la base de données`);
+          bookFailureCache.add(item.book_id);
+          books.push(createFallbackBook(item, "Livre indisponible"));
+          continue;
+        }
+
+        // Calculer les segments/chapitres réellement lus basés sur les validations
+        const chaptersRead = validations.length;
+        const totalChapters = bookData.total_chapters || bookData.expected_segments || 1;
+
+        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${bookData.title}, 
+                  chaptersRead=${chaptersRead}, totalChapters=${totalChapters}`);
         
-        return {
-          ...book,
-          chaptersRead: Math.floor(item.current_page / 30),
-          totalChapters: Math.ceil(book.total_pages / 30) || 1,
-          isCompleted: item.status === "completed"
-        } as Book;
+        books.push({
+          id: item.book_id,
+          title: bookData.title || "Titre inconnu",
+          author: bookData.author || "Auteur inconnu",
+          coverImage: bookData.cover_url || undefined,
+          description: "", // Could be fetched if needed
+          totalChapters: totalChapters,
+          chaptersRead: chaptersRead,
+          isCompleted: item.status === "completed",
+          language: "", // Not available in the current query
+          categories: [],
+          pages: bookData.total_pages || 0,
+          publicationYear: 0, // Not available in the current query
+          slug: bookData.slug,
+          book_title: bookData.title || "Titre inconnu",
+          book_author: bookData.author || "Auteur inconnu",
+          book_slug: bookData.slug || "",
+          book_cover: bookData.cover_url || null,
+          total_chapters: totalChapters
+        } as Book);
       } catch (error) {
-        console.error(`[ERREUR] Exception lors de la récupération du livre id=${item.book_id}:`, error);
+        console.error(`[ERREUR] Exception lors du traitement du livre id=${item.book_id}:`, error);
         bookFailureCache.add(item.book_id);
-        return createFallbackBook(item, error instanceof Error ? error.message : "Erreur inconnue");
+        books.push(createFallbackBook(item, error instanceof Error ? error.message : "Erreur inconnue"));
       }
-    });
-
-    const batchResults = await Promise.allSettled(batchPromises);
-    batchResults.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        books.push(result.value);
-      }
-    });
-
-    if (batches.length > 1) {
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
-  }
 
-  console.log(`[DEBUG] Résultat final pour status=${status}: ${books.length} livres récupérés`);
-  return books;
+    console.log(`[DEBUG] Résultat final pour status=${status}: ${books.length} livres enrichis récupérés`);
+    return books;
+  } catch (error) {
+    console.error(`[ERREUR] Exception générale dans fetchBooksForStatus:`, error);
+    // Return what we've got so far or fallbacks for remaining items
+    if (books.length === 0) {
+      // Create fallbacks for all filtered items if no books were successfully processed
+      return filteredList.map(item => createFallbackBook(item, "Erreur lors de la récupération des livres"));
+    }
+    return books;
+  }
 };
