@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, Users } from "lucide-react";
+import { Trophy, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Goal {
@@ -12,12 +12,7 @@ interface Goal {
   icon: "trophy" | "target";
 }
 
-interface GoalsPreviewProps {
-  followerCount: number;
-  followingCount: number;
-}
-
-export function GoalsPreview({ followerCount, followingCount }: GoalsPreviewProps) {
+export function GoalsPreview() {
   const upcomingGoals: Goal[] = [
     {
       id: "1",
@@ -43,26 +38,7 @@ export function GoalsPreview({ followerCount, followingCount }: GoalsPreviewProp
         <CardTitle className="text-lg font-serif text-coffee-darker">Prochains objectifs</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Section abonnements */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm text-coffee-darker">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-coffee-medium" />
-              <span className="font-medium">Abonnés</span>
-            </div>
-            <span>{followerCount}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm text-coffee-darker">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-coffee-medium" />
-              <span className="font-medium">Abonnements</span>
-            </div>
-            <span>{followingCount}</span>
-          </div>
-        </div>
-
-        {/* Section objectifs */}
-        {upcomingGoals && upcomingGoals.length > 0 ? (
+        {upcomingGoals.length > 0 ? (
           upcomingGoals.map((goal) => (
             <div key={goal.id} className="space-y-2 transition-opacity duration-300 ease-in-out">
               <div className="flex items-center gap-2">
@@ -99,3 +75,4 @@ export function GoalsPreview({ followerCount, followingCount }: GoalsPreviewProp
     </Card>
   );
 }
+
