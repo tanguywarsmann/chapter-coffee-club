@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -28,7 +27,6 @@ export default function Explore() {
     return !onboardingFlag;
   });
 
-  // Memoized function to fetch books and categories
   const fetchBooksAndCategories = useCallback(async () => {
     if (!isMounted.current) return;
     
@@ -36,14 +34,13 @@ export default function Explore() {
     setError(null);
 
     try {
-      // Fetch books and categories in parallel
       const [allBooks, availableCategories] = await Promise.all([
         getAllBooks(),
         getAvailableCategories()
       ]);
       
       if (!isMounted.current) return;
-      
+
       if (allBooks.length === 0) {
         setError("Aucun livre disponible pour le moment");
       }
@@ -65,12 +62,8 @@ export default function Explore() {
   }, []);
 
   useEffect(() => {
-    // Set mounted flag
     isMounted.current = true;
-    
     fetchBooksAndCategories();
-    
-    // Cleanup
     return () => {
       isMounted.current = false;
     };
@@ -85,11 +78,8 @@ export default function Explore() {
     try {
       if (category) {
         const filteredBooks = await getBooksByCategory(category);
-        
         if (!isMounted.current) return;
-        
         setFilteredBooks(filteredBooks);
-        
         if (filteredBooks.length === 0) {
           toast.info(`Aucun livre trouvé dans la catégorie "${category}"`);
         }
@@ -113,35 +103,31 @@ export default function Explore() {
       setFilteredBooks(books);
       return;
     }
-    
+
     const results = books.filter(book => 
       book.title.toLowerCase().includes(query.toLowerCase()) ||
       book.author.toLowerCase().includes(query.toLowerCase()) ||
       book.categories.some(category => category.toLowerCase().includes(query.toLowerCase()))
     );
-    
+
     setFilteredBooks(results);
-    
+
     if (results.length === 0) {
       toast.info("Aucun livre trouvé pour cette recherche.");
     }
   };
 
-  // Get a random book as a suggestion
   const suggestedBook = books.length > 0 ? books[Math.floor(Math.random() * books.length)] : null;
 
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <WelcomeModal
-          open={showWelcome}
-          onClose={() => setShowWelcome(false)}
-        />
+        <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
         <main className="container py-6 space-y-6">
           <div className="space-y-4">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
-            
+
             <div className="max-w-xl">
               <SearchBar 
                 onSearch={handleSearch} 
@@ -149,13 +135,13 @@ export default function Explore() {
               />
             </div>
 
-           <TagSlider
-             tags={categories}
-             selectedTag={selectedCategory}
-             onSelectTag={handleCategoryFilter}
-           />
+            <TagSlider
+              tags={categories}
+              selectedTag={selectedCategory}
+              onSelectTag={handleCategoryFilter}
+            />
           </div>
-          
+
           {loading ? (
             <div className="py-20 flex items-center justify-center">
               <div className="text-center">
@@ -176,7 +162,7 @@ export default function Explore() {
                 title="Livres disponibles" 
                 showAddButton={true}
               />
-              
+
               {suggestedBook && (
                 <Card className="border-coffee-light bg-white overflow-hidden">
                   <CardContent className="p-0">
@@ -199,22 +185,18 @@ export default function Explore() {
                           </div>
                         )}
                       </div>
-                      
                       <div className="p-6 md:w-2/3 lg:w-3/4">
                         <div className="flex items-center gap-2 mb-3">
                           <Sparkles className="h-5 w-5 text-coffee-dark" />
                           <h2 className="text-xl font-serif font-medium text-coffee-darker">Suggestion pour vous</h2>
                         </div>
-                        
                         <h3 className="text-2xl font-medium text-coffee-darker mb-2">{suggestedBook.title}</h3>
                         <p className="text-muted-foreground mb-4">
                           Par {suggestedBook.author} • {suggestedBook.pages} pages • {suggestedBook.publicationYear || "N/A"}
                         </p>
-                        
                         <p className="mb-4 text-coffee-darker">
                           Un livre qui pourrait vous plaire, basé sur vos lectures précédentes.
                         </p>
-                        
                         <div className="flex flex-wrap gap-1 mb-4">
                           {suggestedBook.categories.map((category, index) => (
                             <span key={index} className="px-2 py-1 bg-coffee-light/30 text-coffee-darker rounded-full text-xs">
