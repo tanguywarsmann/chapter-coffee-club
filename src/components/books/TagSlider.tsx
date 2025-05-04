@@ -1,64 +1,36 @@
-
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { TagPill } from "./TagPill";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import React from "react";
 
 interface TagSliderProps {
-  categories: string[];
-  selectedCategory: string | null;
-  onCategorySelect: (category: string | null) => void;
-  maxInitialTags?: number;
+  tags: string[];
+  selectedTag: string | null;
+  onSelectTag: (tag: string | null) => void;
 }
 
-export const TagSlider = ({
-  categories,
-  selectedCategory,
-  onCategorySelect,
-  maxInitialTags = 8,
-}: TagSliderProps) => {
-  const [showAllTags, setShowAllTags] = useState(false);
-  const visibleCategories = showAllTags ? categories : categories.slice(0, maxInitialTags);
-  
-  const hasMoreTags = categories.length > maxInitialTags;
-
+export const TagSlider: React.FC<TagSliderProps> = ({ tags, selectedTag, onSelectTag }) => {
   return (
-    <div className="space-y-2">
-<ScrollArea className="overflow-x-auto whitespace-nowrap">
-        <div className="flex gap-2 py-2 pb-3 px-0.5">
-          <TagPill
-            key="all"
-            label="Tous"
-            selected={selectedCategory === null}
-            onClick={() => onCategorySelect(null)}
-          />
-          {visibleCategories.map((category) => (
-            <TagPill
-              key={category}
-              label={category}
-              selected={selectedCategory === category}
-              onClick={() => onCategorySelect(category)}
-            />
-          ))}
-        </div>
-      </ScrollArea>
-      
-      {hasMoreTags && (
+    <div className="overflow-x-auto whitespace-nowrap py-2 px-2">
+      <div className="flex gap-2 w-max">
         <button
-          onClick={() => setShowAllTags(!showAllTags)}
-          className="flex items-center justify-center gap-1 text-xs text-coffee-darker hover:text-coffee-dark w-full"
+          className={`px-3 py-1 rounded-full text-sm border ${
+            selectedTag === null ? "bg-coffee text-white" : "bg-white text-coffee"
+          }`}
+          onClick={() => onSelectTag(null)}
         >
-          {showAllTags ? (
-            <>
-              <ChevronUp className="h-3 w-3" /> Voir moins
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-3 w-3" /> Voir plus ({categories.length - maxInitialTags} catégories)
-            </>
-          )}
+          Tous
         </button>
-      )}
+        {tags.map((tag) => (
+          <button
+            key={tag}
+            className={`px-3 py-1 rounded-full text-sm border ${
+              selectedTag === tag ? "bg-coffee text-white" : "bg-white text-coffee"
+            }`}
+            onClick={() => onSelectTag(tag)}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
+
