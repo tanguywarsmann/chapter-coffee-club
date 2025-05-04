@@ -46,7 +46,6 @@ export function MainContent({
 
   const homeContent = useMemo(() => (
     <>
-      <StatsCards />
       <HomeContent
         key={`home-content-${stableIds.inProgressCount}`}
         readingProgress={readingProgress}
