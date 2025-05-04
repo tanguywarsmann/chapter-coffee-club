@@ -24,7 +24,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground">Livres terminés</span>
+              <span className="text-sm text-muted-foreground">Livre{stats.booksRead > 1 ? "s" : ""} terminé{stats.booksRead > 1 ? "s" : ""}</span>
               <div className="flex items-center">
                 <BookOpen className="h-4 w-4 mr-1 text-coffee-dark" />
                 <span className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</span>
@@ -42,7 +42,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
               <span className="text-2xl font-medium text-coffee-darker">{stats.totalPages}</span>
             </div>
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground">Badges gagnés</span>
+              <span className="text-sm text-muted-foreground">Badge{stats.badgesEarned > 1 ? "s" : ""} gagné{stats.badgesEarned > 1 ? "s" : ""}</span>
               <div className="flex items-center">
                 <Award className="h-4 w-4 mr-1 text-coffee-dark" />
                 <span className="text-2xl font-medium text-coffee-darker">{stats.badgesEarned}</span>
@@ -63,7 +63,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
               <span className="text-sm text-muted-foreground">Série actuelle</span>
               <div className="flex items-center">
                 <CalendarDays className="h-4 w-4 mr-1 text-coffee-dark" />
-                <span className="text-2xl font-medium text-coffee-darker">{stats.streak} jours</span>
+                <span className="text-2xl font-medium text-coffee-darker">{stats.streak} jour{stats.streak > 1 ? "s" : ""}</span>
               </div>
             </div>
             <div className="flex flex-col space-y-1">

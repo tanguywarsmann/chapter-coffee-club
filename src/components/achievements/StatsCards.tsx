@@ -21,14 +21,14 @@ export function StatsCards() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-coffee-darker">Badges obtenus</p>
+          <p className="text-sm font-medium text-coffee-darker">Badge{badges.length > 1 ? "s" : ""} obtenu{badges.length > 1 ? "s" : ""}</p>
           <p className="text-3xl font-bold text-coffee-darker">{badges.length}</p>
         </div>
         <Award className="h-8 w-8 text-coffee-darker" />
       </div>
       <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-coffee-darker">Livres terminés</p>
+          <p className="text-sm font-medium text-coffee-darker">Livre{booksRead > 1 ? "s" : ""} terminé{booksRead > 1 ? "s" : ""}</p>
           <p className="text-3xl font-bold text-coffee-darker">{booksRead}</p>
         </div>
         <Book className="h-8 w-8 text-coffee-darker" />

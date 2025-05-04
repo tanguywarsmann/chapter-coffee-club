@@ -37,7 +37,7 @@ export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
           <div className="text-3xl font-bold text-coffee-darker">
             {currentStreak > 0 ? (
               <>
-                {currentStreak} {currentStreak > 1 ? "jours" : "jour"} consécutifs
+                {currentStreak} jour{currentStreak > 1 ? "s" : ""} consécutif{currentStreak > 1 ? "s" : ""}
               </>
             ) : (
               "Pas de série en cours"
@@ -48,7 +48,7 @@ export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
           <div className="flex items-center gap-2 text-muted-foreground">
             <Award className="h-5 w-5 text-amber-500" />
             <span className="font-medium">
-              Record de régularité : {longestStreak} {longestStreak > 1 ? "jours" : "jour"}
+              Record de régularité : {longestStreak} jour{longestStreak > 1 ? "s" : ""}
             </span>
           </div>
         )}

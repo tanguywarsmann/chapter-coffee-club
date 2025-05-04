@@ -37,7 +37,7 @@ export function StreakStats() {
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
             {currentStreak > 0
-              ? <>🔥 Tu lis depuis <b>{currentStreak}</b> jour{currentStreak > 1 && "s"} d’affilée !</>
+              ? <>🔥 Tu lis depuis <b>{currentStreak}</b> jour{currentStreak > 1 ? "s" : ""} d'affilée !</>
               : <>Aucune série de lecture en cours</>
             }
           </div>
@@ -47,7 +47,7 @@ export function StreakStats() {
         <Medal className="h-7 w-7 text-coffee-darker" />
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
-            🏅 Ton record : <b>{bestStreak}</b> jour{bestStreak > 1 && "s"} consécutifs
+            🏅 Ton record : <b>{bestStreak}</b> jour{bestStreak > 1 ? "s" : ""} consécutifs
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@ export function StreakStats() {
         <CalendarDays className="h-7 w-7 text-coffee-darker" />
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
-            {monthlySegments} segment{monthlySegments !== 1 && "s"} validé{monthlySegments !== 1 && "s"} ce mois-ci
+            {monthlySegments} segment{monthlySegments !== 1 ? "s" : ""} validé{monthlySegments !== 1 ? "s" : ""} ce mois-ci
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -192,7 +193,7 @@ export default function Explore() {
                         </div>
                         <h3 className="text-2xl font-medium text-coffee-darker mb-2">{suggestedBook.title}</h3>
                         <p className="text-muted-foreground mb-4">
-                          Par {suggestedBook.author} • {suggestedBook.pages} pages • {suggestedBook.publicationYear || "N/A"}
+                          Par {suggestedBook.author} • {suggestedBook.pages} page{suggestedBook.pages > 1 ? "s" : ""} • {suggestedBook.publicationYear || "N/A"}
                         </p>
                         <p className="mb-4 text-coffee-darker">
                           Un livre qui pourrait vous plaire, basé sur vos lectures précédentes.

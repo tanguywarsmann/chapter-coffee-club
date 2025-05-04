@@ -46,7 +46,7 @@ export function UserStats() {
           <div className="space-y-1">
             <div className="flex items-center text-muted-foreground">
               <BookOpen className="h-4 w-4 mr-1" />
-              <span className="text-sm">Livres terminés</span>
+              <span className="text-sm">Livre{stats.booksRead > 1 ? "s" : ""} terminé{stats.booksRead > 1 ? "s" : ""}</span>
             </div>
             <p className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</p>
           </div>
@@ -66,7 +66,7 @@ export function UserStats() {
           </div>
         </div>
         <div className="mt-6 text-center text-base text-coffee-dark font-serif">
-          📈 En moyenne, tu lis {stats.avgPagesPerWeek} pages par semaine
+          📈 En moyenne, tu lis {stats.avgPagesPerWeek} page{stats.avgPagesPerWeek > 1 ? "s" : ""} par semaine
         </div>
       </CardContent>
     </Card>

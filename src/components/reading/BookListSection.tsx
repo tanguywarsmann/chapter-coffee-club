@@ -129,7 +129,7 @@ export function BookListSection({
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{progressPercentage}% terminé</span>
-                      <span>{chaptersRead}/{totalChapters} chapitres</span>
+                      <span>{chaptersRead}/{totalChapters} chapitre{totalChapters > 1 ? "s" : ""}</span>
                     </div>
                   </div>
                 )}

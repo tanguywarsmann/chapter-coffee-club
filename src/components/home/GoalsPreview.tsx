@@ -48,7 +48,9 @@ export function GoalsPreview() {
               )}
               <span className="text-sm font-medium text-coffee-darker">{goal.title}</span>
               <span className="text-xs text-muted-foreground ml-auto">
-                {goal.current}/{goal.target} {goal.type}
+                {goal.current}/{goal.target} {goal.type === "pages" ? "pages" : 
+                  goal.type === "books" ? `livre${goal.current > 1 ? "s" : ""}` : 
+                  `jour${goal.current > 1 ? "s" : ""}`}
               </span>
             </div>
             <Progress value={(goal.current / goal.target) * 100} className="h-2" />

@@ -38,7 +38,7 @@ export function StatsCards() {
         <div className="flex items-center gap-3 mb-2">
           <User className="h-5 w-5 text-coffee-dark" />
           <div>
-            <p className="text-sm text-muted-foreground">Abonnés</p>
+            <p className="text-sm text-muted-foreground">Abonné{followers.length > 1 ? "s" : ""}</p>
             <p className="text-2xl font-medium text-coffee-darker">{followers.length}</p>
           </div>
         </div>
@@ -54,13 +54,13 @@ export function StatsCards() {
         <div className="flex items-center gap-3 mb-2">
           <User className="h-5 w-5 text-coffee-dark" />
           <div>
-            <p className="text-sm text-muted-foreground">Abonnements</p>
+            <p className="text-sm text-muted-foreground">Abonnement{following.length > 1 ? "s" : ""}</p>
             <p className="text-2xl font-medium text-coffee-darker">{following.length}</p>
           </div>
         </div>
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{badges.length}/5 badges collectés</span>
+            <span>{badges.length}/5 badge{badges.length > 1 ? "s" : ""} collecté{badges.length > 1 ? "s" : ""}</span>
           </div>
           <Progress value={badgesProgress} className="h-1.5" />
         </div>
