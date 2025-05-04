@@ -24,7 +24,7 @@ export const TagSlider = ({
 
   return (
     <div className="space-y-2">
-      <ScrollArea className="w-full" orientation="horizontal">
+<ScrollArea className="overflow-x-auto whitespace-nowrap">
         <div className="flex gap-2 py-2 pb-3 px-0.5">
           <TagPill
             key="all"
