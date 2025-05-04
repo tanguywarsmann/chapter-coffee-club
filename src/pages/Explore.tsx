@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +11,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
+import { TagSlider } from "@/components/books/TagSlider";
 
 export default function Explore() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -137,7 +137,7 @@ export default function Explore() {
           open={showWelcome}
           onClose={() => setShowWelcome(false)}
         />
-        <main className="container py-6 space-y-10">
+        <main className="container py-6 space-y-6">
           <div className="space-y-4">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
             
@@ -148,23 +148,12 @@ export default function Explore() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2 mt-4">
-              <button 
-                className={`px-3 py-1 rounded-full text-sm ${selectedCategory === null ? 'bg-coffee-dark text-white' : 'bg-coffee-light text-coffee-darker'}`}
-                onClick={() => handleCategoryFilter(null)}
-              >
-                Tous
-              </button>
-              {categories.map(category => (
-                <button 
-                  key={category}
-                  className={`px-3 py-1 rounded-full text-sm ${selectedCategory === category ? 'bg-coffee-dark text-white' : 'bg-coffee-light text-coffee-darker'}`}
-                  onClick={() => handleCategoryFilter(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+            <TagSlider
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategorySelect={handleCategoryFilter}
+              maxInitialTags={8}
+            />
           </div>
           
           {loading ? (
