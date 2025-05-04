@@ -13,6 +13,7 @@ export const useBookValidation = (
 ) => {
   const [isValidating, setIsValidating] = useState(false);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { showConfetti } = useConfetti();
 
   const {
@@ -29,14 +30,29 @@ export const useBookValidation = (
   const handleValidateReading = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setValidationError(null);
     
-    if (!userId || !book) {
-      toast.error("Vous devez être connecté pour valider votre lecture");
+    if (!userId) {
+      toast.error("Vous devez être connecté pour valider votre lecture", {
+        description: "Connectez-vous pour enregistrer votre progression.",
+        duration: 5000
+      });
+      return;
+    }
+    
+    if (!book) {
+      toast.error("Information du livre manquante", {
+        description: "Impossible de valider sans les informations du livre",
+        duration: 3000
+      });
       return;
     }
     
     if (book.chaptersRead >= book.totalChapters) {
-      toast.success("Vous avez déjà terminé ce livre !");
+      toast.success("Vous avez déjà terminé ce livre !", {
+        description: "Votre progression a été entièrement enregistrée.",
+        duration: 3000
+      });
       return;
     }
     
@@ -46,21 +62,43 @@ export const useBookValidation = (
       setValidationSegment(nextSegment);
     } catch (error) {
       console.error("Error preparing validation:", error);
-      toast.error("Erreur lors de la préparation de la validation: " + 
-        (error instanceof Error ? error.message : String(error)));
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setValidationError(errorMessage);
+      toast.error("Erreur lors de la préparation de la validation", {
+        description: errorMessage.substring(0, 100),
+        duration: 5000
+      });
     } finally {
       setIsValidating(false);
     }
   };
 
   const handleValidationConfirm = async () => {
-    if (!userId || !book || !validationSegment) {
-      toast.error("Informations manquantes pour la validation");
+    if (!userId) {
+      toast.error("Vous devez être connecté", {
+        description: "Session expirée ou déconnectée",
+        duration: 5000
+      });
+      return;
+    }
+    
+    if (!book) {
+      toast.error("Information du livre manquante", {
+        duration: 3000
+      });
+      return;
+    }
+    
+    if (!validationSegment) {
+      toast.error("Segment de validation non spécifié", {
+        duration: 3000
+      });
       return;
     }
 
     try {
       setIsValidating(true);
+      setValidationError(null);
       
       // Show question for current segment
       await prepareAndShowQuestion(validationSegment);
@@ -68,8 +106,13 @@ export const useBookValidation = (
       setValidationSegment(null);
     } catch (error) {
       console.error("Error in validation confirm:", error);
-      toast.error("Erreur lors de la validation: " + 
-        (error instanceof Error ? error.message : String(error)));
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setValidationError(errorMessage);
+      toast.error("Erreur lors de la validation", {
+        description: errorMessage.substring(0, 100),
+        duration: 5000
+      });
+    } finally {
       setIsValidating(false);
       setValidationSegment(null);
     }
@@ -89,6 +132,7 @@ export const useBookValidation = (
     prepareAndShowQuestion,
     handleQuizComplete,
     handleValidationConfirm,
-    showConfetti
+    showConfetti,
+    validationError
   };
 };

@@ -16,23 +16,40 @@ export const useBookQuiz = (
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const prepareAndShowQuestion = async (segment: number) => {
-    if (!userId || !book) {
-      toast.error("Vous devez être connecté pour valider votre lecture");
+    if (!userId) {
+      const error = "Vous devez être connecté pour valider votre lecture";
+      setErrorMessage(error);
+      toast.error(error, {
+        description: "Connectez-vous pour enregistrer votre progression",
+        duration: 5000
+      });
+      return;
+    }
+
+    if (!book) {
+      const error = "Informations du livre manquantes";
+      setErrorMessage(error);
+      toast.error(error);
       return;
     }
 
     try {
       setIsLoading(true);
       setShowSuccessMessage(false);
+      setErrorMessage(null);
       
       // First, check if segment is already validated
       const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, segment);
       
       if (alreadyValidated) {
         console.log("Segment already validated:", segment);
-        toast.info("Ce segment a déjà été validé");
+        toast.info("Ce segment a déjà été validé", {
+          description: "Votre progression a bien été enregistrée",
+          duration: 3000
+        });
         
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
@@ -58,7 +75,12 @@ export const useBookQuiz = (
       }
     } catch (error) {
       console.error("Error preparing question:", error);
-      toast.error("Erreur lors de la préparation de la validation");
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      setErrorMessage(errorMsg);
+      toast.error("Erreur lors de la préparation de la validation", {
+        description: "Veuillez réessayer dans quelques instants",
+        duration: 5000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -66,16 +88,25 @@ export const useBookQuiz = (
 
   const handleQuizComplete = async (passed: boolean) => {
     if (!passed) {
-      toast.error("Essayez encore! Assurez-vous d'avoir bien lu le chapitre.");
+      toast.error("Essayez encore!", {
+        description: "Assurez-vous d'avoir bien lu le chapitre",
+        duration: 4000
+      });
       return;
     }
 
     if (!userId || !book) {
-      toast.error("Informations d'utilisateur ou de livre manquantes");
+      toast.error("Informations d'utilisateur ou de livre manquantes", {
+        description: "Impossible de valider votre progression",
+        duration: 5000
+      });
       return;
     }
     
     try {
+      setIsLoading(true);
+      setErrorMessage(null);
+      
       // Validate this segment in Supabase
       const validationResult = await validateReading({
         user_id: userId,
@@ -87,6 +118,10 @@ export const useBookQuiz = (
       
       // Show success message instead of next question
       setShowSuccessMessage(true);
+      toast.success("Chapitre validé !", {
+        description: "Votre progression a été enregistrée",
+        duration: 3000
+      });
       
       if (onProgressUpdate && book) {
         onProgressUpdate(book.id);
@@ -97,7 +132,14 @@ export const useBookQuiz = (
       setShowQuiz(false);
     } catch (error) {
       console.error("Error during quiz completion:", error);
-      toast.error("Erreur lors de la validation du quiz");
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      setErrorMessage(errorMsg);
+      toast.error("Erreur lors de la validation du quiz", {
+        description: "Veuillez réessayer dans quelques instants",
+        duration: 5000
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,6 +152,7 @@ export const useBookQuiz = (
     showSuccessMessage,
     setShowSuccessMessage,
     prepareAndShowQuestion,
-    handleQuizComplete
+    handleQuizComplete,
+    errorMessage
   };
 };

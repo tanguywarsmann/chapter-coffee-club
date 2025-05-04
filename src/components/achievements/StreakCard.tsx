@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 interface StreakCardProps {
   currentStreak: number;
@@ -15,17 +16,30 @@ const getStreakMessage = (streak: number) => {
   return "Impressionnante série de lecture !";
 };
 
-export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
+export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardProps) {
+  const [isVisible, setIsVisible] = useState(false);
   const hasStreak = currentStreak > 0;
-  const hasRecord = longestStreak > currentStreak;
+  const hasRecord = longestStreak > currentStreak && longestStreak > 0;
+
+  // Animation d'apparition
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <Card className="border-coffee-light bg-gradient-to-br from-coffee-light to-chocolate-light hover:shadow-md transition-shadow duration-200">
+    <Card 
+      className={cn(
+        "border-coffee-light bg-gradient-to-br from-coffee-light to-chocolate-light transition-all duration-300",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
+        "hover:shadow-md"
+      )}
+    >
       <CardHeader>
         <CardTitle className="text-xl font-serif text-coffee-darker flex items-center gap-2">
           <Flame 
             className={cn(
-              "h-6 w-6 text-orange-500",
+              "h-6 w-6 text-orange-500 transition-all",
               hasStreak && "animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]"
             )} 
           />
@@ -45,7 +59,7 @@ export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
           </div>
         </div>
         {hasRecord && (
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground animate-fade-in">
             <Award className="h-5 w-5 text-amber-500" />
             <span className="font-medium">
               Record de régularité : {longestStreak} jour{longestStreak > 1 ? "s" : ""}
