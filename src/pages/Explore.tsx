@@ -148,12 +148,11 @@ export default function Explore() {
               />
             </div>
 
-            <TagSlider
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategorySelect={handleCategoryFilter}
-              maxInitialTags={8}
-            />
+           <TagSlider
+           tags={allTags}
+           selectedTag={selectedTag}
+           onSelectTag={handleTagSelect}
+           />
           </div>
           
           {loading ? (
