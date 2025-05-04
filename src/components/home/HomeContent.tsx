@@ -8,6 +8,8 @@ import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { useAuth } from "@/contexts/AuthContext"; // <-- Import du contexte utilisateur
 import { getFollowerCounts } from "@/services/user/profileService"; // <-- Import de la fonction
+import { FollowerStats } from "./FollowerStats";
+
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -45,6 +47,7 @@ export function HomeContent({
       <div className="space-y-6 md:col-span-2 lg:col-span-3">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
+             <FollowerStats />
             <GoalsPreview 
               followerCount={followerCount} 
               followingCount={followingCount} 
