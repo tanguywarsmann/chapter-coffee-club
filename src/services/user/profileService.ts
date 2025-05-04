@@ -8,10 +8,17 @@ import { toast } from "sonner";
  */
 export async function followUser(targetUserId: string): Promise<void> {
   try {
+    // Récupérer d'abord l'ID utilisateur connecté
+    const { data: session } = await supabase.auth.getSession();
+    const currentUserId = session.session?.user?.id;
+
+    if (!currentUserId) throw new Error("User not authenticated");
+
+    // Insérer avec des valeurs string déjà résolues
     const { error } = await supabase
       .from('followers')
       .insert({
-        follower_id: supabase.auth.getSession().then(({ data }) => data.session?.user?.id),
+        follower_id: currentUserId,
         following_id: targetUserId
       });
 
@@ -21,6 +28,7 @@ export async function followUser(targetUserId: string): Promise<void> {
     throw new Error(error.message || "Could not follow user");
   }
 }
+
 
 /**
  * Unfollow a user
