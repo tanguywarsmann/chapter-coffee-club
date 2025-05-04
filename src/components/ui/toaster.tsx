@@ -19,7 +19,7 @@ export function Toaster() {
           <Toast 
             key={id} 
             {...props} 
-            className="animate-enter transition-all duration-300 ease-in-out shadow-md border-coffee-medium"
+            className="animate-enter transition-all duration-300 ease-in-out shadow-md border-coffee-medium group"
             aria-live="assertive"
             role="alert"
           >
@@ -30,7 +30,7 @@ export function Toaster() {
               )}
             </div>
             {action}
-            <ToastClose className="opacity-70 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-coffee-medium ring-offset-2" />
+            <ToastClose className="opacity-70 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-coffee-medium ring-offset-2 transition-opacity" />
           </Toast>
         )
       })}
