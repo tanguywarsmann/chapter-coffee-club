@@ -1,9 +1,7 @@
-
 import React, { useState } from "react";
 import { TagPill } from "./TagPill";
 import { Button } from "../ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
 
 interface TagSliderProps {
   tags: string[];
@@ -21,8 +19,8 @@ export const TagSlider: React.FC<TagSliderProps> = ({ tags, selectedTag, onSelec
 
   return (
     <div className="space-y-2">
-      <ScrollArea className="w-full whitespace-nowrap pb-2">
-        <div className="flex gap-2 pb-1">
+      <div className="overflow-x-auto scrollbar-hidden w-full pb-2 scroll-smooth">
+        <div className="flex gap-2 w-max">
           <TagPill
             label="Tous"
             selected={selectedTag === null}
@@ -37,8 +35,8 @@ export const TagSlider: React.FC<TagSliderProps> = ({ tags, selectedTag, onSelec
             />
           ))}
         </div>
-      </ScrollArea>
-      
+      </div>
+
       {tags.length > 8 && (
         <Button 
           variant="ghost" 
