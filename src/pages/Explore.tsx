@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -149,9 +150,9 @@ export default function Explore() {
             </div>
 
            <TagSlider
-           tags={allTags}
-           selectedTag={selectedTag}
-           onSelectTag={handleTagSelect}
+             tags={categories}
+             selectedTag={selectedCategory}
+             onSelectTag={handleCategoryFilter}
            />
           </div>
           
