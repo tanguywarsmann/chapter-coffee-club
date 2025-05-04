@@ -16,19 +16,25 @@ export function Toaster() {
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
-          <Toast key={id} {...props} className="animate-enter transition-all duration-300 ease-in-out">
+          <Toast 
+            key={id} 
+            {...props} 
+            className="animate-enter transition-all duration-300 ease-in-out shadow-md border-coffee-medium"
+            aria-live="assertive"
+            role="alert"
+          >
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && <ToastTitle className="font-medium text-coffee-darker">{title}</ToastTitle>}
               {description && (
-                <ToastDescription>{description}</ToastDescription>
+                <ToastDescription className="text-sm">{description}</ToastDescription>
               )}
             </div>
             {action}
-            <ToastClose />
+            <ToastClose className="opacity-70 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-coffee-medium ring-offset-2" />
           </Toast>
         )
       })}
-      <ToastViewport className="animate-fade-in" />
+      <ToastViewport className="animate-fade-in p-4 md:p-6 z-[100]" />
     </ToastProvider>
   )
 }

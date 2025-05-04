@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user, isInitialized, error } = useAuth();
+  const { user, isInitialized, setError } = useAuth();
   
   useEffect(() => {
     // Rediriger vers la page d'accueil si déjà connecté
@@ -17,12 +17,15 @@ export default function Login() {
     }
   }, [user, isInitialized, navigate]);
 
-  // Afficher une notification si une erreur d'authentification est détectée
+  // Afficher une notification si une erreur d'authentification est détectée depuis le contexte
   useEffect(() => {
-    if (error) {
+    const authError = localStorage.getItem("auth_error");
+    if (authError) {
       toast.error("Erreur d'authentification. Veuillez réessayer.");
+      setError(null);
+      localStorage.removeItem("auth_error");
     }
-  }, [error]);
+  }, [setError]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 animate-fade-in">
@@ -35,6 +38,7 @@ export default function Login() {
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "/placeholder.svg";
+              target.alt = "Logo placeholder";
             }}
           />
           

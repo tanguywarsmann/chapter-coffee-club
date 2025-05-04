@@ -89,15 +89,16 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-logo-background text-logo-text">
+      <div className="min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
         <WelcomeModal 
           open={showWelcome} 
           onClose={() => setShowWelcome(false)}
         />
         
-        <main className="container py-6 space-y-8">
-          <div className="max-w-2xl mx-auto">
+        <main className="container py-4 sm:py-6 space-y-6 sm:space-y-8 animate-fade-in focus:outline-none" tabIndex={-1}>
+          <div className="max-w-2xl mx-auto px-2 sm:px-0">
+            <h1 className="sr-only">Accueil - READ</h1>
             <SearchBar 
               onSearch={handleSearch}
               isSearching={isSearching} 
