@@ -1,22 +1,27 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import Image from "@/components/ui/image";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+  const { user, error, setError } = useAuth();
+
   // Rediriger si déjà connecté
   useEffect(() => {
     if (user) {
@@ -24,21 +29,26 @@ export default function Auth() {
     }
   }, [user, navigate]);
 
+  // Affichage de l'erreur globale (depuis le contexte)
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleSignup = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      
+      setError(null); // reset erreur précédente
+      const { error } = await supabase.auth.signUp({ email, password });
+
       if (error) {
-        toast.error(error.message);
+        setError(error.message);
       } else {
-        toast.success("Compte créé avec succès. Vous pouvez maintenant vous connecter.");
+        toast.success("Compte créé avec succès. Tu peux maintenant te connecter.");
       }
-    } catch (error) {
-      toast.error("Une erreur est survenue lors de la création du compte.");
+    } catch (err) {
+      setError("Erreur lors de la création du compte.");
     } finally {
       setIsLoading(false);
     }
@@ -47,19 +57,17 @@ export default function Auth() {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
+      setError(null); // reset erreur précédente
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
       if (error) {
-        toast.error(error.message);
+        setError(error.message);
       } else {
-        toast.success("Connexion réussie!");
+        toast.success("Connexion réussie !");
         navigate("/home");
       }
-    } catch (error) {
-      toast.error("Une erreur est survenue lors de la connexion.");
+    } catch (err) {
+      setError("Erreur lors de la connexion.");
     } finally {
       setIsLoading(false);
     }
@@ -69,25 +77,24 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4">
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8 text-center">
-          <Image 
-            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
-            alt="READ Logo" 
+          <Image
+            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png"
+            alt="READ Logo"
             className="mx-auto mb-4 w-40 h-auto"
           />
-          
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
             Reprends goût à la lecture, page après page
           </p>
         </div>
-        
+
         <Card className="border-coffee-medium">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
             <CardDescription className="text-center">
-              Connectez-vous à votre compte pour continuer votre voyage littéraire
+              Connecte-toi à ton compte pour continuer ton voyage littéraire
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Input
@@ -99,7 +106,6 @@ export default function Auth() {
                 required
                 disabled={isLoading}
               />
-              
               <Input
                 type="password"
                 placeholder="Mot de passe"
@@ -111,7 +117,7 @@ export default function Auth() {
               />
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex flex-col gap-4">
             <Button
               onClick={handleLogin}
@@ -120,7 +126,6 @@ export default function Auth() {
             >
               {isLoading ? "Connexion..." : "Se connecter"}
             </Button>
-            
             <Button
               onClick={handleSignup}
               variant="outline"
