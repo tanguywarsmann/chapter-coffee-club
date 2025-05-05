@@ -8,6 +8,7 @@ import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
+import { SimilarReaders } from "./SimilarReaders";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -32,6 +33,7 @@ export function HomeContent({
           </div>
           <div className="space-y-6">
             <RecommendedUsers />
+            <SimilarReaders />
           </div>
         </div>
         
