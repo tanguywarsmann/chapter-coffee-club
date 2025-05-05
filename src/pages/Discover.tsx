@@ -12,6 +12,7 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/com
 export default function Discover() {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
@@ -23,9 +24,12 @@ export default function Discover() {
         const userData = await searchUsers("", 20);
         // Filter out the current user
         if (user?.id) {
-          setUsers(userData.filter((u: any) => u.id !== user.id));
+          const filteredData = userData.filter((u: any) => u.id !== user.id);
+          setUsers(filteredData);
+          setFilteredUsers(filteredData);
         } else {
           setUsers(userData);
+          setFilteredUsers(userData);
         }
       } catch (error) {
         console.error("Failed to load users:", error);
@@ -34,13 +38,26 @@ export default function Discover() {
       }
     };
 
-    loadUsers();
+    if (user) {
+      loadUsers();
+    }
   }, [user?.id]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    // Additional search logic could be implemented here
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setFilteredUsers(users);
+    } else {
+      const lowercaseQuery = query.toLowerCase();
+      const filtered = users.filter((user: any) => 
+        user.name?.toLowerCase().includes(lowercaseQuery) || 
+        (user.email && user.email.toLowerCase().includes(lowercaseQuery))
+      );
+      setFilteredUsers(filtered);
+    }
   };
 
   return (
@@ -73,13 +90,13 @@ export default function Discover() {
                 <div className="flex justify-center p-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-coffee-dark"></div>
                 </div>
-              ) : users.length > 0 ? (
-                users.map((user) => (
-                  <UserItem key={user.id} user={user} />
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map((userItem) => (
+                  <UserItem key={userItem.id} user={userItem} />
                 ))
               ) : (
                 <div className="text-center p-4 text-muted-foreground">
-                  Aucun utilisateur trouvé
+                  Aucun utilisateur ne correspond à votre recherche.
                 </div>
               )}
             </CardContent>

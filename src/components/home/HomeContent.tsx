@@ -38,7 +38,7 @@ export function HomeContent({
         <ReadingProgress 
           key={`reading-progress-${readingProgress.length}`}
           progressItems={readingProgress}
-          isLoading={isLoading} 
+          isLoading={isLoading}
         />
       </div>
       <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
