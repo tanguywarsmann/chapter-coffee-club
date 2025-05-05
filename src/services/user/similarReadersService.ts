@@ -30,8 +30,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     const { data: similarReaders, error: readersError } = await supabase
       .from('reading_progress')
       .select(`
-        user_id,
-        profiles:user_id (id, email, avatar)
+        user_id
       `)
       .in('book_id', bookIds)
       .eq('status', 'in_progress')
@@ -46,10 +45,10 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     // Get unique users by ID
     const uniqueUserIds = [...new Set(similarReaders.map(item => item.user_id))];
     
-    // Fetch complete user profiles for these IDs
+    // Fetch complete user profiles for these IDs with explicit field selection
     const { data: usersData, error: usersError } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, email, avatar, is_admin')
       .in('id', uniqueUserIds)
       .limit(limit);
 
