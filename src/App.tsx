@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import BookPage from "./pages/BookPage";
 import Profile from "./pages/Profile";
+import Discover from "./pages/Discover";
 import ReadingList from "./pages/ReadingList";
 import Explore from "./pages/Explore";
 import Achievements from "./pages/Achievements";
@@ -31,6 +33,7 @@ const App = () => {
               <Route path="/home" element={<Home />} />
               <Route path="/books/:id" element={<BookPage />} />
               <Route path="/profile/:userId?" element={<Profile />} />
+              <Route path="/discover" element={<Discover />} />
               <Route path="/reading-list" element={<ReadingList />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/achievements" element={<Achievements />} />

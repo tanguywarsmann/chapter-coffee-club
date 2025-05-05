@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
@@ -6,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
+import { RecommendedUsers } from "./RecommendedUsers";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -28,12 +30,16 @@ export function HomeContent({
             <FollowerStats />
             <GoalsPreview />
           </div>
+          <div className="space-y-6">
+            <RecommendedUsers />
+          </div>
         </div>
         
         <ReadingProgress 
           key={`reading-progress-${readingProgress.length}`}
           progressItems={readingProgress}
           isLoading={isLoading} 
+          onProgressUpdate={onProgressUpdate}
         />
       </div>
       <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
@@ -42,4 +48,3 @@ export function HomeContent({
     </div>
   );
 }
-
