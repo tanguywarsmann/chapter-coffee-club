@@ -33,7 +33,8 @@ export function HomeContent({
           </div>
           <div className="space-y-6">
             <RecommendedUsers />
-            <SimilarReaders />
+            {/* SimilarReaders only shown here on desktop */}
+            {!isMobile && <SimilarReaders />}
           </div>
         </div>
         
@@ -42,6 +43,9 @@ export function HomeContent({
           progressItems={readingProgress}
           isLoading={isLoading}
         />
+
+        {/* Show SimilarReaders after ReadingProgress on mobile */}
+        {isMobile && <SimilarReaders />}
       </div>
       <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
         <ActivityFeed activities={getUserActivities()} />

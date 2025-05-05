@@ -31,7 +31,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       .from('reading_progress')
       .select(`
         user_id,
-        profiles:user_id (id, email)
+        profiles:user_id (id, email, avatar)
       `)
       .in('book_id', bookIds)
       .eq('status', 'in_progress')
@@ -47,18 +47,27 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     const uniqueUserIds = [...new Set(similarReaders.map(item => item.user_id))];
     
     // Fetch complete user profiles for these IDs
-    const { data: users, error: usersError } = await supabase
+    const { data: usersData, error: usersError } = await supabase
       .from('profiles')
       .select('*')
       .in('id', uniqueUserIds)
       .limit(limit);
 
-    if (usersError) {
+    if (usersError || !usersData) {
       console.error("Error fetching user profiles:", usersError);
       return [];
     }
 
-    return users || [];
+    // Map the profiles to match the User type
+    const users: User[] = usersData.map(profile => ({
+      id: profile.id,
+      name: profile.name || `Lecteur ${profile.id.substring(0, 4)}`, // Default name if none exists
+      email: profile.email || "",
+      avatar: profile.avatar || undefined,
+      is_admin: profile.is_admin || false
+    }));
+
+    return users;
   } catch (error) {
     console.error("Exception in findSimilarReaders:", error);
     return [];
