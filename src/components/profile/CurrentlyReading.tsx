@@ -86,7 +86,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
           <div className="flex-shrink-0 w-32 mx-auto md:mx-0">
             <Link to={`/books/${currentBook.book_id}`}>
               <BookCover
-                coverUrl={currentBook.book_cover}
+                image={currentBook.book_cover}
                 title={currentBook.book_title || "Titre inconnu"}
                 size="md"
               />
