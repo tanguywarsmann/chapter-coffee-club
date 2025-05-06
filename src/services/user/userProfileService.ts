@@ -10,7 +10,7 @@ export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, is_admin, email')
+      .select('*')
       .eq('id', userId)
       .maybeSingle();
     

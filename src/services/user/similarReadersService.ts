@@ -49,7 +49,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     // Fetch complete user profiles for these IDs
     const { data: usersData, error: usersError } = await supabase
       .from('profiles')
-      .select('id, is_admin, username, email')
+      .select('*')
       .in('id', uniqueUserIds)
       .limit(limit);
 

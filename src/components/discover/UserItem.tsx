@@ -34,12 +34,14 @@ export function UserItem({ user, compact = false }: UserItemProps) {
       try {
         setLoading(true);
         const profile = await getUserProfile(user.id);
-        const displayName = getDisplayName(
-          profile?.username || user.username,
-          profile?.email || user.email,
-          user.id
-        );
-        setUserName(displayName);
+        if (profile) {
+          const displayName = getDisplayName(
+            profile.username || user.username,
+            profile.email || user.email,
+            user.id
+          );
+          setUserName(displayName);
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
       } finally {
