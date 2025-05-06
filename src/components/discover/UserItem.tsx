@@ -36,7 +36,7 @@ export function UserItem({ user, compact = false }: UserItemProps) {
         const profile = await getUserProfile(user.id);
         const displayName = getDisplayName(
           profile?.username || user.username,
-          user.email,
+          profile?.email || user.email,
           user.id
         );
         setUserName(displayName);

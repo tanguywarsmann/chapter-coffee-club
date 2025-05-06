@@ -5,7 +5,7 @@ export interface User {
   email: string;
   avatar?: string;
   is_admin: boolean;
-  username?: string; // Ajout du champ username
+  username?: string;
   preferences?: {
     favoriteGenres: string[];
     readingGoal: number;

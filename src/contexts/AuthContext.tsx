@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { syncUserProfile } from '@/services/user/userProfileService';
 
 interface AuthContextType {
   session: Session | null;
@@ -48,21 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Erreur lors de la récupération du statut admin:', error);
-        setIsAdmin(true);
-        return true;
+        setIsAdmin(false);
+        return false;
       }
 
       const adminStatus = data?.is_admin || false;
+      setIsAdmin(adminStatus);
       return adminStatus;
     } catch (error) {
       console.error('Exception lors de la récupération du statut admin:', error);
-      setIsAdmin(true);
-      return true;
+      setIsAdmin(false);
+      return false;
     }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (!stateChangeHandled.current) {
         stateChangeHandled.current = true;
         setTimeout(() => {
@@ -74,9 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        fetchAdminStatus(currentSession.user.id).then(isAdmin => {
-          setIsAdmin(isAdmin);
-        });
+        // Synchroniser le profil utilisateur (mettre à jour l'email)
+        setTimeout(async () => {
+          await syncUserProfile(currentSession.user.id, currentSession.user.email);
+          await fetchAdminStatus(currentSession.user.id);
+        }, 0);
 
         localStorage.setItem("user", JSON.stringify({ 
           id: currentSession.user.id,
@@ -110,8 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          setIsAdmin(true);
+          // Synchroniser le profil utilisateur lors de l'initialisation
+          await syncUserProfile(currentSession.user.id, currentSession.user.email);
           const adminStatus = await fetchAdminStatus(currentSession.user.id);
+          setIsAdmin(adminStatus);
         }
 
         setIsInitialized(true);

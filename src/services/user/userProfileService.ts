@@ -10,7 +10,7 @@ export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, is_admin')
+      .select('id, username, is_admin, email')
       .eq('id', userId)
       .maybeSingle();
     
@@ -54,4 +54,45 @@ export function getDisplayName(username: string | null | undefined, email: strin
   if (username) return username;
   if (email) return formatEmail(email);
   return `Lecteur ${id.substring(0, 4)}`;
+}
+
+/**
+ * Crée ou met à jour le profil utilisateur avec l'email actuel
+ * @param userId ID de l'utilisateur
+ * @param email Email de l'utilisateur
+ */
+export async function syncUserProfile(userId: string, email: string | undefined) {
+  try {
+    // Vérifier si un profil existe déjà
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (existingProfile) {
+      // Mise à jour de l'email si le profil existe déjà
+      if (email) {
+        await supabase
+          .from('profiles')
+          .update({ email })
+          .eq('id', userId);
+      }
+    } else {
+      // Création d'un nouveau profil si aucun n'existe
+      await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email,
+          username: null,
+          is_admin: false
+        });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error syncing user profile:", error);
+    return false;
+  }
 }

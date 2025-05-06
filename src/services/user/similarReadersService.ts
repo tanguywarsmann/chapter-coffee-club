@@ -49,7 +49,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     // Fetch complete user profiles for these IDs
     const { data: usersData, error: usersError } = await supabase
       .from('profiles')
-      .select('id, is_admin, username')
+      .select('id, is_admin, username, email')
       .in('id', uniqueUserIds)
       .limit(limit);
 
@@ -59,16 +59,16 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     }
 
     // Map the profiles to match the User type
-    // For email and name, we'll create placeholders since they're not available
     const users: User[] = usersData.map(profile => {
-      const displayName = getDisplayName(profile.username, "", profile.id);
+      const displayName = getDisplayName(profile.username, profile.email, profile.id);
       
       return {
         id: profile.id,
         name: displayName,
-        email: "", // Empty email as placeholder
+        email: profile.email || "",
         avatar: undefined, // No avatar available
-        is_admin: profile.is_admin || false
+        is_admin: profile.is_admin || false,
+        username: profile.username
       };
     });
 
