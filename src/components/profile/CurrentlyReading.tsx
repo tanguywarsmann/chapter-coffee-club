@@ -22,6 +22,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
       try {
         setLoading(true);
         const progress = await getUserReadingProgress(userId);
+        console.log("progress for user", userId, progress);
         const inProgressBooks = progress.filter(p => p.status === "in_progress");
         
         if (inProgressBooks.length > 0) {
