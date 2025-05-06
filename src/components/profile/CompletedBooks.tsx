@@ -82,7 +82,7 @@ export function CompletedBooks({ userId }: CompletedBooksProps) {
               className="flex flex-col items-center space-y-2 hover:opacity-80 transition-opacity"
             >
               <BookCover
-                coverUrl={book.book_cover}
+                image={book.book_cover}
                 title={book.book_title || "Titre inconnu"}
                 size="sm"
               />
