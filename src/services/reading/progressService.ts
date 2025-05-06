@@ -22,13 +22,13 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       data.map(async (item) => {
         const book = await getBookById(item.book_id); // Récupération du livre associé
         return {
-  ...item,
-  total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
-  book_title: book?.title ?? "Titre inconnu",
-  book_author: book?.author ?? "Auteur inconnu",
-  book_cover: book?.cover_url ?? "",
-  validations: [],
-};
+          ...item,
+          total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
+          book_title: book?.title ?? "Titre inconnu",
+          book_author: book?.author ?? "Auteur inconnu",
+          book_cover: book?.cover_url ?? book?.coverImage ?? "",
+          validations: [],
+        };
       })
     );
 
@@ -59,6 +59,9 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     return {
       ...data,
       total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
+      book_title: book?.title ?? "Titre inconnu",
+      book_author: book?.author ?? "Auteur inconnu",
+      book_cover: book?.cover_url ?? book?.coverImage ?? "",
       validations: [],
     };
   } catch (error) {
