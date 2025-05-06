@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -16,27 +15,35 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      console.warn("❌ Aucun userId reçu dans <CurrentlyReading />");
+      return;
+    }
+
+    console.log("✅ CurrentlyReading monté avec userId =", userId);
 
     async function fetchCurrentlyReading() {
       try {
         setLoading(true);
+
         const progress = await getUserReadingProgress(userId);
-        console.log("progress for user", userId, progress);
+        console.log("📚 Progress récupéré :", progress);
+
         const inProgressBooks = progress.filter(p => p.status === "in_progress");
-        
+
+        console.log("🔍 Livres en cours trouvés :", inProgressBooks);
+
         if (inProgressBooks.length > 0) {
-          // Récupérer le livre le plus récemment mis à jour
           const mostRecentBook = inProgressBooks.sort((a, b) => {
             return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
           })[0];
-          
+
           setCurrentBook(mostRecentBook);
         } else {
           setCurrentBook(null);
         }
       } catch (error) {
-        console.error("Error fetching currently reading book:", error);
+        console.error("⚠️ Erreur dans fetchCurrentlyReading :", error);
       } finally {
         setLoading(false);
       }
@@ -100,7 +107,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
               </Link>
             </h3>
             <p className="text-sm text-muted-foreground">{currentBook.book_author || "Auteur inconnu"}</p>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-coffee-dark">Progression</span>
