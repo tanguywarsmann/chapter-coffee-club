@@ -7,9 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRound, Pencil, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getFollowerCounts } from "@/services/user/profileService";
+import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
 import { FollowButton } from "./FollowButton";
 import { useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { ProfileNameForm } from "./ProfileNameForm";
 
 export function UserProfile() {
   const { user } = useAuth();
@@ -19,10 +21,12 @@ export function UserProfile() {
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [username, setUsername] = useState<string | null>(null);
   
   // Set profileUserId based on URL params or current user
   useEffect(() => {
@@ -34,20 +38,28 @@ export function UserProfile() {
     }
   }, [params.userId, user]);
 
-  // Fetch follower counts when profileUserId changes
+  // Fetch follower counts and user profile when profileUserId changes
   useEffect(() => {
     if (!profileUserId) return;
     
-    async function fetchFollowerCounts() {
+    async function fetchUserData() {
       try {
         setLoading(true);
+        
+        // Fetch follower counts
         const counts = await getFollowerCounts(profileUserId);
         setFollowerCounts(counts);
+        
+        // Fetch user profile
+        const profile = await getUserProfile(profileUserId);
+        if (profile) {
+          setUsername(profile.username);
+        }
       } catch (error) {
-        console.error("Error fetching follower counts:", error);
+        console.error("Error fetching user data:", error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les statistiques des abonnés",
+          description: "Impossible de charger les données utilisateur",
           variant: "destructive"
         });
       } finally {
@@ -55,7 +67,7 @@ export function UserProfile() {
       }
     }
     
-    fetchFollowerCounts();
+    fetchUserData();
   }, [profileUserId, toast]);
 
   const refreshCounts = async () => {
@@ -67,8 +79,25 @@ export function UserProfile() {
       console.error("Error refreshing follower counts:", error);
     }
   };
+  
+  const refreshProfile = async () => {
+    if (!profileUserId) return;
+    
+    try {
+      const profile = await getUserProfile(profileUserId);
+      if (profile) {
+        setUsername(profile.username);
+      }
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error("Error refreshing user profile:", error);
+    }
+  };
 
   const isOwnProfile = !params.userId || (user && user.id === profileUserId);
+  
+  // Determine display name based on available info
+  const displayName = getDisplayName(username, profileData?.email, profileData?.id || 'U');
 
   return (
     <>
@@ -83,10 +112,15 @@ export function UserProfile() {
               <UserRound className="h-5 w-5 text-coffee-dark" />
               {isOwnProfile ? "Mon profil" : "Profil utilisateur"}
             </CardTitle>
-            {isOwnProfile && (
-              <Button variant="ghost" size="sm" className="text-coffee-dark hover:text-coffee-darker">
+            {isOwnProfile && !isEditingProfile && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-coffee-dark hover:text-coffee-darker"
+                onClick={() => setIsEditingProfile(true)}
+              >
                 <Pencil className="h-4 w-4 mr-1" />
-                Modifier mes informations
+                {username ? "Modifier mon nom" : "Ajouter un nom de profil"}
               </Button>
             )}
             {!isOwnProfile && profileUserId && (
@@ -94,31 +128,63 @@ export function UserProfile() {
             )}
           </CardHeader>
           <CardContent>
-            <div className="flex items-start space-x-4">
-              <Avatar className="h-16 w-16 border-2 border-coffee-light">
-                <AvatarImage src={profileData?.avatar} alt={profileData?.name} />
-                <AvatarFallback className="text-xl bg-coffee-light text-coffee-darker">
-                  {profileData?.name?.[0] || profileData?.email?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <h3 className="text-lg font-medium text-coffee-darker">{profileData?.name || 'Utilisateur'}</h3>
-                <p className="text-sm text-muted-foreground">{profileData?.email}</p>
-                
-                <div className="flex items-center mt-2 gap-4">
-                  <div className="flex items-center gap-1 text-sm">
-                    <Users className="h-4 w-4 text-coffee-dark" />
-                    <span className="font-medium text-coffee-dark">{followerCounts.followers}</span>
-                    <span className="text-muted-foreground">Abonnés</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm">
-                    <Users className="h-4 w-4 text-coffee-dark" />
-                    <span className="font-medium text-coffee-dark">{followerCounts.following}</span>
-                    <span className="text-muted-foreground">Abonnements</span>
+            {isEditingProfile && isOwnProfile ? (
+              <div className="mb-4">
+                <ProfileNameForm 
+                  currentUsername={username} 
+                  onSave={refreshProfile} 
+                />
+                <div className="mt-3 flex justify-end">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsEditingProfile(false)}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-16 w-16 border-2 border-coffee-light">
+                  <AvatarImage src={profileData?.avatar} alt={displayName} />
+                  <AvatarFallback className="text-xl bg-coffee-light text-coffee-darker">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-medium text-coffee-darker">{displayName}</h3>
+                  <p className="text-sm text-muted-foreground">{profileData?.email}</p>
+                  
+                  <div className="flex items-center mt-2 gap-4">
+                    <div className="flex items-center gap-1 text-sm">
+                      <Users className="h-4 w-4 text-coffee-dark" />
+                      <span className="font-medium text-coffee-dark">{followerCounts.followers}</span>
+                      <span className="text-muted-foreground">Abonnés</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm">
+                      <Users className="h-4 w-4 text-coffee-dark" />
+                      <span className="font-medium text-coffee-dark">{followerCounts.following}</span>
+                      <span className="text-muted-foreground">Abonnements</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+            {isOwnProfile && !username && !isEditingProfile && (
+              <div className="mt-4 py-2 px-3 bg-muted/50 rounded-md text-sm">
+                <p className="text-coffee-darker">
+                  Choisis un nom public pour que les autres puissent te reconnaître.
+                </p>
+                <Button 
+                  variant="link" 
+                  className="text-coffee-dark p-0 h-auto mt-1"
+                  onClick={() => setIsEditingProfile(true)}
+                >
+                  Définir mon nom de profil
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
         {isOwnProfile && (

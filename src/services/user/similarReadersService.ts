@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
+import { getDisplayName } from "@/services/user/userProfileService";
 
 /**
  * Find users who are reading the same books as the current user
@@ -46,12 +47,9 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     const uniqueUserIds = [...new Set(similarReaders.map(item => item.user_id))];
     
     // Fetch complete user profiles for these IDs
-    // Note: The profiles table in Supabase only has id, created_at, is_admin, updated_at
-    // We need to join with auth.users to get other fields but can't access directly
-    // Instead, we'll use the available fields and create placeholder values for others
     const { data: usersData, error: usersError } = await supabase
       .from('profiles')
-      .select('id, is_admin')
+      .select('id, is_admin, username')
       .in('id', uniqueUserIds)
       .limit(limit);
 
@@ -62,13 +60,17 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
 
     // Map the profiles to match the User type
     // For email and name, we'll create placeholders since they're not available
-    const users: User[] = usersData.map(profile => ({
-      id: profile.id,
-      name: `Lecteur ${profile.id.substring(0, 4)}`, // Default name using part of the ID
-      email: "", // Empty email as placeholder
-      avatar: undefined, // No avatar available
-      is_admin: profile.is_admin || false
-    }));
+    const users: User[] = usersData.map(profile => {
+      const displayName = getDisplayName(profile.username, "", profile.id);
+      
+      return {
+        id: profile.id,
+        name: displayName,
+        email: "", // Empty email as placeholder
+        avatar: undefined, // No avatar available
+        is_admin: profile.is_admin || false
+      };
+    });
 
     return users;
   } catch (error) {

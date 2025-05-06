@@ -4,11 +4,14 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
 
 interface User {
   id: string;
   name?: string;
   avatar?: string;
+  username?: string;
+  email?: string;
 }
 
 interface UserItemProps {
@@ -18,17 +21,33 @@ interface UserItemProps {
 
 export function UserItem({ user, compact = false }: UserItemProps) {
   const { user: currentUser } = useAuth();
-  const [userName, setUserName] = useState(user.name || "Lecteur");
+  const [userName, setUserName] = useState<string>(user.name || "Lecteur");
   const [showFollowButton, setShowFollowButton] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Only show the follow button if we're logged in and it's not the current user
     setShowFollowButton(!!currentUser && currentUser.id !== user.id);
     
-    // Set a default name if none is provided
-    if (!user.name) {
-      setUserName("Lecteur " + user.id.substring(0, 4));
-    }
+    // Fetch user profile to get username if not provided
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        const profile = await getUserProfile(user.id);
+        const displayName = getDisplayName(
+          profile?.username || user.username,
+          user.email,
+          user.id
+        );
+        setUserName(displayName);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
   }, [currentUser, user]);
 
   return (
@@ -41,10 +60,12 @@ export function UserItem({ user, compact = false }: UserItemProps) {
         <Avatar className={`${compact ? 'h-8 w-8' : 'h-10 w-10'} border border-coffee-light`}>
           <AvatarImage src={user.avatar} alt={userName} />
           <AvatarFallback className="bg-coffee-medium text-primary-foreground">
-            {userName.charAt(0)}
+            {userName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className={`font-medium text-coffee-darker ${compact ? 'text-sm' : 'text-base'}`}>{userName}</span>
+        <span className={`font-medium text-coffee-darker ${compact ? 'text-sm' : 'text-base'}`}>
+          {loading ? "Chargement..." : userName}
+        </span>
       </Link>
       
       {showFollowButton && (

@@ -4,7 +4,8 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  is_admin: boolean; // Ensure this field exists
+  is_admin: boolean;
+  username?: string; // Ajout du champ username
   preferences?: {
     favoriteGenres: string[];
     readingGoal: number;
