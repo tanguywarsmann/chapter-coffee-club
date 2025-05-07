@@ -26,26 +26,24 @@ export function HomeContent({
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
       <div className="space-y-6 md:col-span-2 lg:col-span-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <FollowerStats />
-            <GoalsPreview />
-          </div>
-          <div className="space-y-6">
-            <RecommendedUsers />
-            {/* SimilarReaders only shown here on desktop */}
-            {!isMobile && <SimilarReaders />}
-          </div>
-        </div>
-        
+        {/* Lecture en cours d'abord */}
         <ReadingProgress 
           key={`reading-progress-${readingProgress.length}`}
           progressItems={readingProgress}
           isLoading={isLoading}
         />
-
-        {/* Show SimilarReaders after ReadingProgress on mobile */}
-        {isMobile && <SimilarReaders />}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <GoalsPreview />
+            <FollowerStats />
+          </div>
+          <div className="space-y-6">
+            {/* Lecteurs à découvrir avant les lecteurs similaires */}
+            <RecommendedUsers />
+            <SimilarReaders />
+          </div>
+        </div>
       </div>
       <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
         <ActivityFeed activities={getUserActivities()} />

@@ -69,7 +69,7 @@ export function UserPublicHeader({ userId, onProfileLoaded }: UserPublicHeaderPr
   return (
     <Card className="border-coffee-light">
       <CardContent className="py-6">
-        <div className="flex items-start md:items-center justify-between flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 border-2 border-coffee-light">
               <AvatarImage src={null} alt={displayName} />
@@ -77,12 +77,12 @@ export function UserPublicHeader({ userId, onProfileLoaded }: UserPublicHeaderPr
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="space-y-1">
-              <h2 className="text-2xl font-serif font-medium text-coffee-darker">
+            <div className="space-y-1 max-w-[calc(100vw-4rem)] md:max-w-none truncate">
+              <h2 className="text-2xl font-serif font-medium text-coffee-darker truncate">
                 {displayName}
               </h2>
               {profile.email && (
-                <p className="text-sm text-muted-foreground">{profile.email}</p>
+                <p className="text-sm text-muted-foreground truncate">{profile.email}</p>
               )}
             </div>
           </div>

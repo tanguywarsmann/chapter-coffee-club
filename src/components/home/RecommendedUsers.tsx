@@ -49,7 +49,7 @@ export function RecommendedUsers() {
           </div>
         ) : users.length > 0 ? (
           users.map(user => (
-            <UserItem key={user.id} user={user} compact />
+            <UserItem key={user.id} user={user} compact hideUnfollow={true} />
           ))
         ) : (
           <div className="text-center text-muted-foreground py-2">

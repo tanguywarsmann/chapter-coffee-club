@@ -16,6 +16,7 @@ import Explore from "./pages/Explore";
 import Achievements from "./pages/Achievements";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Followers from "./pages/Followers";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => {
               <Route path="/reading-list" element={<ReadingList />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/achievements" element={<Achievements />} />
+              <Route path="/followers/:type/:userId?" element={<Followers />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

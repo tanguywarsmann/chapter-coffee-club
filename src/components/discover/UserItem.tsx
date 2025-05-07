@@ -17,9 +17,10 @@ interface User {
 interface UserItemProps {
   user: User;
   compact?: boolean;
+  hideUnfollow?: boolean; // Nouvelle propriété
 }
 
-export function UserItem({ user, compact = false }: UserItemProps) {
+export function UserItem({ user, compact = false, hideUnfollow = false }: UserItemProps) {
   const { user: currentUser } = useAuth();
   const [userName, setUserName] = useState<string>(user.name || "Lecteur");
   const [showFollowButton, setShowFollowButton] = useState(false);
@@ -72,7 +73,7 @@ export function UserItem({ user, compact = false }: UserItemProps) {
       
       {showFollowButton && (
         <div>
-          <FollowButton targetUserId={user.id} />
+          <FollowButton targetUserId={user.id} hideUnfollow={hideUnfollow} />
         </div>
       )}
     </div>

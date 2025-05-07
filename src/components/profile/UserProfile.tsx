@@ -145,28 +145,42 @@ export function UserProfile() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-16 w-16 border-2 border-coffee-light">
+              <div className="flex flex-col md:flex-row md:items-start md:gap-4">
+                <Avatar className="h-16 w-16 border-2 border-coffee-light mb-4 md:mb-0">
                   <AvatarImage src={profileData?.avatar} alt={displayName} />
                   <AvatarFallback className="text-xl bg-coffee-light text-coffee-darker">
                     {displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-medium text-coffee-darker">{displayName}</h3>
-                  <p className="text-sm text-muted-foreground">{profileData?.email}</p>
+                <div className="space-y-1 flex-1">
+                  <h3 className="text-lg font-medium text-coffee-darker truncate max-w-[calc(100vw-2rem)]">
+                    {displayName}
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate max-w-[calc(100vw-2rem)]">
+                    {profileData?.email}
+                  </p>
                   
-                  <div className="flex items-center mt-2 gap-4">
-                    <div className="flex items-center gap-1 text-sm">
-                      <Users className="h-4 w-4 text-coffee-dark" />
-                      <span className="font-medium text-coffee-dark">{followerCounts.followers}</span>
-                      <span className="text-muted-foreground">Abonnés</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Users className="h-4 w-4 text-coffee-dark" />
-                      <span className="font-medium text-coffee-dark">{followerCounts.following}</span>
-                      <span className="text-muted-foreground">Abonnements</span>
-                    </div>
+                  <div className="flex items-center mt-4 gap-6">
+                    <Link 
+                      to={profileUserId ? `/followers/followers/${profileUserId}` : '/followers/followers'}
+                      className="flex items-center gap-1 group"
+                    >
+                      <div className="flex items-center gap-1 text-sm">
+                        <Users className="h-4 w-4 text-coffee-dark" />
+                        <span className="font-medium text-coffee-dark">{followerCounts.followers}</span>
+                        <span className="text-muted-foreground group-hover:underline">Abonnés</span>
+                      </div>
+                    </Link>
+                    <Link 
+                      to={profileUserId ? `/followers/following/${profileUserId}` : '/followers/following'}
+                      className="flex items-center gap-1 group"
+                    >
+                      <div className="flex items-center gap-1 text-sm">
+                        <Users className="h-4 w-4 text-coffee-dark" />
+                        <span className="font-medium text-coffee-dark">{followerCounts.following}</span>
+                        <span className="text-muted-foreground group-hover:underline">Abonnements</span>
+                      </div>
+                    </Link>
                   </div>
                 </div>
               </div>

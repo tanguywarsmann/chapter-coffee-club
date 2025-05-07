@@ -9,9 +9,10 @@ import { UserPlus, UserMinus } from "lucide-react";
 interface FollowButtonProps {
   targetUserId: string;
   onFollowChange?: () => void;
+  hideUnfollow?: boolean; // Nouvelle propriété pour masquer le bouton de désabonnement
 }
 
-export function FollowButton({ targetUserId, onFollowChange }: FollowButtonProps) {
+export function FollowButton({ targetUserId, onFollowChange, hideUnfollow = false }: FollowButtonProps) {
   const [following, setFollowing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
@@ -32,8 +33,10 @@ export function FollowButton({ targetUserId, onFollowChange }: FollowButtonProps
     checkFollowStatus();
   }, [targetUserId, user]);
 
-  // Don't render button if viewing own profile
-  if (!user || user.id === targetUserId) {
+  // Ne pas rendre le bouton si :
+  // - on consulte son propre profil
+  // - on suit déjà l'utilisateur ET hideUnfollow est true
+  if (!user || user.id === targetUserId || (following && hideUnfollow)) {
     return null;
   }
 

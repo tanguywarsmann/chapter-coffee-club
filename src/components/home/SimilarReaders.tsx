@@ -56,7 +56,7 @@ export function SimilarReaders() {
         ) : similarUsers.length > 0 ? (
           <div aria-labelledby="similar-readers-title" className="space-y-3">
             {similarUsers.map(user => (
-              <UserItem key={user.id} user={user} compact />
+              <UserItem key={user.id} user={user} compact hideUnfollow={true} />
             ))}
           </div>
         ) : (

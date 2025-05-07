@@ -119,6 +119,68 @@ export async function getFollowerCounts(userId: string): Promise<{ followers: nu
 }
 
 /**
+ * Get users who follow a specific user
+ * @param userId The user ID to get followers for
+ * @returns Array of user objects
+ */
+export async function getFollowers(userId: string): Promise<any[]> {
+  try {
+    const { data: followerIds, error: followerError } = await supabase
+      .from('followers')
+      .select('follower_id')
+      .eq('following_id', userId);
+    
+    if (followerError) throw followerError;
+    
+    if (!followerIds.length) return [];
+    
+    // Get profile information for each follower
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', followerIds.map(item => item.follower_id));
+    
+    if (profilesError) throw profilesError;
+    
+    return profiles || [];
+  } catch (error) {
+    console.error("Error getting followers:", error);
+    return [];
+  }
+}
+
+/**
+ * Get users that a specific user follows
+ * @param userId The user ID to get followings for
+ * @returns Array of user objects
+ */
+export async function getFollowing(userId: string): Promise<any[]> {
+  try {
+    const { data: followingIds, error: followingError } = await supabase
+      .from('followers')
+      .select('following_id')
+      .eq('follower_id', userId);
+    
+    if (followingError) throw followingError;
+    
+    if (!followingIds.length) return [];
+    
+    // Get profile information for each followed user
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', followingIds.map(item => item.following_id));
+    
+    if (profilesError) throw profilesError;
+    
+    return profiles || [];
+  } catch (error) {
+    console.error("Error getting following:", error);
+    return [];
+  }
+}
+
+/**
  * Get user info by ID
  */
 export async function getUserInfo(userId: string) {
