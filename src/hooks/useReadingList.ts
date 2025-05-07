@@ -1,10 +1,9 @@
-
 import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
-import { fetchReadingProgress, fetchBooksForStatus } from "@/services/reading/readingListService";
+import { fetchReadingProgress, fetchBooksForStatus, addBookToReadingList } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
 import { Book } from "@/types/book";
 
@@ -24,7 +23,7 @@ export const useReadingList = () => {
     isMounted
   } = useReadingListState();
 
-  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError, isSuccess } = useQuery({
+  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError, isSuccess, refetch } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: () => fetchReadingProgress(user?.id || ""),
     enabled: !!user?.id,
@@ -106,10 +105,31 @@ export const useReadingList = () => {
     console.error("Reading list query failed:", readingListError);
   }
 
-  const addToReadingList = async (book: Book) => {
-    console.log("Adding book to reading list:", book);
-    toast.success(`${book.title} ajouté à votre liste de lecture`);
-    return true;
+  const addToReadingList = async (book: Book): Promise<boolean> => {
+    if (!user?.id) {
+      toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
+      return false;
+    }
+
+    try {
+      console.log(`[DEBUG] Ajout du livre "${book.title}" à la liste de lecture`);
+      const result = await addBookToReadingList(user.id, book);
+      
+      if (result) {
+        // Invalider la requête de liste de lecture pour forcer un rechargement
+        queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+        refetch();
+        toast.success(`${book.title} ajouté à votre liste de lecture`);
+        return true;
+      } else {
+        toast.error(`Impossible d'ajouter ${book.title} à votre liste de lecture`);
+        return false;
+      }
+    } catch (error) {
+      console.error("[ERROR] Erreur lors de l'ajout à la liste de lecture:", error);
+      toast.error(`Une erreur est survenue: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
   };
 
   return {

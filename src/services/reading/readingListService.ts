@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,67 @@ import { createFallbackBook } from "@/utils/createFallbackBook";
 
 const BATCH_SIZE = 3;
 const TIMEOUT_MS = 5000;
+
+// Nouvelle fonction pour ajouter un livre à la liste de lecture
+export const addBookToReadingList = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
+  if (!userId || !book?.id) {
+    console.error("[ERROR] addBookToReadingList: userId ou book.id manquant");
+    return null;
+  }
+
+  try {
+    console.log(`[DEBUG] Ajout du livre "${book.title}" (${book.id}) à la liste de lecture de l'utilisateur ${userId}`);
+    
+    // Vérifier si une entrée existe déjà pour ce livre et cet utilisateur
+    const { data: existingProgress, error: checkError } = await supabase
+      .from("reading_progress")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("book_id", book.id)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error("[ERROR] Erreur lors de la vérification du livre dans la liste:", checkError);
+      throw checkError;
+    }
+    
+    // Si une entrée existe déjà, retourner cette entrée sans rien faire
+    if (existingProgress) {
+      console.log(`[DEBUG] Le livre est déjà dans la liste de lecture (status: ${existingProgress.status})`);
+      return existingProgress;
+    }
+    
+    // Créer une nouvelle entrée dans reading_progress
+    const newProgress = {
+      user_id: userId,
+      book_id: book.id,
+      total_pages: book.pages || 0,
+      current_page: 0,
+      status: "to_read" as const,
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      streak_current: 0,
+      streak_best: 0
+    };
+    
+    const { data: insertedProgress, error: insertError } = await supabase
+      .from("reading_progress")
+      .insert(newProgress)
+      .select("*")
+      .single();
+    
+    if (insertError) {
+      console.error("[ERROR] Erreur lors de l'ajout du livre à la liste:", insertError);
+      throw insertError;
+    }
+    
+    console.log(`[DEBUG] Livre ajouté avec succès à la liste de lecture:`, insertedProgress);
+    return insertedProgress;
+  } catch (error) {
+    console.error("[ERROR] Exception dans addBookToReadingList:", error);
+    throw error;
+  }
+};
 
 export const fetchReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) {
