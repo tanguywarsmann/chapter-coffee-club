@@ -5,14 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { LockTimer } from "./LockTimer";
 
 interface ValidationModalProps {
   bookTitle: string;
   segment: number;
   isOpen: boolean;
   isValidating: boolean;
+  isLocked?: boolean;
+  remainingLockTime?: number | null;
   onClose: () => void;
   onValidate: () => void;
+  onLockExpire?: () => void;
 }
 
 export function ValidationModal({ 
@@ -20,8 +24,11 @@ export function ValidationModal({
   segment,
   isOpen,
   isValidating,
+  isLocked = false,
+  remainingLockTime = null,
   onClose,
-  onValidate
+  onValidate,
+  onLockExpire
 }: ValidationModalProps) {
   const [hasRead, setHasRead] = useState(false);
   
@@ -43,38 +50,47 @@ export function ValidationModal({
         </DialogHeader>
         
         <div className="py-4">
-          <div className="flex items-start space-x-2">
-            <Checkbox 
-              id="hasRead" 
-              checked={hasRead}
-              onCheckedChange={(checked) => setHasRead(checked as boolean)}
+          {isLocked && remainingLockTime && remainingLockTime > 0 ? (
+            <LockTimer 
+              remainingSeconds={remainingLockTime} 
+              onExpire={() => onLockExpire?.()}
             />
-            <div className="grid gap-1.5 leading-none">
-              <Label
-                htmlFor="hasRead"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                J'ai lu ces pages et je souhaite valider cette étape
-              </Label>
+          ) : (
+            <div className="flex items-start space-x-2">
+              <Checkbox 
+                id="hasRead" 
+                checked={hasRead}
+                onCheckedChange={(checked) => setHasRead(checked as boolean)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="hasRead"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  J'ai lu ces pages et je souhaite valider cette étape
+                </Label>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         
         <DialogFooter className="sm:justify-center gap-2">
           <Button variant="outline" onClick={onClose} className="border-coffee-medium">
             Annuler
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!hasRead || isValidating}
-            className="bg-coffee-dark hover:bg-coffee-darker"
-          >
-            {isValidating ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Validation...</>
-            ) : (
-              "Valider cette étape"
-            )}
-          </Button>
+          {!isLocked && (
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!hasRead || isValidating}
+              className="bg-coffee-dark hover:bg-coffee-darker"
+            >
+              {isValidating ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Validation...</>
+              ) : (
+                "Valider cette étape"
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

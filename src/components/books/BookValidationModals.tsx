@@ -4,6 +4,9 @@ import { ValidationModal } from "./ValidationModal";
 import { QuizModal } from "./QuizModal";
 import { ReadingQuestion } from "@/types/reading";
 import { SuccessMessage } from "./SuccessMessage";
+import { LockTimer } from "./LockTimer";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Clock } from "lucide-react";
 
 interface BookValidationModalsProps {
   book: Book;
@@ -13,11 +16,14 @@ interface BookValidationModalsProps {
   validationSegment: number | null;
   currentQuestion: ReadingQuestion | null;
   isValidating: boolean;
+  isLocked?: boolean;
+  remainingLockTime?: number | null;
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
   onQuizComplete: (passed: boolean) => void;
   onSuccessClose?: () => void;
+  onLockExpire?: () => void;
 }
 
 export const BookValidationModals = ({
@@ -28,24 +34,44 @@ export const BookValidationModals = ({
   validationSegment,
   currentQuestion,
   isValidating,
+  isLocked = false,
+  remainingLockTime = null,
   onValidationClose,
   onValidationConfirm,
   onQuizClose,
   onQuizComplete,
-  onSuccessClose
+  onSuccessClose,
+  onLockExpire
 }: BookValidationModalsProps) => {
   return (
     <>
       {showValidationModal && validationSegment && (
-        <ValidationModal
-          bookTitle={book.title}
-          segment={validationSegment}
-          isOpen={showValidationModal}
-          isValidating={isValidating}
-          onClose={onValidationClose}
-          onValidate={onValidationConfirm}
-        />
+        <>
+          {isLocked && remainingLockTime && remainingLockTime > 0 ? (
+            <ValidationModal
+              bookTitle={book.title}
+              segment={validationSegment}
+              isOpen={showValidationModal}
+              isValidating={isValidating}
+              isLocked={true}
+              remainingLockTime={remainingLockTime}
+              onClose={onValidationClose}
+              onValidate={onValidationConfirm}
+              onLockExpire={onLockExpire}
+            />
+          ) : (
+            <ValidationModal
+              bookTitle={book.title}
+              segment={validationSegment}
+              isOpen={showValidationModal}
+              isValidating={isValidating}
+              onClose={onValidationClose}
+              onValidate={onValidationConfirm}
+            />
+          )}
+        </>
       )}
+      
       {showQuizModal && currentQuestion && (
         <QuizModal
           bookTitle={book.title}
@@ -55,6 +81,7 @@ export const BookValidationModals = ({
           question={currentQuestion}
         />
       )}
+      
       {showSuccessMessage && (
         <SuccessMessage
           isOpen={showSuccessMessage}

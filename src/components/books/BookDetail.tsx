@@ -41,7 +41,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     prepareAndShowQuestion,
     handleQuizComplete,
     handleValidationConfirm,
-    showConfetti
+    showConfetti,
+    isLocked,
+    remainingLockTime,
+    handleLockExpire
   } = useBookValidation(currentBook, user?.id, (bookId) => {
     if (onChapterComplete) {
       onChapterComplete(bookId);
@@ -192,6 +195,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           validationSegment={validationSegment}
           currentQuestion={currentQuestion}
           isValidating={isValidating}
+          isLocked={isLocked}
+          remainingLockTime={remainingLockTime}
           onValidationClose={() => setShowValidationModal(false)}
           onValidationConfirm={() => {
             setShowValidationModal(false);
@@ -200,6 +205,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           onQuizClose={() => setShowQuiz(false)}
           onQuizComplete={handleQuizCompleteWrapper}
           onSuccessClose={() => setShowSuccessMessage(false)}
+          onLockExpire={handleLockExpire}
         />
       </CardContent>
     </Card>

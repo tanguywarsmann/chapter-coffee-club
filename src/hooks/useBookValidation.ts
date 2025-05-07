@@ -24,7 +24,10 @@ export const useBookValidation = (
     showSuccessMessage,
     setShowSuccessMessage,
     prepareAndShowQuestion,
-    handleQuizComplete
+    handleQuizComplete,
+    isLocked,
+    remainingLockTime,
+    handleLockExpire
   } = useBookQuiz(book, userId, onProgressUpdate);
 
   const handleValidateReading = async (e: React.MouseEvent) => {
@@ -133,6 +136,9 @@ export const useBookValidation = (
     handleQuizComplete,
     handleValidationConfirm,
     showConfetti,
-    validationError
+    validationError,
+    isLocked,
+    remainingLockTime,
+    handleLockExpire
   };
 };

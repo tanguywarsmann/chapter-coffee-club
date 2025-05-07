@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { ReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, getFallbackQuestion, isSegmentAlreadyValidated } from "@/services/questionService";
 import { validateReading } from "@/services/reading/validationService";
+import { checkValidationLock, createValidationLock } from "@/services/validation/lockService";
 
 export const useBookQuiz = (
   book: Book | null,
@@ -17,6 +18,8 @@ export const useBookQuiz = (
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
 
   const prepareAndShowQuestion = async (segment: number) => {
     if (!userId) {
@@ -41,7 +44,27 @@ export const useBookQuiz = (
       setShowSuccessMessage(false);
       setErrorMessage(null);
       
-      // First, check if segment is already validated
+      // First, check if user is locked out from validating this segment
+      if (userId) {
+        const lockStatus = await checkValidationLock(userId, book.id, segment);
+        if (lockStatus.isLocked && lockStatus.remainingTime !== null) {
+          setIsLocked(true);
+          setRemainingLockTime(lockStatus.remainingTime);
+          console.log(`User is locked out for ${lockStatus.remainingTime} more seconds`);
+          toast.error("Vous devez attendre avant de pouvoir réessayer", {
+            description: "Trop d'essais incorrects. Un délai d'attente a été imposé.",
+            duration: 5000
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // If not locked, proceed as normal
+      setIsLocked(false);
+      setRemainingLockTime(null);
+      
+      // Check if segment is already validated
       const alreadyValidated = await isSegmentAlreadyValidated(userId, book.id, segment);
       
       if (alreadyValidated) {
@@ -87,14 +110,6 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (passed: boolean) => {
-    if (!passed) {
-      toast.error("Essayez encore!", {
-        description: "Assurez-vous d'avoir bien lu le chapitre",
-        duration: 4000
-      });
-      return;
-    }
-
     if (!userId || !book) {
       toast.error("Informations d'utilisateur ou de livre manquantes", {
         description: "Impossible de valider votre progression",
@@ -102,6 +117,38 @@ export const useBookQuiz = (
       });
       return;
     }
+
+    if (!passed) {
+      // Track failed attempts in local state
+      const failedAttempts = (parseInt(localStorage.getItem(`failedAttempts_${book.id}_${quizChapter}`) || "0") + 1);
+      localStorage.setItem(`failedAttempts_${book.id}_${quizChapter}`, failedAttempts.toString());
+      
+      // If this is the third failed attempt, create a lock
+      if (failedAttempts >= 3) {
+        await createValidationLock(userId, book.id, quizChapter);
+        setIsLocked(true);
+        setRemainingLockTime(3600); // 1 hour in seconds
+        
+        // Reset failed attempts counter
+        localStorage.removeItem(`failedAttempts_${book.id}_${quizChapter}`);
+        
+        toast.error("Trop d'essais incorrects", {
+          description: "Vous pourrez réessayer dans une heure",
+          duration: 7000
+        });
+        
+        setShowQuiz(false);
+      } else {
+        toast.error("Essayez encore!", {
+          description: `Tentative ${failedAttempts}/3. Assurez-vous d'avoir bien lu le chapitre.`,
+          duration: 4000
+        });
+      }
+      return;
+    }
+    
+    // On success, reset failed attempts counter
+    localStorage.removeItem(`failedAttempts_${book.id}_${quizChapter}`);
     
     try {
       setIsLoading(true);
@@ -143,6 +190,13 @@ export const useBookQuiz = (
     }
   };
 
+  // Function to handle when lock timer expires
+  const handleLockExpire = () => {
+    setIsLocked(false);
+    setRemainingLockTime(null);
+    toast.info("Vous pouvez maintenant réessayer de valider votre lecture");
+  };
+
   return {
     showQuiz,
     setShowQuiz,
@@ -153,6 +207,9 @@ export const useBookQuiz = (
     setShowSuccessMessage,
     prepareAndShowQuestion,
     handleQuizComplete,
-    errorMessage
+    errorMessage,
+    isLocked,
+    remainingLockTime,
+    handleLockExpire
   };
 };

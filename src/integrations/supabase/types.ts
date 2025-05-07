@@ -214,6 +214,41 @@ export type Database = {
           },
         ]
       }
+      validation_locks: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          locked_until: string
+          segment: number
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          locked_until: string
+          segment: number
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          locked_until?: string
+          segment?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validation_locks_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
