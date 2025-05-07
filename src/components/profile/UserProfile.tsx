@@ -1,4 +1,4 @@
-
+import { Link } from "react-router-dom";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
