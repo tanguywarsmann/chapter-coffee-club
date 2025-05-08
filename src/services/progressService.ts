@@ -54,6 +54,10 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       return [];
     }
 
+    // Liste des statuts valides pour éviter les erreurs de type
+    const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
+    type ValidStatus = typeof validStatuses[number];
+
     // Transformer les données pour correspondre à l'attendu par l'application
     const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
       const book = item.books;
@@ -62,7 +66,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       
       // Recalculer le statut en fonction des validations pour assurer la cohérence
       const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
-      let updatedStatus = item.status;
+      let updatedStatus: ValidStatus = 'to_read';
       
       if (validations.length > 0) {
         // Au moins une validation = in_progress
@@ -75,7 +79,9 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         }
       } else {
         // Aucune validation, on vérifie le statut actuel
-        if (item.status !== 'to_read') {
+        if (typeof item.status === 'string' && validStatuses.includes(item.status as ValidStatus)) {
+          updatedStatus = item.status as ValidStatus;
+        } else {
           updatedStatus = 'to_read';
         }
       }
@@ -93,7 +99,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_cover: book?.cover_url ?? null,
         total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
         validations: validations as ReadingValidation[],
-        status: updatedStatus as "to_read" | "in_progress" | "completed"
+        status: updatedStatus
       };
     });
 
@@ -111,7 +117,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   }
 };
 
-const updateProgressStatus = async (progressId: string, newStatus: string): Promise<void> => {
+const updateProgressStatus = async (progressId: string, newStatus: 'to_read' | 'in_progress' | 'completed'): Promise<void> => {
   try {
     await supabase
       .from("reading_progress")
@@ -141,6 +147,10 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   }
 
   try {
+    // Liste des statuts valides
+    const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
+    type ValidStatus = typeof validStatuses[number];
+    
     // Requête optimisée pour obtenir progress + book + validations en une seule requête
     const { data, error } = await supabase
       .from("reading_progress")
@@ -178,7 +188,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     
     // Recalculer le statut en fonction des validations
     const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
-    let updatedStatus = data.status;
+    let updatedStatus: ValidStatus = 'to_read';
     
     if (validations.length > 0) {
       // Au moins une validation = in_progress
@@ -190,8 +200,12 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
         updatedStatus = 'completed';
       }
     } else {
-      // Aucune validation, le statut reste 'to_read'
-      updatedStatus = 'to_read';
+      // Aucune validation, vérifier le statut actuel
+      if (typeof data.status === 'string' && validStatuses.includes(data.status as ValidStatus)) {
+        updatedStatus = data.status as ValidStatus;
+      } else {
+        updatedStatus = 'to_read';
+      }
     }
     
     // Si le statut calculé est différent, on met à jour en base
@@ -207,7 +221,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       book_cover: book?.cover_url ?? null,
       total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
       validations: validations as ReadingValidation[],
-      status: updatedStatus as "to_read" | "in_progress" | "completed"
+      status: updatedStatus
     };
 
     return enrichedProgress;

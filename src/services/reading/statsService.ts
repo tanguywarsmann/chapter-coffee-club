@@ -136,3 +136,35 @@ export function getReaderProfileMessage(totalBooks: number, totalSegments: numbe
   
   return "Lecteur curieux - Prêt à explorer !";
 }
+
+/**
+ * Récupère la série de lecture actuelle de l'utilisateur
+ * (nombre de jours consécutifs avec des validations)
+ */
+export async function getCurrentStreak(userId: string): Promise<number> {
+  try {
+    // Pour l'instant, retournons une valeur fictive
+    // Dans une implémentation réelle, nous calculerions le nombre de jours consécutifs
+    // avec des validations jusqu'à aujourd'hui
+    return 5;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
+}
+
+/**
+ * Récupère la meilleure série de lecture de l'utilisateur
+ * (plus grand nombre de jours consécutifs avec des validations)
+ */
+export async function getBestStreak(userId: string): Promise<number> {
+  try {
+    // Pour l'instant, retournons une valeur fictive
+    // Dans une implémentation réelle, nous regarderions la plus longue séquence
+    // de jours consécutifs avec des validations
+    return 12;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
+}
