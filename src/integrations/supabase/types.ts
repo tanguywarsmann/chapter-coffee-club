@@ -179,6 +179,7 @@ export type Database = {
           book_id: string
           correct: boolean
           id: string
+          progress_id: string | null
           question_id: string | null
           segment: number
           user_id: string
@@ -189,6 +190,7 @@ export type Database = {
           book_id: string
           correct?: boolean
           id?: string
+          progress_id?: string | null
           question_id?: string | null
           segment: number
           user_id: string
@@ -199,12 +201,20 @@ export type Database = {
           book_id?: string
           correct?: boolean
           id?: string
+          progress_id?: string | null
           question_id?: string | null
           segment?: number
           user_id?: string
           validated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_reading_progress"
+            columns: ["progress_id"]
+            isOneToOne: false
+            referencedRelation: "reading_progress"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -81,7 +82,10 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     );
   }
 
-  const progress = Math.round((currentBook.current_page / currentBook.total_pages) * 100);
+  // Calcul du pourcentage de progression basé sur les validations si disponibles
+  const totalPages = currentBook.total_chapters || currentBook.total_pages;
+  const completedPages = currentBook.validations?.length || currentBook.current_page;
+  const progress = Math.round((completedPages / totalPages) * 100);
 
   return (
     <Card className="border-coffee-light">
@@ -114,7 +118,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
               </div>
               <Progress value={progress} className="h-2" />
               <div className="text-xs text-muted-foreground text-right">
-                Page {currentBook.current_page} sur {currentBook.total_pages}
+                {completedPages} validation{completedPages > 1 ? 's' : ''} sur {totalPages} segment{totalPages > 1 ? 's' : ''}
               </div>
             </div>
           </div>

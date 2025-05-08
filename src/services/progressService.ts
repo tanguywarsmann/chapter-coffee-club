@@ -40,7 +40,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
           expected_segments, 
           total_chapters
         ),
-        validations:reading_validations (*)
+        validations:reading_validations(*)
       `)
       .eq("user_id", userId);
 
@@ -58,40 +58,48 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
     type ValidStatus = typeof validStatuses[number];
 
-// Transformer les données pour correspondre à l'attendu par l'application
-const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
-  const book = item.books;
+    // Transformer les données pour correspondre à l'attendu par l'application
+    const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
+      const book = item.books;
+      const validations = Array.isArray(item.validations) ? item.validations : [];
 
-  // Calcul des pages
-  const totalPages = item.total_pages || book?.total_chapters || book?.expected_segments || 1;
-  const currentPage = item.current_page || 0;
+      // Calcul des pages
+      const totalPages = item.total_pages || book?.total_chapters || book?.expected_segments || 1;
+      const currentPage = item.current_page || 0;
 
-  // Déterminer le statut à partir de la progression en pages
-  let updatedStatus: ValidStatus = 'to_read';
+      // Déterminer le statut à partir de la progression en pages
+      let updatedStatus: ValidStatus = 'to_read';
 
-  if (currentPage > 0 && currentPage < totalPages) {
-    updatedStatus = 'in_progress';
-  } else if (currentPage >= totalPages) {
-    updatedStatus = 'completed';
-  }
+      if (validations.length > 0) {
+        // Si au moins une validation existe, le livre est au minimum en cours
+        updatedStatus = 'in_progress';
+        
+        // Si toutes les validations sont présentes, le livre est terminé
+        if (validations.length >= totalPages) {
+          updatedStatus = 'completed';
+        }
+      } else if (currentPage > 0 && currentPage < totalPages) {
+        updatedStatus = 'in_progress';
+      } else if (currentPage >= totalPages) {
+        updatedStatus = 'completed';
+      }
 
-  // Mettre à jour le statut en base si nécessaire
-  if (updatedStatus !== item.status) {
-    updateProgressStatus(item.id, updatedStatus).catch(console.error);
-  }
+      // Mettre à jour le statut en base si nécessaire
+      if (updatedStatus !== item.status) {
+        updateProgressStatus(item.id, updatedStatus).catch(console.error);
+      }
 
-  return {
-    ...item,
-    book_title: book?.title ?? "Titre inconnu",
-    book_author: book?.author ?? "Auteur inconnu",
-    book_slug: book?.slug ?? "",
-    book_cover: book?.cover_url ?? null,
-    total_chapters: totalPages,
-    validations: [], // temporairement vide en attendant le rétablissement de la relation
-    status: updatedStatus,
-  };
-});
-
+      return {
+        ...item,
+        book_title: book?.title ?? "Titre inconnu",
+        book_author: book?.author ?? "Auteur inconnu",
+        book_slug: book?.slug ?? "",
+        book_cover: book?.cover_url ?? null,
+        total_chapters: totalPages,
+        validations: validations as ReadingValidation[],
+        status: updatedStatus,
+      };
+    });
 
     // Mettre en cache les données récupérées
     progressCache.set(cacheKey, { 
@@ -154,7 +162,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
           expected_segments, 
           total_chapters
         ),
-        validations:reading_validations (*)
+        validations:reading_validations(*)
       `)
       .eq("user_id", userId)
       .eq("book_id", bookId)
@@ -182,11 +190,9 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     
     if (validations.length > 0) {
       // Au moins une validation = in_progress
-      if (validations.length < totalExpectedSegments) {
-        updatedStatus = 'in_progress';
-      } 
+      updatedStatus = 'in_progress';
       // Toutes les validations = completed
-      else if (validations.length >= totalExpectedSegments) {
+      if (validations.length >= totalExpectedSegments) {
         updatedStatus = 'completed';
       }
     } else {
