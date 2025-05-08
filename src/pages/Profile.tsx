@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { UserProfile } from "@/components/profile/UserProfile";
-import { UserStats } from "@/components/profile/UserStats";
+import { ReadingStats } from "@/components/profile/ReadingStats";
 import { UserGoals } from "@/components/profile/UserGoals";
 import { UserSettings } from "@/components/profile/UserSettings";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -20,15 +19,10 @@ export default function Profile() {
   const { user } = useAuth();
   const [username, setUsername] = useState<string | null>(null);
   
-  // Si on consulte un profil spécifique via l'URL
   const profileUserId = params.userId || user?.id;
-  
-  // Vérifier si c'est notre propre profil
   const isOwnProfile = !params.userId || (user && user.id === params.userId);
 
   useEffect(() => {
-    // Si on essaie d'accéder à son propre profil via /profile/{id}
-    // Rediriger vers /profile
     if (user && params.userId === user.id) {
       navigate('/profile');
     }
@@ -48,8 +42,8 @@ export default function Profile() {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-3/4 space-y-6">
                   <UserProfile />
+                  <ReadingStats />
                   <UserGoals />
-                  <UserStats />
                 </div>
                 <div className="w-full md:w-1/4">
                   <UserSettings />

@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
-import { memo } from "react";
 
 // Cache pour les données de progression de lecture
 const progressCache = new Map<string, { 
@@ -61,6 +60,31 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       // S'assurer que validations est toujours un tableau
       const validations = Array.isArray(item.validations) ? item.validations : [];
       
+      // Recalculer le statut en fonction des validations pour assurer la cohérence
+      const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
+      let updatedStatus = item.status;
+      
+      if (validations.length > 0) {
+        // Au moins une validation = in_progress
+        if (validations.length < totalExpectedSegments) {
+          updatedStatus = 'in_progress';
+        } 
+        // Toutes les validations = completed
+        else if (validations.length >= totalExpectedSegments) {
+          updatedStatus = 'completed';
+        }
+      } else {
+        // Aucune validation, on vérifie le statut actuel
+        if (item.status !== 'to_read') {
+          updatedStatus = 'to_read';
+        }
+      }
+      
+      // Si le statut calculé est différent, on met à jour en base
+      if (updatedStatus !== item.status) {
+        updateProgressStatus(item.id, updatedStatus).catch(console.error);
+      }
+      
       return {
         ...item,
         book_title: book?.title ?? "Titre inconnu",
@@ -68,7 +92,8 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_slug: book?.slug ?? "",
         book_cover: book?.cover_url ?? null,
         total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-        validations: validations as ReadingValidation[]
+        validations: validations as ReadingValidation[],
+        status: updatedStatus as "to_read" | "in_progress" | "completed"
       };
     });
 
@@ -83,6 +108,17 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   } catch (error) {
     console.error("Error in getUserReadingProgress:", error);
     return [];
+  }
+};
+
+const updateProgressStatus = async (progressId: string, newStatus: string): Promise<void> => {
+  try {
+    await supabase
+      .from("reading_progress")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", progressId);
+  } catch (error) {
+    console.error("Error updating progress status:", error);
   }
 };
 
@@ -140,6 +176,29 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     // S'assurer que validations est toujours un tableau
     const validations = Array.isArray(data.validations) ? data.validations : [];
     
+    // Recalculer le statut en fonction des validations
+    const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
+    let updatedStatus = data.status;
+    
+    if (validations.length > 0) {
+      // Au moins une validation = in_progress
+      if (validations.length < totalExpectedSegments) {
+        updatedStatus = 'in_progress';
+      } 
+      // Toutes les validations = completed
+      else if (validations.length >= totalExpectedSegments) {
+        updatedStatus = 'completed';
+      }
+    } else {
+      // Aucune validation, le statut reste 'to_read'
+      updatedStatus = 'to_read';
+    }
+    
+    // Si le statut calculé est différent, on met à jour en base
+    if (updatedStatus !== data.status) {
+      updateProgressStatus(data.id, updatedStatus).catch(console.error);
+    }
+    
     const enrichedProgress: ReadingProgress = {
       ...data,
       book_title: book?.title ?? "Titre inconnu",
@@ -147,7 +206,8 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       book_slug: book?.slug ?? "",
       book_cover: book?.cover_url ?? null,
       total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-      validations: validations as ReadingValidation[]
+      validations: validations as ReadingValidation[],
+      status: updatedStatus as "to_read" | "in_progress" | "completed"
     };
 
     return enrichedProgress;
