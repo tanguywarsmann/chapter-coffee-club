@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -31,7 +30,6 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
         console.log("📚 Progress récupéré :", progress);
 
         const inProgressBooks = progress.filter(p => p.status === "in_progress");
-
         console.log("🔍 Livres en cours trouvés :", inProgressBooks);
 
         if (inProgressBooks.length > 0) {
