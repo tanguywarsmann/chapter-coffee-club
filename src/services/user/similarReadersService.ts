@@ -3,6 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
 
+// Type pour la réponse de la fonction RPC find_similar_readers
+type SimilarUserResponse = { 
+  similar_user_id: string 
+}
+
 // Cache pour les lecteurs similaires avec durée de vie
 const similarReadersCache = new Map<string, { readers: User[], timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -30,7 +35,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       .rpc('find_similar_readers', {
         user_id: currentUserId,
         max_results: limit
-      });
+      }) as { data: SimilarUserResponse[] | null, error: any };
 
     if (usersError || !similarUsers || similarUsers.length === 0) {
       console.log("No similar readers found:", usersError || "Empty result");
@@ -38,7 +43,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     }
     
     // Récupérer les profils des utilisateurs similaires
-    const userIds = similarUsers.map((item: { similar_user_id: string }) => item.similar_user_id);
+    const userIds = similarUsers.map((item: SimilarUserResponse) => item.similar_user_id);
     
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
