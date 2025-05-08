@@ -1,4 +1,5 @@
 
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -30,19 +31,22 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return cached.readers;
     }
 
-    // Appel de la fonction RPC Supabase
-    const { data: similarUsers, error: usersError } = await supabase.rpc("find_similar_readers", {
+    // Appel de la fonction RPC Supabase avec typage explicite
+    const response = await supabase.rpc('find_similar_readers', {
       user_id: currentUserId,
-      max_results: limit,
-    });
+      max_results: limit
+    }) as PostgrestSingleResponse<SimilarUserResponse[]>;
 
-    if (usersError || !similarUsers || similarUsers.length === 0) {
+    const similarUsers = response.data;
+    const usersError = response.error;
+
+    if (usersError || !Array.isArray(similarUsers) || similarUsers.length === 0) {
       console.log("No similar readers found:", usersError || "Empty result");
       return [];
     }
 
-    // Extraction des IDs utilisateurs à partir du résultat
-    const userIds = similarUsers.map((item: SimilarUserResponse) => item.similar_user_id);
+    // Extraction des IDs utilisateurs à partir du résultat avec typage correct
+    const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
     // Récupérer les profils Supabase
     const { data: profiles, error: profilesError } = await supabase
