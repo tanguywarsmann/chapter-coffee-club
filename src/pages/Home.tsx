@@ -13,34 +13,12 @@ import { useCurrentReading } from "@/hooks/useCurrentReading";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 export default function Home() {
-  // Utiliser une référence pour suivre les montages/démontages
-  const mountCount = useRef(0);
+  // Cache le nombre de rendus au lieu de le logger pour optimiser les performances
   const renderCount = useRef(0);
   
-  // Console.log uniquement au premier montage et pour le suivi des rendus
-  useEffect(() => {
-    mountCount.current++;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[HOME DIAGNOSTIQUE] Home component mounted (count: ${mountCount.current})`);
-    }
-    return () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[HOME DIAGNOSTIQUE] Home component unmounted');
-      }
-    };
-  }, []);
-  
-  // Logger chaque render pour diagnostic
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      renderCount.current++;
-      console.log(`[HOME DIAGNOSTIQUE] Home render count: ${renderCount.current}`);
-    }
-  });
-  
+  // État memoïsé pour le message de bienvenue
   const [showWelcome, setShowWelcome] = useState(() => {
-    const onboardingFlag = localStorage.getItem("onboardingDone");
-    return !onboardingFlag;
+    return !localStorage.getItem("onboardingDone");
   });
 
   const { searchResults, setSearchResults, handleSearch, isSearching, isRedirecting } = useHomeSearch();
@@ -52,7 +30,9 @@ export default function Home() {
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
       if (currentReading.isUnavailable) {
-        toast.error("Ce livre n'est pas disponible actuellement");
+        toast.error("Ce livre n'est pas disponible actuellement", {
+          id: "book-unavailable" // Éviter les toasts dupliqués
+        });
         return;
       }
       navigate(`/books/${currentReading.id}?segment=${Math.floor(currentReading.chaptersRead)}`);
@@ -86,6 +66,11 @@ export default function Home() {
     handleProgressUpdate, 
     handleContinueReading
   ]);
+
+  // Uniquement incrémenter le compteur de rendu en dev pour le débogage
+  if (process.env.NODE_ENV === 'development') {
+    renderCount.current++;
+  }
 
   return (
     <AuthGuard>

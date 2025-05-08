@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReadingList } from "@/hooks/useReadingList";
@@ -13,7 +13,12 @@ export const useCurrentReading = () => {
   const isMounted = useRef(true);
   const fetchingCurrentReading = useRef(false);
   const lastFetchedId = useRef<string | null>(null);
+  const lastFetchTime = useRef<number>(0);
   
+  // Ne refetch que toutes les 30 secondes maximum
+  const FETCH_COOLDOWN = 30000; // 30 secondes
+  
+  // Memo pour éviter des calculs inutiles si inProgress n'a pas changé
   const memoizedCurrentReading = useMemo(() => {
     if (inProgress && inProgress.length > 0) {
       const availableBooks = inProgress.filter(book => !book.isUnavailable);
@@ -29,6 +34,7 @@ export const useCurrentReading = () => {
     return null;
   }, [inProgress]);
   
+  // Optimisation: n'update le state que si nécessaire
   useEffect(() => {
     if (isMounted.current && memoizedCurrentReading) {
       const currentId = currentReading?.id;
@@ -41,64 +47,79 @@ export const useCurrentReading = () => {
     }
   }, [memoizedCurrentReading, currentReading]);
 
-  useEffect(() => {
-    const fetchCurrentReading = async () => {
-      if (!user?.id || fetchingCurrentReading.current) return;
+  // Fonction pour fetch les données, optimisée avec cooldown
+  const fetchCurrentReadingData = useCallback(async () => {
+    if (!user?.id || fetchingCurrentReading.current) return;
+    
+    // Vérifier le cooldown pour éviter les fetch trop fréquents
+    const now = Date.now();
+    if (now - lastFetchTime.current < FETCH_COOLDOWN) {
+      return;
+    }
+    
+    if (inProgress && inProgress.length > 0 && !fetchingCurrentReading.current) {
+      return;
+    }
+    
+    if (user.id === lastFetchedId.current && currentReading) {
+      setIsLoadingCurrentBook(false);
+      return;
+    }
+    
+    try {
+      fetchingCurrentReading.current = true;
+      setIsLoadingCurrentBook(true);
+      lastFetchTime.current = now;
       
-      if (inProgress && inProgress.length > 0 && !fetchingCurrentReading.current) {
-        return;
-      }
+      const inProgressBooks = await getBooksByStatus("in_progress");
       
-      if (user.id === lastFetchedId.current && currentReading) {
-        setIsLoadingCurrentBook(false);
-        return;
-      }
+      if (!isMounted.current) return;
       
-      try {
-        fetchingCurrentReading.current = true;
-        setIsLoadingCurrentBook(true);
-        const inProgressBooks = await getBooksByStatus("in_progress");
-        
-        if (!isMounted.current) return;
-        
-        if (inProgressBooks && inProgressBooks.length > 0) {
-          const availableBooks = inProgressBooks.filter(book => !book.isUnavailable);
-          if (availableBooks.length > 0) {
-            setCurrentReading(availableBooks[0]);
-          } else if (inProgressBooks.length > 0) {
-            const stableUnavailableBook = {
-              ...inProgressBooks[0],
-              isStableUnavailable: true
-            };
-            setCurrentReading(stableUnavailableBook);
-          } else {
-            setCurrentReading(null);
-          }
+      if (inProgressBooks && inProgressBooks.length > 0) {
+        const availableBooks = inProgressBooks.filter(book => !book.isUnavailable);
+        if (availableBooks.length > 0) {
+          setCurrentReading(availableBooks[0]);
+        } else if (inProgressBooks.length > 0) {
+          const stableUnavailableBook = {
+            ...inProgressBooks[0],
+            isStableUnavailable: true
+          };
+          setCurrentReading(stableUnavailableBook);
         } else {
           setCurrentReading(null);
         }
-        
-        lastFetchedId.current = user.id;
-      } catch (error) {
-        toast.error("Impossible de charger votre lecture en cours");
-      } finally {
-        if (isMounted.current) {
-          setIsLoadingCurrentBook(false);
-          fetchingCurrentReading.current = false;
-        }
+      } else {
+        setCurrentReading(null);
       }
-    };
+      
+      lastFetchedId.current = user.id;
+    } catch (error) {
+      // Éviter de montrer des toasts d'erreur répétés
+      if (isMounted.current) {
+        console.error("Erreur lors du chargement de la lecture en cours:", error);
+        toast.error("Impossible de charger votre lecture en cours", {
+          id: "current-reading-error", // Permet d'éviter des toasts dupliqués
+        });
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoadingCurrentBook(false);
+        fetchingCurrentReading.current = false;
+      }
+    }
+  }, [user?.id, getBooksByStatus, inProgress, currentReading]);
 
+  useEffect(() => {
     if (user?.id && isMounted.current) {
       if (!memoizedCurrentReading) {
-        fetchCurrentReading();
+        fetchCurrentReadingData();
       } else {
         setIsLoadingCurrentBook(false);
       }
     } else {
       setIsLoadingCurrentBook(false);
     }
-  }, [user?.id, getBooksByStatus, memoizedCurrentReading, inProgress]);
+  }, [user?.id, fetchCurrentReadingData, memoizedCurrentReading]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -110,5 +131,6 @@ export const useCurrentReading = () => {
   return {
     currentReading,
     isLoadingCurrentBook,
+    refetch: fetchCurrentReadingData
   };
 };

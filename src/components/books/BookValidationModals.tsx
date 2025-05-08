@@ -7,6 +7,7 @@ import { SuccessMessage } from "./SuccessMessage";
 import { LockTimer } from "./LockTimer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Clock } from "lucide-react";
+import { memo } from "react";
 
 interface BookValidationModalsProps {
   book: Book;
@@ -26,7 +27,8 @@ interface BookValidationModalsProps {
   onLockExpire?: () => void;
 }
 
-export const BookValidationModals = ({
+// Utilisation de memo pour éviter les rendus inutiles des modales
+export const BookValidationModals = memo(({
   book,
   showValidationModal,
   showQuizModal,
@@ -43,6 +45,11 @@ export const BookValidationModals = ({
   onSuccessClose,
   onLockExpire
 }: BookValidationModalsProps) => {
+  // N'effectuer le rendu que si une des modales est visible
+  if (!showValidationModal && !showQuizModal && !showSuccessMessage) {
+    return null;
+  }
+  
   return (
     <>
       {showValidationModal && validationSegment && (
@@ -91,4 +98,6 @@ export const BookValidationModals = ({
       )}
     </>
   );
-};
+});
+
+BookValidationModals.displayName = "BookValidationModals";

@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
 
+// Cache pour les lecteurs similaires avec durée de vie
+const similarReadersCache = new Map<string, { readers: User[], timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Find users who are reading the same books as the current user
  * @param currentUserId The ID of the current user
@@ -12,73 +16,42 @@ import { getDisplayName } from "@/services/user/userProfileService";
 export async function findSimilarReaders(currentUserId: string, limit: number = 3): Promise<User[]> {
   try {
     if (!currentUserId) return [];
-
-    // First, get the books the current user is reading (status = 'in_progress')
-    const { data: currentUserBooks, error: booksError } = await supabase
-      .from('reading_progress')
-      .select('book_id')
-      .eq('user_id', currentUserId)
-      .eq('status', 'in_progress');
-
-    if (booksError || !currentUserBooks?.length) {
-      console.error("Error fetching current user's books:", booksError);
-      return [];
+    
+    // Vérifier le cache avant de faire l'appel API
+    const cacheKey = `similar_${currentUserId}_${limit}`;
+    const cached = similarReadersCache.get(cacheKey);
+    
+    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+      return cached.readers;
     }
 
-    const bookIds = currentUserBooks.map(item => item.book_id);
-    console.log(`Found ${bookIds.length} books that user ${currentUserId} is currently reading`);
+    // Optimiser en faisant une seule requête avec des jointures
+    const { data: similarUsers, error: usersError } = await supabase
+      .rpc('find_similar_readers', {
+        user_id: currentUserId,
+        max_results: limit
+      });
 
-    // Find other users who are reading any of these same books (also 'in_progress')
-    const { data: similarReaders, error: readersError } = await supabase
-      .from('reading_progress')
-      .select(`
-        user_id,
-        book_id
-      `)
-      .in('book_id', bookIds)
-      .eq('status', 'in_progress')
-      .neq('user_id', currentUserId); // Exclude the current user
-
-    if (readersError || !similarReaders?.length) {
-      console.log("No similar readers found:", readersError || "Empty result");
+    if (usersError || !similarUsers?.length) {
+      console.log("No similar readers found:", usersError || "Empty result");
       return [];
     }
-
-    console.log(`Found ${similarReaders.length} reading entries from other users`);
-
-    // Group by user_id to count how many same books they're reading
-    const userReadingCounts = similarReaders.reduce((acc: Record<string, { count: number, books: string[] }>, item) => {
-      if (!acc[item.user_id]) {
-        acc[item.user_id] = { count: 0, books: [] };
-      }
-      acc[item.user_id].count++;
-      acc[item.user_id].books.push(item.book_id);
-      return acc;
-    }, {});
-
-    // Sort users by the number of books they share with the current user (most similar first)
-    const sortedUserIds = Object.keys(userReadingCounts).sort((a, b) => 
-      userReadingCounts[b].count - userReadingCounts[a].count
-    ).slice(0, limit);
-
-    if (sortedUserIds.length === 0) {
-      console.log("No users with similar reading found after sorting");
-      return [];
-    }
-
-    // Fetch complete user profiles for these IDs from the profiles table
-    const { data: usersData, error: usersError } = await supabase
+    
+    // Récupérer les profils des utilisateurs similaires
+    const userIds = similarUsers.map(item => item.similar_user_id);
+    
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('*')
-      .in('id', sortedUserIds);
-
-    if (usersError || !usersData?.length) {
-      console.error("Error fetching user profiles:", usersError);
+      .select('id, username, email')
+      .in('id', userIds);
+      
+    if (profilesError || !profiles?.length) {
+      console.error("Error fetching user profiles:", profilesError);
       return [];
     }
-
-    // Map the profiles to match the User type with proper display names
-    const users: User[] = usersData.map(profile => {
+    
+    // Mapper les profils pour correspondre au type User
+    const users: User[] = profiles.map(profile => {
       const displayName = getDisplayName(profile.username, profile.email, profile.id);
       
       return {
@@ -86,8 +59,14 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
         name: displayName,
         email: profile.email || "",
         username: profile.username,
-        is_admin: profile.is_admin || false,
+        is_admin: false, // Cette valeur sera mise à jour plus tard si nécessaire
       };
+    });
+    
+    // Mettre en cache pour les appels futurs
+    similarReadersCache.set(cacheKey, { 
+      readers: users, 
+      timestamp: Date.now() 
     });
 
     console.log(`Returning ${users.length} similar readers`);
@@ -95,5 +74,20 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
   } catch (error) {
     console.error("Exception in findSimilarReaders:", error);
     return [];
+  }
+}
+
+// Fonction pour invalider le cache des lecteurs similaires
+export function invalidateSimilarReadersCache(userId?: string) {
+  if (userId) {
+    // Invalider uniquement les entrées de cache pour cet utilisateur
+    for (const key of similarReadersCache.keys()) {
+      if (key.startsWith(`similar_${userId}`)) {
+        similarReadersCache.delete(key);
+      }
+    }
+  } else {
+    // Invalider tout le cache
+    similarReadersCache.clear();
   }
 }

@@ -1,6 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
+import { memo } from "react";
+
+// Cache pour les données de progression de lecture
+const progressCache = new Map<string, { 
+  data: ReadingProgress[], 
+  timestamp: number 
+}>();
+const CACHE_DURATION = 60000; // 1 minute en millisecondes
 
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
@@ -8,13 +16,33 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!validUuidPattern.test(userId)) return [];
 
+  // Vérifier le cache
+  const cacheKey = `progress_${userId}`;
+  const cached = progressCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return cached.data;
+  }
+
   try {
     console.log("Fetching reading progress for user:", userId);
     
-    // 1. Récupérer toutes les progressions de lecture
+    // Requête optimisée: une seule requête pour obtenir tous les progrès de lecture,
+    // les livres associés et les validations correspondantes
     const { data: progressData, error: progressError } = await supabase
       .from("reading_progress")
-      .select("*")
+      .select(`
+        *,
+        books:book_id (
+          id, 
+          title, 
+          author, 
+          slug, 
+          cover_url, 
+          expected_segments, 
+          total_chapters
+        ),
+        validations:reading_validations!inner (*)
+      `)
       .eq("user_id", userId);
 
     if (progressError) {
@@ -27,52 +55,13 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       return [];
     }
 
-    // 2. Récupérer les IDs de livres pour les requêtes suivantes
-    const bookIds = [...new Set(progressData.map(item => item.book_id))];
-    
-    // 3. Récupérer tous les livres correspondants en une seule requête
-    const { data: booksData, error: booksError } = await supabase
-      .from("books")
-      .select("id, title, author, slug, cover_url, expected_segments, total_chapters")
-      .in("id", bookIds);
-
-    if (booksError) {
-      console.error("Error fetching books:", booksError);
-    }
-
-    // Créer une map pour un accès rapide aux données des livres
-    const booksMap = (booksData || []).reduce((map, book) => {
-      map[book.id] = book;
-      return map;
-    }, {});
-
-    // 4. Récupérer toutes les validations pour cet utilisateur et ces livres
-    const { data: validationsData, error: validationsError } = await supabase
-      .from("reading_validations")
-      .select("*")
-      .eq("user_id", userId)
-      .in("book_id", bookIds);
-
-    if (validationsError) {
-      console.error("Error fetching validations:", validationsError);
-    }
-
-    // Grouper les validations par book_id pour un accès facile
-    const validationsMap = (validationsData || []).reduce((map, validation) => {
-      if (!map[validation.book_id]) {
-        map[validation.book_id] = [];
-      }
-      map[validation.book_id].push(validation);
-      return map;
-    }, {});
-
-    // 5. Enrichir chaque item de progression avec les données du livre et les validations
-    const enrichedProgresses = progressData.map(progress => {
-      const book = booksMap[progress.book_id];
-      const validations = validationsMap[progress.book_id] || [];
+    // Transformer les données pour correspondre à l'attendu par l'application
+    const enrichedProgresses = progressData.map(item => {
+      const book = item.books;
+      const validations = item.validations || [];
       
       return {
-        ...progress,
+        ...item,
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "",
@@ -80,6 +69,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
         validations: validations
       };
+    });
+
+    // Mettre en cache les données récupérées
+    progressCache.set(cacheKey, { 
+      data: enrichedProgresses, 
+      timestamp: Date.now() 
     });
 
     console.log(`Retrieved ${enrichedProgresses.length} enriched reading progresses`);
@@ -96,60 +91,77 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!validUuidPattern.test(userId)) return null;
 
+  // Vérifier d'abord le cache global
+  const cacheKey = `progress_${userId}`;
+  const cached = progressCache.get(cacheKey);
+  
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    // Chercher dans le cache pour ce livre spécifique
+    const bookProgress = cached.data.find(p => p.book_id === bookId);
+    if (bookProgress) {
+      return bookProgress;
+    }
+  }
+
   try {
-    // 1. Récupérer la progression de lecture spécifique
-    const { data: progress, error: progressError } = await supabase
+    // Requête optimisée pour obtenir progress + book + validations en une seule requête
+    const { data, error } = await supabase
       .from("reading_progress")
-      .select("*")
+      .select(`
+        *,
+        books:book_id (
+          title, 
+          author, 
+          slug, 
+          cover_url, 
+          expected_segments, 
+          total_chapters
+        ),
+        validations:reading_validations (*)
+      `)
       .eq("user_id", userId)
       .eq("book_id", bookId)
       .maybeSingle();
 
-    if (progressError) {
-      console.error("Error fetching book reading progress:", progressError);
+    if (error) {
+      console.error("Error fetching book reading progress:", error);
       return null;
     }
 
     // If no progress record exists yet, return null (first time viewing the book)
-    if (!progress) {
+    if (!data) {
       console.log(`No reading progress found for user ${userId} and book ${bookId}`);
       return null;
     }
 
-    // 2. Récupérer les informations du livre
-    const { data: book, error: bookError } = await supabase
-      .from("books")
-      .select("title, author, slug, cover_url, expected_segments, total_chapters")
-      .eq("id", bookId)
-      .maybeSingle();
-
-    if (bookError) {
-      console.error("Error fetching book:", bookError);
-    }
-
-    // 3. Récupérer les validations pour ce livre et cet utilisateur
-    const { data: validations, error: validationsError } = await supabase
-      .from("reading_validations")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("book_id", bookId);
-
-    if (validationsError) {
-      console.error("Error fetching validations:", validationsError);
-    }
-
-    // 4. Construire l'objet enrichi
-    return {
-      ...progress,
+    // Construire l'objet de progression enrichi
+    const book = data.books;
+    const validations = data.validations || [];
+    
+    const enrichedProgress = {
+      ...data,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "",
       book_cover: book?.cover_url ?? null,
       total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-      validations: validations || []
+      validations: validations
     };
+
+    return enrichedProgress;
   } catch (error) {
     console.error("Error in getBookReadingProgress:", error);
     return null;
+  }
+};
+
+// Fonction pour effacer le cache de progression
+export const clearProgressCache = (userId?: string, bookId?: string) => {
+  if (userId) {
+    const cacheKey = `progress_${userId}`;
+    progressCache.delete(cacheKey);
+  } else {
+    // Si aucun userId n'est spécifié, vider tout le cache
+    progressCache.clear();
   }
 };

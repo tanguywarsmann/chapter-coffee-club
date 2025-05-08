@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+
+import { useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +14,8 @@ export const useReadingList = () => {
   const hasFetchedOnMount = useRef(false);
   const errorCount = useRef(0);
   const isFetchingRef = useRef(false);
+  const fetchCooldown = useRef<number>(0);
+  const FETCH_COOLDOWN_MS = 10000; // 10 secondes de cooldown entre les requêtes
   
   const {
     books,
@@ -23,7 +26,14 @@ export const useReadingList = () => {
     isMounted
   } = useReadingListState();
 
-  const { data: readingList, isLoading: isLoadingReadingList, error: readingListError, isSuccess, refetch } = useQuery({
+  // Utiliser React Query avec des options optimisées
+  const { 
+    data: readingList, 
+    isLoading: isLoadingReadingList, 
+    error: readingListError, 
+    isSuccess, 
+    refetch 
+  } = useQuery({
     queryKey: ["reading_list", user?.id],
     queryFn: () => fetchReadingProgress(user?.id || ""),
     enabled: !!user?.id,
@@ -32,6 +42,7 @@ export const useReadingList = () => {
     refetchOnReconnect: false, // Désactiver le refetch lors de la reconnexion
     refetchOnWindowFocus: false, // Désactiver le refetch lors du focus de la fenêtre
     retry: 1, // Limiter les tentatives de nouvelle récupération
+    cacheTime: 900000, // 15 minutes de cache
   });
 
   useEffect(() => {
@@ -42,6 +53,7 @@ export const useReadingList = () => {
 
   useEffect(() => {
     if (user?.id) {
+      // N'invalider le cache que lors d'un changement d'utilisateur
       queryClient.invalidateQueries({ queryKey: ["reading_list"] });
     } else {
       queryClient.resetQueries({ queryKey: ["reading_list"] });
@@ -50,15 +62,55 @@ export const useReadingList = () => {
     }
   }, [user?.id, queryClient]);
 
-  const getBooksByStatus = async (status: string): Promise<Book[]> => {
+  // Optimisé pour utiliser les données mises en cache quand possible
+  const getBooksByStatus = useCallback(async (status: string): Promise<Book[]> => {
     if (!user?.id || !readingList) return [];
-    return fetchBooksForStatus(readingList, status, user.id);
-  };
+    
+    // Vérifier si les données sont déjà dans books
+    if (status === 'to_read' && books.toRead.length > 0) return books.toRead;
+    if (status === 'in_progress' && books.inProgress.length > 0) return books.inProgress;
+    if (status === 'completed' && books.completed.length > 0) return books.completed;
+    
+    // Utiliser les données mises en cache par tanstack/react-query
+    const cachedResult = queryClient.getQueryData<Book[]>([
+      "books_by_status", 
+      user.id, 
+      status
+    ]);
+    
+    if (cachedResult) {
+      return cachedResult;
+    }
+    
+    // Si pas de cache, récupérer les données
+    try {
+      const results = await fetchBooksForStatus(readingList, status, user.id);
+      
+      // Mettre en cache les résultats
+      queryClient.setQueryData(
+        ["books_by_status", user.id, status], 
+        results
+      );
+      
+      return results;
+    } catch (error) {
+      console.error(`Error fetching books for status ${status}:`, error);
+      return [];
+    }
+  }, [user?.id, readingList, books, queryClient]);
 
+  // Optimiser la logique de fetch pour réduire les appels API
   useEffect(() => {
     if (!user?.id || !readingList || isFetchingRef.current || isFetching) return;
     
-    if (books.inProgress.length > 0 && hasFetchedOnMount.current && isSuccess) return;
+    if (
+      books.inProgress.length > 0 && 
+      hasFetchedOnMount.current && 
+      isSuccess &&
+      Date.now() < fetchCooldown.current
+    ) {
+      return;
+    }
     
     const fetchBooks = async () => {
       try {
@@ -66,7 +118,11 @@ export const useReadingList = () => {
         setIsFetching(true);
         setIsLoading(true);
         setError(null);
+        
+        // Définir cooldown pour éviter les appels API trop fréquents
+        fetchCooldown.current = Date.now() + FETCH_COOLDOWN_MS;
 
+        // Utiliser concurrentMap avec une limite de concurrence
         const [toReadResult, inProgressResult, completedResult] = await Promise.all([
           getBooksByStatus("to_read"),
           getBooksByStatus("in_progress"),
@@ -75,6 +131,11 @@ export const useReadingList = () => {
 
         if (isMounted.current) {
           updateBooks(toReadResult, inProgressResult, completedResult);
+          
+          // Mettre les données en cache pour les futurs accès
+          queryClient.setQueryData(["books_by_status", user.id, "to_read"], toReadResult);
+          queryClient.setQueryData(["books_by_status", user.id, "in_progress"], inProgressResult);
+          queryClient.setQueryData(["books_by_status", user.id, "completed"], completedResult);
         }
       } catch (err) {
         console.error("[DIAGNOSTIQUE] Erreur lors de la récupération des livres:", err);
@@ -95,11 +156,13 @@ export const useReadingList = () => {
     };
 
     fetchBooks();
-  }, [user?.id, readingList, isSuccess]);
+  }, [user?.id, readingList, isSuccess, getBooksByStatus, books.inProgress.length, isFetching, setIsFetching, setIsLoading, setError, updateBooks, isMounted, queryClient]);
 
   if (readingListError) {
     if (errorCount.current === 0) {
-      toast.error("Impossible de récupérer votre liste de lecture");
+      toast.error("Impossible de récupérer votre liste de lecture", {
+        id: "reading-list-error" // Éviter les toasts dupliqués
+      });
       errorCount.current++;
     }
     console.error("Reading list query failed:", readingListError);
@@ -116,8 +179,9 @@ export const useReadingList = () => {
       const result = await addBookToReadingList(user.id, book);
       
       if (result) {
-        // Invalider la requête de liste de lecture pour forcer un rechargement
+        // Invalider le cache et forcer le rafraîchissement 
         queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+        queryClient.invalidateQueries({ queryKey: ["books_by_status"] });
         refetch();
         toast.success(`${book.title} ajouté à votre liste de lecture`);
         return true;
@@ -132,6 +196,14 @@ export const useReadingList = () => {
     }
   };
 
+  // Fonction pour rafraîchir manuellement les données avec un cache-busting
+  const forceRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["reading_list"] });
+    queryClient.invalidateQueries({ queryKey: ["books_by_status"] });
+    fetchCooldown.current = 0; // Reset le cooldown pour permettre un fetch immédiat
+    refetch();
+  }, [queryClient, refetch]);
+
   return {
     ...books,
     isLoadingReadingList,
@@ -145,6 +217,7 @@ export const useReadingList = () => {
     getFailedBookIds: () => bookFailureCache.getAll(),
     hasFetchedInitialData: () => hasFetchedOnMount.current,
     getBooksByStatus,
-    addToReadingList
+    addToReadingList,
+    forceRefresh
   };
 };
