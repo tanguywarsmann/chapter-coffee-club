@@ -58,50 +58,40 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
     type ValidStatus = typeof validStatuses[number];
 
-    // Transformer les données pour correspondre à l'attendu par l'application
-    const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
-      const book = item.books;
-      // S'assurer que validations est toujours un tableau
-      const validations = Array.isArray(item.validations) ? item.validations : [];
-      
-      // Recalculer le statut en fonction des validations pour assurer la cohérence
-      const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
-      let updatedStatus: ValidStatus = 'to_read';
-      
-      if (validations.length > 0) {
-        // Au moins une validation = in_progress
-        if (validations.length < totalExpectedSegments) {
-          updatedStatus = 'in_progress';
-        } 
-        // Toutes les validations = completed
-        else if (validations.length >= totalExpectedSegments) {
-          updatedStatus = 'completed';
-        }
-      } else {
-        // Aucune validation, on vérifie le statut actuel
-        if (typeof item.status === 'string' && validStatuses.includes(item.status as ValidStatus)) {
-          updatedStatus = item.status as ValidStatus;
-        } else {
-          updatedStatus = 'to_read';
-        }
-      }
-      
-      // Si le statut calculé est différent, on met à jour en base
-      if (updatedStatus !== item.status) {
-        updateProgressStatus(item.id, updatedStatus).catch(console.error);
-      }
-      
-      return {
-        ...item,
-        book_title: book?.title ?? "Titre inconnu",
-        book_author: book?.author ?? "Auteur inconnu",
-        book_slug: book?.slug ?? "",
-        book_cover: book?.cover_url ?? null,
-        total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-        validations: validations as ReadingValidation[],
-        status: updatedStatus
-      };
-    });
+// Transformer les données pour correspondre à l'attendu par l'application
+const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
+  const book = item.books;
+
+  // Calcul des pages
+  const totalPages = item.total_pages || book?.total_chapters || book?.expected_segments || 1;
+  const currentPage = item.current_page || 0;
+
+  // Déterminer le statut à partir de la progression en pages
+  let updatedStatus: ValidStatus = 'to_read';
+
+  if (currentPage > 0 && currentPage < totalPages) {
+    updatedStatus = 'in_progress';
+  } else if (currentPage >= totalPages) {
+    updatedStatus = 'completed';
+  }
+
+  // Mettre à jour le statut en base si nécessaire
+  if (updatedStatus !== item.status) {
+    updateProgressStatus(item.id, updatedStatus).catch(console.error);
+  }
+
+  return {
+    ...item,
+    book_title: book?.title ?? "Titre inconnu",
+    book_author: book?.author ?? "Auteur inconnu",
+    book_slug: book?.slug ?? "",
+    book_cover: book?.cover_url ?? null,
+    total_chapters: totalPages,
+    validations: [], // temporairement vide en attendant le rétablissement de la relation
+    status: updatedStatus,
+  };
+});
+
 
     // Mettre en cache les données récupérées
     progressCache.set(cacheKey, { 
