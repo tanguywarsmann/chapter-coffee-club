@@ -41,7 +41,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
           expected_segments, 
           total_chapters
         ),
-        validations:reading_validations!inner (*)
+        validations:reading_validations (*)
       `)
       .eq("user_id", userId);
 
@@ -56,9 +56,10 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     }
 
     // Transformer les données pour correspondre à l'attendu par l'application
-    const enrichedProgresses = progressData.map(item => {
+    const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
       const book = item.books;
-      const validations = item.validations || [];
+      // S'assurer que validations est toujours un tableau
+      const validations = Array.isArray(item.validations) ? item.validations : [];
       
       return {
         ...item,
@@ -67,7 +68,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_slug: book?.slug ?? "",
         book_cover: book?.cover_url ?? null,
         total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-        validations: validations
+        validations: validations as ReadingValidation[]
       };
     });
 
@@ -136,16 +137,17 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 
     // Construire l'objet de progression enrichi
     const book = data.books;
-    const validations = data.validations || [];
+    // S'assurer que validations est toujours un tableau
+    const validations = Array.isArray(data.validations) ? data.validations : [];
     
-    const enrichedProgress = {
+    const enrichedProgress: ReadingProgress = {
       ...data,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "",
       book_cover: book?.cover_url ?? null,
       total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-      validations: validations
+      validations: validations as ReadingValidation[]
     };
 
     return enrichedProgress;

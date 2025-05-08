@@ -32,20 +32,20 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
         max_results: limit
       });
 
-    if (usersError || !similarUsers?.length) {
+    if (usersError || !similarUsers || similarUsers.length === 0) {
       console.log("No similar readers found:", usersError || "Empty result");
       return [];
     }
     
     // Récupérer les profils des utilisateurs similaires
-    const userIds = similarUsers.map(item => item.similar_user_id);
+    const userIds = similarUsers.map((item: { similar_user_id: string }) => item.similar_user_id);
     
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email')
       .in('id', userIds);
       
-    if (profilesError || !profiles?.length) {
+    if (profilesError || !profiles || profiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
       return [];
     }

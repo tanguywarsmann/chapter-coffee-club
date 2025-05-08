@@ -42,7 +42,7 @@ export const useReadingList = () => {
     refetchOnReconnect: false, // Désactiver le refetch lors de la reconnexion
     refetchOnWindowFocus: false, // Désactiver le refetch lors du focus de la fenêtre
     retry: 1, // Limiter les tentatives de nouvelle récupération
-    cacheTime: 900000, // 15 minutes de cache
+    gcTime: 900000, // 15 minutes de cache (remplace cacheTime)
   });
 
   useEffect(() => {
