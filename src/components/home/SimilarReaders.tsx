@@ -1,4 +1,4 @@
-
+import { User } from "@/types/user";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { findSimilarReaders } from "@/services/user/similarReadersService";
@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen, Users } from "lucide-react";
 
 export function SimilarReaders() {
-  const [similarUsers, setSimilarUsers] = useState<any[]>([]);
+  const [similarUsers, setSimilarUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
