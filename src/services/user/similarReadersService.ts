@@ -1,5 +1,5 @@
 
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import { PostgrestSingleResponse, PostgrestResponse } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -8,6 +8,9 @@ import { getDisplayName } from "@/services/user/userProfileService";
 type SimilarUserResponse = {
   similar_user_id: string;
 };
+
+// Type local pour le résultat des profils
+type ProfileRow = { id: string; username?: string; email?: string };
 
 // Cache pour les lecteurs similaires avec durée de vie
 const similarReadersCache = new Map<string, { readers: User[]; timestamp: number }>();
@@ -48,11 +51,11 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     // Extraction des IDs utilisateurs à partir du résultat avec typage correct
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Récupérer les profils Supabase
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, username, email")
-      .in('id' as keyof { id: string }, userIds);
+    // Récupérer les profils Supabase avec typage explicite
+    const { data: profiles, error: profilesError }: PostgrestResponse<ProfileRow> = await supabase
+      .from<ProfileRow>('profiles')
+      .select('id, username, email')
+      .in('id', userIds as string[]);
 
     if (profilesError || !profiles || profiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
