@@ -64,7 +64,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email, avatar_url')
-      .in('id', userIds as string[]) as PostgrestResponse<ProfileWithBooks>;
+      .in('id' as keyof ProfileWithBooks, userIds) as PostgrestResponse<ProfileWithBooks>;
 
     if (profilesError || !profiles || profiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
