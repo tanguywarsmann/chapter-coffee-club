@@ -1,5 +1,5 @@
 
-import { PostgrestSingleResponse, PostgrestResponse } from "@supabase/supabase-js";
+import { PostgrestResponse } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -43,13 +43,13 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return cached.readers;
     }
 
-    // Appel de la fonction RPC Supabase avec typage explicite
+    // Appel de la fonction RPC Supabase
     const response = await supabase.rpc('find_similar_readers', {
       user_id: currentUserId,
       max_results: limit
-    }) as PostgrestSingleResponse<SimilarUserResponse[]>;
+    });
 
-    const similarUsers = response.data;
+    const similarUsers = response.data as SimilarUserResponse[];
     const usersError = response.error;
 
     if (usersError || !Array.isArray(similarUsers) || similarUsers.length === 0) {
@@ -57,17 +57,17 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return [];
     }
 
-    // Extraction des IDs utilisateurs à partir du résultat avec typage correct
+    // Extraction des IDs utilisateurs à partir du résultat
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Récupérer les profils Supabase sans typage direct pour éviter TS2589
-    const { data: profiles, error: profilesError } = await supabase
+    // Récupérer les profils Supabase sans typage direct
+    const { data, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email, avatar_url')
       .in('id', userIds as unknown as string[]);
     
     // Application du typage explicite après l'appel API
-    const typedProfiles = profiles as {
+    const typedProfiles = data as {
       id: string;
       username?: string;
       email?: string;
