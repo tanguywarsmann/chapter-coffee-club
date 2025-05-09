@@ -60,19 +60,27 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     // Extraction des IDs utilisateurs à partir du résultat avec typage correct
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Récupérer les profils Supabase avec typage explicite
+    // Récupérer les profils Supabase sans typage direct pour éviter TS2589
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email, avatar_url')
-      .in('id' as keyof ProfileWithBooks, userIds) as PostgrestResponse<ProfileWithBooks>;
+      .in('id', userIds as unknown as string[]);
+    
+    // Application du typage explicite après l'appel API
+    const typedProfiles = profiles as {
+      id: string;
+      username?: string;
+      email?: string;
+      avatar_url?: string;
+    }[];
 
-    if (profilesError || !profiles || profiles.length === 0) {
+    if (profilesError || !typedProfiles || typedProfiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
       return [];
     }
 
     // Préparer le tableau final de lecteurs similaires
-    const users: User[] = profiles.map((profile) => {
+    const users: User[] = typedProfiles.map((profile) => {
       const displayName = getDisplayName(profile.username, profile.email, profile.id);
       return {
         id: profile.id,
