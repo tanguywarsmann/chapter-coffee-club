@@ -1,5 +1,3 @@
-
-import { PostgrestResponse } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -7,18 +5,6 @@ import { getDisplayName } from "@/services/user/userProfileService";
 // Type pour la réponse de la fonction RPC find_similar_readers
 type SimilarUserResponse = {
   similar_user_id: string;
-};
-
-// Type pour les profils avec leurs livres
-type ProfileWithBooks = {
-  id: string;
-  username?: string;
-  email?: string;
-  avatar_url?: string;
-  books: {
-    title: string;
-    slug: string;
-  }[];
 };
 
 // Cache pour les lecteurs similaires avec durée de vie
@@ -57,21 +43,20 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return [];
     }
 
-    // Extraction des IDs utilisateurs à partir du résultat
+    // Extraction des IDs utilisateurs
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Récupérer les profils Supabase sans typage direct
+    // Requête sans typage direct
     const { data, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, email, avatar_url')
-      .in('id', userIds as unknown as string[]);
-    
-    // Application du typage explicite après l'appel API
+      .select('id, username, email')
+      .in('id' as any, userIds as any);
+
+    // Application du typage après coup
     const typedProfiles = data as {
       id: string;
       username?: string;
       email?: string;
-      avatar_url?: string;
     }[];
 
     if (profilesError || !typedProfiles || typedProfiles.length === 0) {
@@ -79,7 +64,6 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return [];
     }
 
-    // Préparer le tableau final de lecteurs similaires
     const users: User[] = typedProfiles.map((profile) => {
       const displayName = getDisplayName(profile.username, profile.email, profile.id);
       return {
@@ -87,12 +71,11 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
         name: displayName,
         email: profile.email || "",
         username: profile.username,
-        avatar: profile.avatar_url,
-        is_admin: false, // Mise à jour possible plus tard
+        avatar: undefined, // avatar_url non présent
+        is_admin: false,
       };
     });
 
-    // Mettre en cache pour les futurs appels
     similarReadersCache.set(cacheKey, {
       readers: users,
       timestamp: Date.now(),
