@@ -9,8 +9,17 @@ type SimilarUserResponse = {
   similar_user_id: string;
 };
 
-// Type local pour le résultat des profils
-type ProfileRow = { id: string; username?: string; email?: string };
+// Type pour les profils avec leurs livres
+type ProfileWithBooks = {
+  id: string;
+  username?: string;
+  email?: string;
+  avatar_url?: string;
+  books: {
+    title: string;
+    slug: string;
+  }[];
+};
 
 // Cache pour les lecteurs similaires avec durée de vie
 const similarReadersCache = new Map<string, { readers: User[]; timestamp: number }>();
@@ -52,10 +61,10 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
     // Récupérer les profils Supabase avec typage explicite
-    const { data: profiles, error: profilesError }: PostgrestResponse<ProfileRow> = await supabase
-      .from<ProfileRow>('profiles')
-      .select('id, username, email')
-      .in('id', userIds as string[]);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar_url')
+      .in('id', userIds as string[]) as PostgrestResponse<ProfileWithBooks>;
 
     if (profilesError || !profiles || profiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
@@ -70,6 +79,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
         name: displayName,
         email: profile.email || "",
         username: profile.username,
+        avatar: profile.avatar_url,
         is_admin: false, // Mise à jour possible plus tard
       };
     });
