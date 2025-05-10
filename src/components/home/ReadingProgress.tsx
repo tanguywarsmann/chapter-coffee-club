@@ -76,9 +76,9 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
         ) : (
           <div className="space-y-4">
             {progresses.slice(0, 3).map((progress) => {
-              // Calcul du nombre de chapitres lus basé sur les validations
+              // Calcul du nombre de segments lus basé sur les validations
               const chaptersRead = progress.validations?.length ?? 0;
-              const totalChapters = progress.total_chapters ?? 1;
+              const totalChapters = progress.expected_segments ?? 1;
               
               // Calcul du pourcentage d'avancement
               const progressPercentage = totalChapters > 0 
@@ -145,7 +145,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{progressPercentage}% terminé</span>
                           <span>
-                            {`${chaptersRead}/${totalChapters} chapitres`}
+                            {`${chaptersRead}/${totalChapters} segments`}
                           </span>
                         </div>
                       </div>
