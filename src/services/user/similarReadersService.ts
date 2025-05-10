@@ -1,39 +1,27 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
 
-// Type pour la réponse de la fonction RPC find_similar_readers
 type SimilarUserResponse = {
   similar_user_id: string;
 };
 
-// Cache pour les lecteurs similaires avec durée de vie
 const similarReadersCache = new Map<string, { readers: User[]; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
-/**
- * Find users who are reading the same books as the current user
- * @param currentUserId The ID of the current user
- * @param limit Maximum number of similar users to return
- * @returns Array of user objects with similar reading interests
- */
 export async function findSimilarReaders(currentUserId: string, limit: number = 3): Promise<User[]> {
   try {
     if (!currentUserId) return [];
 
-    // Vérifier le cache avant de faire l'appel API
     const cacheKey = `similar_${currentUserId}_${limit}`;
     const cached = similarReadersCache.get(cacheKey);
-
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       return cached.readers;
     }
 
-    // Appel de la fonction RPC Supabase
     const response = await supabase.rpc('find_similar_readers', {
       user_id: currentUserId,
-      max_results: limit
+      max_results: limit,
     });
 
     const similarUsers = response.data as SimilarUserResponse[];
@@ -44,45 +32,40 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       return [];
     }
 
-    // Extraction des IDs utilisateurs
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Requête sans typage direct
+    // Fait avec contournement TS2345
     const { data, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email')
       .in('id' as any, userIds as any);
 
-    // Application du typage après coup
+    // Contournement TS2589
     const typedProfiles = (data ?? []) as {
       id: string;
       username?: string;
       email?: string;
     }[];
 
-    if (profilesError || !typedProfiles || typedProfiles.length === 0) {
+    if (profilesError || typedProfiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
       return [];
     }
 
-    const users: User[] = typedProfiles.map((profile) => {
-      const displayName = getDisplayName(profile.username, profile.email, profile.id);
-      return {
-        id: profile.id,
-        name: displayName,
-        email: profile.email || "",
-        username: profile.username,
-        avatar: undefined, // avatar_url non présent
-        is_admin: false,
-      };
-    });
+    const users: User[] = typedProfiles.map((profile) => ({
+      id: profile.id,
+      name: getDisplayName(profile.username, profile.email, profile.id),
+      email: profile.email || "",
+      username: profile.username,
+      avatar: undefined,
+      is_admin: false,
+    }));
 
     similarReadersCache.set(cacheKey, {
       readers: users,
       timestamp: Date.now(),
     });
 
-    console.log(`Returning ${users.length} similar readers`);
     return users;
   } catch (error) {
     console.error("Exception in findSimilarReaders:", error);
@@ -90,7 +73,6 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
   }
 }
 
-// Fonction pour invalider le cache des lecteurs similaires
 export function invalidateSimilarReadersCache(userId?: string) {
   if (userId) {
     for (const key of similarReadersCache.keys()) {
@@ -102,3 +84,4 @@ export function invalidateSimilarReadersCache(userId?: string) {
     similarReadersCache.clear();
   }
 }
+
