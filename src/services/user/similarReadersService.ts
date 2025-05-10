@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -35,11 +34,13 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
 
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
+    // TS2345 workaround
     const { data, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email')
       .in('id' as any, userIds as any);
 
+    // TS2589 workaround
     const typedProfiles = (data ?? []) as {
       id: string;
       username?: string;
