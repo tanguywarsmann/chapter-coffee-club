@@ -78,11 +78,16 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
             {progresses.slice(0, 3).map((progress) => {
               // Calcul du nombre de segments lus basé sur les validations
               const chaptersRead = progress.validations?.length ?? 0;
-              const totalChapters = progress.expected_segments ?? 1;
+              const totalSegments = progress.expected_segments ?? 0;
+              
+              // Ne rien afficher si expected_segments est manquant ou égal à 0
+              if (!totalSegments) {
+                return null;
+              }
               
               // Calcul du pourcentage d'avancement
-              const progressPercentage = totalChapters > 0 
-                ? Math.min(Math.floor((chaptersRead / totalChapters) * 100), 100)
+              const progressPercentage = totalSegments > 0 
+                ? Math.min(Math.floor((chaptersRead / totalSegments) * 100), 100)
                 : 0;
               
               // Icône de statut en fonction de l'état de lecture
@@ -145,7 +150,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{progressPercentage}% terminé</span>
                           <span>
-                            {`${chaptersRead}/${totalChapters} segments`}
+                            {`${chaptersRead}/${totalSegments} segments`}
                           </span>
                         </div>
                       </div>

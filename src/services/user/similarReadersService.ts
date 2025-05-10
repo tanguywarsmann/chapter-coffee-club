@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types/user";
 import { getDisplayName } from "@/services/user/userProfileService";
@@ -34,13 +35,11 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
 
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Fait avec contournement TS2345
     const { data, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email')
       .in('id' as any, userIds as any);
 
-    // Contournement TS2589
     const typedProfiles = (data ?? []) as {
       id: string;
       username?: string;
@@ -84,4 +83,3 @@ export function invalidateSimilarReadersCache(userId?: string) {
     similarReadersCache.clear();
   }
 }
-
