@@ -54,7 +54,7 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
       .in('id' as any, userIds as any);
 
     // Application du typage après coup
-    const typedProfiles = data as {
+    const typedProfiles = (data ?? []) as {
       id: string;
       username?: string;
       email?: string;
