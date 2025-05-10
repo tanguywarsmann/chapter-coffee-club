@@ -96,6 +96,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_slug: book?.slug ?? "",
         book_cover: book?.cover_url ?? null,
         total_chapters: totalPages,
+        expected_segments: book?.expected_segments,
         validations: validations as ReadingValidation[],
         status: updatedStatus,
       };
