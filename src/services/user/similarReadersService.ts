@@ -35,20 +35,18 @@ export async function findSimilarReaders(currentUserId: string, limit: number = 
 
     const userIds: string[] = similarUsers.map((item) => item.similar_user_id);
 
-    // Fixed TS2345 error by using 'as any'
     const { data, error: profilesError } = await supabase
       .from('profiles')
       .select('id, username, email')
-      .in('id' as any, userIds as any);
+      .in('id', userIds);
 
-    // Fixed TS2589 error by explicitly typing the data after retrieval
-    const typedProfiles = (data ?? []) as {
+    const typedProfiles = data as Array<{
       id: string;
       username?: string;
       email?: string;
-    }[];
+    }> | null;
 
-    if (profilesError || typedProfiles.length === 0) {
+    if (profilesError || !typedProfiles || typedProfiles.length === 0) {
       console.error("Error fetching user profiles:", profilesError);
       return [];
     }

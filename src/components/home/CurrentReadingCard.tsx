@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book, BookOpen } from "lucide-react";
 import { Book as BookType } from "@/types/book";
+import { toast } from "sonner";
 
 interface CurrentReadingCardProps {
   book: BookType;
@@ -12,11 +13,20 @@ interface CurrentReadingCardProps {
 }
 
 export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
+  const navigate = useNavigate();
+  
   // Check if the book slug or current page is undefined or invalid
   const isReadingInvalid = !book.slug || currentPage === undefined || currentPage < 0;
 
   // Calculate segment based on current page (with validation)
-  const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) + 1 : 0;
+  const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) : 0;
+
+  const handleContinueReading = () => {
+    if (!isReadingInvalid) {
+      toast.info("Reprise de la lecture…");
+      navigate(`/livre/${book.slug}/segment/${segment}`);
+    }
+  };
 
   return (
     <Card className="border-coffee-light shadow-sm hover:shadow-md transition-shadow">
@@ -47,7 +57,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
           {!isReadingInvalid ? (
             <Button 
               className="mt-4 bg-coffee-dark text-white hover:bg-coffee-darker gap-2"
-              onClick={onContinueReading}
+              onClick={handleContinueReading}
             >
               <BookOpen className="h-4 w-4" />
               Continuer ma lecture
