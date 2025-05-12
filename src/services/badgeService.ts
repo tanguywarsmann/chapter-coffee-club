@@ -1,10 +1,10 @@
+
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { ReadingStreak } from "@/types/reading";
 import { getUserStreak } from "./streakService";
 import { supabase } from "@/integrations/supabase/client";
-import { UserBadge } from "./books/types";
 import { ExtendedDatabase } from "@/types/supabase-extensions";
 import { SupabaseClient } from "@supabase/supabase-js";
 

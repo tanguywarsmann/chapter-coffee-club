@@ -10,22 +10,24 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileBadgesProps {
   badges?: Badge[];
+  userId?: string;
 }
 
-export function ProfileBadges({ badges: propBadges }: ProfileBadgesProps) {
+export function ProfileBadges({ badges: propBadges, userId: propUserId }: ProfileBadgesProps) {
   const [badges, setBadges] = useState<Badge[]>(propBadges || []);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const userId = propUserId || user?.id;
   
   useEffect(() => {
     if (!propBadges) {
       const fetchBadges = async () => {
-        if (!user?.id) return;
+        if (!userId) return;
         
         setLoading(true);
         try {
           // Récupérer les badges de l'utilisateur depuis Supabase
-          const userBadges = await getUserBadges(user.id);
+          const userBadges = await getUserBadges(userId);
           setBadges(userBadges);
         } catch (error) {
           console.error("Erreur lors du chargement des badges:", error);
@@ -36,7 +38,7 @@ export function ProfileBadges({ badges: propBadges }: ProfileBadgesProps) {
       
       fetchBadges();
     }
-  }, [propBadges, user?.id]);
+  }, [propBadges, userId]);
 
   if (loading) {
     return (

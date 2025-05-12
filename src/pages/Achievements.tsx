@@ -9,20 +9,43 @@ import { ChallengesSection } from "@/components/achievements/ChallengesSection";
 import { getUserStreak } from "@/services/streakService";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
-import { unlockBadge } from "@/services/badgeService";
+import { useEffect, useState } from "react";
+import { unlockBadge, getUserBadges } from "@/services/badgeService";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Achievements() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id || "";
   const streak = getUserStreak(userId);
+  const [badgeCount, setBadgeCount] = useState(0);
+
+  // Récupérer le nombre de badges pour synchroniser l'affichage
+  useEffect(() => {
+    if (userId) {
+      const fetchBadgeCount = async () => {
+        try {
+          const badges = await getUserBadges(userId);
+          setBadgeCount(badges.length);
+        } catch (error) {
+          console.error("Erreur lors de la récupération du nombre de badges:", error);
+        }
+      };
+      
+      fetchBadgeCount();
+    }
+  }, [userId]);
 
   // Fonction pour tester l'ajout d'un badge en mode développement
   const testAddBadge = async () => {
     if (userId && process.env.NODE_ENV === 'development') {
-      await unlockBadge(userId, "premier-livre");
+      const success = await unlockBadge(userId, "premier-livre");
+      if (success) {
+        // Refresh badge count after adding a badge
+        const badges = await getUserBadges(userId);
+        setBadgeCount(badges.length);
+      }
     }
   };
 
@@ -32,6 +55,9 @@ export default function Achievements() {
       const success = await unlockBadge(userId, "badge_test_insertion");
       if (success) {
         console.log("Badge test_insertion ajouté avec succès");
+        // Refresh badge count after adding a badge
+        const badges = await getUserBadges(userId);
+        setBadgeCount(badges.length);
       }
     }
   };

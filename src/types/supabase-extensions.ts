@@ -9,17 +9,17 @@ export type ExtendedDatabase = {
         Row: {
           id: string;
           user_id: string;
-          badge_key: string;
+          badge_id: string;
           unlocked_at: string;
         };
         Insert: {
           user_id: string;
-          badge_key: string;
+          badge_id: string;
           unlocked_at?: string;
         };
         Update: Partial<{
           user_id?: string;
-          badge_key?: string;
+          badge_id?: string;
           unlocked_at?: string;
         }>;
         Relationships: [

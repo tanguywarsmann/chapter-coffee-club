@@ -8,7 +8,7 @@ import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
-import { SimilarReaders } from "./SimilarReaders";
+import SimilarReaders from "./SimilarReaders";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
