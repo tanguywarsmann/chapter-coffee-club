@@ -105,6 +105,8 @@ export const validateReading = async (
     const nextSegment = request.segment + 1;
     const nextQuestion = await getQuestionForBookSegment(request.book_id, nextSegment);
 
+    toast.success("Segment validé avec succès !");
+
     return {
       message: "Segment validé avec succès",
       current_page: newCurrentPage,

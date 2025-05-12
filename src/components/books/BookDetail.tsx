@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -49,6 +50,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       onChapterComplete(bookId);
     }
     if (user?.id) {
+      // Ensure we check badges when a chapter is completed
       checkBadgesForUser(user.id);
     }
   });
@@ -112,6 +114,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     // Start session timer if not already started
     if (!sessionStartTimeRef.current) {
       sessionStartTimeRef.current = new Date();
+      console.log("Session de lecture démarrée:", sessionStartTimeRef.current);
     }
   };
 
@@ -122,8 +125,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       showConfetti();
 
       if (user?.id) {
+        // Ensure we check for badges when a quiz is completed successfully
         checkBadgesForUser(user.id);
 
+        // Record completed book if applicable
         if (currentBook.isCompleted) {
           const completedBooks = localStorage.getItem(`completed_books_${user.id}`)
             ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
@@ -135,12 +140,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           }
         }
 
+        // Record reading session when quiz is completed
         if (sessionStartTimeRef.current) {
           const endTime = new Date();
+          console.log("Session de lecture terminée:", endTime);
           recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
           sessionStartTimeRef.current = null;
         }
       }
+      
+      // Display success toast
+      toast.success("Segment validé avec succès !");
     }
   };
 
@@ -162,15 +172,21 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         {isBookCompleted ? (
           <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
             <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
+            <p className="text-sm text-green-600 mt-1">Ce livre contient {currentBook.expectedSegments} segments de lecture.</p>
           </div>
         ) : showValidationButton && (
-          <Button
-            disabled={isValidating}
-            onClick={handleMainButtonClick}
-            className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
-          >
-            {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
-          </Button>
+          <>
+            <Button
+              disabled={isValidating}
+              onClick={handleMainButtonClick}
+              className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
+            >
+              {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Ce livre contient {currentBook.expectedSegments} segments de lecture.
+            </p>
+          </>
         )}
         <p className="text-muted-foreground text-center">
           Progression : {chaptersRead} / {totalChapters} segments validés.

@@ -165,7 +165,7 @@ export const useBookQuiz = (
       
       // Show success message instead of next question
       setShowSuccessMessage(true);
-      toast.success("Chapitre validé !", {
+      toast.success("Segment validé avec succès !", {
         description: "Votre progression a été enregistrée",
         duration: 3000
       });
