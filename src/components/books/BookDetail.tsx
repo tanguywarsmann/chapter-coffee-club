@@ -184,6 +184,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
           </Button>
         )}
+        <p className="text-muted-foreground text-center">
+        Progression : {chaptersRead} / {totalChapters} segments validés.
+       </p>
+
 
         <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
 
