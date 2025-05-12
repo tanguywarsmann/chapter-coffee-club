@@ -172,7 +172,7 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
   try {
     const { data, error } = await supabaseExtended
       .from('user_badges')
-      .select('badge_key, unlocked_at')
+      .select('badge_id, unlocked_at')
       .eq('user_id', userId);
 
     if (error) {
@@ -186,7 +186,7 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
 
     // Transformer les données de Supabase en objets Badge
     const badges = data.map(item => {
-      const badgeInfo = availableBadges.find(b => b.id === item.badge_key);
+      const badgeInfo = availableBadges.find(b => b.id === item.badge_id);
       if (!badgeInfo) return null;
       
       return {
@@ -211,7 +211,7 @@ export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<
       .from('user_badges')
       .select('id')
       .eq('user_id', userId)
-      .eq('badge_key', badgeId)
+      .eq('badge_id', badgeId)
       .maybeSingle();
 
     if (error) {
