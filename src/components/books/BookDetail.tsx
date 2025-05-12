@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -64,7 +63,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           const progress = await getBookReadingProgress(user.id, currentBook.id);
           if (progress) {
             setReadingProgress(progress);
-            
+
             // Update the book with validation data
             const chaptersRead = progress.validations?.length || 0;
             if (chaptersRead !== currentBook.chaptersRead) {
@@ -79,32 +78,21 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         }
       }
     };
-    
+
     fetchProgress();
   }, [user?.id, currentBook?.id]);
 
   // Calculate progress percentage based on validations
   useEffect(() => {
-    if (currentBook) {
-      const chaptersRead = readingProgress?.validations?.length || 
-                          currentBook.chaptersRead || 0;
-      const totalChapters = readingProgress?.total_chapters || 
-                          currentBook.totalChapters || 
-                          currentBook.expectedSegments || 1;
+    const chapters = readingProgress?.validations?.length || 0;
+    const total = readingProgress?.total_chapters || currentBook.expectedSegments || 1;
 
-      console.log("BookDetail → Progress calculation:", {
-        title: currentBook.title,
-        chaptersRead,
-        totalChapters,
-        validationsLength: readingProgress?.validations?.length
-      });
+    console.log("→ Calcul progression", { chapters, total });
 
-      setProgressPercent(calculateReadingProgress(
-        chaptersRead,
-        totalChapters
-      ));
-    }
-  }, [currentBook, readingProgress]);
+    setProgressPercent(
+      calculateReadingProgress(chapters, total)
+    );
+  }, [readingProgress?.validations, currentBook.expectedSegments]);
 
   const getCurrentSegmentToValidate = () => {
     if (!readingProgress || !readingProgress.validations) return 1;
@@ -185,9 +173,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           </Button>
         )}
         <p className="text-muted-foreground text-center">
-        Progression : {chaptersRead} / {totalChapters} segments validés.
-       </p>
-
+          Progression : {chaptersRead} / {totalChapters} segments validés.
+        </p>
 
         <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
 
