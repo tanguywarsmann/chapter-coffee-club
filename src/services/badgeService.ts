@@ -253,37 +253,48 @@ export const resetAllBadges = async (userId: string): Promise<boolean> => {
   }
 };
 
-// Débloquer un badge
-export const unlockBadge = async (userId: string, badgeId: string): Promise<boolean> => {
-  if (!userId || !badgeId) return false;
-  
-  // Vérifier si le badge existe
-  const badgeExists = availableBadges.some(badge => badge.id === badgeId);
-  if (!badgeExists) {
-    console.error(`Badge with id ${badgeId} not found`);
-    return false;
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+export async function earnBadge(userId: string, badgeSlug: string) {
+  if (!userId || !badgeSlug) return;
+
+  // 1. Récupérer le badge correspondant
+  const { data: badge, error: badgeError } = await supabase
+    .from("badges")
+    .select("id, label")
+    .eq("slug", badgeSlug)
+    .single();
+
+  if (badgeError || !badge) {
+    console.error("Badge introuvable ou erreur :", badgeError);
+    return;
   }
 
-  // Vérifier si le badge est déjà débloqué
-  const isAlreadyUnlocked = await isBadgeUnlocked(userId, badgeId);
-  if (isAlreadyUnlocked) {
-    return false; // Badge déjà débloqué
+  // 2. Vérifier s’il a déjà été obtenu
+  const { data: existing } = await supabase
+    .from("user_badges")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("badge_id", badge.id)
+    .maybeSingle();
+
+  if (existing) return; // Badge déjà obtenu
+
+  // 3. Insérer dans user_badges
+  const { error: insertError } = await supabase.from("user_badges").insert({
+    user_id: userId,
+    badge_id: badge.id,
+  });
+
+  if (insertError) {
+    console.error("Erreur en ajoutant le badge :", insertError);
+    return;
   }
 
-  // Débloquer le badge dans Supabase
-  try {
-    const { error } = await supabaseExtended
-      .from('user_badges')
-      .insert({
-        user_id: userId,
-        badge_key: badgeId,
-        unlocked_at: new Date().toISOString()
-      });
-
-    if (error) {
-      console.error('Error unlocking badge:', error);
-      return false;
-    }
+  // 4. Afficher un toast de succès
+  toast.success(`🎉 Badge obtenu : ${badge.label}`);
+}
 
     // Trouver les infos du badge pour l'affichage toast
     const badge = availableBadges.find(b => b.id === badgeId);
