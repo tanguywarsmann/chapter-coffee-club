@@ -23,7 +23,7 @@ export const validateReading = async (
       console.log('Segment already validated, returning early', request);
       return {
         message: "Segment déjà validé",
-        current_page: request.segment * 30,
+        current_page: request.segment * 8000, // Updated to use segment * 8000
         already_validated: true,
         next_segment_question: null
       };
@@ -55,8 +55,8 @@ export const validateReading = async (
       }
     }
 
-    // Calculate new current page and status
-    const newCurrentPage = request.segment * 30;
+    // Calculate new current page using segment * 8000 instead of segment * 30
+    const newCurrentPage = request.segment * 8000;
     const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
 
     // Update reading progress

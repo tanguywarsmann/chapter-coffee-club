@@ -12,7 +12,11 @@ interface CurrentReadingCardProps {
 }
 
 export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
-  const segment = Math.floor(currentPage / 30) + 1;
+  // Check if the book slug or current page is undefined or invalid
+  const isReadingInvalid = !book.slug || currentPage === undefined || currentPage < 0;
+
+  // Calculate segment based on current page (with validation)
+  const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) + 1 : 0;
 
   return (
     <Card className="border-coffee-light shadow-sm hover:shadow-md transition-shadow">
@@ -40,13 +44,19 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
             </p>
           </div>
 
-          <Button 
-            className="mt-4 bg-coffee-dark hover:bg-coffee-darker gap-2"
-            onClick={onContinueReading}
-          >
-            <BookOpen className="h-4 w-4" />
-            Continuer ma lecture
-          </Button>
+          {!isReadingInvalid ? (
+            <Button 
+              className="mt-4 bg-coffee-dark text-white hover:bg-coffee-darker gap-2"
+              onClick={onContinueReading}
+            >
+              <BookOpen className="h-4 w-4" />
+              Continuer ma lecture
+            </Button>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground italic">
+              Aucune lecture en cours
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
