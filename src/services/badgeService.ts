@@ -1,8 +1,7 @@
-
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
-import { ReadingStreak } from "@/types/reading";
+import { ReadingStreak, ReadingValidation } from "@/types/reading";
 import { getUserStreak } from "./streakService";
 import { supabase } from "@/integrations/supabase/client";
 import { ExtendedDatabase } from "@/types/supabase-extensions";
@@ -56,120 +55,214 @@ export const availableBadges: Omit<Badge, "dateEarned">[] = [
     name: "Premier livre terminé",
     description: "Vous avez terminé votre premier livre. Bravo!",
     icon: "📚",
-    color: "green-100"
+    color: "green-100",
+    rarity: "common"
   },
   {
     id: "lecteur-classique",
     name: "Lecteur Classique",
     description: "Vous avez lu 3 classiques de la littérature française.",
     icon: "🏛️",
-    color: "coffee-light"
+    color: "coffee-light",
+    rarity: "rare"
   },
   {
     id: "serie-7-jours",
     name: "Série de 7 jours",
     description: "Vous avez lu pendant 7 jours consécutifs.",
     icon: "🔥",
-    color: "orange-100"
+    color: "orange-100",
+    rarity: "epic"
   },
   {
     id: "lecteur-nocturne",
     name: "Lecteur Nocturne",
     description: "Vous avez lu plus de 2 heures après 22h.",
     icon: "🌙",
-    color: "purple-100"
+    color: "purple-100",
+    rarity: "common"
   },
   {
     id: "critique-litteraire",
     name: "Critique Littéraire",
     description: "Vous avez partagé 5 critiques de livres.",
     icon: "✍️",
-    color: "blue-100"
+    color: "blue-100",
+    rarity: "rare"
   },
   {
     id: "marathon-lecture",
     name: "Marathon Lecture",
     description: "Vous avez lu pendant plus de 5 heures d'affilée.",
     icon: "🏃",
-    color: "red-100"
+    color: "red-100",
+    rarity: "rare"
   },
   {
     id: "globe-trotter",
     name: "Globe-trotter",
     description: "Vous avez lu des livres d'auteurs de 3 continents différents.",
     icon: "🌍",
-    color: "teal-100"
+    color: "teal-100",
+    rarity: "epic"
   },
   {
     id: "polyglotte",
     name: "Polyglotte",
     description: "Vous avez lu un livre en langue étrangère.",
     icon: "🗣️",
-    color: "indigo-100"
+    color: "indigo-100",
+    rarity: "rare"
   },
   {
     id: "mentor",
     name: "Mentor",
     description: "Vous avez recommandé des livres à 3 autres lecteurs.",
     icon: "🎓",
-    color: "yellow-100"
+    color: "yellow-100",
+    rarity: "common"
   },
   {
     id: "expert-poesie",
     name: "Expert en Poésie",
     description: "Vous avez lu 5 recueils de poésie.",
     icon: "🎭",
-    color: "pink-100"
+    color: "pink-100",
+    rarity: "rare"
   },
   {
     id: "lecteur-assidu",
     name: "Lecteur Assidu",
     description: "Lire pendant 30 jours consécutifs",
     icon: "🔥",
-    color: "orange-100"
+    color: "orange-100",
+    rarity: "legendary"
   },
   {
     id: "explorateur-litteraire",
     name: "Explorateur Littéraire",
     description: "Lire des livres dans 5 catégories différentes",
     icon: "🧭",
-    color: "blue-100"
+    color: "blue-100",
+    rarity: "epic"
   },
   {
     id: "marathonien",
     name: "Marathonien",
     description: "Lire 10 livres en un mois",
     icon: "🏃",
-    color: "green-100"
+    color: "green-100",
+    rarity: "epic"
   },
   {
     id: "expert-classiques",
     name: "Expert en Classiques",
     description: "Lire 10 classiques de la littérature",
     icon: "📜",
-    color: "coffee-light"
+    color: "coffee-light",
+    rarity: "epic"
   },
   {
     id: "lecteur-nocturne-v2",
     name: "Lecteur Nocturne Avancé",
     description: "Lire plus de 3 heures après 22h",
     icon: "🌙",
-    color: "purple-100"
+    color: "purple-100",
+    rarity: "rare"
   },
   {
     id: "badge_test_insertion",
     name: "Badge Test",
     description: "Ce badge est utilisé pour tester l'insertion dans Supabase",
     icon: "🧪",
-    color: "amber-100"
+    color: "amber-100",
+    rarity: "common"
   }
 ];
+
+// Récupère les validations de lecture d'un utilisateur depuis Supabase
+const getUserReadingValidations = async (userId: string): Promise<ReadingValidation[]> => {
+  if (!userId) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('reading_validations')
+      .select('*')
+      .eq('user_id', userId)
+      .order('validated_at', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching reading validations:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected error fetching reading validations:', error);
+    return [];
+  }
+};
+
+// Vérifie si l'utilisateur a lu pendant 3 jours consécutifs
+const checkConsecutiveDaysStreak = (validations: ReadingValidation[]): { hasStreak: boolean, endDate?: string } => {
+  if (!validations || validations.length < 3) return { hasStreak: false };
+  
+  // Extraire les dates uniques de validation (une par jour)
+  const uniqueDates = new Set<string>();
+  
+  for (const validation of validations) {
+    const date = new Date(validation.validated_at || validation.date_validated || '').toISOString().split('T')[0];
+    uniqueDates.add(date);
+  }
+  
+  // Convertir en tableau et trier
+  const sortedDates = Array.from(uniqueDates).sort();
+  
+  // Vérifier s'il y a 3 jours consécutifs
+  if (sortedDates.length < 3) return { hasStreak: false };
+  
+  for (let i = 0; i < sortedDates.length - 2; i++) {
+    const day1 = new Date(sortedDates[i]);
+    const day2 = new Date(sortedDates[i + 1]);
+    const day3 = new Date(sortedDates[i + 2]);
+    
+    // Vérifier si les jours sont consécutifs
+    const diff1 = (day2.getTime() - day1.getTime()) / (1000 * 60 * 60 * 24);
+    const diff2 = (day3.getTime() - day2.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (diff1 === 1 && diff2 === 1) {
+      // Trouvé 3 jours consécutifs
+      return { 
+        hasStreak: true, 
+        endDate: sortedDates[i + 2] // Date du 3ème jour
+      };
+    }
+  }
+  
+  return { hasStreak: false };
+};
+
+// Crée un badge de série dynamique
+const createStreakBadge = (endDate: string): Badge => {
+  const formattedDate = new Date(endDate).toLocaleDateString('fr-FR');
+  
+  return {
+    id: "streak-3",
+    name: "Série en cours 🔥",
+    description: "Tu as lu 3 jours de suite sans t'arrêter",
+    icon: "🔥",
+    color: "orange-100",
+    rarity: "rare",
+    dateEarned: formattedDate
+  };
+};
 
 // Récupérer les badges de l'utilisateur depuis Supabase
 export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
+    // 1. Récupérer les badges depuis la base de données
     const { data, error } = await supabaseExtended
       .from('user_badges')
       .select('badge_id, unlocked_at')
@@ -180,20 +273,34 @@ export const getUserBadges = async (userId?: string): Promise<Badge[]> => {
       return [];
     }
 
-    if (!data || data.length === 0) {
-      return [];
+    // 2. Transformer les données de Supabase en objets Badge
+    let badges: Badge[] = [];
+    
+    if (data && data.length > 0) {
+      badges = data.map(item => {
+        const badgeInfo = availableBadges.find(b => b.id === item.badge_id);
+        if (!badgeInfo) return null;
+        
+        return {
+          ...badgeInfo,
+          dateEarned: new Date(item.unlocked_at).toLocaleDateString('fr-FR')
+        };
+      }).filter(Boolean) as Badge[];
     }
 
-    // Transformer les données de Supabase en objets Badge
-    const badges = data.map(item => {
-      const badgeInfo = availableBadges.find(b => b.id === item.badge_id);
-      if (!badgeInfo) return null;
+    // 3. Récupérer les validations de lecture pour vérifier les séries
+    const validations = await getUserReadingValidations(userId);
+    const streakCheck = checkConsecutiveDaysStreak(validations);
+    
+    // 4. Si l'utilisateur a une série de 3 jours, ajouter le badge dynamique
+    if (streakCheck.hasStreak && streakCheck.endDate) {
+      const streakBadge = createStreakBadge(streakCheck.endDate);
       
-      return {
-        ...badgeInfo,
-        dateEarned: new Date(item.unlocked_at).toLocaleDateString('fr-FR')
-      };
-    }).filter(Boolean) as Badge[];
+      // Vérifier que ce badge n'est pas déjà dans la liste
+      if (!badges.some(b => b.id === streakBadge.id)) {
+        badges.push(streakBadge);
+      }
+    }
 
     return badges;
   } catch (error) {

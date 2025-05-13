@@ -49,7 +49,8 @@ export function BadgesSection() {
       setLoading(true);
       try {
         const earned = await getUserBadges(userId);
-        const all = await availableBadges();
+        // Fix: availableBadges is an array, not a function
+        const all = availableBadges;
 
         // Ensure all badges have dateEarned property (even if undefined)
         const earnedIds = new Set(earned.map((b) => b.id));
