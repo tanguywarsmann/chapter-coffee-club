@@ -15,7 +15,7 @@ const rarityOrder = ["legendary", "epic", "rare", "common"];
 
 function sortBadgesByRarity(badges: Badge[]) {
   return badges.sort((a, b) => 
-    rarityOrder.indexOf(a.rarity || "common") - rarityOrder.indexOf(b.rarity || "common")
+    rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity || "common")
   );
 }
 
@@ -53,8 +53,7 @@ export function BadgesSection() {
 
         // Ensure all badges have dateEarned property (even if undefined)
         const earnedIds = new Set(earned.map((b) => b.id));
-        const locked = all.filter((badge) => !earnedIds.has(badge.id))
-          .map(badge => ({ ...badge, dateEarned: undefined }));
+        const locked = all.filter((badge) => !earnedIds.has(badge.id));
 
         setBadges(sortBadgesByRarity(earned));
         setLockedBadges(sortBadgesByRarity(locked));
