@@ -5,6 +5,6 @@ export interface Badge {
   description: string;
   icon: string;
   color: string;
-  dateEarned: string;
+  dateEarned?: string;
   rarity?: "legendary" | "epic" | "rare" | "common";
 }
