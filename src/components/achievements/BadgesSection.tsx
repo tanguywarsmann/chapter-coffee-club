@@ -79,7 +79,7 @@ export function BadgesSection() {
             <CardDescription>Triés par rareté décroissante</CardDescription>
           </CardHeader>
           <CardContent>
-            <BadgeGrid badges={badges} type="unlocked" />
+           <BadgeGrid badges={badges} isLocked={false} />
           </CardContent>
         </Card>
       </TabsContent>
@@ -90,7 +90,7 @@ export function BadgesSection() {
             <CardDescription>Voici ceux que tu peux encore débloquer</CardDescription>
           </CardHeader>
           <CardContent>
-            <BadgeGrid badges={lockedBadges} type="locked" />
+            <BadgeGrid badges={lockedBadges as Badge[]} isLocked={true} />
           </CardContent>
         </Card>
       </TabsContent>
