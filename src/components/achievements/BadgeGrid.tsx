@@ -33,3 +33,16 @@ export function BadgeGrid({ badges, isLocked = false }: BadgeGridProps) {
     </div>
   );
 }
+function getRarityStyle(rarity: string) {
+  switch (rarity) {
+    case "legendary":
+      return "border-4 border-yellow-400 shadow-lg shadow-yellow-300/30 bg-gradient-to-br from-yellow-100 to-white";
+    case "epic":
+      return "border-2 border-purple-400 shadow-md shadow-purple-300/30 bg-gradient-to-br from-purple-100 to-white";
+    case "rare":
+      return "border border-blue-300 shadow-sm shadow-blue-200 bg-gradient-to-br from-blue-50 to-white";
+    case "common":
+    default:
+      return "border border-gray-200 bg-white";
+  }
+}
