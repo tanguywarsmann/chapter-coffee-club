@@ -6,4 +6,5 @@ export interface Badge {
   icon: string;
   color: string;
   dateEarned: string;
+  rarity?: "legendary" | "epic" | "rare" | "common";
 }
