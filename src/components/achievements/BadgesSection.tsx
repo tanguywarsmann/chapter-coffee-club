@@ -15,7 +15,7 @@ const rarityOrder = ["legendary", "epic", "rare", "common"];
 
 function sortBadgesByRarity(badges: Badge[]) {
   return badges.sort((a, b) => 
-    rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity || "common")
+    rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity)
   );
 }
 
