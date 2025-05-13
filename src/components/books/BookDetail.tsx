@@ -15,6 +15,9 @@ import { toast } from "sonner";
 import { checkBadgesForUser, recordReadingSession } from "@/services/badgeService";
 import { calculateReadingProgress } from "@/lib/progress";
 import { ReadingProgress } from "@/types/reading";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { BadgeCard } from "@/components/achievements/BadgeCard";
+import { Badge } from "@/types/badge";
 
 interface BookDetailProps {
   book: Book;
@@ -28,6 +31,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const progressRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const sessionStartTimeRef = useRef<Date | null>(null);
+  const [showBadgeDialog, setShowBadgeDialog] = useState(false);
+  const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
 
   const {
     isValidating,
@@ -118,39 +123,49 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
-  const handleQuizCompleteWrapper = (correct: boolean) => {
-    handleQuizComplete(correct);
+  const handleQuizCompleteWrapper = async (correct: boolean) => {
+    try {
+      const result = await handleQuizComplete(correct);
+      
+      if (correct) {
+        showConfetti();
 
-    if (correct) {
-      showConfetti();
+        if (user?.id) {
+          // Check if we received new badges from the quiz completion
+          if (result?.newBadges && result.newBadges.length > 0) {
+            // Set the badges to show in the dialog
+            setUnlockedBadges(result.newBadges);
+            // Show badge unlock dialog
+            setShowBadgeDialog(true);
+          }
 
-      if (user?.id) {
-        // Ensure we check for badges when a quiz is completed successfully
-        checkBadgesForUser(user.id);
+          // Record completed book if applicable
+          if (currentBook.isCompleted) {
+            const completedBooks = localStorage.getItem(`completed_books_${user.id}`)
+              ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
+              : [];
 
-        // Record completed book if applicable
-        if (currentBook.isCompleted) {
-          const completedBooks = localStorage.getItem(`completed_books_${user.id}`)
-            ? JSON.parse(localStorage.getItem(`completed_books_${user.id}`) || '[]')
-            : [];
+            if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
+              completedBooks.push(currentBook);
+              localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
+            }
+          }
 
-          if (!completedBooks.some((b: Book) => b.id === currentBook.id)) {
-            completedBooks.push(currentBook);
-            localStorage.setItem(`completed_books_${user.id}`, JSON.stringify(completedBooks));
+          // Record reading session when quiz is completed
+          if (sessionStartTimeRef.current) {
+            const endTime = new Date();
+            console.log("Session de lecture terminée:", endTime);
+            recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
+            sessionStartTimeRef.current = null;
           }
         }
-
-        // Record reading session when quiz is completed
-        if (sessionStartTimeRef.current) {
-          const endTime = new Date();
-          console.log("Session de lecture terminée:", endTime);
-          recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
-          sessionStartTimeRef.current = null;
-        }
+        
+        // Display success toast
+        toast.success("Segment validé avec succès !");
       }
-      
-      // Display success toast
-      toast.success("Segment validé avec succès !");
+    } catch (error) {
+      console.error("Error in quiz completion:", error);
+      toast.error("Une erreur est survenue lors de la validation");
     }
   };
 
@@ -214,6 +229,47 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           onSuccessClose={() => setShowSuccessMessage(false)}
           onLockExpire={handleLockExpire}
         />
+        
+        {/* Badge unlock dialog */}
+        <Dialog open={showBadgeDialog} onOpenChange={setShowBadgeDialog}>
+          <DialogContent className="sm:max-w-md border-coffee-medium animate-enter">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl font-serif text-coffee-darker">
+                🎉 Nouveau badge débloqué !
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                Félicitations pour cette nouvelle étape dans votre parcours de lecture !
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-6 flex flex-col items-center space-y-6">
+              {unlockedBadges.map(badge => (
+                <div key={badge.id} className="flex flex-col items-center space-y-3">
+                  <BadgeCard badge={badge} className="scale-125 animate-scale-in" />
+                </div>
+              ))}
+              
+              <Button 
+                onClick={() => setShowBadgeDialog(false)}
+                className="mt-4 bg-coffee-dark hover:bg-coffee-darker"
+              >
+                Super !
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="border-coffee-light"
+                onClick={() => {
+                  setShowBadgeDialog(false);
+                  // Navigate to achievements page
+                  window.location.href = "/achievements";
+                }}
+              >
+                Voir tous mes badges
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

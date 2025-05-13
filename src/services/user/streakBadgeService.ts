@@ -1,156 +1,162 @@
 
+import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { ReadingValidation } from "@/types/reading";
-import { supabase } from "@/integrations/supabase/client";
+import { availableBadges, isBadgeUnlocked, unlockBadge } from "../badgeService";
 
-/**
- * Récupère les validations de lecture d'un utilisateur
- */
-export const getUserReadingValidations = async (userId: string): Promise<ReadingValidation[]> => {
+// Get list of validations for a user
+export const getUserValidations = async (userId: string): Promise<ReadingValidation[]> => {
   if (!userId) return [];
   
-  try {
-    const { data, error } = await supabase
-      .from('reading_validations')
-      .select('*')
-      .eq('user_id', userId)
-      .order('validated_at', { ascending: true });
+  const { data, error } = await supabase
+    .from('reading_validations')
+    .select('*')
+    .eq('user_id', userId)
+    .order('validated_at', { ascending: true });
     
-    if (error) {
-      console.error('Error fetching reading validations:', error);
-      return [];
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Unexpected error fetching reading validations:', error);
+  if (error) {
+    console.error('Error fetching user validations:', error);
     return [];
   }
+  
+  return data || [];
 };
 
-/**
- * Vérifie si l'utilisateur a une série de jours consécutifs de lecture
- * @param validations Liste des validations de lecture
- * @param days Nombre de jours consécutifs à vérifier
- * @returns Un objet avec hasStreak et la date de fin si trouvée
- */
-export const checkConsecutiveDaysStreak = (
-  validations: ReadingValidation[], 
-  days: number = 3
-): { hasStreak: boolean, endDate?: string } => {
-  if (!validations || validations.length < days) return { hasStreak: false };
+// Check if user has 3 consecutive days of reading
+export const checkConsecutiveDays = async (userId: string): Promise<{
+  has3DayStreak: boolean;
+  has5DayStreak: boolean;
+  has7DayStreak: boolean;
+  endDate?: string;
+  streakLength?: number;
+}> => {
+  const validations = await getUserValidations(userId);
   
-  // Extraire les dates uniques de validation (une par jour)
-  const uniqueDates = new Set<string>();
+  if (!validations || validations.length < 3) {
+    return { has3DayStreak: false, has5DayStreak: false, has7DayStreak: false };
+  }
   
-  for (const validation of validations) {
+  // Get unique dates (date part only, without time)
+  const dates = new Set<string>();
+  validations.forEach(validation => {
     const date = new Date(validation.validated_at || validation.date_validated || '').toISOString().split('T')[0];
-    uniqueDates.add(date);
-  }
+    dates.add(date);
+  });
   
-  // Convertir en tableau et trier
-  const sortedDates = Array.from(uniqueDates).sort();
+  // Convert to array and sort
+  const sortedDates = Array.from(dates).sort();
   
-  // Vérifier s'il y a le nombre de jours consécutifs requis
-  if (sortedDates.length < days) return { hasStreak: false };
+  // Look for consecutive sequences
+  let maxStreak = 1;
+  let currentStreak = 1;
+  let streakEndDate = sortedDates[0];
   
-  for (let i = 0; i <= sortedDates.length - days; i++) {
-    let isConsecutive = true;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const currentDate = new Date(sortedDates[i]);
+    const prevDate = new Date(sortedDates[i-1]);
     
-    for (let j = 0; j < days - 1; j++) {
-      const currentDay = new Date(sortedDates[i + j]);
-      const nextDay = new Date(sortedDates[i + j + 1]);
-      
-      const diff = (nextDay.getTime() - currentDay.getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (diff !== 1) {
-        isConsecutive = false;
-        break;
+    // Check if dates are consecutive
+    const diffDays = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (diffDays === 1) {
+      // Dates are consecutive, increment streak
+      currentStreak++;
+      streakEndDate = sortedDates[i];
+    } else if (diffDays > 1) {
+      // Streak broken, reset
+      if (currentStreak > maxStreak) {
+        maxStreak = currentStreak;
       }
-    }
-    
-    if (isConsecutive) {
-      return { 
-        hasStreak: true, 
-        endDate: sortedDates[i + days - 1] // Date du dernier jour
-      };
+      currentStreak = 1;
+      streakEndDate = sortedDates[i];
     }
   }
   
-  return { hasStreak: false };
+  // Check final streak
+  if (currentStreak > maxStreak) {
+    maxStreak = currentStreak;
+  }
+  
+  return {
+    has3DayStreak: maxStreak >= 3,
+    has5DayStreak: maxStreak >= 5,
+    has7DayStreak: maxStreak >= 7,
+    endDate: streakEndDate,
+    streakLength: maxStreak
+  };
 };
 
-/**
- * Crée un badge de série dynamique basé sur le nombre de jours
- */
-export const createStreakBadge = (days: number, endDate: string): Badge | null => {
+// Create dynamic streak badge
+export const createStreakBadge = (days: number, endDate: string): Badge => {
+  let name = "Série en cours 🔥";
+  let description = "Tu as lu 3 jours de suite sans t'arrêter";
+  let rarity: "common" | "rare" | "epic" | "legendary" = "rare";
+  let id = "streak-3";
+  
+  if (days >= 7) {
+    name = "Série brûlante 🔥🔥🔥";
+    description = "Tu as lu 7 jours de suite sans t'arrêter";
+    rarity = "epic";
+    id = "streak-7";
+  } else if (days >= 5) {
+    name = "Série chaude 🔥🔥";
+    description = "Tu as lu 5 jours de suite sans t'arrêter";
+    rarity = "rare";
+    id = "streak-5";
+  }
+  
   const formattedDate = new Date(endDate).toLocaleDateString('fr-FR');
   
-  if (days === 3) {
-    return {
-      id: "streak-3",
-      name: "Série en cours 🔥",
-      description: "Tu as lu 3 jours de suite sans t'arrêter",
-      icon: "🔥",
-      color: "orange-100",
-      rarity: "rare",
-      dateEarned: formattedDate
-    };
-  } 
-  else if (days === 5) {
-    return {
-      id: "streak-5",
-      name: "Série avancée 🔥🔥",
-      description: "Tu as lu 5 jours de suite sans t'arrêter",
-      icon: "🔥🔥",
-      color: "orange-100",
-      rarity: "epic",
-      dateEarned: formattedDate
-    };
-  }
-  else if (days === 7) {
-    return {
-      id: "streak-7",
-      name: "Super série 🔥🔥🔥",
-      description: "Tu as lu 7 jours de suite sans t'arrêter",
-      icon: "🔥🔥🔥",
-      color: "orange-100",
-      rarity: "legendary",
-      dateEarned: formattedDate
-    };
-  }
-  
-  return null;
+  return {
+    id,
+    name,
+    description,
+    icon: "🔥",
+    color: "orange-100",
+    rarity,
+    dateEarned: formattedDate
+  };
 };
 
-/**
- * Génère tous les badges de série applicables pour un utilisateur
- */
-export const generateDynamicStreakBadges = async (userId: string): Promise<Badge[]> => {
+// Check badges for user and return newly unlocked badges
+export const checkBadgesForUser = async (userId: string, returnNewlyUnlocked = false): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
-    const validations = await getUserReadingValidations(userId);
-    const badges: Badge[] = [];
+    const newlyUnlockedBadges: Badge[] = [];
     
-    // Vérifier les différentes longueurs de séries
-    const streakDays = [7, 5, 3]; // Par ordre décroissant pour prioriser les badges les plus prestigieux
+    // Check for streak badges
+    const streakInfo = await checkConsecutiveDays(userId);
     
-    for (const days of streakDays) {
-      const streakCheck = checkConsecutiveDaysStreak(validations, days);
+    if (streakInfo.has7DayStreak && streakInfo.endDate) {
+      const badgeId = "serie-7-jours";
+      const wasUnlocked = await isBadgeUnlocked(userId, badgeId);
       
-      if (streakCheck.hasStreak && streakCheck.endDate) {
-        const badge = createStreakBadge(days, streakCheck.endDate);
-        if (badge) {
-          badges.push(badge);
-          break; // Ne prendre que le badge de la plus longue série
+      if (!wasUnlocked) {
+        await unlockBadge(userId, badgeId);
+        
+        if (returnNewlyUnlocked) {
+          const badge = availableBadges.find(b => b.id === badgeId);
+          if (badge) {
+            newlyUnlockedBadges.push({
+              ...badge,
+              dateEarned: new Date().toLocaleDateString('fr-FR')
+            });
+          }
         }
       }
+    } else if (streakInfo.has5DayStreak && streakInfo.endDate) {
+      // Check for 5-day streak badge in the future
+    } else if (streakInfo.has3DayStreak && streakInfo.endDate) {
+      // The 3-day streak is a dynamic badge, not stored in the database
+      // It will be shown in getUserBadges
     }
     
-    return badges;
+    // Add other badge checks here in the future
+    
+    return newlyUnlockedBadges;
   } catch (error) {
-    console.error('Error generating streak badges:', error);
+    console.error("Error checking badges for user:", error);
     return [];
   }
 };

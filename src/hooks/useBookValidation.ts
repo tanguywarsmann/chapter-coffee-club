@@ -5,6 +5,7 @@ import { Book } from "@/types/book";
 import { useBookQuiz } from "./useBookQuiz";
 import { validateReading } from "@/services/reading/validationService";
 import { useConfetti } from "./useConfetti";
+import { Badge } from "@/types/badge";
 
 export const useBookValidation = (
   book: Book | null,
@@ -14,6 +15,7 @@ export const useBookValidation = (
   const [isValidating, setIsValidating] = useState(false);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const { showConfetti } = useConfetti();
 
   const {
@@ -24,7 +26,7 @@ export const useBookValidation = (
     showSuccessMessage,
     setShowSuccessMessage,
     prepareAndShowQuestion,
-    handleQuizComplete,
+    handleQuizComplete: originalHandleQuizComplete,
     isLocked,
     remainingLockTime,
     handleLockExpire
@@ -73,6 +75,24 @@ export const useBookValidation = (
       });
     } finally {
       setIsValidating(false);
+    }
+  };
+
+  const handleQuizComplete = async (correct: boolean) => {
+    try {
+      const result = await originalHandleQuizComplete(correct);
+      
+      // Check if there are any newly unlocked badges
+      if (result?.newBadges && result.newBadges.length > 0) {
+        setNewBadges(result.newBadges);
+      } else {
+        setNewBadges([]);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error in quiz completion:", error);
+      throw error;
     }
   };
 
@@ -139,6 +159,7 @@ export const useBookValidation = (
     validationError,
     isLocked,
     remainingLockTime,
-    handleLockExpire
+    handleLockExpire,
+    newBadges
   };
 };

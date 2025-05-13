@@ -1,16 +1,18 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById } from "@/services/books/bookQueries";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
 import { recordReadingActivity } from "../streakService";
 import { getBookReadingProgress } from "./progressService";
+import { Badge } from "@/types/badge";
+import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 
 // Validate a reading segment ("Valider un segment de lecture")
 export const validateReading = async (
   request: ValidateReadingRequest
-): Promise<ValidateReadingResponse> => {
+): Promise<ValidateReadingResponse & { newBadges?: Badge[] }> => {
   try {
     // Vérifier si le segment a déjà été validé
     const alreadyValidated = await isSegmentAlreadyValidated(
@@ -104,14 +106,17 @@ export const validateReading = async (
     // Get question for next segment, if any
     const nextSegment = request.segment + 1;
     const nextQuestion = await getQuestionForBookSegment(request.book_id, nextSegment);
-
-    toast.success("Segment validé avec succès !");
+    
+    // Check if any new badges have been earned
+    // We'll use the checkBadgesForUser function and capture newly unlocked badges
+    const newBadges = await checkBadgesForUser(request.user_id, true);
 
     return {
       message: "Segment validé avec succès",
       current_page: newCurrentPage,
       already_validated: false,
-      next_segment_question: nextQuestion ? nextQuestion.question : null
+      next_segment_question: nextQuestion ? nextQuestion.question : null,
+      newBadges: newBadges.length > 0 ? newBadges : undefined
     };
 
   } catch (error: any) {
