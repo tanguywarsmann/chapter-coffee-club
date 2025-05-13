@@ -2,11 +2,15 @@
 import { Badge } from "@/types/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Star } from "lucide-react";
 
 export interface BadgeCardProps {
   badge: Badge;
   isLocked?: boolean;
   className?: string;
+  isFavorite?: boolean;
+  onFavoriteToggle?: () => void;
+  showFavoriteToggle?: boolean;
 }
 
 const rarityStyles: Record<string, string> = {
@@ -16,7 +20,14 @@ const rarityStyles: Record<string, string> = {
   common: "border border-gray-200 bg-white",
 };
 
-export function BadgeCard({ badge, isLocked = false, className }: BadgeCardProps) {
+export function BadgeCard({ 
+  badge, 
+  isLocked = false, 
+  className,
+  isFavorite = false,
+  onFavoriteToggle,
+  showFavoriteToggle = false
+}: BadgeCardProps) {
   const { name, icon, description, rarity = "common", dateEarned } = badge;
   
   // Get the appropriate style based on the badge's rarity
@@ -28,7 +39,7 @@ export function BadgeCard({ badge, isLocked = false, className }: BadgeCardProps
         <TooltipTrigger asChild>
           <div 
             className={cn(
-              "flex flex-col items-center text-center space-y-3 transition-all duration-200",
+              "flex flex-col items-center text-center space-y-3 transition-all duration-200 relative",
               isLocked ? "opacity-70" : "hover:scale-105",
               className
             )}
@@ -56,6 +67,29 @@ export function BadgeCard({ badge, isLocked = false, className }: BadgeCardProps
                 </div>
               )}
             </div>
+            
+            {/* Favorite star - only shown for unlocked badges */}
+            {!isLocked && showFavoriteToggle && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onFavoriteToggle?.();
+                }}
+                className="absolute -top-2 -right-2 z-10"
+                aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+              >
+                <Star 
+                  size={20} 
+                  className={cn(
+                    "transition-colors duration-300", 
+                    isFavorite 
+                      ? "fill-yellow-400 text-yellow-500" 
+                      : "text-gray-400 hover:text-yellow-500"
+                  )} 
+                />
+              </button>
+            )}
             
             <div className="space-y-1 px-1">
               <h3 className={cn("font-medium text-sm", isLocked ? "text-coffee-medium" : "text-coffee-darker")}>

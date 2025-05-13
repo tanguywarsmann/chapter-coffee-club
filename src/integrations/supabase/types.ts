@@ -287,6 +287,27 @@ export type Database = {
           },
         ]
       }
+      user_favorite_badges: {
+        Row: {
+          badge_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       validation_locks: {
         Row: {
           book_id: string

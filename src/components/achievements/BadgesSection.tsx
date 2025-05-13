@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { BadgeRarityProgress } from "./BadgeRarityProgress";
+import { getFavoriteBadges, toggleFavoriteBadge } from "@/services/user";
 
 // Classement des raretés du plus rare au plus commun
 const rarityOrder = ["legendary", "epic", "rare", "common"];
@@ -39,9 +40,11 @@ export function BadgesSection() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [lockedBadges, setLockedBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favoriteBadgeIds, setFavoriteBadgeIds] = useState<string[]>([]);
   const { user } = useAuth();
   const userId = user?.id;
 
+  // Load badges and favorite badges
   useEffect(() => {
     if (!userId) return;
 
@@ -51,6 +54,10 @@ export function BadgesSection() {
         const earned = await getUserBadges(userId);
         // Fix: availableBadges is an array, not a function
         const all = availableBadges;
+
+        // Get favorite badges
+        const favorites = await getFavoriteBadges(userId);
+        setFavoriteBadgeIds(favorites);
 
         // Ensure all badges have dateEarned property (even if undefined)
         const earnedIds = new Set(earned.map((b) => b.id));
@@ -68,6 +75,19 @@ export function BadgesSection() {
     fetchBadges();
   }, [userId]);
 
+  // Handle favorite toggle
+  const handleFavoriteToggle = async (badgeId: string) => {
+    if (!userId) return;
+    
+    const updatedFavorites = await toggleFavoriteBadge(
+      userId,
+      badgeId,
+      favoriteBadgeIds
+    );
+    
+    setFavoriteBadgeIds(updatedFavorites);
+  };
+
   if (loading) return <LoadingCard />;
 
   return (
@@ -84,7 +104,13 @@ export function BadgesSection() {
           </CardHeader>
           <CardContent className="space-y-6">
             <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
-            <BadgeGrid badges={badges} isLocked={false} />
+            <BadgeGrid 
+              badges={badges} 
+              isLocked={false} 
+              favoriteBadgeIds={favoriteBadgeIds}
+              onFavoriteToggle={handleFavoriteToggle}
+              showFavoriteToggle={true}
+            />
           </CardContent>
         </Card>
       </TabsContent>

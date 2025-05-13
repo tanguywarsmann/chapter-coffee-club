@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -42,6 +43,7 @@ export default function Profile() {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-3/4 space-y-6">
                   <UserProfile />
+                  <ProfileBadges />
                   <ReadingStats />
                   <UserGoals />
                 </div>
@@ -64,9 +66,9 @@ export default function Profile() {
               
               <div className="space-y-6">
                 <PublicUserStats userId={profileUserId!} />
+                <ProfileBadges userId={profileUserId!} />
                 <CurrentlyReading userId={profileUserId!} />
                 <CompletedBooks userId={profileUserId!} />
-                <ProfileBadges />
               </div>
             </>
           )}

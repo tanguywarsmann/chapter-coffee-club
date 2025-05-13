@@ -7,6 +7,10 @@ import { useEffect, useState } from "react";
 import { getUserBadges } from "@/services/badgeService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { BadgeCard } from "@/components/achievements/BadgeCard";
+import { getFavoriteBadges } from "@/services/user";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileBadgesProps {
   badges?: Badge[];
@@ -15,30 +19,44 @@ interface ProfileBadgesProps {
 
 export function ProfileBadges({ badges: propBadges, userId: propUserId }: ProfileBadgesProps) {
   const [badges, setBadges] = useState<Badge[]>(propBadges || []);
+  const [favoriteBadges, setFavoriteBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const userId = propUserId || user?.id;
+  const navigate = useNavigate();
   
   useEffect(() => {
-    if (!propBadges) {
-      const fetchBadges = async () => {
-        if (!userId) return;
+    if (!userId) return;
+    
+    const fetchBadges = async () => {
+      setLoading(true);
+      try {
+        // Get all user badges
+        const userBadges = await getUserBadges(userId);
+        setBadges(userBadges);
         
-        setLoading(true);
-        try {
-          // Récupérer les badges de l'utilisateur depuis Supabase
-          const userBadges = await getUserBadges(userId);
-          setBadges(userBadges);
-        } catch (error) {
-          console.error("Erreur lors du chargement des badges:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchBadges();
-    }
-  }, [propBadges, userId]);
+        // Get favorite badge IDs
+        const favoriteBadgeIds = await getFavoriteBadges(userId);
+        
+        // Filter favorite badges from all badges
+        const favorites = userBadges.filter(badge => 
+          favoriteBadgeIds.includes(badge.id)
+        );
+        
+        setFavoriteBadges(favorites);
+      } catch (error) {
+        console.error("Erreur lors du chargement des badges:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchBadges();
+  }, [userId, propBadges]);
+
+  const navigateToAchievements = () => {
+    navigate('/achievements');
+  };
 
   if (loading) {
     return (
@@ -63,60 +81,85 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
     );
   }
 
-  if (!badges.length) {
+  // Render for favorite badges
+  if (favoriteBadges.length > 0) {
     return (
       <Card className="border-coffee-light">
-        <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges</CardTitle>
-          <CardDescription>Complétez des livres pour gagner des badges</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges favoris</CardTitle>
+            <CardDescription>Les badges dont je suis le plus fier</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={navigateToAchievements}
+            className="text-coffee-dark"
+          >
+            Voir tous
+          </Button>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <span className="text-2xl text-muted-foreground">🏆</span>
-            </div>
-            <p className="text-muted-foreground">Vous n'avez pas encore de badges</p>
-            <p className="text-xs text-muted-foreground">Continuez votre parcours de lecture pour en débloquer!</p>
+          <div className="flex flex-wrap justify-center gap-6 p-2">
+            {favoriteBadges.map((badge) => (
+              <BadgeCard 
+                key={badge.id} 
+                badge={badge} 
+                isFavorite={true}
+              />
+            ))}
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  // Render for no favorite badges but has badges
+  if (badges.length > 0) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges favoris</CardTitle>
+            <CardDescription>Sélectionne tes badges préférés dans la section Badges</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={navigateToAchievements}
+            className="text-coffee-dark"
+          >
+            Choisir
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-2xl text-muted-foreground">⭐</span>
+            </div>
+            <p className="text-muted-foreground">Tu n'as pas encore sélectionné de badge favori</p>
+            <p className="text-xs text-muted-foreground">Choisis jusqu'à 3 badges pour les mettre en avant sur ton profil</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Default render for no badges at all
   return (
     <Card className="border-coffee-light">
       <CardHeader>
         <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges</CardTitle>
-        <CardDescription>Vos accomplissements de lecture</CardDescription>
+        <CardDescription>Complétez des livres pour gagner des badges</CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[180px] pr-4">
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-            {badges.map((badge) => (
-              <TooltipProvider key={badge.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className={`w-16 h-16 rounded-full bg-${badge.color} flex items-center justify-center shadow-sm`}>
-                        <span className="text-2xl">{badge.icon}</span>
-                      </div>
-                      <span className="text-xs text-center font-medium text-coffee-dark line-clamp-1">
-                        {badge.name}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-1 max-w-xs">
-                      <p className="font-medium">{badge.name}</p>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
-                      <p className="text-xs text-coffee-medium">Obtenu le {badge.dateEarned}</p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
+        <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-2xl text-muted-foreground">🏆</span>
           </div>
-        </ScrollArea>
+          <p className="text-muted-foreground">Vous n'avez pas encore de badges</p>
+          <p className="text-xs text-muted-foreground">Continuez votre parcours de lecture pour en débloquer!</p>
+        </div>
       </CardContent>
     </Card>
   );
