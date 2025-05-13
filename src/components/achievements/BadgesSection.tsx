@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,13 +8,14 @@ import { Badge } from "@/types/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { BadgeRarityProgress } from "./BadgeRarityProgress";
 
 // Classement des raretés du plus rare au plus commun
 const rarityOrder = ["legendary", "epic", "rare", "common"];
 
 function sortBadgesByRarity(badges: Badge[]) {
   return badges.sort((a, b) => 
-    rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity)
+    rarityOrder.indexOf(a.rarity || "common") - rarityOrder.indexOf(b.rarity || "common")
   );
 }
 
@@ -35,7 +37,7 @@ function LoadingCard() {
 
 export function BadgesSection() {
   const [badges, setBadges] = useState<Badge[]>([]);
-  const [lockedBadges, setLockedBadges] = useState<Omit<Badge, "dateEarned">[]>([]);
+  const [lockedBadges, setLockedBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const userId = user?.id;
@@ -49,8 +51,10 @@ export function BadgesSection() {
         const earned = await getUserBadges(userId);
         const all = await availableBadges();
 
+        // Ensure all badges have dateEarned property (even if undefined)
         const earnedIds = new Set(earned.map((b) => b.id));
-        const locked = all.filter((badge) => !earnedIds.has(badge.id));
+        const locked = all.filter((badge) => !earnedIds.has(badge.id))
+          .map(badge => ({ ...badge, dateEarned: undefined }));
 
         setBadges(sortBadgesByRarity(earned));
         setLockedBadges(sortBadgesByRarity(locked));
@@ -78,8 +82,9 @@ export function BadgesSection() {
             <CardTitle>Badges débloqués</CardTitle>
             <CardDescription>Triés par rareté décroissante</CardDescription>
           </CardHeader>
-          <CardContent>
-           <BadgeGrid badges={badges} isLocked={false} />
+          <CardContent className="space-y-6">
+            <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
+            <BadgeGrid badges={badges} isLocked={false} />
           </CardContent>
         </Card>
       </TabsContent>
@@ -90,7 +95,7 @@ export function BadgesSection() {
             <CardDescription>Voici ceux que tu peux encore débloquer</CardDescription>
           </CardHeader>
           <CardContent>
-            <BadgeGrid badges={lockedBadges as Badge[]} isLocked={true} />
+            <BadgeGrid badges={lockedBadges} isLocked={true} />
           </CardContent>
         </Card>
       </TabsContent>
