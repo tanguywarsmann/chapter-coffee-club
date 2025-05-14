@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Quest } from "@/types/quest";
-import { availableQuests } from "@/mock/quests";
 import { addXP } from "@/services/user/levelService";
 import { getUserReadingProgress } from "./reading/progressService";
 
