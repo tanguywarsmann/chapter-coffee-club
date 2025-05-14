@@ -1,4 +1,5 @@
 
+
 export interface Badge {
   id: string;
   name: string;
@@ -11,3 +12,4 @@ export interface Badge {
   slug?: string;
   icon_url?: string;
 }
+

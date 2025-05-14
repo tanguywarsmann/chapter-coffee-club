@@ -11,27 +11,39 @@ export type Database = {
     Tables: {
       badges: {
         Row: {
+          color: string | null
           created_at: string | null
           description: string | null
+          icon: string
           icon_url: string | null
           id: string
           label: string
+          name: string
+          rarity: string | null
           slug: string
         }
         Insert: {
+          color?: string | null
           created_at?: string | null
           description?: string | null
+          icon?: string
           icon_url?: string | null
           id?: string
           label: string
+          name?: string
+          rarity?: string | null
           slug: string
         }
         Update: {
+          color?: string | null
           created_at?: string | null
           description?: string | null
+          icon?: string
           icon_url?: string | null
           id?: string
           label?: string
+          name?: string
+          rarity?: string | null
           slug?: string
         }
         Relationships: []

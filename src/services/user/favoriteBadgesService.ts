@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { toast } from "sonner";
@@ -61,10 +62,12 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
     // Mapper les données sur le type Badge
     return (badgesData || []).map(badge => ({
       id: badge.id,
-      name: badge.label || "Badge",
+      name: badge.name || badge.label || "Badge",
       description: badge.description || "",
-      icon: badge.icon_url || "",
-      color: badge.color || "blue",
+      icon: badge.icon || "🏆",
+      icon_url: badge.icon_url || "",
+      slug: badge.slug || "",
+      color: badge.color || "yellow-300",
       rarity: badge.rarity || "common"
     }));
   } catch (error) {
