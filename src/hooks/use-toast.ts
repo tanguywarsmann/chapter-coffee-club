@@ -8,6 +8,7 @@ import {
 export type ToasterToast = {
   id: string;
   title?: React.ReactNode;
+  description?: React.ReactNode;
   action?: ToastActionElement;
 };
 
@@ -15,7 +16,7 @@ export type ToasterToast = {
 const useToastStore = () => {
   const toasts: ToasterToast[] = [];
   
-  function toast(props: ToastProps) {
+  function toast(props: ToastProps & { description?: React.ReactNode }) {
     return {
       id: crypto.randomUUID(),
       ...props
@@ -31,7 +32,7 @@ const useToastStore = () => {
 // Export standalone functions
 export const useToast = useToastStore;
 
-export const toast = (props: ToastProps) => {
+export const toast = (props: ToastProps & { description?: React.ReactNode }) => {
   return {
     id: crypto.randomUUID(),
     ...props
