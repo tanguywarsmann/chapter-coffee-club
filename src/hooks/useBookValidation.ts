@@ -88,7 +88,7 @@ export const useBookValidation = (
         setNewBadges(result.newBadges);
         
         // Ajouter des XP supplémentaires pour un streak (30 XP)
-        if (userId && result.newBadges.some(badge => badge.id.includes('streak'))) {
+        if (userId && result.newBadges.some(badge => badge.id && badge.id.includes('streak'))) {
           await addXP(userId, 30);
         }
       } else {

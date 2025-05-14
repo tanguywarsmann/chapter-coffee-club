@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -18,6 +17,8 @@ import { ReadingProgress } from "@/types/reading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BadgeCard } from "@/components/achievements/BadgeCard";
 import { Badge } from "@/types/badge";
+import { MonthlyRewardModal } from "./MonthlyRewardModal";
+import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 
 interface BookDetailProps {
   book: Book;
@@ -33,6 +34,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const sessionStartTimeRef = useRef<Date | null>(null);
   const [showBadgeDialog, setShowBadgeDialog] = useState(false);
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
+  const [monthlyReward, setMonthlyReward] = useState<Badge | null>(null);
+  const [showMonthlyReward, setShowMonthlyReward] = useState(false);
 
   const {
     isValidating,
@@ -57,6 +60,14 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     if (user?.id) {
       // Ensure we check badges when a chapter is completed
       checkBadgesForUser(user.id);
+      
+      // Check for monthly rewards
+      checkAndGrantMonthlyReward(user.id).then(badge => {
+        if (badge) {
+          setMonthlyReward(badge);
+          setShowMonthlyReward(true);
+        }
+      });
     }
   });
 
@@ -157,6 +168,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             console.log("Session de lecture terminée:", endTime);
             recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
             sessionStartTimeRef.current = null;
+          }
+          
+          // Check for monthly rewards
+          const monthlyBadge = await checkAndGrantMonthlyReward(user.id);
+          if (monthlyBadge) {
+            setMonthlyReward(monthlyBadge);
+            // On affiche la récompense mensuelle après la validation du segment
+            setTimeout(() => {
+              setShowMonthlyReward(true);
+            }, 1000);
           }
         }
         
@@ -270,6 +291,13 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             </div>
           </DialogContent>
         </Dialog>
+        
+        {/* Monthly reward modal */}
+        <MonthlyRewardModal 
+          badge={monthlyReward} 
+          isOpen={showMonthlyReward} 
+          onClose={() => setShowMonthlyReward(false)} 
+        />
       </CardContent>
     </Card>
   );

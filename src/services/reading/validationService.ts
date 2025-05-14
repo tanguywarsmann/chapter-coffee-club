@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
@@ -10,6 +9,7 @@ import { Badge } from "@/types/badge";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
+import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 
 // Validate a reading segment ("Valider un segment de lecture")
 export const validateReading = async (
@@ -121,6 +121,20 @@ export const validateReading = async (
         await checkUserQuests(request.user_id);
       } catch (error) {
         console.error("Erreur lors de la vérification des quêtes:", error);
+      }
+    }, 0);
+    
+    // Vérifier si l'utilisateur peut recevoir une récompense mensuelle
+    setTimeout(async () => {
+      try {
+        const monthlyReward = await checkAndGrantMonthlyReward(request.user_id);
+        if (monthlyReward) {
+          // Si une récompense mensuelle est obtenue, elle sera affichée à l'utilisateur
+          // lors du prochain rechargement via les badges obtenus
+          console.log("Récompense mensuelle obtenue :", monthlyReward);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification des récompenses mensuelles:", error);
       }
     }, 0);
 

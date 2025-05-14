@@ -332,6 +332,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_monthly_rewards: {
+        Row: {
+          badge_id: string
+          id: string
+          month: string
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          id?: string
+          month: string
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          id?: string
+          month?: string
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_quests: {
         Row: {
           id: string
