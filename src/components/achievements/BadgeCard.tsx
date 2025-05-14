@@ -1,4 +1,3 @@
-
 import { Badge } from "@/types/badge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,6 +10,7 @@ export interface BadgeCardProps {
   isFavorite?: boolean;
   onFavoriteToggle?: () => void;
   showFavoriteToggle?: boolean;
+  isReadOnly?: boolean; // Ajout de la propriété isReadOnly optionnelle
 }
 
 const rarityStyles: Record<string, string> = {
@@ -26,7 +26,8 @@ export function BadgeCard({
   className,
   isFavorite = false,
   onFavoriteToggle,
-  showFavoriteToggle = false
+  showFavoriteToggle = false,
+  isReadOnly = false // Ajout de la valeur par défaut
 }: BadgeCardProps) {
   const { name, icon, description, rarity = "common", dateEarned } = badge;
   
