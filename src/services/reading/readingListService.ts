@@ -1,6 +1,5 @@
-
 import { Book } from "@/types/book";
-import { ReadingProgress } from "@/types/reading";
+import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
 import { bookFailureCache } from "@/utils/bookFailureCache";
 import { createFallbackBook } from "@/utils/createFallbackBook";
@@ -144,7 +143,7 @@ export const fetchBooksForStatus = async (
     // 2. Récupérer tous les livres correspondants en une seule requête
     const { data: booksData, error: booksError } = await supabase
       .from("books")
-      .select("id, title, author, slug, cover_url, expected_segments, total_chapters, total_pages")
+      .select("id, title, author, slug, cover_url, expected_segments, total_chapters, total_pages, created_at, description, is_published, tags")
       .in("id", bookIds);
 
     if (booksError) {
@@ -214,12 +213,12 @@ export const fetchBooksForStatus = async (
           title: bookData.title || "Titre inconnu",
           author: bookData.author || "Auteur inconnu",
           coverImage: bookData.cover_url || undefined,
-          description: "", // Could be fetched if needed
+          description: bookData.description || "",
           totalChapters: totalChapters,
           chaptersRead: chaptersRead,
           isCompleted: item.status === "completed",
           language: "", // Not available in the current query
-          categories: [],
+          categories: bookData.tags || [],
           pages: bookData.total_pages || 0,
           publicationYear: 0, // Not available in the current query
           slug: bookData.slug,
@@ -227,7 +226,10 @@ export const fetchBooksForStatus = async (
           book_author: bookData.author || "Auteur inconnu",
           book_slug: bookData.slug || "",
           book_cover: bookData.cover_url || null,
-          total_chapters: totalChapters
+          total_chapters: totalChapters,
+          created_at: bookData.created_at || new Date().toISOString(),
+          is_published: bookData.is_published !== undefined ? bookData.is_published : true,
+          tags: bookData.tags || [],
         } as Book);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
