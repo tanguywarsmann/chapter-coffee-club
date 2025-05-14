@@ -3,7 +3,7 @@
   "name": "READ",
   "short_name": "READ",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#A75A2A",
   "theme_color": "#A75A2A",
   "icons": [

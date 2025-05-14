@@ -12,10 +12,19 @@ const CACHE_URLS = [
 ];
 
 // Vérifie si l'on est dans un iframe Lovable
+const isInIframe = () => {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Vérifie plus spécifiquement si l'on est dans un iframe Lovable
 const isInLovableIframe = () => {
   try {
     return window.self !== window.top && 
-           (window.location.ancestorOrigins[0].includes('lovable.dev') || 
+           (window.location.ancestorOrigins[0]?.includes('lovable.dev') || 
             document.referrer.includes('lovable.dev'));
   } catch (e) {
     return false;
@@ -41,8 +50,8 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Ne pas intercepter les requêtes dans l'environnement Lovable
-  if (isInLovableIframe()) {
+  // Ne pas intercepter les requêtes dans l'environnement Lovable ou dans une iframe
+  if (isInLovableIframe() || isInIframe()) {
     return;
   }
   

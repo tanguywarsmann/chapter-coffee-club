@@ -5,11 +5,13 @@ import './index.css'
 
 // Détection de l'environnement
 const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-const isInLovablePreview = window.self !== window.top && 
+const isInIframe = window.self !== window.top;
+const isInLovablePreview = isInIframe && 
                           (window.location.ancestorOrigins?.[0]?.includes('lovable.dev') || 
                            document.referrer.includes('lovable.dev'));
 
 console.log('Application running as PWA:', isPWA);
+console.log('Running in iframe:', isInIframe);
 console.log('Running in Lovable preview:', isInLovablePreview);
 console.log('localStorage available:', typeof localStorage !== 'undefined');
 console.log('sessionStorage available:', typeof sessionStorage !== 'undefined');
@@ -31,8 +33,8 @@ const initApp = () => {
 // Initialiser l'app
 initApp();
 
-// Enregistrement du service worker uniquement hors preview Lovable
-if ("serviceWorker" in navigator && !isInLovablePreview) {
+// Enregistrement du service worker uniquement hors iframe
+if ("serviceWorker" in navigator && !isInIframe) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js")
       .then(reg => {
@@ -42,12 +44,12 @@ if ("serviceWorker" in navigator && !isInLovablePreview) {
         console.error("Erreur Service Worker PWA", err);
       });
   });
-} else if (isInLovablePreview && navigator.serviceWorker) {
+} else if (isInIframe && navigator.serviceWorker) {
   // Désactiver les service workers existants dans la preview
   navigator.serviceWorker.getRegistrations().then(registrations => {
     for (let registration of registrations) {
       registration.unregister();
-      console.log("Service worker unregistered for preview");
+      console.log("Service worker unregistered in iframe");
     }
   });
 }
