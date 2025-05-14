@@ -308,6 +308,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorite_books: {
+        Row: {
+          added_at: string | null
+          book_title: string
+          id: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          book_title: string
+          id?: string
+          position: number
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          book_title?: string
+          id?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_levels: {
         Row: {
           id: string

@@ -24,6 +24,40 @@ export async function getFavoriteBadges(userId: string): Promise<string[]> {
 }
 
 /**
+ * Get user's favorite badges with complete badge data
+ * @param userId User ID
+ * @returns Array of badge objects
+ */
+export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
+  try {
+    const { data, error } = await supabase
+      .from("user_favorite_badges")
+      .select(`
+        badge_id,
+        badges!inner(*)
+      `)
+      .eq("user_id", userId);
+    
+    if (error) {
+      console.error("Error fetching favorite badges:", error);
+      return [];
+    }
+    
+    // Transform the joined data into Badge objects
+    return (data || []).map(item => ({
+      id: item.badges.id,
+      label: item.badges.label,
+      description: item.badges.description,
+      slug: item.badges.slug,
+      icon_url: item.badges.icon_url
+    }));
+  } catch (error) {
+    console.error("Error fetching favorite badges:", error);
+    return [];
+  }
+}
+
+/**
  * Add a badge to user's favorites
  * @param userId User ID
  * @param badgeId Badge ID
@@ -84,16 +118,6 @@ export async function removeFavoriteBadge(userId: string, badgeId: string): Prom
 }
 
 /**
- * Check if a badge is a favorite
- * @param favoriteBadgeIds Array of favorite badge IDs
- * @param badgeId Badge ID to check
- * @returns True if badge is a favorite
- */
-export function isFavoriteBadge(favoriteBadgeIds: string[], badgeId: string): boolean {
-  return favoriteBadgeIds.includes(badgeId);
-}
-
-/**
  * Toggle favorite status of a badge
  * @param userId User ID
  * @param badgeId Badge ID
@@ -105,7 +129,7 @@ export async function toggleFavoriteBadge(
   badgeId: string, 
   currentFavorites: string[]
 ): Promise<string[]> {
-  const isCurrentlyFavorite = isFavoriteBadge(currentFavorites, badgeId);
+  const isCurrentlyFavorite = currentFavorites.includes(badgeId);
   
   let success;
   if (isCurrentlyFavorite) {

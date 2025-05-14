@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import BookPage from "./pages/BookPage";
 import Profile from "./pages/Profile";
+import PublicProfilePage from "./pages/PublicProfilePage";
 import Discover from "./pages/Discover";
 import ReadingList from "./pages/ReadingList";
 import Explore from "./pages/Explore";
@@ -17,6 +18,7 @@ import Achievements from "./pages/Achievements";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Followers from "./pages/Followers";
+import { UserOnboarding } from "./components/onboarding/UserOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <UserOnboarding />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Login />} />
@@ -34,6 +37,7 @@ const App = () => {
               <Route path="/home" element={<Home />} />
               <Route path="/books/:id" element={<BookPage />} />
               <Route path="/profile/:userId?" element={<Profile />} />
+              <Route path="/u/:userId" element={<PublicProfilePage />} />
               <Route path="/discover" element={<Discover />} />
               <Route path="/reading-list" element={<ReadingList />} />
               <Route path="/explore" element={<Explore />} />
