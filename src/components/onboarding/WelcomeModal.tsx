@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface WelcomeModalProps {
   open: boolean;
@@ -9,12 +10,38 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
-  const navigate = useNavigate();
+  const [isInIframe, setIsInIframe] = useState(false);
+  
+  // Détecter si nous sommes dans un iframe au montage du composant
+  useEffect(() => {
+    const checkIframe = () => {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        // Si une erreur de sécurité est levée en tentant d'accéder à window.top,
+        // c'est probablement qu'on est dans un iframe
+        return true;
+      }
+    };
+    
+    setIsInIframe(checkIframe());
+  }, []);
+  
+  // N'utiliser useNavigate que si nous ne sommes pas dans un iframe
+  const navigate = !isInIframe ? useNavigate() : null;
 
   const handleStart = () => {
     localStorage.setItem("onboardingDone", "true");
     onClose(false);
-    navigate("/explore");
+    
+    // Naviguer seulement si navigate est disponible (hors iframe)
+    if (navigate) {
+      navigate("/explore");
+    } else {
+      // En iframe, simplement simuler une navigation en ouvrant dans un nouvel onglet
+      // ou ne rien faire car le parent (WelcomeModal) s'occupera de gérer la suite
+      console.log("Navigation non effectuée (contexte iframe)");
+    }
   };
 
   const handleSkip = () => {
@@ -32,12 +59,12 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
         </DialogHeader>
         <div className="px-6 py-4 text-[1.1rem] text-coffee-dark leading-relaxed text-left mx-auto max-w-prose">
           <p className="mb-5">
-            <span className="font-medium">READ t’aide à retrouver le plaisir de lire, challenge après challenge.</span>
+            <span className="font-medium">READ t'aide à retrouver le plaisir de lire, challenge après challenge.</span>
           </p>
           <p className="mb-3">Voici comment ça fonctionne :</p>
           <ol className="list-decimal list-inside mb-5 pl-1 space-y-0.5">
-            <li>Choisis un livre qui t’inspire</li>
-            <li>Lis à ton rythme, hors de l’écran</li>
+            <li>Choisis un livre qui t'inspire</li>
+            <li>Lis à ton rythme, hors de l'écran</li>
             <li>Valide ton avancée toutes les 30 pages avec une question rapide</li>
           </ol>
           <p>
