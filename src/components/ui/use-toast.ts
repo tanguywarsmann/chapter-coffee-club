@@ -1,6 +1,5 @@
 
-import { useToast as useToastShadcn } from "@/hooks/use-toast";
-import { toast as toastShadcn } from "@/hooks/use-toast";
+import * as ToastPrimitive from "@/hooks/use-toast";
 
-export const useToast = useToastShadcn;
-export const toast = toastShadcn;
+export const useToast = ToastPrimitive.useToast;
+export const toast = ToastPrimitive.toast;

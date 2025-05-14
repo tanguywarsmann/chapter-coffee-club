@@ -15,7 +15,10 @@ export type ToasterToast = {
   action?: ToastActionElement;
 };
 
-export const useToast = useToastShadcn;
+// Directly export the functions from the module to avoid circular dependency
+export const useToast = () => {
+  return useToastShadcn();
+};
 
 // Re-export the toast function for direct usage
 export const toast = (props: ToastProps) => {
