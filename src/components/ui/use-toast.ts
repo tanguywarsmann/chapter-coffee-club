@@ -1,5 +1,7 @@
 
-import * as ToastPrimitive from "@/hooks/use-toast";
+// Import directly from the hooks file first
+import { useToast as useToastHook, toast as toastHook } from "@/hooks/use-toast";
 
-export const useToast = ToastPrimitive.useToast;
-export const toast = ToastPrimitive.toast;
+// Then export them
+export const useToast = useToastHook;
+export const toast = toastHook;
