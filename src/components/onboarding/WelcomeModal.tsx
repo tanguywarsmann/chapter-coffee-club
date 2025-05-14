@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -6,48 +5,86 @@ import { useEffect, useState } from "react";
 
 interface WelcomeModalProps {
   open: boolean;
-  onClose: (skipFlag?: boolean) => void; // skipFlag vrai si on ferme sans valider
+  onClose: (skipFlag?: boolean) => void;
 }
 
 export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
-  const [isInIframe, setIsInIframe] = useState(false);
-  
-  // Détecter si nous sommes dans un iframe au montage du composant
-  useEffect(() => {
-    const checkIframe = () => {
-      try {
-        return window.self !== window.top;
-      } catch (e) {
-        // Si une erreur de sécurité est levée en tentant d'accéder à window.top,
-        // c'est probablement qu'on est dans un iframe
-        return true;
-      }
-    };
-    
-    setIsInIframe(checkIframe());
-  }, []);
-  
-  // N'utiliser useNavigate que si nous ne sommes pas dans un iframe
-  const navigate = !isInIframe ? useNavigate() : null;
+  const [isInIframe, setIsInIframe] = useState<boolean | null>(null);
 
-  const handleStart = () => {
+  useEffect(() => {
+    try {
+      setIsInIframe(window.self !== window.top);
+    } catch {
+      setIsInIframe(true);
+    }
+  }, []);
+
+  if (isInIframe === null) return null; // Attend d'avoir détecté le contexte
+
+  // Variante 1 : en dehors de l’iframe
+  if (!isInIframe) {
+    const navigate = useNavigate();
+
+    const handleStart = () => {
+      localStorage.setItem("onboardingDone", "true");
+      onClose(false);
+      navigate("/explore");
+    };
+
+    const handleSkip = () => onClose(true);
+
+    return (
+      <Dialog open={open} onOpenChange={() => onClose(true)}>
+        <DialogContent className="max-w-md w-[95vw] text-center border-coffee-light p-0 rounded-lg overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl md:text-3xl pt-8 pb-2 text-coffee-darker">
+              Bienvenue sur READ <span role="img" aria-label="livre">📚</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4 text-[1.1rem] text-coffee-dark leading-relaxed text-left mx-auto max-w-prose">
+            <p className="mb-5">
+              <span className="font-medium">READ t'aide à retrouver le plaisir de lire, challenge après challenge.</span>
+            </p>
+            <p className="mb-3">Voici comment ça fonctionne :</p>
+            <ol className="list-decimal list-inside mb-5 pl-1 space-y-0.5">
+              <li>Choisis un livre qui t'inspire</li>
+              <li>Lis à ton rythme, hors de l'écran</li>
+              <li>Valide ton avancée toutes les 30 pages avec une question rapide</li>
+            </ol>
+            <p>
+              Tu suis ta progression, développes ta régularité,<br className="hidden md:inline" />
+              et renforces ton focus.
+            </p>
+          </div>
+          <DialogFooter className="flex flex-col gap-2 pb-6 px-6">
+            <Button
+              onClick={handleStart}
+              className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-lg"
+              autoFocus
+            >
+              Je commence ma lecture
+            </Button>
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="mt-2 text-sm text-coffee-medium hover:text-coffee-dark underline bg-transparent border-none outline-none"
+              tabIndex={-1}
+            >
+              Plus tard
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Variante 2 : en iframe (ex. Lovable) → pas de navigate
+  const handleStartIframe = () => {
     localStorage.setItem("onboardingDone", "true");
     onClose(false);
-    
-    // Naviguer seulement si navigate est disponible (hors iframe)
-    if (navigate) {
-      navigate("/explore");
-    } else {
-      // En iframe, simplement simuler une navigation en ouvrant dans un nouvel onglet
-      // ou ne rien faire car le parent (WelcomeModal) s'occupera de gérer la suite
-      console.log("Navigation non effectuée (contexte iframe)");
-    }
   };
 
-  const handleSkip = () => {
-    // Ne pose pas de flag, OK pour revoir plus tard.
-    onClose(true);
-  };
+  const handleSkipIframe = () => onClose(true);
 
   return (
     <Dialog open={open} onOpenChange={() => onClose(true)}>
@@ -73,8 +110,8 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
           </p>
         </div>
         <DialogFooter className="flex flex-col gap-2 pb-6 px-6">
-          <Button 
-            onClick={handleStart}
+          <Button
+            onClick={handleStartIframe}
             className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-lg"
             autoFocus
           >
@@ -82,7 +119,7 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
           </Button>
           <button
             type="button"
-            onClick={handleSkip}
+            onClick={handleSkipIframe}
             className="mt-2 text-sm text-coffee-medium hover:text-coffee-dark underline bg-transparent border-none outline-none"
             tabIndex={-1}
           >
