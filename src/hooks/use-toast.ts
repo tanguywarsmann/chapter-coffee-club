@@ -2,13 +2,12 @@
 import * as React from "react";
 import {
   ToastActionElement,
+  CustomToastProps,
   ToastProps,
 } from "@/components/ui/toast";
 
-export interface ToasterToast extends ToastProps {
+export interface ToasterToast extends CustomToastProps {
   id: string;
-  title?: React.ReactNode;
-  description?: React.ReactNode;
   action?: ToastActionElement;
 }
 
@@ -16,7 +15,7 @@ export interface ToasterToast extends ToastProps {
 const useToastStore = () => {
   const toasts: ToasterToast[] = [];
   
-  function toast(props: ToastProps) {
+  function toast(props: CustomToastProps) {
     return {
       id: crypto.randomUUID(),
       ...props
@@ -32,7 +31,7 @@ const useToastStore = () => {
 // Export standalone functions
 export const useToast = useToastStore;
 
-export const toast = (props: ToastProps) => {
+export const toast = (props: CustomToastProps) => {
   return {
     id: crypto.randomUUID(),
     ...props

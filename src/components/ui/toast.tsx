@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -115,9 +114,11 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-// Define our custom toast props with title and description
-export interface ToastProps extends React.ComponentPropsWithoutRef<typeof Toast>, VariantProps<typeof toastVariants> {
-  title?: React.ReactNode;
+// Base ToastProps type without modifications to keep compatibility
+export type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
+
+// Extended type that adds description for our custom usage
+export interface CustomToastProps extends ToastProps {
   description?: React.ReactNode;
 }
 
