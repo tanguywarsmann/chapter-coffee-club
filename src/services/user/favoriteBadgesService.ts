@@ -68,7 +68,7 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
       icon_url: badge.icon_url || "",
       slug: badge.slug || "",
       color: badge.color || "yellow-300",
-      rarity: badge.rarity || "common"
+      rarity: badge.rarity as 'common' | 'rare' | 'epic' | 'legendary' || "common"
     }));
   } catch (error) {
     console.error("Error fetching favorite badges:", error);
