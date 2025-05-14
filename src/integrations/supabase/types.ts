@@ -48,6 +48,45 @@ export type Database = {
         }
         Relationships: []
       }
+      badges_backup: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          icon_url: string | null
+          id: string | null
+          label: string | null
+          name: string | null
+          rarity: string | null
+          slug: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          icon_url?: string | null
+          id?: string | null
+          label?: string | null
+          name?: string | null
+          rarity?: string | null
+          slug?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          icon_url?: string | null
+          id?: string | null
+          label?: string | null
+          name?: string | null
+          rarity?: string | null
+          slug?: string | null
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           author: string
@@ -263,6 +302,42 @@ export type Database = {
           },
         ]
       }
+      reading_validations_backup: {
+        Row: {
+          answer: string | null
+          book_id: string | null
+          correct: boolean | null
+          id: string | null
+          progress_id: string | null
+          question_id: string | null
+          segment: number | null
+          user_id: string | null
+          validated_at: string | null
+        }
+        Insert: {
+          answer?: string | null
+          book_id?: string | null
+          correct?: boolean | null
+          id?: string | null
+          progress_id?: string | null
+          question_id?: string | null
+          segment?: number | null
+          user_id?: string | null
+          validated_at?: string | null
+        }
+        Update: {
+          answer?: string | null
+          book_id?: string | null
+          correct?: boolean | null
+          id?: string | null
+          progress_id?: string | null
+          question_id?: string | null
+          segment?: number | null
+          user_id?: string | null
+          validated_at?: string | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string | null
@@ -298,6 +373,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_badges_backup: {
+        Row: {
+          badge_id: string | null
+          earned_at: string | null
+          id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_favorite_badges: {
         Row: {
@@ -365,6 +461,30 @@ export type Database = {
           level?: number
           user_id?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      user_levels_backup: {
+        Row: {
+          id: string | null
+          last_updated: string | null
+          level: number | null
+          user_id: string | null
+          xp: number | null
+        }
+        Insert: {
+          id?: string | null
+          last_updated?: string | null
+          level?: number | null
+          user_id?: string | null
+          xp?: number | null
+        }
+        Update: {
+          id?: string | null
+          last_updated?: string | null
+          level?: number | null
+          user_id?: string | null
+          xp?: number | null
         }
         Relationships: []
       }

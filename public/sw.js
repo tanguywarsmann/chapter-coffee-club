@@ -11,6 +11,17 @@ const CACHE_URLS = [
   "/icons/icon-512.png"
 ];
 
+// Vérifie si l'on est dans un iframe Lovable
+const isInLovableIframe = () => {
+  try {
+    return window.self !== window.top && 
+           (window.location.ancestorOrigins[0].includes('lovable.dev') || 
+            document.referrer.includes('lovable.dev'));
+  } catch (e) {
+    return false;
+  }
+};
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHE_URLS))
@@ -30,6 +41,11 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Ne pas intercepter les requêtes dans l'environnement Lovable
+  if (isInLovableIframe()) {
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request).then((response) =>
       response || fetch(event.request)
