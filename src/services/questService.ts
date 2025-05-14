@@ -49,7 +49,7 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
 export const checkUserQuests = async (userId: string): Promise<void> => {
   try {
     // Fetch user's reading progress (assuming you have a function for this)
-    const readingProgress = await getUserReadingProgress(userId, 'some_book_id'); // Replace 'some_book_id' with a relevant book ID if needed
+    const readingProgress = await getUserReadingProgress(userId); // Replace 'some_book_id' with a relevant book ID if needed
 
     // Check each available quest and unlock if conditions are met
     for (const quest of availableQuests) {
