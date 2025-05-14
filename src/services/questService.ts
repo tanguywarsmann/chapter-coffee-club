@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Quest, UserQuest, QuestSlug } from "@/types/quest";
 import { addXP } from "@/services/user/levelService";
