@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Book } from "@/types/book";
 import { getAllBooks } from "@/services/books/bookQueries";
@@ -32,8 +31,7 @@ export const useBookFetching = (includeUnpublished = false) => {
     } catch (err: any) {
       console.error("Error fetching books:", err);
       setError("Failed to load books. Please try again later.");
-      toast.error("Erreur de chargement", {
-        description: "Impossible de charger la liste des livres",
+      toast.error("Erreur de chargement : Impossible de charger la liste des livres", {
         duration: 5000
       });
     } finally {

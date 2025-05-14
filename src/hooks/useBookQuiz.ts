@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
@@ -118,9 +117,7 @@ export const useBookQuiz = (
     } catch (error) {
       console.error("Error completing quiz:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      toast.error("Erreur lors de la validation", {
-        description: errorMessage.substring(0, 100)
-      });
+      toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
       throw error;
     } finally {
       setIsValidating(false);

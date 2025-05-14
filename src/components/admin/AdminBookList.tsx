@@ -51,8 +51,7 @@ export function AdminBookList() {
       
       if (!segmentsAtZero || segmentsAtZero.length === 0) {
         toast({
-          title: "Information",
-          description: "Aucun segment avec index 0 n'a été trouvé.",
+          title: "Information : Aucun segment avec index 0 n'a été trouvé.",
         });
         setIsFixingSegments(false);
         return;
@@ -106,8 +105,7 @@ export function AdminBookList() {
       }
       
       toast({
-        title: "Correction des segments terminée",
-        description: `${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`,
+        title: `Correction des segments terminée : ${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`,
       });
       
       // Rafraîchir les données
@@ -116,8 +114,7 @@ export function AdminBookList() {
     } catch (error: any) {
       console.error("Erreur lors de la correction des segments:", error);
       toast({
-        title: "Erreur",
-        description: `Impossible de corriger les segments: ${error.message}`,
+        title: `Erreur : Impossible de corriger les segments: ${error.message}`,
         variant: "destructive",
       });
     } finally {

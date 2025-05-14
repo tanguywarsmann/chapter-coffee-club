@@ -75,8 +75,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const generateMissingSegments = async () => {
     if (book.missingSegments.length === 0) {
       toast({
-        title: "Information",
-        description: "Tous les segments ont déjà été créés pour ce livre.",
+        title: "Information : Tous les segments ont déjà été créés pour ce livre.",
       });
       return;
     }
@@ -106,8 +105,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       if (error) throw error;
       
       toast({
-        title: "Segments générés",
-        description: `${book.missingSegments.length} segments vides ont été générés avec succès.`,
+        title: `Segments générés : ${book.missingSegments.length} segments vides ont été générés avec succès.`,
       });
       
       // Fermer le dialogue et actualiser les données
@@ -117,8 +115,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     } catch (error: any) {
       console.error("Erreur lors de la génération des segments:", error);
       toast({
-        title: "Erreur",
-        description: `Impossible de générer les segments: ${error.message}`,
+        title: `Erreur : Impossible de générer les segments: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -168,8 +165,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       console.log("Réponse de Supabase:", { data, affectedRows: data?.length });
       
       toast({
-        title: "Modifications enregistrées",
-        description: `Les informations du livre "${book.title}" ont été mises à jour.`
+        title: `Modifications enregistrées : Les informations du livre "${book.title}" ont été mises à jour.`
       });
       
       // Fermer le dialogue et actualiser les données
@@ -179,8 +175,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
       toast({
-        title: "Erreur",
-        description: `Impossible de mettre à jour le livre: ${error.message}`,
+        title: `Erreur : Impossible de mettre à jour le livre: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -192,8 +187,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const addValidationQuestion = async () => {
     if (!selectedSegment && selectedSegment !== 0) {
       toast({
-        title: "Segment non sélectionné",
-        description: "Veuillez sélectionner un segment",
+        title: "Segment non sélectionné : Veuillez sélectionner un segment",
         variant: "destructive"
       });
       return;
@@ -201,8 +195,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     
     if (!question.trim()) {
       toast({
-        title: "Question invalide",
-        description: "La question ne peut pas être vide",
+        title: "Question invalide : La question ne peut pas être vide",
         variant: "destructive"
       });
       return;
@@ -210,8 +203,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     
     if (!answer.trim()) {
       toast({
-        title: "Réponse invalide",
-        description: "La réponse ne peut pas être vide",
+        title: "Réponse invalide : La réponse ne peut pas être vide",
         variant: "destructive"
       });
       return;
@@ -220,8 +212,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     // Vérifier si la réponse contient plus d'un mot
     if (answer.trim().split(/\s+/).length > 1) {
       toast({
-        title: "Réponse invalide",
-        description: "La réponse doit contenir un seul mot",
+        title: "Réponse invalide : La réponse doit contenir un seul mot",
         variant: "destructive"
       });
       return;
@@ -252,8 +243,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       if (error) throw error;
       
       toast({
-        title: "Question ajoutée",
-        description: `La question pour le segment ${selectedSegment} a été ajoutée avec succès.`
+        title: `Question ajoutée : La question pour le segment ${selectedSegment} a été ajoutée avec succès.`
       });
       
       // Réinitialiser les champs
@@ -267,8 +257,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de la question:", error);
       toast({
-        title: "Erreur",
-        description: `Impossible d'ajouter la question: ${error.message}`,
+        title: `Erreur : Impossible d'ajouter la question: ${error.message}`,
         variant: "destructive"
       });
     } finally {

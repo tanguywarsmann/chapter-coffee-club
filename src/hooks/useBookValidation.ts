@@ -38,24 +38,21 @@ export const useBookValidation = (
     setValidationError(null);
     
     if (!userId) {
-      toast.error("Vous devez être connecté pour valider votre lecture", {
-        description: "Connectez-vous pour enregistrer votre progression.",
+      toast.error("Vous devez être connecté pour valider votre lecture : Connectez-vous pour enregistrer votre progression.", {
         duration: 5000
       });
       return;
     }
     
     if (!book) {
-      toast.error("Information du livre manquante", {
-        description: "Impossible de valider sans les informations du livre",
+      toast.error("Information du livre manquante : Impossible de valider sans les informations du livre", {
         duration: 3000
       });
       return;
     }
     
     if (book.chaptersRead >= book.totalChapters) {
-      toast.success("Vous avez déjà terminé ce livre !", {
-        description: "Votre progression a été entièrement enregistrée.",
+      toast.success("Vous avez déjà terminé ce livre ! : Votre progression a été entièrement enregistrée.", {
         duration: 3000
       });
       return;
@@ -69,8 +66,7 @@ export const useBookValidation = (
       console.error("Error preparing validation:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       setValidationError(errorMessage);
-      toast.error("Erreur lors de la préparation de la validation", {
-        description: errorMessage.substring(0, 100),
+      toast.error(`Erreur lors de la préparation de la validation : ${errorMessage.substring(0, 100)}`, {
         duration: 5000
       });
     } finally {

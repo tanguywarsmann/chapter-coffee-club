@@ -120,8 +120,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       console.error("Erreur lors de la génération des segments vides:", error);
       // We don't want the whole book creation process to fail if segment generation fails
       toast({
-        title: "Attention",
-        description: "Le livre a été créé, mais la génération automatique des segments a échoué.",
+        title: "Attention : Le livre a été créé, mais la génération automatique des segments a échoué.",
         variant: "default",
       });
     }
@@ -165,8 +164,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       await generateEmptySegments(slug, data.total_pages);
       
       toast({
-        title: "Livre ajouté avec succès",
-        description: `"${data.title}" a été ajouté à la base de données.`,
+        title: `Livre ajouté avec succès : "${data.title}" a été ajouté à la base de données.`,
       });
       
       form.reset();
@@ -177,8 +175,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     } catch (error: any) {
       console.error("Erreur lors de l'ajout du livre:", error);
       toast({
-        title: "Erreur",
-        description: `Impossible d'ajouter le livre: ${error.message}`,
+        title: `Erreur : Impossible d'ajouter le livre: ${error.message}`,
         variant: "destructive",
       });
     } finally {

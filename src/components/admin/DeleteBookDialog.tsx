@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -68,8 +67,7 @@ export function DeleteBookDialog({
       
       if (success) {
         toast({
-          title: "Livre supprimé",
-          description: `"${bookTitle}" et ses données associées ont été supprimés avec succès.`,
+          title: `Livre supprimé : "${bookTitle}" et ses données associées ont été supprimés avec succès.`,
         });
         console.log("Update triggered from DeleteBookDialog");
         onDeleted();
@@ -78,8 +76,7 @@ export function DeleteBookDialog({
     } catch (error: any) {
       console.error("Erreur lors de la suppression:", error);
       toast({
-        title: "Erreur de suppression",
-        description: error.message || "Impossible de supprimer ce livre",
+        title: `Erreur de suppression : ${error.message || "Impossible de supprimer ce livre"}`,
         variant: "destructive",
       });
     } finally {

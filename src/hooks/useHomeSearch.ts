@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Book } from "@/types/book";
 import { toast } from "sonner";
@@ -34,8 +33,7 @@ export const useHomeSearch = () => {
       if (error) {
         console.error("Erreur de recherche:", error);
         setError("Erreur lors de la recherche");
-        toast.error("Erreur de recherche", {
-          description: "Impossible d'effectuer votre recherche",
+        toast.error("Erreur de recherche : Impossible d'effectuer votre recherche", {
           duration: 3000
         });
         return;
@@ -62,8 +60,7 @@ export const useHomeSearch = () => {
     } catch (err: any) {
       console.error("Exception lors de la recherche:", err);
       setError(err.message || "Une erreur est survenue");
-      toast.error("Erreur de recherche", {
-        description: "Une erreur est survenue pendant la recherche",
+      toast.error("Erreur de recherche : Une erreur est survenue pendant la recherche", {
         duration: 3000
       });
     } finally {

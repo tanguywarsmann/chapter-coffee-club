@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -19,14 +18,12 @@ export default function Admin() {
     try {
       await generateCsvExport();
       toast({
-        title: "Export réussi",
-        description: "Le fichier CSV des segments manquants a été téléchargé",
+        title: "Export réussi : Le fichier CSV des segments manquants a été téléchargé",
       });
     } catch (error) {
       console.error("Erreur lors de l'export CSV:", error);
       toast({
-        title: "Erreur d'export",
-        description: "Impossible de générer le fichier CSV",
+        title: "Erreur d'export : Impossible de générer le fichier CSV",
         variant: "destructive",
       });
     }
