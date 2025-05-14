@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { StreakStats } from "@/components/achievements/StreakStats";
@@ -6,6 +5,7 @@ import { StreakCard } from "@/components/achievements/StreakCard";
 import { StatsCards } from "@/components/achievements/StatsCards";
 import { BadgesSection } from "@/components/achievements/BadgesSection";
 import { ChallengesSection } from "@/components/achievements/ChallengesSection";
+import { QuestsSection } from "@/components/achievements/QuestsSection";
 import { getUserStreak } from "@/services/streakService";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,9 +82,14 @@ export default function Achievements() {
             <div className="md:col-span-1" />
           </div>
           
-          <StatsCards />
-          <BadgesSection />
-          <ChallengesSection />
+          <div className="grid gap-6 md:grid-cols-2 mb-6">
+            <BadgesSection />
+            <QuestsSection />
+          </div>
+          <div className="grid gap-6">
+            <StatsCards />
+            <ChallengesSection />
+          </div>
 
           {/* Boutons de test visibles uniquement en mode développement */}
           {process.env.NODE_ENV === 'development' && (

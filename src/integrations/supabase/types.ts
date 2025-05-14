@@ -308,6 +308,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_quests: {
+        Row: {
+          id: string
+          quest_slug: string
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          quest_slug: string
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          quest_slug?: string
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       validation_locks: {
         Row: {
           book_id: string

@@ -8,6 +8,7 @@ import { recordReadingActivity } from "../streakService";
 import { getBookReadingProgress } from "./progressService";
 import { Badge } from "@/types/badge";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
+import { checkUserQuests } from "@/services/questService";
 
 // Validate a reading segment ("Valider un segment de lecture")
 export const validateReading = async (
@@ -108,8 +109,16 @@ export const validateReading = async (
     const nextQuestion = await getQuestionForBookSegment(request.book_id, nextSegment);
     
     // Check if any new badges have been earned
-    // We'll use the checkBadgesForUser function and capture newly unlocked badges
     const newBadges = await checkBadgesForUser(request.user_id, true);
+
+    // Vérifier les quêtes en arrière-plan pour ne pas bloquer la réponse
+    setTimeout(async () => {
+      try {
+        await checkUserQuests(request.user_id);
+      } catch (error) {
+        console.error("Erreur lors de la vérification des quêtes:", error);
+      }
+    }, 0);
 
     return {
       message: "Segment validé avec succès",
