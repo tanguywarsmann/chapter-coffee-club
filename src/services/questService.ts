@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Quest, UserQuest, QuestSlug } from "@/types/quest";
 import { getValidatedSegmentsCount } from "./reading/statsService";
 import { toast } from "sonner";
-import { getAllReadingProgress } from "./reading/progressService";
+import { getUserReadingProgress } from "@/services/reading/progressService";
 import { addXP } from "./user/levelService";
 
 // Liste des quêtes disponibles dans l'application
