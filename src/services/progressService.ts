@@ -1,6 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
+import { Database } from "@/integrations/supabase/types";
+
+type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
+type BookRecord = Database['public']['Tables']['books']['Row'];
+type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
 
 // Cache pour les données de progression de lecture
 const progressCache = new Map<string, { 
@@ -9,6 +14,22 @@ const progressCache = new Map<string, {
 }>();
 const CACHE_DURATION = 60000; // 1 minute en millisecondes
 
+interface EnrichedReadingProgress extends ReadingProgress {
+  book_title: string;
+  book_author: string;
+  book_slug: string;
+  book_cover: string | null;
+  total_chapters: number;
+  validations: ReadingValidation[];
+}
+
+type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
+
+/**
+ * Récupère la progression de lecture d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @returns Liste des progressions de lecture enrichies
+ */
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
 
@@ -54,21 +75,20 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       return [];
     }
 
-    // Liste des statuts valides pour éviter les erreurs de type
-    const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
-    type ValidStatus = typeof validStatuses[number];
+    // Liste des statuts valides
+    const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
 
     // Transformer les données pour correspondre à l'attendu par l'application
-    const enrichedProgresses: ReadingProgress[] = progressData.map(item => {
-      const book = item.books;
-      const validations = Array.isArray(item.validations) ? item.validations : [];
+    const enrichedProgresses: EnrichedReadingProgress[] = progressData.map((item: any) => {
+      const book = item.books as BookRecord | null;
+      const validations = Array.isArray(item.validations) ? item.validations as ReadingValidationRecord[] : [];
 
       // Calcul des pages
-      const totalPages = item.total_pages || book?.total_chapters || book?.expected_segments || 1;
+      const totalPages = item.total_pages || (book?.total_chapters ?? book?.expected_segments ?? 1);
       const currentPage = item.current_page || 0;
 
       // Déterminer le statut à partir de la progression en pages
-      let updatedStatus: ValidStatus = 'to_read';
+      let updatedStatus: ReadingStatus = 'to_read';
 
       if (validations.length > 0) {
         // Si au moins une validation existe, le livre est au minimum en cours
@@ -116,7 +136,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   }
 };
 
-const updateProgressStatus = async (progressId: string, newStatus: 'to_read' | 'in_progress' | 'completed'): Promise<void> => {
+/**
+ * Met à jour le statut de progression
+ * @param progressId ID de la progression
+ * @param newStatus Nouveau statut
+ */
+const updateProgressStatus = async (progressId: string, newStatus: ReadingStatus): Promise<void> => {
   try {
     await supabase
       .from("reading_progress")
@@ -127,6 +152,12 @@ const updateProgressStatus = async (progressId: string, newStatus: 'to_read' | '
   }
 };
 
+/**
+ * Récupère la progression de lecture d'un livre pour un utilisateur
+ * @param userId ID de l'utilisateur
+ * @param bookId ID du livre
+ * @returns Progression de lecture ou null
+ */
 export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
   if (!userId) return null;
 
@@ -147,8 +178,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 
   try {
     // Liste des statuts valides
-    const validStatuses = ['to_read', 'in_progress', 'completed'] as const;
-    type ValidStatus = typeof validStatuses[number];
+    const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
     
     // Requête optimisée pour obtenir progress + book + validations en une seule requête
     const { data, error } = await supabase
@@ -181,13 +211,13 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     }
 
     // Construire l'objet de progression enrichi
-    const book = data.books;
+    const book = data.books as BookRecord | null;
     // S'assurer que validations est toujours un tableau
-    const validations = Array.isArray(data.validations) ? data.validations : [];
+    const validations = Array.isArray(data.validations) ? data.validations as ReadingValidationRecord[] : [];
     
     // Recalculer le statut en fonction des validations
     const totalExpectedSegments = book?.total_chapters ?? book?.expected_segments ?? 1;
-    let updatedStatus: ValidStatus = 'to_read';
+    let updatedStatus: ReadingStatus = 'to_read';
     
     if (validations.length > 0) {
       // Au moins une validation = in_progress
@@ -198,8 +228,8 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       }
     } else {
       // Aucune validation, vérifier le statut actuel
-      if (typeof data.status === 'string' && validStatuses.includes(data.status as ValidStatus)) {
-        updatedStatus = data.status as ValidStatus;
+      if (typeof data.status === 'string' && validStatuses.includes(data.status as ReadingStatus)) {
+        updatedStatus = data.status as ReadingStatus;
       } else {
         updatedStatus = 'to_read';
       }
@@ -210,7 +240,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       updateProgressStatus(data.id, updatedStatus).catch(console.error);
     }
     
-    const enrichedProgress: ReadingProgress = {
+    const enrichedProgress: EnrichedReadingProgress = {
       ...data,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
@@ -228,8 +258,12 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   }
 };
 
-// Fonction pour effacer le cache de progression
-export const clearProgressCache = (userId?: string, bookId?: string) => {
+/**
+ * Efface le cache de progression
+ * @param userId ID de l'utilisateur (optionnel)
+ * @param bookId ID du livre (optionnel)
+ */
+export const clearProgressCache = (userId?: string): void => {
   if (userId) {
     const cacheKey = `progress_${userId}`;
     progressCache.delete(cacheKey);

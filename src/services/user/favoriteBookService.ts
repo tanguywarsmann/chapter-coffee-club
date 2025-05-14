@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 export interface FavoriteBook {
   id: string;
@@ -8,6 +9,8 @@ export interface FavoriteBook {
   position: number;
   added_at: string;
 }
+
+type FavoriteBookRecord = Database['public']['Tables']['user_favorite_books']['Row'];
 
 /**
  * Récupère les livres préférés d'un utilisateur

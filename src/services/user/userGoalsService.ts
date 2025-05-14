@@ -8,7 +8,7 @@ export interface UserGoal {
   user_id: string;
   goal: string;
   type: "books" | "pages";
-  target: number; // Nombre de livres ou pages visé pour la période (par défaut mensuelle)
+  target: number;
   period: "month";
   updated_at?: string;
 }
@@ -16,13 +16,15 @@ export interface UserGoal {
 /**
  * Récupère l'objectif courant de l'utilisateur.
  * Exemple : "Lire 2 livres par mois"
+ * @param userId ID de l'utilisateur
+ * @returns Objectif sous forme de chaîne
  */
 export async function getUserGoal(userId: string): Promise<string> {
   try {
     // Essaie de récupérer depuis localStorage d'abord
     const storedGoal = localStorage.getItem(`goal_${userId}`);
     if (storedGoal) {
-      const parsedGoal = JSON.parse(storedGoal);
+      const parsedGoal = JSON.parse(storedGoal) as UserGoal;
       return parsedGoal.goal;
     }
     
@@ -35,11 +37,13 @@ export async function getUserGoal(userId: string): Promise<string> {
 }
 
 /**
- * Met à jour l'objectif de lecture de l'utilisateur (et crée la ligne si besoin).
+ * Met à jour l'objectif de lecture de l'utilisateur
+ * @param userId ID de l'utilisateur
+ * @param goal Objectif sous forme de chaîne
  */
 export async function setUserGoal(userId: string, goal: string): Promise<void> {
   // Simple détection du type : "livres" ou "pages" & extraction du nombre
-  let type: "books" | "pages" = goal.includes("page") ? "pages" : "books";
+  const type: "books" | "pages" = goal.includes("page") ? "pages" : "books";
   const numberMatch = goal.match(/\d+/);
   const target = numberMatch ? parseInt(numberMatch[0], 10) : 2;
 
@@ -58,7 +62,8 @@ export async function setUserGoal(userId: string, goal: string): Promise<void> {
 
 /**
  * Calcule la progression mensuelle de l'objectif (en %) pour l'utilisateur.
- * Si l'objectif est "livres", compare les livres finis ce mois. Si "pages", compare les pages lues ce mois.
+ * @param userId ID de l'utilisateur
+ * @returns Progression en pourcentage (0-100)
  */
 export async function getGoalProgress(userId: string): Promise<number> {
   try {
@@ -66,7 +71,7 @@ export async function getGoalProgress(userId: string): Promise<number> {
     const storedGoal = localStorage.getItem(`goal_${userId}`);
     if (!storedGoal) return 0;
 
-    const goalData: UserGoal = JSON.parse(storedGoal);
+    const goalData = JSON.parse(storedGoal) as UserGoal;
     const { type, target } = goalData;
 
     // Calcul de la période courante (mois)
@@ -82,6 +87,11 @@ export async function getGoalProgress(userId: string): Promise<number> {
         .eq("user_id", userId)
         .gte("updated_at", startMonth);
       
+      if (error) {
+        console.error("Erreur lors du comptage des livres terminés:", error);
+        return 0;
+      }
+      
       if (data && data.length > 0) {
         progress = data.filter(item => item.current_page >= item.total_pages).length;
       }
@@ -93,6 +103,11 @@ export async function getGoalProgress(userId: string): Promise<number> {
         .select("id, validated_at")
         .eq("user_id", userId)
         .gte("validated_at", startMonth);
+
+      if (error) {
+        console.error("Erreur lors du comptage des pages validées:", error);
+        return 0;
+      }
 
       if (data && data.length > 0) {
         progress = data.length * 30;
@@ -109,6 +124,8 @@ export async function getGoalProgress(userId: string): Promise<number> {
 
 /**
  * Retourne le type d'objectif courant ("books" ou "pages").
+ * @param userId ID de l'utilisateur
+ * @returns Type d'objectif
  */
 export async function getGoalType(userId: string): Promise<"pages" | "books"> {
   try {
@@ -122,8 +139,9 @@ export async function getGoalType(userId: string): Promise<"pages" | "books"> {
 }
 
 /**
- * (Optionnel) Calcule un objectif recommandé (suggéré) selon les stats récentes.
- * Ex : moyenne des livres lus par mois sur les 3 derniers mois, arrondi à l'entier supérieur.
+ * Calcule un objectif recommandé selon les stats récentes.
+ * @param userId ID de l'utilisateur
+ * @returns Objectif recommandé
  */
 export async function getRecommendedGoal(userId: string): Promise<string> {
   // On regarde les livres terminés sur les 90 derniers jours
@@ -136,6 +154,11 @@ export async function getRecommendedGoal(userId: string): Promise<string> {
       .select("id, current_page, total_pages, updated_at")
       .eq("user_id", userId)
       .gte("updated_at", start);
+
+    if (error) {
+      console.error("Erreur lors du calcul de l'objectif recommandé:", error);
+      return "Lire 1 livre par mois";
+    }
 
     let books = 0;
     if (data && data.length > 0) {

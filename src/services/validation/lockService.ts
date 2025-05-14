@@ -1,16 +1,21 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+interface ValidationLockResult {
+  isLocked: boolean;
+  remainingTime: number | null;
+}
+
 /**
- * Checks if a user is currently locked out from validating a specific book segment
+ * Vérifie si un utilisateur est actuellement bloqué pour valider un segment de livre spécifique
  */
 export const checkValidationLock = async (
   userId: string,
   bookId: string,
   segment: number
-): Promise<{ isLocked: boolean; remainingTime: number | null }> => {
+): Promise<ValidationLockResult> => {
   try {
-    // Cache key pour éviter des requêtes redondantes rapprochées
+    // Clé de cache pour éviter des requêtes redondantes rapprochées
     const cacheKey = `lock_${userId}_${bookId}_${segment}`;
     const cachedResult = sessionStorage.getItem(cacheKey);
     
@@ -51,12 +56,12 @@ export const checkValidationLock = async (
 
     const isLocked = lockedUntil > now;
     
-    // Calculate remaining seconds if locked
+    // Calculer les secondes restantes si verrouillé
     const remainingTime = isLocked 
       ? Math.floor((lockedUntil.getTime() - now.getTime()) / 1000) 
       : null;
 
-    // Cache the result for 5 seconds to avoid repeated queries
+    // Mettre en cache le résultat pendant 5 secondes pour éviter des requêtes répétées
     if (isLocked) {
       sessionStorage.setItem(cacheKey, JSON.stringify({ 
         lockedUntil: data.locked_until
@@ -71,7 +76,7 @@ export const checkValidationLock = async (
 };
 
 /**
- * Creates or updates a validation lock after multiple failed attempts
+ * Crée ou met à jour un verrouillage de validation après plusieurs tentatives échouées
  */
 export const createValidationLock = async (
   userId: string, 
@@ -79,7 +84,7 @@ export const createValidationLock = async (
   segment: number
 ): Promise<boolean> => {
   try {
-    // Lock for 1 hour from now
+    // Verrouillagepour 1 heure à partir de maintenant
     const lockedUntil = new Date();
     lockedUntil.setHours(lockedUntil.getHours() + 1);
     
@@ -111,8 +116,12 @@ export const createValidationLock = async (
   }
 };
 
-// Ajouter une fonction pour effacer les caches liés aux locks
-export const clearLockCache = (userId: string, bookId?: string) => {
+/**
+ * Efface les caches liés aux verrouillagess
+ * @param userId ID de l'utilisateur
+ * @param bookId ID du livre (optionnel)
+ */
+export const clearLockCache = (userId: string, bookId?: string): void => {
   // Si on a un bookId, on nettoie juste ce livre
   if (bookId) {
     for (let i = 0; i < sessionStorage.length; i++) {

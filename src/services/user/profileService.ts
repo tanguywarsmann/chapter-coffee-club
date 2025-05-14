@@ -1,10 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type ProfileRecord = Database['public']['Tables']['profiles']['Row'];
+type FollowerRecord = Database['public']['Tables']['followers']['Row'];
 
 /**
- * Follow a user
- * @param targetUserId The user ID to follow
+ * Suit un utilisateur
+ * @param targetUserId L'ID de l'utilisateur à suivre
  */
 export async function followUser(targetUserId: string): Promise<void> {
   try {
@@ -23,16 +27,16 @@ export async function followUser(targetUserId: string): Promise<void> {
       });
 
     if (error) throw error;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Could not follow user";
     console.error("Error following user:", error);
-    throw new Error(error.message || "Could not follow user");
+    throw new Error(errorMessage);
   }
 }
 
-
 /**
- * Unfollow a user
- * @param targetUserId The user ID to unfollow
+ * Ne plus suivre un utilisateur
+ * @param targetUserId L'ID de l'utilisateur à ne plus suivre
  */
 export async function unfollowUser(targetUserId: string): Promise<void> {
   try {
@@ -50,16 +54,17 @@ export async function unfollowUser(targetUserId: string): Promise<void> {
       });
 
     if (error) throw error;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Could not unfollow user";
     console.error("Error unfollowing user:", error);
-    throw new Error(error.message || "Could not unfollow user");
+    throw new Error(errorMessage);
   }
 }
 
 /**
- * Check if current user is following another user
- * @param userId The user ID to check
- * @returns Boolean indicating if following the user
+ * Vérifie si l'utilisateur courant suit un autre utilisateur
+ * @param userId L'ID de l'utilisateur à vérifier
+ * @returns Booléen indiquant si l'utilisateur est suivi
  */
 export async function isFollowing(userId: string): Promise<boolean> {
   try {
@@ -79,20 +84,25 @@ export async function isFollowing(userId: string): Promise<boolean> {
 
     if (error) throw error;
     return !!data;
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error checking follow status:", error);
     return false;
   }
 }
 
+interface FollowerCounts {
+  followers: number;
+  following: number;
+}
+
 /**
- * Get follower counts for a user
- * @param userId The user ID to get counts for
- * @returns Object with followers and following counts
+ * Récupère le nombre d'abonnés et d'abonnements pour un utilisateur
+ * @param userId L'ID de l'utilisateur
+ * @returns Objet contenant le nombre d'abonnés et d'abonnements
  */
-export async function getFollowerCounts(userId: string): Promise<{ followers: number, following: number }> {
+export async function getFollowerCounts(userId: string): Promise<FollowerCounts> {
   try {
-    // Get followers count (people who follow this user)
+    // Récupérer le nombre d'abonnés (personnes qui suivent cet utilisateur)
     const { data: followers, error: followersError } = await supabase
       .from('followers')
       .select('id', { count: 'exact' })
@@ -100,7 +110,7 @@ export async function getFollowerCounts(userId: string): Promise<{ followers: nu
     
     if (followersError) throw followersError;
     
-    // Get following count (people this user follows)
+    // Récupérer le nombre d'abonnements (personnes que cet utilisateur suit)
     const { data: following, error: followingError } = await supabase
       .from('followers')
       .select('id', { count: 'exact' })
@@ -112,18 +122,18 @@ export async function getFollowerCounts(userId: string): Promise<{ followers: nu
       followers: followers.length,
       following: following.length
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error getting follower counts:", error);
     return { followers: 0, following: 0 };
   }
 }
 
 /**
- * Get users who follow a specific user
- * @param userId The user ID to get followers for
- * @returns Array of user objects
+ * Récupère les utilisateurs qui suivent un utilisateur spécifique
+ * @param userId L'ID de l'utilisateur
+ * @returns Tableau d'objets utilisateur
  */
-export async function getFollowers(userId: string): Promise<any[]> {
+export async function getFollowers(userId: string): Promise<ProfileRecord[]> {
   try {
     const { data: followerIds, error: followerError } = await supabase
       .from('followers')
@@ -134,7 +144,7 @@ export async function getFollowers(userId: string): Promise<any[]> {
     
     if (!followerIds.length) return [];
     
-    // Get profile information for each follower
+    // Récupérer les informations de profil pour chaque abonné
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
@@ -150,11 +160,11 @@ export async function getFollowers(userId: string): Promise<any[]> {
 }
 
 /**
- * Get users that a specific user follows
- * @param userId The user ID to get followings for
- * @returns Array of user objects
+ * Récupère les utilisateurs qu'un utilisateur spécifique suit
+ * @param userId L'ID de l'utilisateur
+ * @returns Tableau d'objets utilisateur
  */
-export async function getFollowing(userId: string): Promise<any[]> {
+export async function getFollowing(userId: string): Promise<ProfileRecord[]> {
   try {
     const { data: followingIds, error: followingError } = await supabase
       .from('followers')
@@ -165,7 +175,7 @@ export async function getFollowing(userId: string): Promise<any[]> {
     
     if (!followingIds.length) return [];
     
-    // Get profile information for each followed user
+    // Récupérer les informations de profil pour chaque utilisateur suivi
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
@@ -181,9 +191,11 @@ export async function getFollowing(userId: string): Promise<any[]> {
 }
 
 /**
- * Get user info by ID
+ * Récupère les informations d'un utilisateur par son ID
+ * @param userId L'ID de l'utilisateur
+ * @returns Objet utilisateur ou null
  */
-export async function getUserInfo(userId: string) {
+export async function getUserInfo(userId: string): Promise<ProfileRecord | null> {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -200,10 +212,16 @@ export async function getUserInfo(userId: string) {
   }
 }
 
-export async function searchUsers(query: string, limit: number = 5) {
+/**
+ * Recherche des utilisateurs
+ * @param query Requête de recherche
+ * @param limit Limite de résultats
+ * @returns Tableau d'objets utilisateur
+ */
+export async function searchUsers(query: string, limit: number = 5): Promise<ProfileRecord[]> {
   try {
-    // In a real app, this would search by name or other fields
-    // For now we'll just get some recent profiles
+    // Dans une application réelle, ceci rechercherait par nom ou d'autres champs
+    // Pour l'instant, nous récupérons simplement quelques profils récents
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -211,7 +229,7 @@ export async function searchUsers(query: string, limit: number = 5) {
       
     if (error) throw error;
     
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Error searching users:", error);
     return [];

@@ -1,6 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type UserLevelRecord = Database['public']['Tables']['user_levels']['Row'];
 
 /**
  * Structure représentant les informations de niveau d'un utilisateur
@@ -61,7 +64,7 @@ export async function getUserLevel(userId: string): Promise<UserLevel | null> {
       return initializeUserLevel(userId);
     }
     
-    return data;
+    return data as UserLevel;
   } catch (error) {
     console.error("Erreur lors de la récupération du niveau utilisateur:", error);
     return null;
@@ -88,7 +91,7 @@ async function initializeUserLevel(userId: string): Promise<UserLevel | null> {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as UserLevel;
   } catch (error) {
     console.error("Erreur lors de l'initialisation du niveau utilisateur:", error);
     return null;

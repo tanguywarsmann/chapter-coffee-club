@@ -2,39 +2,51 @@
 import { supabase } from "@/integrations/supabase/client";
 import { InsertableBook } from "./types";
 import { slugify } from "./utils";
+import { Database } from "@/integrations/supabase/types";
 
-export const insertBooks = async (booksToInsert: InsertableBook[]) => {
+type BookRecord = Database['public']['Tables']['books']['Insert'];
+
+/**
+ * Insère un ou plusieurs livres dans la base de données
+ * @param booksToInsert Livres à insérer
+ */
+export const insertBooks = async (booksToInsert: InsertableBook[]): Promise<void> => {
   for (const book of booksToInsert) {
     const slug = slugify(book.title + "-" + book.author);
     
-    // Check if book already exists
-    const { data: existingBook } = await supabase
+    // Vérifier si le livre existe déjà
+    const { data: existingBook, error: checkError } = await supabase
       .from('books')
       .select('id')
       .eq('slug', slug)
       .maybeSingle();
     
+    if (checkError) {
+      console.warn("Erreur lors de la vérification du livre existant:", checkError);
+      continue;
+    }
+    
     if (!existingBook) {
-      // Generate a UUID for the book
+      // Générer un UUID pour le livre
       const id = crypto.randomUUID();
       
-      const bookRecord = {
-        id: id, // Provide an id to satisfy TypeScript
+      const bookRecord: BookRecord = {
+        id: id,
         title: book.title,
         author: book.author,
         cover_url: book.coverImage || null,
-        description: book.description,
-        total_pages: book.pages,
+        description: book.description || null,
+        total_pages: book.pages || 0,
         slug: slug,
-        tags: book.categories
+        tags: book.categories || []
       };
       
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('books')
         .insert(bookRecord);
       
-      if (error) {
-        console.warn("Erreur lors de l'insertion du livre :", book.title, error);
+      if (insertError) {
+        console.warn("Erreur lors de l'insertion du livre :", book.title, insertError);
       }
     }
   }

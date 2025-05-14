@@ -2,6 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+/**
+ * Supprime un livre et toutes ses données associées
+ * @param bookId Identifiant du livre à supprimer
+ * @returns Succès de l'opération
+ */
 export const deleteBook = async (bookId: string): Promise<boolean> => {
   try {
     if (!bookId) {
@@ -12,7 +17,7 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
       return false;
     }
 
-    // First delete related questions if any
+    // Supprimer d'abord les questions liées
     const { error: questionsError } = await supabase
       .from("reading_questions")
       .delete()
@@ -23,7 +28,7 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
       throw questionsError;
     }
 
-    // Then delete validations related to the book
+    // Puis supprimer les validations liées au livre
     const { error: validationsError } = await supabase
       .from("reading_validations")
       .delete()
@@ -34,7 +39,7 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
       throw validationsError;
     }
 
-    // Finally delete the book
+    // Enfin supprimer le livre
     const { error: bookError } = await supabase
       .from("books")
       .delete()
@@ -50,10 +55,11 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
       variant: "default",
     });
     return true;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Impossible de supprimer ce livre";
     console.error("Erreur lors de la suppression du livre:", error);
     toast({
-      title: `Erreur de suppression : ${error.message || "Impossible de supprimer ce livre"}`,
+      title: `Erreur de suppression : ${errorMessage}`,
       variant: "destructive",
     });
     return false;

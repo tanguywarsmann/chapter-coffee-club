@@ -2,8 +2,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingQuestion } from "@/types/reading";
 import { toast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
 
-// Fonction utilitaire pour convertir un UUID de livre en slug
+type ReadingQuestionRecord = Database['public']['Tables']['reading_questions']['Row'];
+
+/**
+ * Convertit un UUID de livre en slug
+ * @param bookId UUID du livre
+ * @returns Slug du livre ou null
+ */
 const convertBookIdToSlug = async (bookId: string): Promise<string | null> => {
   if (!bookId) {
     console.error('BookId est nul ou non défini');
@@ -38,6 +45,12 @@ const convertBookIdToSlug = async (bookId: string): Promise<string | null> => {
   }
 };
 
+/**
+ * Récupère une question pour un segment de livre spécifique
+ * @param bookId ID du livre
+ * @param segment Numéro du segment
+ * @returns Question ou null
+ */
 export const getQuestionForBookSegment = async (
   bookId: string, 
   segment: number
@@ -82,7 +95,7 @@ export const getQuestionForBookSegment = async (
     // Si nous avons trouvé des questions, retourner la première
     if (data && data.length > 0) {
       console.log(`Found ${data.length} questions, returning the first one:`, data[0]);
-      return data[0];
+      return data[0] as ReadingQuestion;
     }
 
     // Si aucune question n'a été trouvée, journaliser et retourner null
@@ -98,7 +111,9 @@ export const getQuestionForBookSegment = async (
   }
 };
 
-// Cette fonction n'est utilisée que lorsqu'aucune question n'est trouvée dans Supabase
+/**
+ * Question de secours utilisée lorsqu'aucune question n'est trouvée
+ */
 export const getFallbackQuestion = (): ReadingQuestion => ({
   id: 'fallback',
   book_slug: '',
@@ -107,7 +122,13 @@ export const getFallbackQuestion = (): ReadingQuestion => ({
   answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
 });
 
-// Fonction pour vérifier si un segment a déjà été validé
+/**
+ * Vérifie si un segment a déjà été validé
+ * @param userId ID de l'utilisateur
+ * @param bookId ID du livre
+ * @param segment Numéro du segment
+ * @returns Vrai si le segment a déjà été validé
+ */
 export const isSegmentAlreadyValidated = async (
   userId: string, 
   bookId: string, 

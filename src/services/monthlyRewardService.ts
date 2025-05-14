@@ -1,9 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import { Badge } from "@/types/badge";
-import { availableBadges, unlockBadge } from "@/services/badgeService";
 import { ReadingValidation } from "@/types/reading";
+import { unlockBadge } from "@/services/badgeService";
+import { Database } from "@/integrations/supabase/types";
+
+type UserMonthlyReward = Database['public']['Tables']['user_monthly_rewards']['Row'];
+type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
 
 /**
  * Vérifie si un utilisateur a déjà reçu une récompense pour le mois en cours

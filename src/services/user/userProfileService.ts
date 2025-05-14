@@ -1,13 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type ProfileRecord = Database['public']['Tables']['profiles']['Row'];
 
 /**
  * Récupère le profil utilisateur par ID
  * @param userId L'ID de l'utilisateur
  * @returns Le profil de l'utilisateur ou null
  */
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<ProfileRecord | null> {
   if (!userId) {
     console.error("ID utilisateur non fourni");
     return null;
@@ -79,7 +82,7 @@ export function getDisplayName(username: string | null | undefined, email: strin
  * @param userId ID de l'utilisateur
  * @param email Email de l'utilisateur
  */
-export async function syncUserProfile(userId: string, email: string | undefined) {
+export async function syncUserProfile(userId: string, email: string | undefined): Promise<boolean> {
   if (!userId) {
     console.error("ID utilisateur non fourni");
     return false;

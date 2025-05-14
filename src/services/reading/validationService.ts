@@ -11,8 +11,15 @@ import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
+import { Database } from "@/integrations/supabase/types";
 
-// Validate a reading segment ("Valider un segment de lecture")
+type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
+
+/**
+ * Valide un segment de lecture
+ * @param request Requête de validation
+ * @returns Réponse de validation avec potentiellement des badges
+ */
 export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse & { newBadges?: Badge[] }> => {
@@ -41,18 +48,18 @@ export const validateReading = async (
       throw new Error("Livre non trouvé");
     }
 
-    // Get the question for this book and segment
+    // Récupérer la question pour ce livre et ce segment
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
 
     if (!question) {
       console.warn(`No question found for book ${request.book_id}, segment ${request.segment}`);
-      // We'll continue and use a fallback question in the UI
+      // Nous continuerons et utiliserons une question de secours dans l'UI
     }
 
     let progress = await getBookReadingProgress(request.user_id, request.book_id);
 
     if (!progress) {
-      // Need to initialize progress
+      // Besoin d'initialiser la progression
       const { initializeNewBookReading } = await import("./syncService");
       progress = await initializeNewBookReading(request.user_id, request.book_id);
       if (!progress) {
@@ -60,11 +67,11 @@ export const validateReading = async (
       }
     }
 
-    // Calculate new current page using segment * 8000 instead of segment * 30
+    // Calculer la nouvelle page actuelle en utilisant segment * 8000 au lieu de segment * 30
     const newCurrentPage = request.segment * 8000;
     const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
 
-    // Update reading progress
+    // Mettre à jour la progression de lecture
     console.log('Updating reading progress:', {
       user_id: request.user_id,
       book_id: request.book_id,
@@ -87,33 +94,36 @@ export const validateReading = async (
       throw progressError;
     }
 
-    // Insert validation record
+    // Insérer l'enregistrement de validation
+    const validationRecord: ReadingValidationRecord = {
+      user_id: request.user_id,
+      book_id: request.book_id,
+      segment: request.segment,
+      question_id: question?.id || null,
+      correct: true,
+      validated_at: new Date().toISOString()
+    };
+
     const { error: validationError } = await supabase
       .from('reading_validations')
-      .insert({
-        user_id: request.user_id,
-        book_id: request.book_id,
-        segment: request.segment,
-        question_id: question?.id || null,
-        correct: true
-      });
+      .insert(validationRecord);
 
     if (validationError) {
       console.error('Error inserting validation record:', validationError);
       throw validationError;
     }
 
-    // Record reading activity for streaks
+    // Enregistrer l'activité de lecture pour les séries
     await recordReadingActivity(request.user_id);
     
-    // Ajout des points XP pour la validation d'un segment (10 XP)
+    // Ajouter des points XP pour la validation d'un segment (10 XP)
     await addXP(request.user_id, 10);
 
-    // Get question for next segment, if any
+    // Récupérer la question pour le segment suivant, s'il y en a une
     const nextSegment = request.segment + 1;
     const nextQuestion = await getQuestionForBookSegment(request.book_id, nextSegment);
     
-    // Check if any new badges have been earned
+    // Vérifier si de nouveaux badges ont été gagnés
     const newBadges = await checkBadgesForUser(request.user_id, true);
 
     // Vérifier les quêtes en arrière-plan pour ne pas bloquer la réponse
@@ -147,13 +157,19 @@ export const validateReading = async (
       newBadges: newBadges.length > 0 ? newBadges : undefined
     };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
     console.error('Error validating reading:', error);
-    throw error;
+    throw new Error(errorMessage);
   }
 };
 
-// Get all validations for a book+user
+/**
+ * Récupère toutes les validations pour un livre et un utilisateur
+ * @param userId ID de l'utilisateur
+ * @param bookId ID du livre
+ * @returns Liste des validations
+ */
 export const getBookValidations = async (userId: string, bookId: string): Promise<ReadingValidation[]> => {
   if (!userId || !bookId) {
     console.error('Invalid parameters for getBookValidations:', { userId, bookId });

@@ -1,8 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/services/bookService"; // Make sure this import exists
+import { getBookById } from "@/services/bookService";
+import { Database } from "@/integrations/supabase/types";
 
+type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
+
+/**
+ * Récupère la progression de lecture d'un utilisateur
+ * @param userId Identifiant de l'utilisateur
+ * @returns Liste des progressions de lecture
+ */
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
 
@@ -18,9 +26,9 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     if (error || !data) return [];
 
     // Récupération et enrichissement des données avec total_chapters
-    const enrichedProgress = await Promise.all(
-      data.map(async (item) => {
-        const book = await getBookById(item.book_id); // Récupération du livre associé
+    const enrichedProgress: ReadingProgress[] = await Promise.all(
+      data.map(async (item: ReadingProgressRecord) => {
+        const book = await getBookById(item.book_id);
         return {
           ...item,
           total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
@@ -34,10 +42,17 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
 
     return enrichedProgress;
   } catch (error) {
+    console.error("Erreur dans getUserReadingProgress:", error);
     return [];
   }
 };
 
+/**
+ * Récupère la progression de lecture d'un livre pour un utilisateur
+ * @param userId Identifiant de l'utilisateur
+ * @param bookId Identifiant du livre
+ * @returns Progression de lecture ou null
+ */
 export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
   if (!userId) return null;
 
@@ -65,6 +80,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       validations: [],
     };
   } catch (error) {
+    console.error("Erreur dans getBookReadingProgress:", error);
     return null;
   }
 };

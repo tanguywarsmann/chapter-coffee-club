@@ -2,36 +2,50 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
+import { Database } from "@/integrations/supabase/types";
+
+type BookRecord = Database['public']['Tables']['books']['Row'];
 
 // Cache local pour les livres fréquemment consultés
 const bookCache = new Map<string, { data: Book, timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
 const BOOKS_CACHE_KEY = 'read_app_books_cache';
 
-// Fonction pour récupérer les données du cache persistant
-const getPersistedBooksCache = () => {
+/**
+ * Récupère les données du cache persistant
+ * @returns Livres en cache ou null
+ */
+const getPersistedBooksCache = (): Book[] | null => {
   try {
     const cache = localStorage.getItem(BOOKS_CACHE_KEY);
     if (cache) {
-      return JSON.parse(cache);
+      return JSON.parse(cache) as Book[];
     }
-  } catch (e) {
-    console.error('Error parsing persisted books cache:', e);
+  } catch (error) {
+    console.error('Error parsing persisted books cache:', error);
   }
   return null;
 };
 
-// Fonction pour persister les données du cache
-const persistBooksCache = (books: Book[]) => {
+/**
+ * Persiste les données du cache
+ * @param books Liste de livres à mettre en cache
+ */
+const persistBooksCache = (books: Book[]): void => {
   try {
     // Limiter à 20 livres pour éviter de surcharger le localStorage
     const topBooks = books.slice(0, 20);
     localStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(topBooks));
-  } catch (e) {
-    console.error('Error persisting books cache:', e);
+  } catch (error) {
+    console.error('Error persisting books cache:', error);
   }
 };
 
+/**
+ * Récupère tous les livres
+ * @param includeUnpublished Inclure les livres non publiés
+ * @returns Liste de livres
+ */
 export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> => {
   try {
     // Vérifier d'abord dans le cache persistent pour le chargement initial rapide
@@ -44,7 +58,7 @@ export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> =
     
     let query = supabase.from('books').select('*');
     
-    // Filter out unpublished books if requested
+    // Filtrer les livres non publiés si demandé
     if (!includeUnpublished) {
       query = query.eq('is_published', true);
     }
@@ -70,6 +84,11 @@ export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> =
   }
 };
 
+/**
+ * Récupère un livre par son ID
+ * @param id ID du livre
+ * @returns Livre ou null
+ */
 export const getBookById = async (id: string): Promise<Book | null> => {
   if (!id) {
     console.error('Invalid book ID provided (empty)');
@@ -101,7 +120,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       return null;
     }
 
-    const book = mapBookFromRecord(data);
+    const book = mapBookFromRecord(data as BookRecord);
     
     // Mettre en cache pour des accès futurs rapides
     bookCache.set(id, { data: book, timestamp: Date.now() });
@@ -113,6 +132,12 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   }
 };
 
+/**
+ * Récupère les livres par catégorie
+ * @param category Catégorie de livre
+ * @param includeUnpublished Inclure les livres non publiés
+ * @returns Liste de livres
+ */
 export const getBooksByCategory = async (category: string, includeUnpublished = false): Promise<Book[]> => {
   if (!category) {
     console.error('Invalid category provided (empty)');
@@ -125,7 +150,7 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
       .select('*')
       .contains('tags', `{${category}}`);
     
-    // Filter out unpublished books if requested
+    // Filtrer les livres non publiés si demandé
     if (!includeUnpublished) {
       query = query.eq('is_published', true);
     }
@@ -144,7 +169,10 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
   }
 };
 
-// Optimiser pour récupérer uniquement les catégories uniques avec un seul appel
+/**
+ * Récupère les catégories disponibles
+ * @returns Liste de catégories
+ */
 export const getAvailableCategories = async (): Promise<string[]> => {
   try {
     // Au lieu de récupérer les tags de chaque livre puis de les déduplicer,
@@ -174,8 +202,11 @@ export const getAvailableCategories = async (): Promise<string[]> => {
   }
 };
 
-// Nouvelle fonction pour effacer le cache d'un livre spécifique ou tous les livres
-export const clearBookCache = (bookId?: string) => {
+/**
+ * Efface le cache d'un livre spécifique ou tous les livres
+ * @param bookId ID du livre (optionnel)
+ */
+export const clearBookCache = (bookId?: string): void => {
   if (bookId) {
     bookCache.delete(bookId);
   } else {

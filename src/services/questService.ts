@@ -1,40 +1,48 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Quest, UserQuest, QuestSlug } from "@/types/quest";
 import { addXP } from "@/services/user/levelService";
 import { getUserReadingProgress } from "./reading/progressService";
+import { Database } from "@/integrations/supabase/types";
+
+type UserQuestRecord = Database['public']['Tables']['user_quests']['Row'];
 
 // Définition des quêtes disponibles
 export const availableQuests: Quest[] = [
   {
-    slug: 'early_reader',
+    slug: 'early_reader' as QuestSlug,
     title: 'Lecteur matinal',
     description: 'Lire un livre avant 7h du matin',
     icon: 'sun'
   },
   {
-    slug: 'triple_valide',
+    slug: 'triple_valide' as QuestSlug,
     title: 'Triple validation',
     description: 'Valider 3 segments de lecture en une seule journée',
     icon: 'zap'
   },
   {
-    slug: 'multi_booker',
+    slug: 'multi_booker' as QuestSlug,
     title: 'Multi-lecteur',
     description: 'Avoir 3 livres en cours de lecture simultanément',
     icon: 'books'
   },
   {
-    slug: 'back_on_track',
+    slug: 'back_on_track' as QuestSlug,
     title: 'De retour sur les rails',
     description: 'Reprendre la lecture après une pause de 7 jours',
     icon: 'refresh'
   }
 ];
 
-// Mock function to simulate quest completion
+/**
+ * Complète une quête pour un utilisateur
+ * @param userId ID de l'utilisateur
+ * @param questSlug Slug de la quête
+ */
 export const completeQuest = async (userId: string, questSlug: string): Promise<void> => {
   try {
-    // Check if the quest is already unlocked
+    // Vérifier si la quête est déjà débloquée
     const { data: existingQuest, error: questError } = await supabase
       .from('user_quests')
       .select('*')
@@ -49,10 +57,10 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
 
     if (existingQuest) {
       console.log("Quest already unlocked:", questSlug);
-      return; // Quest already unlocked
+      return; // Quête déjà débloquée
     }
 
-    // Insert the completed quest into the user_quests table
+    // Insérer la quête terminée dans la table user_quests
     const { data, error } = await supabase
       .from('user_quests')
       .insert([{
@@ -70,32 +78,36 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
     
     // Ajouter des points XP pour la complétion d'une quête (50 XP)
     await addXP(userId, 50);
-  } catch (error: any) {
-    console.error("Error completing quest:", error.message);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error completing quest:", errorMsg);
     throw error;
   }
 };
 
-// Check user quests and unlock them based on certain conditions
+/**
+ * Vérifie les quêtes d'un utilisateur et les débloque selon certaines conditions
+ * @param userId ID de l'utilisateur
+ */
 export const checkUserQuests = async (userId: string): Promise<void> => {
   try {
-    // Fetch user's reading progress
+    // Récupérer la progression de lecture de l'utilisateur
     const readingProgress = await getUserReadingProgress(userId);
 
-    // Check each available quest and unlock if conditions are met
+    // Vérifier chaque quête disponible et débloquer si les conditions sont remplies
     for (const quest of availableQuests) {
       let shouldUnlock = false;
 
       switch (quest.slug) {
         case 'read-10-books':
-          // Example: Unlock if user has read 10 books
+          // Exemple : Débloquer si l'utilisateur a lu 10 livres
           shouldUnlock = readingProgress.length >= 10;
           break;
         case 'complete-5-quests':
-          // Example: Unlock if user has completed 5 other quests
+          // Exemple : Débloquer si l'utilisateur a complété 5 autres quêtes
           const { count, error } = await supabase
             .from('user_quests')
-            .select('*', { count: 'exact', head: false })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId);
 
           if (error) {
@@ -110,7 +122,7 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
       }
 
       if (shouldUnlock) {
-        // Unlock the quest for the user
+        // Débloquer la quête pour l'utilisateur
         await completeQuest(userId, quest.slug);
       }
     }
@@ -119,7 +131,11 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
   }
 };
 
-// Get all quests for a user
+/**
+ * Récupère toutes les quêtes d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @returns Liste des quêtes de l'utilisateur
+ */
 export const getUserQuests = async (userId: string): Promise<UserQuest[]> => {
   try {
     const { data, error } = await supabase
@@ -132,7 +148,7 @@ export const getUserQuests = async (userId: string): Promise<UserQuest[]> => {
       return [];
     }
 
-    // Map the user quests to include quest details
+    // Mapper les quêtes de l'utilisateur pour inclure les détails de la quête
     const userQuests = data.map(item => {
       const questDetails = availableQuests.find(q => q.slug === item.quest_slug);
       return {

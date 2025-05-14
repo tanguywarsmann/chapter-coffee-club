@@ -6,4 +6,7 @@ export interface Comment {
   userAvatar?: string;
   content: string;
   timestamp: string;
+  likeCount?: number;
+  isEdited?: boolean;
+  parentId?: string;
 }

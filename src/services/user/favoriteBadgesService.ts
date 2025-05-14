@@ -2,11 +2,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type UserFavoriteBadgeRecord = Database['public']['Tables']['user_favorite_badges']['Row'];
+type BadgeRecord = Database['public']['Tables']['badges']['Row'];
 
 /**
- * Get favorite badges for a user
- * @param userId User ID
- * @returns Array of favorite badge IDs
+ * Récupère les badges favoris d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @returns Tableau d'identifiants de badges favoris
  */
 export async function getFavoriteBadges(userId: string): Promise<string[]> {
   if (!userId) {
@@ -22,9 +26,7 @@ export async function getFavoriteBadges(userId: string): Promise<string[]> {
     
     if (error) {
       console.error("Error fetching favorite badges:", error);
-      toast.error("Erreur de chargement", {
-        description: "Impossible de charger les badges favoris"
-      });
+      toast.error("Erreur de chargement des badges favoris");
       throw error;
     }
     
@@ -36,9 +38,9 @@ export async function getFavoriteBadges(userId: string): Promise<string[]> {
 }
 
 /**
- * Get user's favorite badges with complete badge data
- * @param userId User ID
- * @returns Array of badge objects
+ * Récupère les badges favoris d'un utilisateur avec les données complètes de badge
+ * @param userId ID de l'utilisateur
+ * @returns Tableau d'objets Badge
  */
 export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
   if (!userId) {
@@ -55,9 +57,7 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
     
     if (favoriteError) {
       console.error("Error fetching favorite badge IDs:", favoriteError);
-      toast.error("Erreur de chargement", {
-        description: "Impossible de charger les identifiants des badges favoris"
-      });
+      toast.error("Erreur de chargement des identifiants des badges favoris");
       return [];
     }
     
@@ -76,14 +76,12 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
     
     if (badgesError) {
       console.error("Error fetching badges:", badgesError);
-      toast.error("Erreur de chargement", {
-        description: "Impossible de charger les détails des badges"
-      });
+      toast.error("Erreur de chargement des détails des badges");
       return [];
     }
     
     // Mapper les données sur le type Badge
-    return (badgesData || []).map(badge => ({
+    return (badgesData || []).map((badge: BadgeRecord) => ({
       id: badge.id,
       name: badge.name || badge.label || "Badge",
       description: badge.description || "",
@@ -95,25 +93,21 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
     }));
   } catch (error) {
     console.error("Error fetching favorite badges:", error);
-    toast.error("Erreur inattendue", {
-      description: "Une erreur est survenue lors du chargement des badges favoris"
-    });
+    toast.error("Erreur inattendue lors du chargement des badges favoris");
     return [];
   }
 }
 
 /**
- * Add a badge to user's favorites
- * @param userId User ID
- * @param badgeId Badge ID
- * @returns True if successful
+ * Ajoute un badge aux favoris d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @param badgeId ID du badge
+ * @returns Vrai si l'opération a réussi
  */
 export async function addFavoriteBadge(userId: string, badgeId: string): Promise<boolean> {
   if (!userId || !badgeId) {
     console.error("ID utilisateur ou ID badge non fourni");
-    toast.error("Paramètres invalides", {
-      description: "Informations manquantes pour ajouter le badge favori"
-    });
+    toast.error("Paramètres invalides pour ajouter le badge favori");
     return false;
   }
   
@@ -142,17 +136,15 @@ export async function addFavoriteBadge(userId: string, badgeId: string): Promise
 }
 
 /**
- * Remove a badge from user's favorites
- * @param userId User ID
- * @param badgeId Badge ID
- * @returns True if successful
+ * Supprime un badge des favoris d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @param badgeId ID du badge
+ * @returns Vrai si l'opération a réussi
  */
 export async function removeFavoriteBadge(userId: string, badgeId: string): Promise<boolean> {
   if (!userId || !badgeId) {
     console.error("ID utilisateur ou ID badge non fourni");
-    toast.error("Paramètres invalides", {
-      description: "Informations manquantes pour retirer le badge favori"
-    });
+    toast.error("Paramètres invalides pour retirer le badge favori");
     return false;
   }
   
@@ -179,11 +171,11 @@ export async function removeFavoriteBadge(userId: string, badgeId: string): Prom
 }
 
 /**
- * Toggle favorite status of a badge
- * @param userId User ID
- * @param badgeId Badge ID
- * @param currentFavorites Current favorite badge IDs
- * @returns Updated array of favorite badge IDs
+ * Bascule le statut favori d'un badge
+ * @param userId ID de l'utilisateur
+ * @param badgeId ID du badge
+ * @param currentFavorites Liste actuelle des IDs de badges favoris
+ * @returns Liste mise à jour des IDs de badges favoris
  */
 export async function toggleFavoriteBadge(
   userId: string, 
@@ -192,9 +184,7 @@ export async function toggleFavoriteBadge(
 ): Promise<string[]> {
   if (!userId || !badgeId) {
     console.error("ID utilisateur ou ID badge non fourni");
-    toast.error("Paramètres invalides", {
-      description: "Informations manquantes pour modifier les favoris"
-    });
+    toast.error("Paramètres invalides pour modifier les favoris");
     return currentFavorites;
   }
   
@@ -213,5 +203,5 @@ export async function toggleFavoriteBadge(
     }
   }
   
-  return currentFavorites; // Return unchanged if operation failed
+  return currentFavorites; // Retourner inchangé si l'opération a échoué
 }

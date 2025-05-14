@@ -3,8 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { ReadingValidation } from "@/types/reading";
 import { availableBadges, isBadgeUnlocked, unlockBadge } from "../badgeService";
+import { Database } from "@/integrations/supabase/types";
 
-// Get list of validations for a user
+type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
+
+/**
+ * Récupère la liste des validations d'un utilisateur
+ * @param userId ID de l'utilisateur
+ * @returns Liste des validations
+ */
 export const getUserValidations = async (userId: string): Promise<ReadingValidation[]> => {
   if (!userId) return [];
   
@@ -19,34 +26,43 @@ export const getUserValidations = async (userId: string): Promise<ReadingValidat
     return [];
   }
   
-  return data || [];
+  return data as ReadingValidation[];
 };
 
-// Check if user has 3 consecutive days of reading
-export const checkConsecutiveDays = async (userId: string): Promise<{
+interface StreakResult {
   has3DayStreak: boolean;
   has5DayStreak: boolean;
   has7DayStreak: boolean;
   endDate?: string;
   streakLength?: number;
-}> => {
+}
+
+/**
+ * Vérifie si l'utilisateur a des jours consécutifs de lecture
+ * @param userId ID de l'utilisateur
+ * @returns Résultat détaillé des séries
+ */
+export const checkConsecutiveDays = async (userId: string): Promise<StreakResult> => {
   const validations = await getUserValidations(userId);
   
   if (!validations || validations.length < 3) {
     return { has3DayStreak: false, has5DayStreak: false, has7DayStreak: false };
   }
   
-  // Get unique dates (date part only, without time)
+  // Récupérer les dates uniques (partie date uniquement, sans heure)
   const dates = new Set<string>();
   validations.forEach(validation => {
-    const date = new Date(validation.validated_at || validation.date_validated || '').toISOString().split('T')[0];
-    dates.add(date);
+    const validationDate = validation.validated_at || validation.date_validated || '';
+    if (validationDate) {
+      const date = new Date(validationDate).toISOString().split('T')[0];
+      dates.add(date);
+    }
   });
   
-  // Convert to array and sort
+  // Convertir en tableau et trier
   const sortedDates = Array.from(dates).sort();
   
-  // Look for consecutive sequences
+  // Rechercher des séquences consécutives
   let maxStreak = 1;
   let currentStreak = 1;
   let streakEndDate = sortedDates[0];
@@ -55,15 +71,15 @@ export const checkConsecutiveDays = async (userId: string): Promise<{
     const currentDate = new Date(sortedDates[i]);
     const prevDate = new Date(sortedDates[i-1]);
     
-    // Check if dates are consecutive
+    // Vérifier si les dates sont consécutives
     const diffDays = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
     
     if (diffDays === 1) {
-      // Dates are consecutive, increment streak
+      // Les dates sont consécutives, incrémenter la série
       currentStreak++;
       streakEndDate = sortedDates[i];
     } else if (diffDays > 1) {
-      // Streak broken, reset
+      // Série interrompue, réinitialiser
       if (currentStreak > maxStreak) {
         maxStreak = currentStreak;
       }
@@ -72,7 +88,7 @@ export const checkConsecutiveDays = async (userId: string): Promise<{
     }
   }
   
-  // Check final streak
+  // Vérifier la série finale
   if (currentStreak > maxStreak) {
     maxStreak = currentStreak;
   }
@@ -86,7 +102,12 @@ export const checkConsecutiveDays = async (userId: string): Promise<{
   };
 };
 
-// Create dynamic streak badge
+/**
+ * Crée un badge de série dynamique
+ * @param days Nombre de jours de la série
+ * @param endDate Date de fin de la série
+ * @returns Badge de série
+ */
 export const createStreakBadge = (days: number, endDate: string): Badge => {
   let name = "Série en cours 🔥";
   let description = "Tu as lu 3 jours de suite sans t'arrêter";
@@ -118,14 +139,19 @@ export const createStreakBadge = (days: number, endDate: string): Badge => {
   };
 };
 
-// Check badges for user and return newly unlocked badges
+/**
+ * Vérifie les badges pour un utilisateur et retourne les badges nouvellement débloqués
+ * @param userId ID de l'utilisateur
+ * @param returnNewlyUnlocked Retourner uniquement les badges nouvellement débloqués
+ * @returns Liste des badges
+ */
 export const checkBadgesForUser = async (userId: string, returnNewlyUnlocked = false): Promise<Badge[]> => {
   if (!userId) return [];
   
   try {
     const newlyUnlockedBadges: Badge[] = [];
     
-    // Check for streak badges
+    // Vérifier les badges de série
     const streakInfo = await checkConsecutiveDays(userId);
     
     if (streakInfo.has7DayStreak && streakInfo.endDate) {
@@ -146,13 +172,13 @@ export const checkBadgesForUser = async (userId: string, returnNewlyUnlocked = f
         }
       }
     } else if (streakInfo.has5DayStreak && streakInfo.endDate) {
-      // Check for 5-day streak badge in the future
+      // Vérifier le badge de série de 5 jours à l'avenir
     } else if (streakInfo.has3DayStreak && streakInfo.endDate) {
-      // The 3-day streak is a dynamic badge, not stored in the database
-      // It will be shown in getUserBadges
+      // Le badge de série de 3 jours est un badge dynamique, pas stocké en base de données
+      // Il sera affiché dans getUserBadges
     }
     
-    // Add other badge checks here in the future
+    // Ajouter d'autres vérifications de badge ici à l'avenir
     
     return newlyUnlockedBadges;
   } catch (error) {
