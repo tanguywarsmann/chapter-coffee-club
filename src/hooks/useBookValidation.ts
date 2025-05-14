@@ -6,6 +6,7 @@ import { useBookQuiz } from "./useBookQuiz";
 import { validateReading } from "@/services/reading/validationService";
 import { useConfetti } from "./useConfetti";
 import { Badge } from "@/types/badge";
+import { addXP } from "@/services/user/levelService";
 
 export const useBookValidation = (
   book: Book | null,
@@ -85,6 +86,11 @@ export const useBookValidation = (
       // Check if there are any newly unlocked badges
       if (result?.newBadges && result.newBadges.length > 0) {
         setNewBadges(result.newBadges);
+        
+        // Ajouter des XP supplémentaires pour un streak (30 XP)
+        if (userId && result.newBadges.some(badge => badge.slug.includes('streak'))) {
+          await addXP(userId, 30);
+        }
       } else {
         setNewBadges([]);
       }

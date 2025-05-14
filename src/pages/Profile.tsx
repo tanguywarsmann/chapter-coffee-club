@@ -13,6 +13,7 @@ import { PublicUserStats } from "@/components/profile/PublicUserStats";
 import { CurrentlyReading } from "@/components/profile/CurrentlyReading";
 import { CompletedBooks } from "@/components/profile/CompletedBooks";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";
+import { UserLevelProgress } from "@/components/profile/UserLevelProgress";
 
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
@@ -43,6 +44,7 @@ export default function Profile() {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-3/4 space-y-6">
                   <UserProfile />
+                  <UserLevelProgress userId={user?.id || ''} />
                   <ProfileBadges />
                   <ReadingStats />
                   <UserGoals />

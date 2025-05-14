@@ -9,6 +9,7 @@ import { getBookReadingProgress } from "./progressService";
 import { Badge } from "@/types/badge";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
+import { addXP } from "@/services/user/levelService";
 
 // Validate a reading segment ("Valider un segment de lecture")
 export const validateReading = async (
@@ -103,6 +104,9 @@ export const validateReading = async (
 
     // Record reading activity for streaks
     await recordReadingActivity(request.user_id);
+    
+    // Ajout des points XP pour la validation d'un segment (10 XP)
+    await addXP(request.user_id, 10);
 
     // Get question for next segment, if any
     const nextSegment = request.segment + 1;

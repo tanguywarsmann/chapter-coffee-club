@@ -308,6 +308,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_levels: {
+        Row: {
+          id: string
+          last_updated: string | null
+          level: number
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          id?: string
+          last_updated?: string | null
+          level?: number
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          id?: string
+          last_updated?: string | null
+          level?: number
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       user_quests: {
         Row: {
           id: string
