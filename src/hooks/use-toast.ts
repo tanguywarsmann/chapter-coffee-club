@@ -7,7 +7,7 @@ import {
 
 import {
   useToast as useToastShadcn,
-} from "@/components/ui/toast";
+} from "@/components/ui/use-toast";
 
 export type ToasterToast = {
   id: string;
