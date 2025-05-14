@@ -23,8 +23,7 @@ export async function getUserProfile(userId: string) {
     if (error) {
       console.error("Error fetching user profile:", error);
       toast({
-        title: "Erreur de profil",
-        description: "Impossible de charger les informations du profil",
+        title: "Erreur : Impossible de charger les informations du profil",
         variant: "destructive",
       });
       return null;
@@ -34,8 +33,7 @@ export async function getUserProfile(userId: string) {
   } catch (error) {
     console.error("Error fetching user profile:", error);
     toast({
-      title: "Erreur inattendue",
-      description: "Une erreur est survenue lors du chargement du profil",
+      title: "Erreur inattendue lors du chargement du profil",
       variant: "destructive",
     });
     return null;
@@ -98,8 +96,7 @@ export async function syncUserProfile(userId: string, email: string | undefined)
     if (profileError) {
       console.error("Error checking existing profile:", profileError);
       toast({
-        title: "Erreur de synchronisation",
-        description: "Impossible de vérifier le profil existant",
+        title: "Erreur de synchronisation : Impossible de vérifier le profil existant",
         variant: "destructive",
       });
       return false;
@@ -116,8 +113,7 @@ export async function syncUserProfile(userId: string, email: string | undefined)
         if (updateError) {
           console.error("Error updating profile:", updateError);
           toast({
-            title: "Erreur de mise à jour",
-            description: "Impossible de mettre à jour l'email du profil",
+            title: "Erreur de mise à jour : Impossible de mettre à jour l'email du profil",
             variant: "destructive",
           });
           return false;
@@ -137,8 +133,7 @@ export async function syncUserProfile(userId: string, email: string | undefined)
       if (insertError) {
         console.error("Error creating profile:", insertError);
         toast({
-          title: "Erreur de création",
-          description: "Impossible de créer le profil utilisateur",
+          title: "Erreur de création : Impossible de créer le profil utilisateur",
           variant: "destructive",
         });
         return false;
@@ -149,8 +144,7 @@ export async function syncUserProfile(userId: string, email: string | undefined)
   } catch (error) {
     console.error("Error syncing user profile:", error);
     toast({
-      title: "Erreur inattendue",
-      description: "Une erreur est survenue lors de la synchronisation du profil",
+      title: "Erreur inattendue lors de la synchronisation du profil",
       variant: "destructive",
     });
     return false;

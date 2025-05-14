@@ -7,7 +7,7 @@ import {
 
 import {
   useToast as useToastShadcn,
-} from "@radix-ui/react-toast";
+} from "@/components/ui/toast";
 
 export type ToasterToast = {
   id: string;

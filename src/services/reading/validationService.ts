@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";

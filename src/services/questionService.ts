@@ -73,8 +73,7 @@ export const getQuestionForBookSegment = async (
     if (error) {
       console.error('Error fetching question from Supabase:', error);
       toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger la question pour ce segment",
+        title: "Erreur de chargement : Impossible de charger la question pour ce segment",
         variant: "destructive",
       });
       return null;
@@ -92,8 +91,7 @@ export const getQuestionForBookSegment = async (
   } catch (error) {
     console.error('Exception fetching question from Supabase:', error);
     toast({
-      title: "Erreur inattendue",
-      description: "Une erreur est survenue lors du chargement de la question",
+      title: "Erreur inattendue lors du chargement de la question",
       variant: "destructive",
     });
     return null;

@@ -6,8 +6,7 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
   try {
     if (!bookId) {
       toast({
-        title: "Erreur de suppression",
-        description: "Identifiant du livre non fourni",
+        title: "Erreur de suppression : Identifiant du livre non fourni",
         variant: "destructive",
       });
       return false;
@@ -47,16 +46,14 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
     }
 
     toast({
-      title: "Livre supprimé",
-      description: "Le livre a été supprimé avec succès",
+      title: "Livre supprimé avec succès",
       variant: "default",
     });
     return true;
   } catch (error: any) {
     console.error("Erreur lors de la suppression du livre:", error);
     toast({
-      title: "Erreur de suppression",
-      description: error.message || "Impossible de supprimer ce livre",
+      title: `Erreur de suppression : ${error.message || "Impossible de supprimer ce livre"}`,
       variant: "destructive",
     });
     return false;

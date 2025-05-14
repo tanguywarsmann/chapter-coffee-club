@@ -129,8 +129,7 @@ export async function addXP(userId: string, amount: number): Promise<void> {
     // Notifier si l'utilisateur a gagné un niveau
     if (newLevel > oldLevel) {
       toast({
-        title: "Niveau supérieur !",
-        description: `Félicitations, vous êtes maintenant niveau ${newLevel}`,
+        title: `Niveau supérieur ! Félicitations, vous êtes maintenant niveau ${newLevel}`,
         variant: "success"
       });
     }
