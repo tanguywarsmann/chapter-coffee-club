@@ -1,9 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingQuestion } from "@/types/reading";
+import { toast } from "@/hooks/use-toast";
 
 // Fonction utilitaire pour convertir un UUID de livre en slug
 const convertBookIdToSlug = async (bookId: string): Promise<string | null> => {
+  if (!bookId) {
+    console.error('BookId est nul ou non défini');
+    return null;
+  }
+  
   console.log(`Converting book ID ${bookId} to slug`);
   
   try {
@@ -36,6 +42,11 @@ export const getQuestionForBookSegment = async (
   bookId: string, 
   segment: number
 ): Promise<ReadingQuestion | null> => {
+  if (!bookId) {
+    console.error('BookId est nul ou non défini');
+    return null;
+  }
+
   console.log(`Fetching question for book ID ${bookId}, segment ${segment}`);
   
   try {
@@ -61,7 +72,12 @@ export const getQuestionForBookSegment = async (
 
     if (error) {
       console.error('Error fetching question from Supabase:', error);
-      throw new Error(`Database error: ${error.message}`);
+      toast({
+        title: "Erreur de chargement",
+        description: "Impossible de charger la question pour ce segment",
+        variant: "destructive",
+      });
+      return null;
     }
 
     // Si nous avons trouvé des questions, retourner la première
@@ -75,7 +91,12 @@ export const getQuestionForBookSegment = async (
     return null;
   } catch (error) {
     console.error('Exception fetching question from Supabase:', error);
-    throw error;
+    toast({
+      title: "Erreur inattendue",
+      description: "Une erreur est survenue lors du chargement de la question",
+      variant: "destructive",
+    });
+    return null;
   }
 };
 
@@ -83,17 +104,22 @@ export const getQuestionForBookSegment = async (
 export const getFallbackQuestion = (): ReadingQuestion => ({
   id: 'fallback',
   book_slug: '',
-  segment: 1, // Modifier de 0 à 1
+  segment: 1,
   question: "Quel est l'élément principal de ce passage ?",
   answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
 });
 
-// Nouvelle fonction pour vérifier si un segment a déjà été validé
+// Fonction pour vérifier si un segment a déjà été validé
 export const isSegmentAlreadyValidated = async (
   userId: string, 
   bookId: string, 
   segment: number
 ): Promise<boolean> => {
+  if (!userId || !bookId) {
+    console.error('UserId ou BookId est nul ou non défini');
+    return false;
+  }
+
   console.log(`Checking if segment ${segment} is already validated for book ${bookId} by user ${userId}`);
   
   try {

@@ -10,15 +10,19 @@ export const useHomeSearch = () => {
   const [searchResults, setSearchResults] = useState<Book[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSearch = async (query: string) => {
-    if (!query.trim()) {
+    if (!query?.trim()) {
+      setSearchResults(null);
+      setError(null);
       return;
     }
     
     setIsSearching(true);
     setIsRedirecting(false);
+    setError(null);
     
     try {
       // Recherche dans la base de données Supabase
@@ -29,7 +33,11 @@ export const useHomeSearch = () => {
       
       if (error) {
         console.error("Erreur de recherche:", error);
-        toast.error("Erreur lors de la recherche de livres");
+        setError("Erreur lors de la recherche");
+        toast.error("Erreur de recherche", {
+          description: "Impossible d'effectuer votre recherche",
+          duration: 3000
+        });
         return;
       }
       
@@ -51,12 +59,21 @@ export const useHomeSearch = () => {
           toast.info("Aucun livre ne correspond à votre recherche");
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Exception lors de la recherche:", err);
-      toast.error("Une erreur est survenue pendant la recherche");
+      setError(err.message || "Une erreur est survenue");
+      toast.error("Erreur de recherche", {
+        description: "Une erreur est survenue pendant la recherche",
+        duration: 3000
+      });
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchResults(null);
+    setError(null);
   };
 
   return {
@@ -64,6 +81,8 @@ export const useHomeSearch = () => {
     setSearchResults,
     handleSearch,
     isSearching,
-    isRedirecting
+    isRedirecting,
+    error,
+    clearSearch
   };
 };

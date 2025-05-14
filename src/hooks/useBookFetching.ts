@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Book } from "@/types/book";
 import { getAllBooks } from "@/services/books/bookQueries";
+import { toast } from "sonner";
 
 // Add a parameter to filter out unpublished books (default to true)
 export const useBookFetching = (includeUnpublished = false) => {
@@ -12,6 +13,8 @@ export const useBookFetching = (includeUnpublished = false) => {
   const [isFetching, setIsFetching] = useState(false);
 
   const fetchBooks = useCallback(async () => {
+    if (isFetching) return; // Éviter les appels simultanés
+    
     setIsLoading(true);
     setIsFetching(true);
     setError(null);
@@ -24,11 +27,15 @@ export const useBookFetching = (includeUnpublished = false) => {
         console.log("No books found");
       }
       
-      setBooks(fetchedBooks);
+      setBooks(fetchedBooks || []);
       setHasLoaded(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching books:", err);
       setError("Failed to load books. Please try again later.");
+      toast.error("Erreur de chargement", {
+        description: "Impossible de charger la liste des livres",
+        duration: 5000
+      });
     } finally {
       setIsLoading(false);
       setIsFetching(false);

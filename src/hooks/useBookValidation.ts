@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
@@ -127,23 +126,15 @@ export const useBookValidation = (
 
     try {
       setIsValidating(true);
-      setValidationError(null);
-      
-      // Show question for current segment
       await prepareAndShowQuestion(validationSegment);
-      
-      setValidationSegment(null);
-    } catch (error) {
-      console.error("Error in validation confirm:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      setValidationError(errorMessage);
-      toast.error("Erreur lors de la validation", {
-        description: errorMessage.substring(0, 100),
+    } catch (error: any) {
+      console.error("Erreur lors de la préparation de la validation:", error);
+      toast.error("Erreur de validation", {
+        description: error.message || "Impossible de préparer la validation",
         duration: 5000
       });
     } finally {
       setIsValidating(false);
-      setValidationSegment(null);
     }
   };
 

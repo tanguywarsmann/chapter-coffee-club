@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * Récupère le profil utilisateur par ID
@@ -7,6 +8,11 @@ import { supabase } from "@/integrations/supabase/client";
  * @returns Le profil de l'utilisateur ou null
  */
 export async function getUserProfile(userId: string) {
+  if (!userId) {
+    console.error("ID utilisateur non fourni");
+    return null;
+  }
+  
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -14,10 +20,24 @@ export async function getUserProfile(userId: string) {
       .eq('id', userId)
       .maybeSingle();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching user profile:", error);
+      toast({
+        title: "Erreur de profil",
+        description: "Impossible de charger les informations du profil",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
     return data;
   } catch (error) {
     console.error("Error fetching user profile:", error);
+    toast({
+      title: "Erreur inattendue",
+      description: "Une erreur est survenue lors du chargement du profil",
+      variant: "destructive",
+    });
     return null;
   }
 }
@@ -62,25 +82,50 @@ export function getDisplayName(username: string | null | undefined, email: strin
  * @param email Email de l'utilisateur
  */
 export async function syncUserProfile(userId: string, email: string | undefined) {
+  if (!userId) {
+    console.error("ID utilisateur non fourni");
+    return false;
+  }
+
   try {
     // Vérifier si un profil existe déjà
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', userId)
       .maybeSingle();
       
+    if (profileError) {
+      console.error("Error checking existing profile:", profileError);
+      toast({
+        title: "Erreur de synchronisation",
+        description: "Impossible de vérifier le profil existant",
+        variant: "destructive",
+      });
+      return false;
+    }
+      
     if (existingProfile) {
       // Mise à jour de l'email si le profil existe déjà
       if (email) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ email })
           .eq('id', userId);
+          
+        if (updateError) {
+          console.error("Error updating profile:", updateError);
+          toast({
+            title: "Erreur de mise à jour",
+            description: "Impossible de mettre à jour l'email du profil",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
     } else {
       // Création d'un nouveau profil si aucun n'existe
-      await supabase
+      const { error: insertError } = await supabase
         .from('profiles')
         .insert({
           id: userId,
@@ -88,11 +133,26 @@ export async function syncUserProfile(userId: string, email: string | undefined)
           username: null,
           is_admin: false
         });
+        
+      if (insertError) {
+        console.error("Error creating profile:", insertError);
+        toast({
+          title: "Erreur de création",
+          description: "Impossible de créer le profil utilisateur",
+          variant: "destructive",
+        });
+        return false;
+      }
     }
     
     return true;
   } catch (error) {
     console.error("Error syncing user profile:", error);
+    toast({
+      title: "Erreur inattendue",
+      description: "Une erreur est survenue lors de la synchronisation du profil",
+      variant: "destructive",
+    });
     return false;
   }
 }
