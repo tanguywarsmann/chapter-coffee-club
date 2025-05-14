@@ -1,9 +1,3 @@
-
 /// <reference types="vite/client" />
 
-// Extend ToastProps to include description
-declare module "@/components/ui/toast" {
-  interface ToastProps {
-    description?: React.ReactNode;
-  }
-}
+// No need to extend ToastProps here anymore since we've defined it properly in the toast.tsx file

@@ -1,22 +1,22 @@
 
+import * as React from "react";
 import {
-  Toast,
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
 
-export type ToasterToast = {
+export interface ToasterToast extends ToastProps {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
-};
+}
 
 // Create a standalone implementation
 const useToastStore = () => {
   const toasts: ToasterToast[] = [];
   
-  function toast(props: ToastProps & { description?: React.ReactNode }) {
+  function toast(props: ToastProps) {
     return {
       id: crypto.randomUUID(),
       ...props
@@ -32,7 +32,7 @@ const useToastStore = () => {
 // Export standalone functions
 export const useToast = useToastStore;
 
-export const toast = (props: ToastProps & { description?: React.ReactNode }) => {
+export const toast = (props: ToastProps) => {
   return {
     id: crypto.randomUUID(),
     ...props
