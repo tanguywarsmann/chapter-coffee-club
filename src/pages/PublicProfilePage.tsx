@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { getUserProfile } from "@/services/user/userProfileService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PublicUserHeader } from "@/components/profile/PublicUserHeader";
 import { PublicUserStats } from "@/components/profile/PublicUserStats";
 import { PublicFavoriteBadges } from "@/components/profile/PublicFavoriteBadges";
 import { PublicCurrentlyReading } from "@/components/profile/PublicCurrentlyReading";
@@ -90,14 +89,13 @@ export default function PublicProfilePage() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container py-6 space-y-6">
-        <PublicUserHeader 
-          userId={userId}
-          onProfileLoaded={setUsername}
-        />
-        
-        <h1 className="text-3xl font-serif font-medium text-coffee-darker">
-          Profil de {username || "Lecteur"}
-        </h1>
+        <Card className="border-coffee-light">
+          <CardContent className="pt-6">
+            <h1 className="text-3xl font-serif font-medium text-coffee-darker">
+              {username || "Profil"}
+            </h1>
+          </CardContent>
+        </Card>
         
         <div className="space-y-6">
           <PublicUserStats userId={userId} />

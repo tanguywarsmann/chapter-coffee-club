@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { toast } from "sonner";
@@ -34,7 +33,7 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
       .from("user_favorite_badges")
       .select(`
         badge_id,
-        badges!inner(*)
+        badges:badge_id (*)
       `)
       .eq("user_id", userId);
     
@@ -43,14 +42,24 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
       return [];
     }
     
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
     // Transform the joined data into Badge objects
-    return (data || []).map(item => ({
-      id: item.badges.id,
-      label: item.badges.label,
-      description: item.badges.description,
-      slug: item.badges.slug,
-      icon_url: item.badges.icon_url
-    }));
+    return data.map(item => {
+      const badgeData = item.badges;
+      if (!badgeData) return null;
+      
+      return {
+        id: badgeData.id,
+        name: badgeData.label || "Badge",
+        description: badgeData.description || "",
+        icon: badgeData.icon_url || "",
+        color: badgeData.color || "blue",
+        rarity: badgeData.rarity || "common"
+      } as Badge;
+    }).filter(Boolean) as Badge[];
   } catch (error) {
     console.error("Error fetching favorite badges:", error);
     return [];
