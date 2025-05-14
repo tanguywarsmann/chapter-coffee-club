@@ -29,37 +29,44 @@ export async function getFavoriteBadges(userId: string): Promise<string[]> {
  */
 export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
   try {
-    const { data, error } = await supabase
+    // Première requête: récupérer les ID des badges favoris
+    const { data: favoriteData, error: favoriteError } = await supabase
       .from("user_favorite_badges")
-      .select(`
-        badge_id,
-        badges:badge_id (*)
-      `)
+      .select("badge_id")
       .eq("user_id", userId);
     
-    if (error) {
-      console.error("Error fetching favorite badges:", error);
+    if (favoriteError) {
+      console.error("Error fetching favorite badge IDs:", favoriteError);
       return [];
     }
     
-    if (!data || data.length === 0) {
+    if (!favoriteData || favoriteData.length === 0) {
       return [];
     }
     
-    // Transform the joined data into Badge objects
-    return data.map(item => {
-      const badgeData = item.badges;
-      if (!badgeData) return null;
-      
-      return {
-        id: badgeData.id,
-        name: badgeData.label || "Badge",
-        description: badgeData.description || "",
-        icon: badgeData.icon_url || "",
-        color: badgeData.color || "blue",
-        rarity: badgeData.rarity || "common"
-      } as Badge;
-    }).filter(Boolean) as Badge[];
+    // Extraire les IDs des badges
+    const badgeIds = favoriteData.map(item => item.badge_id);
+    
+    // Seconde requête: récupérer les badges complets
+    const { data: badgesData, error: badgesError } = await supabase
+      .from("badges")
+      .select("*")
+      .in("id", badgeIds);
+    
+    if (badgesError) {
+      console.error("Error fetching badges:", badgesError);
+      return [];
+    }
+    
+    // Mapper les données sur le type Badge
+    return (badgesData || []).map(badge => ({
+      id: badge.id,
+      name: badge.label || "Badge",
+      description: badge.description || "",
+      icon: badge.icon_url || "",
+      color: badge.color || "blue",
+      rarity: badge.rarity || "common"
+    }));
   } catch (error) {
     console.error("Error fetching favorite badges:", error);
     return [];
