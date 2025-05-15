@@ -1,91 +1,55 @@
 
+console.log("Import de ErrorBoundary.tsx OK");
+
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw, AlertTriangle } from "lucide-react";
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error?: Error;
-  errorInfo?: React.ErrorInfo;
-}
-
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null, errorInfo: React.ErrorInfo | null}> {
+  constructor(props: {children: React.ReactNode}) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { 
+      hasError: false, 
+      error: null,
+      errorInfo: null 
+    };
   }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Mettre à jour l'état pour que le prochain rendu affiche l'UI de secours
-    console.error("ErrorBoundary a capturé une erreur:", error.message);
-    return { hasError: true, error };
+  
+  static getDerivedStateFromError(error: Error) {
+    console.error("ErrorBoundary - getDerivedStateFromError:", error);
+    return { hasError: true };
   }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // Vous pouvez aussi enregistrer l'erreur dans un service de rapport
-    console.error("Détails de l'erreur capturée:", error);
-    console.error("Où l'erreur s'est produite:", errorInfo.componentStack);
-    this.setState({ errorInfo });
+  
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary - Erreur capturée:", error);
+    console.error("ErrorBoundary - Informations composant:", errorInfo);
+    
+    this.setState({
+      error: error,
+      errorInfo: errorInfo
+    });
   }
-
-  handleReset = (): void => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
-    // Tentative de redémarrage de l'application
-    window.location.href = '/home';
-  };
-
-  render(): React.ReactNode {
+  
+  render() {
     if (this.state.hasError) {
-      // Vous pouvez rendre n'importe quelle UI de secours
       return (
-        <div className="min-h-screen bg-logo-background flex items-center justify-center p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-coffee-darker">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Oups ! Une erreur est survenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                L'application a rencontré un problème inattendu.
-              </p>
-              
-              {this.state.error && (
-                <div className="bg-muted p-2 rounded-md text-sm overflow-auto max-h-40">
-                  <p className="font-medium text-coffee-dark">Erreur: {this.state.error.message}</p>
-                </div>
-              )}
-              
-              {this.state.errorInfo && (
-                <div className="bg-muted p-2 rounded-md text-xs overflow-auto max-h-40">
-                  <p className="font-medium text-coffee-dark mb-1">Stack Trace:</p>
-                  <pre className="whitespace-pre-wrap break-words text-muted-foreground">
-                    {this.state.errorInfo.componentStack}
-                  </pre>
-                </div>
-              )}
-              
-              <div className="flex justify-end">
-                <Button 
-                  onClick={this.handleReset} 
-                  className="bg-coffee-dark hover:bg-coffee-darker flex items-center gap-2"
-                >
-                  <RefreshCcw className="h-4 w-4" />
-                  Réessayer
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="p-4 border border-red-300 bg-red-50 rounded-md">
+          <h1 className="text-xl text-red-700 font-bold mb-2">Une erreur est survenue</h1>
+          {this.state.error && (
+            <div className="mb-3">
+              <p className="text-red-600 font-medium">Message: {this.state.error.toString()}</p>
+            </div>
+          )}
+          {this.state.errorInfo && (
+            <div className="mt-2">
+              <p className="text-sm font-medium mb-1 text-red-800">Trace de l'erreur:</p>
+              <pre className="text-xs overflow-auto bg-red-100 p-2 rounded border border-red-200 max-h-40">
+                {this.state.errorInfo.componentStack}
+              </pre>
+            </div>
+          )}
         </div>
       );
     }
-
+    
     return this.props.children;
   }
 }

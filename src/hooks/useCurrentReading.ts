@@ -1,4 +1,6 @@
 
+console.log("Import de useCurrentReading.ts OK");
+
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";

@@ -1,4 +1,6 @@
 
+console.log("Import de BookCard.tsx OK");
+
 import React, { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";

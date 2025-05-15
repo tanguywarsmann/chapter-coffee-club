@@ -1,3 +1,4 @@
+console.log("Import de SimilarReaders.tsx OK");
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

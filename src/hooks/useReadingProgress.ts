@@ -1,4 +1,6 @@
 
+console.log("Import de useReadingProgress.ts OK");
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ReadingProgress } from "@/types/reading";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -34,6 +36,7 @@ export const useReadingProgress = () => {
     }
 
     try {
+      console.log("Fetching reading progress for user:", user.id);
       isFetching.current = true;
       setIsLoading(true);
       setError(null);
@@ -42,6 +45,7 @@ export const useReadingProgress = () => {
 
       if (!isMounted.current) return;
 
+      console.log("Retrieved", progress.length, "enriched reading progresses");
       const inProgress = progress.filter(p => p.status === "in_progress");
 
       setReadingProgress(inProgress);
@@ -86,10 +90,14 @@ export const useReadingProgress = () => {
   }, [user, retryCount]);
 
   useEffect(() => {
-    if (user?.id && !hasFetched.current && !isFetching.current) {
-      fetchProgress();
-    } else if (!user?.id) {
-      setIsLoading(false);
+    try {
+      if (user?.id && !hasFetched.current && !isFetching.current) {
+        fetchProgress();
+      } else if (!user?.id) {
+        setIsLoading(false);
+      }
+    } catch (e) {
+      console.error("Erreur dans useEffect [useReadingProgress]", e);
     }
   }, [user, fetchProgress]);
 

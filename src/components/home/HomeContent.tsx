@@ -10,6 +10,12 @@ import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
 import SimilarReaders from "./SimilarReaders";
 
+console.log(">>> Début HomeContent.tsx - Contexte", {
+  isInIframe: window.self !== window.top,
+  isPreview: window.location.hostname.includes("lovable.app"),
+  userAgent: navigator.userAgent,
+});
+
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
   isLoading: boolean;

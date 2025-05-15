@@ -1,4 +1,6 @@
 
+console.log("Import de useReadingListState.ts OK");
+
 import { useState, useEffect, useRef } from "react";
 import { Book } from "@/types/book";
 import { useBookSorting } from "./useBookSorting";

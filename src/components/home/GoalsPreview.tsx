@@ -12,6 +12,8 @@ interface Goal {
   icon: "trophy" | "target";
 }
 
+console.log("Import de GoalsPreview.tsx OK");
+
 export function GoalsPreview() {
   const upcomingGoals: Goal[] = [
     {
@@ -75,4 +77,3 @@ export function GoalsPreview() {
     </Card>
   );
 }
-

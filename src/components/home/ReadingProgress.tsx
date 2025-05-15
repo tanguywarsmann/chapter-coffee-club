@@ -1,4 +1,3 @@
-
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { ArrowRight, BookOpen, BookMarked, CheckCircle, PlayCircle } from "lucid
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
+
+console.log("Import de ReadingProgress.tsx OK");
 
 interface ReadingProgressProps {
   progressItems: ReadingProgressType[];

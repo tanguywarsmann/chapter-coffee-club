@@ -1,4 +1,6 @@
 
+console.log("Import de useReadingListPage.ts OK");
+
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Book } from "@/types/book";
 import { useNavigate } from "react-router-dom";

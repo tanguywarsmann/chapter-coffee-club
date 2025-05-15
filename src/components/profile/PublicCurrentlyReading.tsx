@@ -1,4 +1,6 @@
 
+console.log("Import de PublicCurrentlyReading.tsx OK");
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReadingProgress } from "@/types/reading";
@@ -54,7 +56,11 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
       }
     };
 
-    fetchBooks();
+    try {
+      fetchBooks();
+    } catch (e) {
+      console.error("Erreur dans useEffect [PublicCurrentlyReading]", e);
+    }
   }, [userId]);
 
   if (loading) {

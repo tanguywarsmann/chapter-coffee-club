@@ -1,3 +1,6 @@
+
+console.log("Import de useBookFetching.ts OK");
+
 import { useState, useEffect, useCallback } from "react";
 import { Book } from "@/types/book";
 import { getAllBooks } from "@/services/books/bookQueries";

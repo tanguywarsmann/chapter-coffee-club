@@ -1,3 +1,5 @@
+console.log("Import de FollowerStats.tsx OK");
+
 import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { getFollowerCounts } from "@/services/user/profileService";

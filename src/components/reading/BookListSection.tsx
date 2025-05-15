@@ -1,4 +1,6 @@
 
+console.log("Import de BookListSection.tsx OK");
+
 import React, { useMemo } from 'react';
 import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';

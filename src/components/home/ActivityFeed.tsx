@@ -1,3 +1,6 @@
+
+console.log("Import de ActivityFeed.tsx OK");
+
 import { useState } from "react";
 import { User } from "@/types/user";
 import { Comment } from "@/types/comment";

@@ -1,4 +1,6 @@
 
+console.log("Import de CurrentlyReading.tsx OK");
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/progressService";
@@ -70,7 +72,11 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
       }
     }
 
-    fetchCurrentlyReading();
+    try {
+      fetchCurrentlyReading();
+    } catch (e) {
+      console.error("Erreur dans useEffect [CurrentlyReading]", e);
+    }
   }, [userId]);
 
   if (loading) {

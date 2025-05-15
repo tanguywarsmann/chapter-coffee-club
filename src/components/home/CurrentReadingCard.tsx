@@ -1,4 +1,6 @@
 
+console.log("Import de CurrentReadingCard.tsx OK");
+
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

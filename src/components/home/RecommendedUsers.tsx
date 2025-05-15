@@ -1,3 +1,4 @@
+console.log("Import de RecommendedUsers.tsx OK");
 
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardContent, CardTitle, CardFooter } from "@/components/ui/card";
