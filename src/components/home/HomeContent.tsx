@@ -72,63 +72,11 @@ export function HomeContent({
   }
 
   // Rendu principal
-  return (
-    <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-      <div className="space-y-6 md:col-span-2 lg:col-span-3">
-        <ReadingProgress
-          key={`reading-progress-${readingProgress.length}`}
-          progressItems={readingProgress}
-          isLoading={isLoading}
-        />
+console.log("TEST RecommendedUsers");
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            {(() => {
-              try {
-                return <GoalsPreview />;
-              } catch (e) {
-                console.error("Erreur dans GoalsPreview :", e);
-                return <div>Erreur GoalsPreview</div>;
-              }
-            })()}
-            
-            {(() => {
-              try {
-                return <FollowerStats />;
-              } catch (e) {
-                console.error("Erreur dans FollowerStats :", e);
-                return <div>Erreur FollowerStats</div>;
-              }
-            })()}
-          </div>
-          <div className="space-y-6">
-            {(() => {
-              try {
-                return <RecommendedUsers />;
-              } catch (e) {
-                console.error("Erreur dans RecommendedUsers :", e);
-                return <div>Erreur RecommendedUsers</div>;
-              }
-            })()}
-            
-            {(() => {
-              try {
-                return <SimilarReaders />;
-              } catch (e) {
-                console.error("Erreur dans SimilarReaders :", e);
-                return <div>Erreur SimilarReaders</div>;
-              }
-            })()}
-          </div>
-        </div>
-      </div>
-      <div className={`${mobileState ? "mt-6 md:mt-0" : ""}`}>
-        {activities.length > 0 ? (
-          <ActivityFeed activities={activities} />
-        ) : (
-          <div>Données d'activité non disponibles</div>
-        )}
-      </div>
-    </div>
-  );
+try {
+  return <RecommendedUsers />;
+} catch (e) {
+  console.error("Erreur dans RecommendedUsers :", e);
+  return <div>Erreur RecommendedUsers</div>;
 }
