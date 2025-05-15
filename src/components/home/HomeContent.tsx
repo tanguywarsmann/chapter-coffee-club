@@ -6,7 +6,8 @@ import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
-import SimilarReaders from "./SimilarReaders";
+// Correction de l'import pour SimilarReaders - utilisation du chemin complet
+import SimilarReaders from "@/components/home/SimilarReaders";
 import { isInIframe, isPreview, isMobile } from "@/utils/environment";
 
 console.log("Chargement de HomeContent.tsx", {
