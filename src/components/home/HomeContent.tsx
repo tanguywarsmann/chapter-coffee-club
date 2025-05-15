@@ -86,7 +86,11 @@ return (
           <FollowerStats />
         </div>
         <div className="space-y-6">
-          <RecommendedUsers />
+  {/* <RecommendedUsers /> */}
+  <div style={{ padding: 20, background: "#f9f9f9" }}>
+    Composant RecommendedUsers désactivé
+  </div>
+</div>
           {/* SimilarReaders temporairement désactivé */}
         </div>
       </div>
