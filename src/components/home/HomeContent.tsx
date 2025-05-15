@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
@@ -31,80 +30,74 @@ interface HomeContentProps {
 export function HomeContent({
   readingProgress,
   isLoading,
-  onProgressUpdate
+  onProgressUpdate,
 }: HomeContentProps) {
   console.log(">>> HomeContent START rendu");
 
   try {
-    console.log("Rendering HomeContent", { 
+    console.log("Rendering HomeContent", {
       readingProgressCount: readingProgress?.length || 0,
-      isLoading
+      isLoading,
     });
   } catch (e) {
     console.error("Erreur dans le logging initial:", e);
   }
 
-  // Vérifier si readingProgress est défini avant de l'utiliser
+  // Vérification de l’état mobile
   let mobileState;
   try {
-    if (!readingProgress) {
-      console.warn("readingProgress est undefined dans HomeContent");
-      return <div>Chargement des données de lecture...</div>;
-    }
-    
     mobileState = isMobile();
     console.log("useIsMobile helper successful", { isMobile: mobileState });
   } catch (e) {
-    console.error("Erreur dans l'évaluation du mode mobile ou la vérification de readingProgress:", e);
-    return <div>Erreur dans HomeContent: impossible de déterminer la vue</div>;
+    console.error("Erreur dans l'évaluation du mode mobile :", e);
+    return <div>Erreur : impossible de déterminer le mode d'affichage</div>;
   }
 
+  // Récupération sécurisée des activités
+  let activities: any[] = [];
   try {
-    const activities = getUserActivities();
-    console.log("getUserActivities successful", { activitiesCount: activities.length });
-    
-    return (
-      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-        <div className="space-y-6 md:col-span-2 lg:col-span-3">
-          {/* Lecture en cours d'abord */}
-          {readingProgress && Array.isArray(readingProgress) ? (
-            <ReadingProgress 
-              key={`reading-progress-${readingProgress.length}`}
-              progressItems={readingProgress}
-              isLoading={isLoading}
-            />
-          ) : (
-            <div>Données de lecture non disponibles</div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <GoalsPreview />
-              <FollowerStats />
-            </div>
-            <div className="space-y-6">
-              {/* Lecteurs à découvrir avant les lecteurs similaires */}
-              <RecommendedUsers />
-              <SimilarReaders />
-            </div>
+    activities = getUserActivities();
+    console.log("getUserActivities successful", {
+      activitiesCount: activities.length,
+    });
+  } catch (e) {
+    console.error("Erreur dans getUserActivities :", e);
+    activities = [];
+  }
+
+  // Sécurité : fallback si readingProgress est absent
+  if (!readingProgress || !Array.isArray(readingProgress)) {
+    return <div>Chargement des données de lecture...</div>;
+  }
+
+  // Rendu principal
+  return (
+    <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="space-y-6 md:col-span-2 lg:col-span-3">
+        <ReadingProgress
+          key={`reading-progress-${readingProgress.length}`}
+          progressItems={readingProgress}
+          isLoading={isLoading}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <GoalsPreview />
+            <FollowerStats />
+          </div>
+          <div className="space-y-6">
+            <RecommendedUsers />
+            <SimilarReaders />
           </div>
         </div>
-        <div className={`${mobileState ? 'mt-6 md:mt-0' : ''}`}>
-          {activities && Array.isArray(activities) ? (
-            <ActivityFeed activities={activities} />
-          ) : (
-            <div>Données d'activité non disponibles</div>
-          )}
-        </div>
       </div>
-    );
-  } catch (e) {
-    console.error("Erreur dans le rendu du composant HomeContent:", e);
-    return (
-      <div className="p-4 border border-red-300 bg-red-50 rounded-md">
-        <h3 className="text-red-700 font-medium">Erreur dans HomeContent</h3>
-        <p className="text-red-600">{e instanceof Error ? e.message : String(e)}</p>
+      <div className={`${mobileState ? "mt-6 md:mt-0" : ""}`}>
+        {activities.length > 0 ? (
+          <ActivityFeed activities={activities} />
+        ) : (
+          <div>Données d'activité non disponibles</div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 }
