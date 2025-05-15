@@ -1,4 +1,3 @@
-
 import React from "react";
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
@@ -6,7 +5,7 @@ import { ActivityFeed } from "./ActivityFeed";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
-import { RecommendedUsers } from "./RecommendedUsers";
+// import { RecommendedUsers } from "./RecommendedUsers"; // Désactivé temporairement
 import { isInIframe, isPreview, isMobile } from "@/utils/environment";
 
 console.log("Chargement de HomeContent.tsx", {
@@ -43,7 +42,6 @@ export function HomeContent({
     console.error("Erreur dans le logging initial:", e);
   }
 
-  // Vérification de l'état mobile
   let mobileState;
   try {
     mobileState = isMobile();
@@ -53,7 +51,6 @@ export function HomeContent({
     return <div>Erreur : impossible de déterminer le mode d'affichage</div>;
   }
 
-  // Récupération sécurisée des activités
   let activities: any[] = [];
   try {
     activities = getUserActivities();
@@ -65,43 +62,40 @@ export function HomeContent({
     activities = [];
   }
 
-  // Sécurité : fallback si readingProgress est absent
   if (!readingProgress || !Array.isArray(readingProgress)) {
     return <div>Chargement des données de lecture...</div>;
   }
 
-  // Rendu principal
-return (
-  <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-    <div className="space-y-6 md:col-span-2 lg:col-span-3">
-      <ReadingProgress
-        key={`reading-progress-${readingProgress.length}`}
-        progressItems={readingProgress}
-        isLoading={isLoading}
-      />
+  return (
+    <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="space-y-6 md:col-span-2 lg:col-span-3">
+        <ReadingProgress
+          key={`reading-progress-${readingProgress.length}`}
+          progressItems={readingProgress}
+          isLoading={isLoading}
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <GoalsPreview />
-          <FollowerStats />
-        </div>
-        <div className="space-y-6">
-  {/* <RecommendedUsers /> */}
-  <div style={{ padding: 20, background: "#f9f9f9" }}>
-    Composant RecommendedUsers désactivé
-  </div>
-</div>
-          {/* SimilarReaders temporairement désactivé */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <GoalsPreview />
+            <FollowerStats />
+          </div>
+          <div className="space-y-6">
+            {/* <RecommendedUsers /> */}
+            <div className="p-4 border border-dashed border-gray-300 text-sm text-muted-foreground rounded-md">
+              Composant <code>RecommendedUsers</code> désactivé temporairement
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className={`${mobileState ? "mt-6 md:mt-0" : ""}`}>
+        {activities.length > 0 ? (
+          <ActivityFeed activities={activities} />
+        ) : (
+          <div>Données d'activité non disponibles</div>
+        )}
+      </div>
     </div>
-    <div className={`${mobileState ? "mt-6 md:mt-0" : ""}`}>
-      {activities.length > 0 ? (
-        <ActivityFeed activities={activities} />
-      ) : (
-        <div>Données d'activité non disponibles</div>
-      )}
-    </div>
-  </div>
-);
+  );
 }
