@@ -12,7 +12,7 @@ import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { Database } from "@/integrations/supabase/types";
-import { clearProgressCache } from "@/services/progressService";
+import { clearProgressCache } from "@/services/reading/progressService";
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 

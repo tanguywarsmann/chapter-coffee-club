@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ReadingProgress } from "@/types/reading";
-import { getUserReadingProgress, clearProgressCache } from "@/services/progressService";
+import { getUserReadingProgress, clearProgressCache } from "@/services/reading/progressService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 

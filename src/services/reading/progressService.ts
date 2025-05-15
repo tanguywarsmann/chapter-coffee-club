@@ -1,10 +1,31 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/services/bookService";
+import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
 
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
+type BookRecord = Database['public']['Tables']['books']['Row'];
+type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
+
+// Cache pour les données de progression de lecture
+const progressCache = new Map<string, { 
+  data: ReadingProgress[], 
+  timestamp: number 
+}>();
+const CACHE_DURATION = 30000; // 30 secondes (réduit de 60000)
+
+interface EnrichedReadingProgress extends ReadingProgress {
+  book_title: string;
+  book_author: string;
+  book_slug: string;
+  book_cover: string | null;
+  total_chapters: number;
+  validations: ReadingValidation[];
+}
+
+type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
+
+// Définition des statuts valides pour la lecture
+const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
 
 /**
  * Récupère la progression de lecture d'un utilisateur
@@ -26,7 +47,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     if (error || !data) return [];
 
     // Récupération et enrichissement des données avec total_chapters
-    const enrichedProgress: ReadingProgress[] = await Promise.all(
+    const enrichedProgress: EnrichedReadingProgress[] = await Promise.all(
       data.map(async (item: ReadingProgressRecord) => {
         const book = await getBookById(item.book_id);
         return {
@@ -34,6 +55,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
           total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
           book_title: book?.title ?? "Titre inconnu",
           book_author: book?.author ?? "Auteur inconnu",
+          book_slug: book?.slug ?? "slug inconnu",
           book_cover: book?.cover_url ?? book?.coverImage ?? "",
           validations: [],
         };
@@ -76,6 +98,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
+      book_slug: book?.slug ?? "slug inconnu",
       book_cover: book?.cover_url ?? book?.coverImage ?? "",
       validations: [],
     };

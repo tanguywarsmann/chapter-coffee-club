@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
-import { getBookReadingProgress } from "@/services/progressService";
+import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { BookDetailHeader } from "./BookDetailHeader";
 import { BookCoverInfo } from "./BookCoverInfo";
