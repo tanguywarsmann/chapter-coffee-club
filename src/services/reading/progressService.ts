@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
+import { getBookById } from "@/services/books/bookQueries";
 
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];
@@ -26,6 +28,19 @@ type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
 
 // Définition des statuts valides pour la lecture
 const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
+
+/**
+ * Nettoie le cache de progression pour un utilisateur ou tout le cache
+ * @param userId Identifiant de l'utilisateur (optionnel)
+ */
+export const clearProgressCache = async (userId?: string): Promise<void> => {
+  console.log(`🗑️ Clearing progress cache${userId ? ` for user ${userId}` : ' (all users)'}`);
+  if (userId) {
+    progressCache.delete(userId);
+  } else {
+    progressCache.clear();
+  }
+};
 
 /**
  * Récupère la progression de lecture d'un utilisateur

@@ -1,18 +1,16 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById } from "@/services/books/bookQueries";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
 import { recordReadingActivity } from "../streakService";
-import { getBookReadingProgress } from "./progressService";
+import { getBookReadingProgress, clearProgressCache } from "./progressService";
 import { Badge } from "@/types/badge";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { Database } from "@/integrations/supabase/types";
-import { clearProgressCache } from "@/services/reading/progressService";
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 

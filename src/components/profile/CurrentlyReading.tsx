@@ -3,7 +3,7 @@ console.log("Import de CurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserReadingProgress } from "@/services/progressService";
+import { getUserReadingProgress } from "@/services/reading/progressService";
 import { Link } from "react-router-dom";
 import { BookCover } from "@/components/books/BookCover";
 import { Progress } from "@/components/ui/progress";

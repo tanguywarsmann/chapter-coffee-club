@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,7 +9,7 @@ import { Book } from "@/types/book";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
-import { getBookReadingProgress } from "@/services/progressService";
+import { getBookReadingProgress } from "@/services/reading/progressService";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
