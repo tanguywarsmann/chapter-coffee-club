@@ -1,3 +1,4 @@
+
 console.log("Import de FollowerStats.tsx OK");
 
 import { useEffect, useState } from "react";
@@ -5,18 +6,28 @@ import { Users } from "lucide-react";
 import { getFollowerCounts } from "@/services/user/profileService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de FollowerStats.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 export function FollowerStats() {
   const { user } = useAuth();
   const [counts, setCounts] = useState({ followers: 0, following: 0 });
 
   useEffect(() => {
-    const fetchCounts = async () => {
-      if (!user?.id) return;
-      const result = await getFollowerCounts(user.id);
-      setCounts(result);
-    };
-    fetchCounts();
+    try {
+      const fetchCounts = async () => {
+        if (!user?.id) return;
+        const result = await getFollowerCounts(user.id);
+        setCounts(result);
+      };
+      fetchCounts();
+    } catch (e) {
+      console.error("Erreur dans useEffect FollowerStats:", e);
+    }
   }, [user]);
 
   return (

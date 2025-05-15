@@ -2,6 +2,12 @@
 console.log("Import de ErrorBoundary.tsx OK");
 
 import React from "react";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de ErrorBoundary.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null, errorInfo: React.ErrorInfo | null}> {
   constructor(props: {children: React.ReactNode}) {

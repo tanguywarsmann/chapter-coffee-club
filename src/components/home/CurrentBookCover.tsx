@@ -1,5 +1,11 @@
 
 import { Book } from "@/types/book";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de CurrentBookCover.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 interface CurrentBookCoverProps {
   book: Book;

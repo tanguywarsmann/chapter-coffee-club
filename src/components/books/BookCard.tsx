@@ -9,8 +9,13 @@ import { toast } from "sonner";
 import { useReadingList } from "@/hooks/useReadingList";
 import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
-import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, BookMarked, CheckCircle } from "lucide-react";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de BookCard.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 interface BookCardProps {
   book: Book;
@@ -48,22 +53,29 @@ export function BookCard({
 
   // Get the user ID from Supabase auth session
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        
-        if (data?.user?.id) {
-          console.log("[DIAGNOSTIQUE] Utilisateur authentifié dans BookCard:", data.user.id);
-          setUserId(data.user.id);
-        } else {
-          console.warn("No authenticated user found in BookCard");
+    try {
+      if (typeof window === "undefined") return;
+      
+      const getUser = async () => {
+        try {
+          const { supabase } = await import("@/integrations/supabase/client");
+          const { data } = await supabase.auth.getUser();
+          
+          if (data?.user?.id) {
+            console.log("[DIAGNOSTIQUE] Utilisateur authentifié dans BookCard:", data.user.id);
+            setUserId(data.user.id);
+          } else {
+            console.warn("No authenticated user found in BookCard");
+          }
+        } catch (error) {
+          console.error("Error getting authenticated user:", error);
         }
-      } catch (error) {
-        console.error("Error getting authenticated user:", error);
-      }
-    };
+      };
 
-    getUser();
+      getUser();
+    } catch (e) {
+      console.error("Erreur dans useEffect BookCard:", e);
+    }
   }, []);
 
   // Utility to truncate the book title
@@ -85,13 +97,15 @@ export function BookCard({
 
     try {
       // Remove the book
-      const storedList = localStorage.getItem("reading_list");
-      const readingList = storedList ? JSON.parse(storedList) : [];
-      const updatedList = readingList.filter(
-        (item: any) => !(item.user_id === userId && item.book_id === book.id)
-      );
-      localStorage.setItem("reading_list", JSON.stringify(updatedList));
-      toast.success(`${book.title} retiré de votre liste`);
+      if (typeof window !== "undefined") {
+        const storedList = localStorage.getItem("reading_list");
+        const readingList = storedList ? JSON.parse(storedList) : [];
+        const updatedList = readingList.filter(
+          (item: any) => !(item.user_id === userId && item.book_id === book.id)
+        );
+        localStorage.setItem("reading_list", JSON.stringify(updatedList));
+        toast.success(`${book.title} retiré de votre liste`);
+      }
     } catch (error) {
       toast.error("Erreur lors de la suppression du livre de la liste");
       console.error("Error in handleDelete:", error);

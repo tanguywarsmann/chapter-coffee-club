@@ -8,6 +8,12 @@ import { useReadingList } from "@/hooks/useReadingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookSorting } from "@/hooks/useBookSorting";
 import { useBookFetching } from "./useBookFetching";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de useReadingListPage.ts", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 export const useReadingListPage = () => {
   console.log("[DEBUG] Initialisation useReadingListPage");
@@ -54,21 +60,31 @@ export const useReadingListPage = () => {
 
   // Effet pour suivre l'état des données et mettre à jour isDataReady
   useEffect(() => {
-    if (!isLoading && !isFetching) {
-      // Marquer les données comme prêtes seulement quand le chargement est terminé
-      // et qu'au moins une des listes contient des données
-      const hasData = toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0;
-      console.log("[DEBUG] Mise à jour isDataReady:", { hasData, isLoading, isFetching });
-      setIsDataReady(hasData);
+    try {
+      if (!isLoading && !isFetching) {
+        // Marquer les données comme prêtes seulement quand le chargement est terminé
+        // et qu'au moins une des listes contient des données
+        const hasData = toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0;
+        console.log("[DEBUG] Mise à jour isDataReady:", { hasData, isLoading, isFetching });
+        setIsDataReady(hasData);
+      }
+    } catch (e) {
+      console.error("Erreur dans useEffect pour isDataReady:", e);
     }
   }, [toReadBooks, inProgressBooks, completedBooks, isLoading, isFetching]);
 
   const navigateToBook = useCallback((bookId: string) => {
-    if (!bookId) {
-      console.warn("[DEBUG] navigateToBook appelé avec un bookId vide ou null");
-      return;
+    try {
+      if (!bookId) {
+        console.warn("[DEBUG] navigateToBook appelé avec un bookId vide ou null");
+        return;
+      }
+      if (typeof window !== "undefined") {
+        navigate(`/books/${bookId}`);
+      }
+    } catch (e) {
+      console.error("Erreur dans navigateToBook:", e);
     }
-    navigate(`/books/${bookId}`);
   }, [navigate]);
 
   const handleFetchBooks = useCallback(async () => {

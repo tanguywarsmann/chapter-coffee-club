@@ -2,6 +2,12 @@
 import { useEffect, useState } from "react";
 import { WelcomeModalWithNavigate } from "./WelcomeModalWithNavigate";
 import { WelcomeModalIframe } from "./WelcomeModalIframe";
+import { isInIframe, isPreview } from "@/utils/environment";
+
+console.log("Chargement de WelcomeModal.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+});
 
 interface WelcomeModalProps {
   open: boolean;
@@ -9,21 +15,21 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
-  const [isInIframe, setIsInIframe] = useState<boolean | null>(null);
+  const [isInIframeState, setIsInIframeState] = useState<boolean | null>(null);
 
   useEffect(() => {
     try {
-      setIsInIframe(window.self !== window.top);
-    } catch {
-      // Si une erreur est levée lors de l'accès à window.self ou window.top
-      // (généralement à cause des restrictions de sécurité), on est dans une iframe
-      setIsInIframe(true);
+      setIsInIframeState(isInIframe());
+    } catch (e) {
+      console.error("Erreur lors de la détection du contexte iframe:", e);
+      // Si une erreur est levée, on suppose qu'on est dans une iframe
+      setIsInIframeState(true);
     }
   }, []);
 
-  if (isInIframe === null) return null; // Attend d'avoir détecté le contexte
+  if (isInIframeState === null) return null; // Attend d'avoir détecté le contexte
   
-  return isInIframe 
+  return isInIframeState 
     ? <WelcomeModalIframe open={open} onClose={onClose} />
     : <WelcomeModalWithNavigate open={open} onClose={onClose} />;
 }

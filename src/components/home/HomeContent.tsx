@@ -3,17 +3,23 @@ import React from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
 import SimilarReaders from "./SimilarReaders";
+import { isInIframe, isPreview, isMobile } from "@/utils/environment";
+
+console.log("Chargement de HomeContent.tsx", {
+  isPreview: isPreview(),
+  isInIframe: isInIframe(),
+  isMobile: isMobile(),
+});
 
 console.log(">>> Début HomeContent.tsx - Contexte", {
-  isInIframe: window.self !== window.top,
-  isPreview: window.location.hostname.includes("lovable.app"),
-  userAgent: navigator.userAgent,
+  isInIframe: isInIframe(),
+  isPreview: isPreview(),
+  userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
 });
 
 interface HomeContentProps {
@@ -39,17 +45,17 @@ export function HomeContent({
   }
 
   // Vérifier si readingProgress est défini avant de l'utiliser
-  let isMobile;
+  let mobileState;
   try {
     if (!readingProgress) {
       console.warn("readingProgress est undefined dans HomeContent");
       return <div>Chargement des données de lecture...</div>;
     }
     
-    isMobile = useIsMobile();
-    console.log("useIsMobile hook successful", { isMobile });
+    mobileState = isMobile();
+    console.log("useIsMobile helper successful", { isMobile: mobileState });
   } catch (e) {
-    console.error("Erreur dans useIsMobile ou la vérification de readingProgress:", e);
+    console.error("Erreur dans l'évaluation du mode mobile ou la vérification de readingProgress:", e);
     return <div>Erreur dans HomeContent: impossible de déterminer la vue</div>;
   }
 
@@ -79,7 +85,7 @@ export function HomeContent({
             </div>
           </div>
         </div>
-        <div className={`${isMobile ? 'mt-6 md:mt-0' : ''}`}>
+        <div className={`${mobileState ? 'mt-6 md:mt-0' : ''}`}>
           <ActivityFeed activities={getUserActivities()} />
         </div>
       </div>
