@@ -73,11 +73,13 @@ export function HomeContent({
 
   // Rendu principal
 console.log("TEST RecommendedUsers");
+// Rendu de test pour isoler SimilarReaders
+console.log("TEST SimilarReaders");
 
 try {
-  return <RecommendedUsers />;
+  return <SimilarReaders />;
 } catch (e) {
-  console.error("Erreur dans RecommendedUsers :", e);
-  return <div>Erreur RecommendedUsers</div>;
- }
+  console.error("Erreur dans SimilarReaders :", e);
+  return <div>Erreur SimilarReaders</div>;
+}
 }
