@@ -107,7 +107,7 @@ export default function SimilarReaders() {
         {readers.map(reader => (
           <div key={reader.id} className="flex items-start space-x-3 mb-4 last:mb-0">
             <Avatar>
-              <AvatarImage src={reader.avatar} />
+              <AvatarImage src={reader.avatar ?? ""} />
               <AvatarFallback>{reader.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
             <div>
