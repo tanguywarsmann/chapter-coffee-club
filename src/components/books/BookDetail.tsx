@@ -19,6 +19,7 @@ import { BadgeCard } from "@/components/achievements/BadgeCard";
 import { Badge } from "@/types/badge";
 import { MonthlyRewardModal } from "./MonthlyRewardModal";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
 
 interface BookDetailProps {
   book: Book;
@@ -36,6 +37,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
   const [monthlyReward, setMonthlyReward] = useState<Badge | null>(null);
   const [showMonthlyReward, setShowMonthlyReward] = useState(false);
+  const { refetch: refreshReadingProgress } = useReadingProgress();
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     isValidating,
@@ -52,7 +55,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     showConfetti,
     isLocked,
     remainingLockTime,
-    handleLockExpire
+    handleLockExpire,
+    forceRefresh
   } = useBookValidation(currentBook, user?.id, (bookId) => {
     if (onChapterComplete) {
       onChapterComplete(bookId);
@@ -68,6 +72,18 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           setShowMonthlyReward(true);
         }
       });
+      
+      // Force refresh reading progress after a short delay to ensure data is up-to-date
+      console.log("🔄 Planification d'un refresh après validation");
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+      
+      fetchTimeoutRef.current = setTimeout(() => {
+        console.log("🔄 Execution du refresh planifié");
+        refreshReadingProgress(true); // Force refresh
+        forceRefresh(); // Utiliser aussi le forceRefresh de useBookValidation
+      }, 1000);
     }
   });
 
@@ -78,8 +94,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     const fetchProgress = async () => {
       if (user?.id && currentBook?.id) {
         try {
+          console.log("🔄 Récupération de la progression pour le livre:", currentBook.id);
           const progress = await getBookReadingProgress(user.id, currentBook.id);
           if (progress) {
+            console.log("📚 Progression récupérée:", {
+              id: progress.id,
+              validations: progress.validations?.length,
+              expected_segments: progress.expected_segments,
+              total_chapters: progress.total_chapters
+            });
+            
             setReadingProgress(progress);
 
             // Update the book with validation data
@@ -92,7 +116,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             }
           }
         } catch (error) {
-          console.error("Error fetching book reading progress:", error);
+          console.error("⚠️ Error fetching book reading progress:", error);
         }
       }
     };
@@ -103,14 +127,21 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   // Calculate progress percentage based on validations
   useEffect(() => {
     const chapters = readingProgress?.validations?.length || 0;
-    const total = readingProgress?.total_chapters || currentBook.expectedSegments || 1;
+    const total = readingProgress?.expected_segments || 
+                 readingProgress?.total_chapters || 
+                 currentBook.expectedSegments || 1;
 
-    console.log("→ Calcul progression", { chapters, total });
+    console.log("📊 Calcul progression", { 
+      chapters, 
+      total,
+      expected_segments: readingProgress?.expected_segments,
+      total_chapters: readingProgress?.total_chapters
+    });
 
     setProgressPercent(
       calculateReadingProgress(chapters, total)
     );
-  }, [readingProgress?.validations, currentBook.expectedSegments]);
+  }, [readingProgress?.validations, currentBook.expectedSegments, readingProgress?.expected_segments, readingProgress?.total_chapters]);
 
   const getCurrentSegmentToValidate = () => {
     if (!readingProgress || !readingProgress.validations) return 1;
@@ -124,18 +155,20 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
 
     const segment = getCurrentSegmentToValidate();
+    console.log("🎯 Demande de validation du segment:", segment);
     setValidationSegment(segment);
     setShowValidationModal(true);
 
     // Start session timer if not already started
     if (!sessionStartTimeRef.current) {
       sessionStartTimeRef.current = new Date();
-      console.log("Session de lecture démarrée:", sessionStartTimeRef.current);
+      console.log("⏱️ Session de lecture démarrée:", sessionStartTimeRef.current);
     }
   };
 
   const handleQuizCompleteWrapper = async (correct: boolean) => {
     try {
+      console.log("🧩 Traitement de la réponse au quiz:", correct ? "correcte" : "incorrecte");
       const result = await handleQuizComplete(correct);
       
       if (correct) {
@@ -149,6 +182,16 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             // Show badge unlock dialog
             setShowBadgeDialog(true);
           }
+
+          // Force refresh reading progress
+          console.log("🔄 Forçage du rafraîchissement après quiz réussi");
+          forceRefresh();
+          
+          // Refresh after a short delay to ensure data is up-to-date
+          setTimeout(() => {
+            console.log("🔄 Refresh supplémentaire après délai");
+            refreshReadingProgress(true);
+          }, 1500);
 
           // Record completed book if applicable
           if (currentBook.isCompleted) {
@@ -165,7 +208,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           // Record reading session when quiz is completed
           if (sessionStartTimeRef.current) {
             const endTime = new Date();
-            console.log("Session de lecture terminée:", endTime);
+            console.log("⏱️ Session de lecture terminée:", endTime);
             recordReadingSession(user.id, sessionStartTimeRef.current, endTime);
             sessionStartTimeRef.current = null;
           }
@@ -183,12 +226,42 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         
         // Display success toast
         toast.success("Segment validé avec succès !");
+      } else {
+        // Even if the quiz was failed, refresh the data
+        forceRefresh();
       }
     } catch (error) {
-      console.error("Error in quiz completion:", error);
+      console.error("⚠️ Error in quiz completion:", error);
       toast.error("Une erreur est survenue lors de la validation");
+      
+      // Try to refresh anyway
+      forceRefresh();
     }
   };
+
+  // Manage already validated case
+  useEffect(() => {
+    if (showValidationModal && validationSegment) {
+      // Check if segment is already validated (compare with validations array)
+      const isAlreadyValidated = readingProgress?.validations?.some(
+        v => v.segment === validationSegment
+      );
+      
+      if (isAlreadyValidated) {
+        console.log("⚠️ Segment déjà validé détecté:", validationSegment);
+        toast.info("Ce segment a déjà été validé", {
+          description: "Passez au segment suivant",
+          duration: 3000
+        });
+        
+        // Close validation modal
+        setShowValidationModal(false);
+        
+        // Force refresh to get updated progress
+        forceRefresh();
+      }
+    }
+  }, [showValidationModal, validationSegment, readingProgress?.validations, forceRefresh]);
 
   // Check if book is completed based on validations
   const chaptersRead = readingProgress?.validations?.length || currentBook.chaptersRead || 0;

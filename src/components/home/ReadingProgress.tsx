@@ -15,15 +15,22 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ progressItems, isLoading = false }: ReadingProgressProps) {
-  console.log("Rendering ReadingProgress", { 
+  console.log("📊 Rendering ReadingProgress", { 
     progressItemsCount: progressItems?.length || 0,
-    isLoading 
+    isLoading,
+    itemsData: progressItems?.map(p => ({
+      id: p.id,
+      title: p.book_title,
+      validations: p.validations?.length,
+      expected_segments: p.expected_segments,
+      total_chapters: p.total_chapters
+    }))
   });
   
   // Vérifier si progressItems est défini et c'est un array
   const availableProgresses = useMemo(() => {
     if (!progressItems || !Array.isArray(progressItems)) {
-      console.warn("progressItems n'est pas un tableau dans ReadingProgress");
+      console.warn("⚠️ progressItems n'est pas un tableau dans ReadingProgress");
       return [];
     }
     return progressItems;
@@ -90,28 +97,29 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
             {progresses.slice(0, 3).map((progress) => {
               // S'assurer que progress est défini
               if (!progress) {
-                console.warn("Un élément de progresses est undefined");
+                console.warn("⚠️ Un élément de progresses est undefined");
                 return null;
               }
               
               // Calcul du nombre de segments lus basé sur les validations
               const chaptersRead = progress.validations?.length ?? 0;
               
-              // Utiliser expected_segments en priorité, puis total_chapters, puis 1 comme valeur par défaut
+              // Priorité: expected_segments > total_chapters > 1
               const totalSegments = progress.expected_segments ?? progress.total_chapters ?? 0;
               
-              // Debug: ajouter des logs pour tracer les valeurs
-              console.log(`→ Calcul progression pour ${progress.book_title}`, {
+              // Logs détaillés pour tracer les valeurs utilisées pour le calcul
+              console.log(`📈 Calcul progression pour ${progress.book_title}`, {
                 chaptersRead,
                 totalSegments,
                 expected_segments: progress.expected_segments,
                 total_chapters: progress.total_chapters,
-                validations: progress.validations?.length
+                validations: progress.validations?.length,
+                status: progress.status
               });
               
               // Ne rien afficher si expected_segments est manquant ou égal à 0
               if (!totalSegments) {
-                console.warn("totalSegments est 0 ou undefined pour progress.id =", progress.id);
+                console.warn("⚠️ totalSegments est 0 ou undefined pour progress.id =", progress.id);
                 return null;
               }
               

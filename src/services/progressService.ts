@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -12,7 +11,7 @@ const progressCache = new Map<string, {
   data: ReadingProgress[], 
   timestamp: number 
 }>();
-const CACHE_DURATION = 60000; // 1 minute en millisecondes
+const CACHE_DURATION = 30000; // 30 secondes (réduit de 60000)
 
 interface EnrichedReadingProgress extends ReadingProgress {
   book_title: string;
@@ -28,9 +27,10 @@ type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
 /**
  * Récupère la progression de lecture d'un utilisateur
  * @param userId ID de l'utilisateur
+ * @param forceRefresh Force le rafraîchissement du cache
  * @returns Liste des progressions de lecture enrichies
  */
-export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
+export const getUserReadingProgress = async (userId: string, forceRefresh = false): Promise<ReadingProgress[]> => {
   if (!userId) return [];
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,16 +40,14 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   const cacheKey = `progress_${userId}`;
   const cached = progressCache.get(cacheKey);
   
-  // Réduire la durée du cache pour éviter les problèmes d'affichage
-  const reducedCacheDuration = 30000; // 30 secondes
-  
-  if (cached && (Date.now() - cached.timestamp) < reducedCacheDuration) {
-    console.log("Utilisation du cache pour getUserReadingProgress");
+  // Utilise le cache uniquement si forceRefresh est false
+  if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    console.log("🗄️ Utilisation du cache pour getUserReadingProgress");
     return cached.data;
   }
 
   try {
-    console.log("Fetching reading progress for user:", userId);
+    console.log(`🔄 Fetching reading progress for user: ${userId} ${forceRefresh ? '[FORCE REFRESH]' : ''}`);
     
     // Requête optimisée: une seule requête pour obtenir tous les progrès de lecture,
     // les livres associés et les validations correspondantes
@@ -134,10 +132,10 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       timestamp: Date.now() 
     });
 
-    console.log(`Retrieved ${enrichedProgresses.length} enriched reading progresses`);
+    console.log(`📚 Retrieved ${enrichedProgresses.length} enriched reading progresses`);
     return enrichedProgresses;
   } catch (error) {
-    console.error("Error in getUserReadingProgress:", error);
+    console.error("⚠️ Error in getUserReadingProgress:", error);
     return [];
   }
 };
@@ -162,9 +160,10 @@ const updateProgressStatus = async (progressId: string, newStatus: ReadingStatus
  * Récupère la progression de lecture d'un livre pour un utilisateur
  * @param userId ID de l'utilisateur
  * @param bookId ID du livre
+ * @param forceRefresh Force le rafraîchissement du cache
  * @returns Progression de lecture ou null
  */
-export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
+export const getBookReadingProgress = async (userId: string, bookId: string, forceRefresh = false): Promise<ReadingProgress | null> => {
   if (!userId) return null;
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -174,17 +173,17 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   const cacheKey = `progress_${userId}`;
   const cached = progressCache.get(cacheKey);
   
-  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+  if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
     // Chercher dans le cache pour ce livre spécifique
     const bookProgress = cached.data.find(p => p.book_id === bookId);
     if (bookProgress) {
+      console.log(`🗄️ Utilisation du cache pour le livre ${bookId}`);
       return bookProgress;
     }
   }
 
   try {
-    // Liste des statuts valides
-    const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
+    console.log(`🔄 Fetching book reading progress: ${bookId} for user: ${userId} ${forceRefresh ? '[FORCE REFRESH]' : ''}`);
     
     // Requête optimisée pour obtenir progress + book + validations en une seule requête
     const { data, error } = await supabase
@@ -259,7 +258,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 
     return enrichedProgress;
   } catch (error) {
-    console.error("Error in getBookReadingProgress:", error);
+    console.error("⚠️ Error in getBookReadingProgress:", error);
     return null;
   }
 };
@@ -267,16 +266,15 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 /**
  * Efface le cache de progression
  * @param userId ID de l'utilisateur (optionnel)
- * @param bookId ID du livre (optionnel)
  */
-export const clearProgressCache = (userId?: string): void => {
+export const clearProgressCache = async (userId?: string): Promise<void> => {
   if (userId) {
     const cacheKey = `progress_${userId}`;
     progressCache.delete(cacheKey);
-    console.log(`Cache de progression effacé pour l'utilisateur ${userId}`);
+    console.log(`🗑️ Cache de progression effacé pour l'utilisateur ${userId}`);
   } else {
     // Si aucun userId n'est spécifié, vider tout le cache
     progressCache.clear();
-    console.log("Cache de progression entièrement effacé");
+    console.log("🗑️ Cache de progression entièrement effacé");
   }
 };

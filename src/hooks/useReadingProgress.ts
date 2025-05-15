@@ -1,6 +1,4 @@
 
-console.log("Import de useReadingProgress.ts OK");
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ReadingProgress } from "@/types/reading";
 import { getUserReadingProgress, clearProgressCache } from "@/services/progressService";
@@ -13,12 +11,16 @@ export const useReadingProgress = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Nouveau déclencheur pour forcer un refresh
   
   const isMounted = useRef(true);
   const hasFetched = useRef(false);
   const isFetching = useRef(false);
+  const lastFetchTimestamp = useRef(0);
+  const MIN_FETCH_INTERVAL = 500; // Interval minimal entre deux fetchs (en ms)
 
   useEffect(() => {
+    console.log("🔄 useReadingProgress monté ou user changé");
     isMounted.current = true;
 
     if (user?.id) {
@@ -30,23 +32,45 @@ export const useReadingProgress = () => {
     };
   }, [user]);
 
-  const fetchProgress = useCallback(async () => {
+  const fetchProgress = useCallback(async (forceRefresh = false) => {
     if (!user?.id || !isMounted.current || isFetching.current) {
+      console.log("⏭️ Fetch annulé:", { 
+        userId: user?.id, 
+        isMounted: isMounted.current, 
+        isFetching: isFetching.current 
+      });
       return;
     }
 
+    const now = Date.now();
+    if (!forceRefresh && now - lastFetchTimestamp.current < MIN_FETCH_INTERVAL) {
+      console.log("⏭️ Fetch ignoré (trop récent):", {
+        timeSinceLastFetch: now - lastFetchTimestamp.current,
+        minInterval: MIN_FETCH_INTERVAL
+      });
+      return;
+    }
+    
+    lastFetchTimestamp.current = now;
+
     try {
-      console.log("Fetching reading progress for user:", user.id);
+      console.log("🔄 Fetching reading progress for user:", user.id);
       isFetching.current = true;
       setIsLoading(true);
       setError(null);
+
+      if (forceRefresh) {
+        console.log("🔄 Forçage du rafraîchissement du cache");
+        await clearProgressCache(user.id);
+      }
 
       const progress = await getUserReadingProgress(user.id);
 
       if (!isMounted.current) return;
 
-      console.log("Retrieved", progress.length, "enriched reading progresses");
+      console.log("📚 Retrieved", progress.length, "enriched reading progresses");
       const inProgress = progress.filter(p => p.status === "in_progress");
+      console.log("📊 Progression en cours:", inProgress.length, "livres");
 
       setReadingProgress(inProgress);
       hasFetched.current = true;
@@ -56,7 +80,7 @@ export const useReadingProgress = () => {
         setRetryCount(0);
       }
     } catch (err) {
-      console.error("Erreur lors du chargement de la progression :", err);
+      console.error("⚠️ Erreur lors du chargement de la progression :", err);
       
       if (isMounted.current) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -89,6 +113,7 @@ export const useReadingProgress = () => {
     }
   }, [user, retryCount]);
 
+  // Effect pour charger les données au montage ou changement d'utilisateur
   useEffect(() => {
     try {
       if (user?.id && !hasFetched.current && !isFetching.current) {
@@ -101,6 +126,20 @@ export const useReadingProgress = () => {
     }
   }, [user, fetchProgress]);
 
+  // Effect additionnel pour réagir au déclencheur de rafraîchissement
+  useEffect(() => {
+    if (refreshTrigger > 0 && user?.id) {
+      console.log("🔄 Déclenchement du rafraîchissement via refreshTrigger");
+      fetchProgress(true); // Force refresh
+    }
+  }, [refreshTrigger, fetchProgress, user?.id]);
+
+  // Fonction pour forcer un rafraîchissement depuis l'extérieur
+  const forceRefresh = useCallback(() => {
+    console.log("🔄 Force refresh requested");
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
+
   const handleProgressUpdate = useCallback(async (bookId: string) => {
     if (!user?.id) {
       toast.error("Vous devez être connecté pour mettre à jour votre progression", {
@@ -111,16 +150,16 @@ export const useReadingProgress = () => {
 
     try {
       // Vider le cache avant de récupérer les nouvelles données
-      console.log("Vidage du cache avant mise à jour de la progression");
-      clearProgressCache(user.id);
+      console.log("🗑️ Vidage du cache avant mise à jour de la progression");
+      await clearProgressCache(user.id);
       
       setIsLoading(true);
-      await fetchProgress(); // Refresh la progression complète
+      await fetchProgress(true); // Force refresh
       toast.success("Progression mise à jour", {
         duration: 2000
       });
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de la progression :", error);
+      console.error("⚠️ Erreur lors de la mise à jour de la progression :", error);
       if (isMounted.current) {
         toast.error("Erreur lors de la mise à jour de votre progression", {
           description: "Veuillez réessayer ultérieurement",
@@ -139,6 +178,7 @@ export const useReadingProgress = () => {
     isLoading,
     error,
     handleProgressUpdate,
-    refetch: fetchProgress
+    refetch: fetchProgress,
+    forceRefresh // Exposer la fonction pour forcer un rafraîchissement
   };
 };

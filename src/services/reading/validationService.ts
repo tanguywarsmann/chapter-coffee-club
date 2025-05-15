@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById } from "@/services/books/bookQueries";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
@@ -11,6 +12,7 @@ import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { Database } from "@/integrations/supabase/types";
+import { clearProgressCache } from "@/services/progressService";
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 
@@ -23,6 +25,8 @@ export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse & { newBadges?: Badge[] }> => {
   try {
+    console.log('🔍 Début de validateReading pour segment:', request.segment);
+    
     // Vérifier si le segment a déjà été validé
     const alreadyValidated = await isSegmentAlreadyValidated(
       request.user_id, 
@@ -31,7 +35,13 @@ export const validateReading = async (
     );
     
     if (alreadyValidated) {
-      console.log('Segment already validated, returning early', request);
+      console.log('📝 Segment already validated, refreshing progress data', request);
+      
+      // Même si le segment est déjà validé, forcer un rafraîchissement des données
+      // pour s'assurer que l'UI reflète l'état réel
+      await clearProgressCache(request.user_id);
+      console.log(`✅ Cache vidé pour l'utilisateur ${request.user_id} (segment déjà validé)`);
+      
       return {
         message: "Segment déjà validé",
         current_page: request.segment * 8000, // Updated to use segment * 8000
@@ -71,7 +81,7 @@ export const validateReading = async (
     const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
 
     // Mettre à jour la progression de lecture
-    console.log('Updating reading progress:', {
+    console.log('📊 Updating reading progress:', {
       user_id: request.user_id,
       book_id: request.book_id,
       current_page: newCurrentPage,
@@ -113,9 +123,9 @@ export const validateReading = async (
     }
 
     // Vider le cache de progression pour s'assurer que les données seront rafraîchies
-    const { clearProgressCache } = await import("@/services/progressService");
-    clearProgressCache(request.user_id);
-    console.log(`Cache vidé pour l'utilisateur ${request.user_id} après validation d'un segment`);
+    // IMPORTANT: Utiliser await pour s'assurer que le cache est vidé avant de continuer
+    await clearProgressCache(request.user_id);
+    console.log(`✅ Cache vidé pour l'utilisateur ${request.user_id} après validation d'un segment`);
     
     // Enregistrer l'activité de lecture pour les séries
     await recordReadingActivity(request.user_id);
@@ -152,6 +162,12 @@ export const validateReading = async (
         console.error("Erreur lors de la vérification des récompenses mensuelles:", error);
       }
     }, 0);
+
+    console.log('✅ Validation du segment réussie:', {
+      segment: request.segment,
+      currentPage: newCurrentPage,
+      newBadges: newBadges.length
+    });
 
     return {
       message: "Segment validé avec succès",

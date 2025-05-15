@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
@@ -6,6 +7,7 @@ import { validateReading } from "@/services/reading/validationService";
 import { useConfetti } from "./useConfetti";
 import { Badge } from "@/types/badge";
 import { addXP } from "@/services/user/levelService";
+import { useReadingProgress } from "./useReadingProgress";
 
 export const useBookValidation = (
   book: Book | null,
@@ -17,6 +19,7 @@ export const useBookValidation = (
   const [validationError, setValidationError] = useState<string | null>(null);
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const { showConfetti } = useConfetti();
+  const { forceRefresh } = useReadingProgress();
 
   const {
     showQuiz,
@@ -78,6 +81,14 @@ export const useBookValidation = (
     try {
       const result = await originalHandleQuizComplete(correct);
       
+      // Force refresh of reading progress data
+      try {
+        console.log("🔄 Forçage du rafraîchissement après validation");
+        forceRefresh();
+      } catch (refreshError) {
+        console.error("Erreur lors du rafraîchissement des données:", refreshError);
+      }
+      
       // Check if there are any newly unlocked badges
       if (result?.newBadges && result.newBadges.length > 0) {
         setNewBadges(result.newBadges);
@@ -93,6 +104,14 @@ export const useBookValidation = (
       return result;
     } catch (error) {
       console.error("Error in quiz completion:", error);
+      
+      // Même en cas d'erreur, essayer de rafraîchir les données
+      try {
+        forceRefresh();
+      } catch (refreshError) {
+        console.error("Erreur lors du rafraîchissement des données:", refreshError);
+      }
+      
       throw error;
     }
   };
@@ -123,12 +142,18 @@ export const useBookValidation = (
     try {
       setIsValidating(true);
       await prepareAndShowQuestion(validationSegment);
+      
+      // Refresh progress data after validation attempt
+      forceRefresh();
     } catch (error: any) {
       console.error("Erreur lors de la préparation de la validation:", error);
       toast.error("Erreur de validation", {
         description: error.message || "Impossible de préparer la validation",
         duration: 5000
       });
+      
+      // Même en cas d'erreur, essayer de rafraîchir les données
+      forceRefresh();
     } finally {
       setIsValidating(false);
     }
@@ -153,6 +178,7 @@ export const useBookValidation = (
     isLocked,
     remainingLockTime,
     handleLockExpire,
-    newBadges
+    newBadges,
+    forceRefresh
   };
 };
