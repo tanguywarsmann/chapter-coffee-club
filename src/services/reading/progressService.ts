@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -159,3 +158,6 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     return null;
   }
 };
+
+// Ajout de l'alias de type pour la rétrocompatibilité
+export type ReadingProgress = ExtendedReadingProgress;

@@ -1,10 +1,11 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getBookById } from "@/services/books/bookQueries";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
 import { recordReadingActivity } from "../streakService";
-import { getBookReadingProgress, clearProgressCache } from "./progressService";
+import { getBookReadingProgress, clearProgressCache, ExtendedReadingProgress } from "./progressService";
 import { Badge } from "@/types/badge";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
@@ -141,6 +142,10 @@ export const validateReading = async (
         console.error("Erreur lors de la vérification des récompenses mensuelles:", error);
       }
     }, 0);
+
+    // Add a debug statement to validate that progressPercent is updated
+    const updatedProgress = await getBookReadingProgress(request.user_id, request.book_id);
+    console.debug("[validateReading] New progress", updatedProgress);
 
     console.log('✅ Validation du segment réussie:', {
       segment: request.segment,

@@ -1,3 +1,4 @@
+
 console.log("Import de CurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
@@ -108,9 +109,8 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   }
 
   // Calcul du pourcentage de progression basé sur les validations si disponibles
-  const totalPages = currentBook.total_chapters || currentBook.total_pages || 1; // Éviter division par zéro
-  const completedPages = currentBook.validations?.length || currentBook.current_page || 0;
-  const progress = Math.round((completedPages / totalPages) * 100);
+  // Utiliser le progressPercent maintenant disponible dans ExtendedReadingProgress
+  const progress = currentBook.progressPercent;
 
   return (
     <Card className="border-coffee-light">
@@ -143,7 +143,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
               </div>
               <Progress value={progress} className="h-2" />
               <div className="text-xs text-muted-foreground text-right">
-                {completedPages} validation{completedPages > 1 ? 's' : ''} sur {totalPages} segment{totalPages > 1 ? 's' : ''}
+                {currentBook.chaptersRead} validation{currentBook.chaptersRead > 1 ? 's' : ''} sur {currentBook.total_chapters || 0} segment{(currentBook.total_chapters || 0) > 1 ? 's' : ''}
               </div>
             </div>
           </div>

@@ -1,10 +1,8 @@
-
 console.log("Import de PublicCurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ReadingProgress } from "@/types/reading";
-import { getUserReadingProgress } from "@/services/reading/progressService";
+import { getUserReadingProgress, ExtendedReadingProgress } from "@/services/reading/progressService";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +14,7 @@ interface PublicCurrentlyReadingProps {
 export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) {
   console.log("Rendering PublicCurrentlyReading", { userId: userId || "undefined" });
   
-  const [books, setBooks] = useState<ReadingProgress[]>([]);
+  const [books, setBooks] = useState<ExtendedReadingProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Vérification de l'userId
@@ -139,11 +137,11 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
                 </div>
                 <div className="space-y-1">
                   <Progress 
-                    value={(book.current_page / (book.total_pages || 1)) * 100} 
+                    value={book.progressPercent} 
                     className="h-2 bg-coffee-lightest"
                   />
                   <p className="text-xs text-muted-foreground text-right">
-                    {Math.floor((book.current_page / (book.total_pages || 1)) * 100)}% terminé
+                    {book.progressPercent}% terminé
                   </p>
                 </div>
               </div>
