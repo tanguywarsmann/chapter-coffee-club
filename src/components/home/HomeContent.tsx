@@ -21,6 +21,17 @@ export function HomeContent({
   isLoading,
   onProgressUpdate
 }: HomeContentProps) {
+  console.log("Rendering HomeContent", { 
+    readingProgressCount: readingProgress?.length || 0,
+    isLoading
+  });
+
+  // Vérifier si readingProgress est défini avant de l'utiliser
+  if (!readingProgress) {
+    console.warn("readingProgress est undefined dans HomeContent");
+    return <div>Chargement des données de lecture...</div>;
+  }
+  
   const isMobile = useIsMobile();
 
   return (

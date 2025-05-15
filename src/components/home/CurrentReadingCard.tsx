@@ -13,8 +13,20 @@ interface CurrentReadingCardProps {
 }
 
 export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
+  console.log("Rendering CurrentReadingCard", { 
+    bookId: book?.id || 'book undefined',
+    bookTitle: book?.title || 'title undefined', 
+    currentPage: currentPage || 0 
+  });
+
   const navigate = useNavigate();
   
+  // Vérification complète des props
+  if (!book) {
+    console.warn("Le livre est undefined dans CurrentReadingCard");
+    return null;
+  }
+
   // Check if the book slug or current page is undefined or invalid
   const isReadingInvalid = !book.slug || currentPage === undefined || currentPage < 0;
 

@@ -23,6 +23,8 @@ import { UserOnboarding } from "./components/onboarding/UserOnboarding";
 const queryClient = new QueryClient();
 
 const App = () => {
+  console.log("Rendering App component");
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

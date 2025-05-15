@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import ErrorBoundary from './components/error/ErrorBoundary'
 
 // Détection de l'environnement
 const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -24,7 +25,13 @@ const initApp = () => {
       console.error("Root element not found!");
       return;
     }
-    createRoot(rootElement).render(<App />);
+    
+    console.log("Initialisation de l'application READ avec ErrorBoundary");
+    createRoot(rootElement).render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    );
   } catch (error) {
     console.error("Error initializing application:", error);
   }

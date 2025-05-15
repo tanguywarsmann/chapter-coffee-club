@@ -12,23 +12,43 @@ interface CurrentlyReadingProps {
 }
 
 export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
+  console.log("Rendering CurrentlyReading", { userId: userId || "undefined" });
+
   const [currentBook, setCurrentBook] = useState<ReadingProgress | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) {
-      console.warn("❌ Aucun userId reçu dans <CurrentlyReading />");
-      return;
-    }
+  // S'assurer que userId existe
+  if (!userId) {
+    console.warn("❌ Aucun userId reçu dans <CurrentlyReading />");
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Lecture en cours</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
+            Identifiant utilisateur manquant
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
+  useEffect(() => {
     console.log("✅ CurrentlyReading monté avec userId =", userId);
 
     async function fetchCurrentlyReading() {
       try {
         setLoading(true);
-
+        
         const progress = await getUserReadingProgress(userId);
         console.log("📚 Progress récupéré :", progress);
+
+        if (!progress || progress.length === 0) {
+          console.log("Aucun progrès de lecture trouvé pour cet utilisateur");
+          setCurrentBook(null);
+          return;
+        }
 
         const inProgressBooks = progress.filter(p => p.status === "in_progress");
         console.log("🔍 Livres en cours trouvés :", inProgressBooks);
@@ -44,6 +64,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
         }
       } catch (error) {
         console.error("⚠️ Erreur dans fetchCurrentlyReading :", error);
+        setCurrentBook(null);
       } finally {
         setLoading(false);
       }
@@ -83,8 +104,8 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   }
 
   // Calcul du pourcentage de progression basé sur les validations si disponibles
-  const totalPages = currentBook.total_chapters || currentBook.total_pages;
-  const completedPages = currentBook.validations?.length || currentBook.current_page;
+  const totalPages = currentBook.total_chapters || currentBook.total_pages || 1; // Éviter division par zéro
+  const completedPages = currentBook.validations?.length || currentBook.current_page || 0;
   const progress = Math.round((completedPages / totalPages) * 100);
 
   return (

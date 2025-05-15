@@ -29,6 +29,17 @@ export function BookCard({
   actionLabel,
   onAction,
 }: BookCardProps) {
+  console.log("Rendering BookCard", { 
+    bookId: book?.id || "undefined", 
+    bookTitle: book?.title || "undefined" 
+  });
+
+  // Vérification importante : si livre undefined, retourner null
+  if (!book) {
+    console.warn("⚠️ BookCard: le livre est undefined");
+    return null;
+  }
+
   const [isAdding, setIsAdding] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const { addToReadingList } = useReadingList();

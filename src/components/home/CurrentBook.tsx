@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,20 +17,18 @@ interface CurrentBookProps {
 }
 
 export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
+  console.log("Rendering CurrentBook", { 
+    bookId: book?.id || 'undefined',
+    bookTitle: book?.title || 'undefined' 
+  });
+
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   
-  const {
-    isValidating,
-    showQuiz,
-    setShowQuiz,
-    quizChapter,
-    currentQuestion,
-    handleValidateReading,
-    handleQuizComplete
-  } = useCurrentBookValidation(userId, book, onProgressUpdate);
-
+  // Si le livre est null ou undefined, on affiche un message alternatif
   if (!book) {
+    console.log("Pas de livre en cours dans CurrentBook");
+
     return (
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
@@ -49,6 +48,16 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
       </Card>
     );
   }
+
+  const {
+    isValidating,
+    showQuiz,
+    setShowQuiz,
+    quizChapter,
+    currentQuestion,
+    handleValidateReading,
+    handleQuizComplete
+  } = useCurrentBookValidation(userId, book, onProgressUpdate);
 
   const chaptersRead = book.chaptersRead || 0;
   const totalChapters = book.totalChapters || book.expectedSegments || 1;
