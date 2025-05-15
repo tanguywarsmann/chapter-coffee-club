@@ -71,5 +71,33 @@ export function HomeContent({
   }
 
   // Rendu principal
+return (
+  <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+    <div className="space-y-6 md:col-span-2 lg:col-span-3">
+      <ReadingProgress
+        key={`reading-progress-${readingProgress.length}`}
+        progressItems={readingProgress}
+        isLoading={isLoading}
+      />
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <GoalsPreview />
+          <FollowerStats />
+        </div>
+        <div className="space-y-6">
+          <RecommendedUsers />
+          {/* SimilarReaders temporairement désactivé */}
+        </div>
+      </div>
+    </div>
+    <div className={`${mobileState ? "mt-6 md:mt-0" : ""}`}>
+      {activities.length > 0 ? (
+        <ActivityFeed activities={activities} />
+      ) : (
+        <div>Données d'activité non disponibles</div>
+      )}
+    </div>
+  </div>
+);
 }
