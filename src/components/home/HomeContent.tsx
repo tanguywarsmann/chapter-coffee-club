@@ -1,3 +1,4 @@
+
 import React from "react";
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
@@ -43,7 +44,7 @@ export function HomeContent({
     console.error("Erreur dans le logging initial:", e);
   }
 
-  // Vérification de l’état mobile
+  // Vérification de l'état mobile
   let mobileState;
   try {
     mobileState = isMobile();
@@ -82,12 +83,42 @@ export function HomeContent({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
-            <GoalsPreview />
-            <FollowerStats />
+            {(() => {
+              try {
+                return <GoalsPreview />;
+              } catch (e) {
+                console.error("Erreur dans GoalsPreview :", e);
+                return <div>Erreur GoalsPreview</div>;
+              }
+            })()}
+            
+            {(() => {
+              try {
+                return <FollowerStats />;
+              } catch (e) {
+                console.error("Erreur dans FollowerStats :", e);
+                return <div>Erreur FollowerStats</div>;
+              }
+            })()}
           </div>
           <div className="space-y-6">
-            <RecommendedUsers />
-            <SimilarReaders />
+            {(() => {
+              try {
+                return <RecommendedUsers />;
+              } catch (e) {
+                console.error("Erreur dans RecommendedUsers :", e);
+                return <div>Erreur RecommendedUsers</div>;
+              }
+            })()}
+            
+            {(() => {
+              try {
+                return <SimilarReaders />;
+              } catch (e) {
+                console.error("Erreur dans SimilarReaders :", e);
+                return <div>Erreur SimilarReaders</div>;
+              }
+            })()}
           </div>
         </div>
       </div>
