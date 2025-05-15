@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
-import { FavoriteBooksForm } from "@/components/onboarding/FavoriteBooksForm";
+// import { FavoriteBooksForm } from "@/components/onboarding/FavoriteBooksForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserFavoriteBooks } from "@/services/user/favoriteBookService";
 import { toast } from "sonner";
@@ -68,12 +68,13 @@ export function UserOnboarding() {
         open={showWelcome}
         onClose={handleWelcomeClose}
       />
-      
-      <FavoriteBooksForm
-        open={showFavBooks}
-        onComplete={handleFavBooksComplete}
-        onSkip={handleFavBooksSkip}
-      />
+    {/* 
+<FavoriteBooksForm
+  open={showFavBooks}
+  onComplete={handleFavBooksComplete}
+  onSkip={handleFavBooksSkip}
+/> 
+*/}
     </>
   );
 }
