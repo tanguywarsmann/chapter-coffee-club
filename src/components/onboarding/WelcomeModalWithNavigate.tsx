@@ -9,7 +9,14 @@ interface WelcomeModalWithNavigateProps {
 }
 
 export function WelcomeModalWithNavigate({ open, onClose }: WelcomeModalWithNavigateProps) {
-  const navigate = useNavigate();
+let navigate: (to: string) => void;
+
+try {
+  navigate = useNavigate();
+} catch (error) {
+  console.error("useNavigate() a échoué dans WelcomeModalWithNavigate.tsx :", error);
+  navigate = () => {}; // fallback no-op pour éviter le crash
+}
 
   const handleStart = () => {
     localStorage.setItem("onboardingDone", "true");
