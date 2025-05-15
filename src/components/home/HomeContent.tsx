@@ -79,4 +79,5 @@ try {
 } catch (e) {
   console.error("Erreur dans RecommendedUsers :", e);
   return <div>Erreur RecommendedUsers</div>;
+ }
 }
