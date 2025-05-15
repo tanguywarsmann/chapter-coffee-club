@@ -33,7 +33,7 @@ export function HomeContent({
   isLoading,
   onProgressUpdate
 }: HomeContentProps) {
-  console.log("HomeContent START");
+  console.log(">>> HomeContent START rendu");
 
   try {
     console.log("Rendering HomeContent", { 
