@@ -1,17 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserReadingProgress } from "@/services/reading/progressService";
+import { getUserReadingProgress, ExtendedReadingProgress } from "@/services/reading/progressService";
 import { Link } from "react-router-dom";
 import { BookCover } from "@/components/books/BookCover";
-import { ReadingProgress } from "@/types/reading";
 
 interface CompletedBooksProps {
   userId: string;
 }
 
 export function CompletedBooks({ userId }: CompletedBooksProps) {
-  const [completedBooks, setCompletedBooks] = useState<ReadingProgress[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<ExtendedReadingProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

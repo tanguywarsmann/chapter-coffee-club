@@ -1,13 +1,11 @@
-
 console.log("Import de CurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserReadingProgress } from "@/services/reading/progressService";
+import { getUserReadingProgress, ExtendedReadingProgress } from "@/services/reading/progressService";
 import { Link } from "react-router-dom";
 import { BookCover } from "@/components/books/BookCover";
 import { Progress } from "@/components/ui/progress";
-import { ReadingProgress } from "@/types/reading";
 
 interface CurrentlyReadingProps {
   userId: string;
@@ -16,7 +14,7 @@ interface CurrentlyReadingProps {
 export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   console.log("Rendering CurrentlyReading", { userId: userId || "undefined" });
 
-  const [currentBook, setCurrentBook] = useState<ReadingProgress | null>(null);
+  const [currentBook, setCurrentBook] = useState<ExtendedReadingProgress | null>(null);
   const [loading, setLoading] = useState(true);
 
   // S'assurer que userId existe
