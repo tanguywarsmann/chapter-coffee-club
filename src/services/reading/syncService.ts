@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress } from "@/types/reading";
@@ -16,19 +15,10 @@ type ReadingProgressInsert = Database['public']['Tables']['reading_progress']['I
  * @returns Progression de lecture ou null
  */
 export const initializeBookReading = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
-  if (!userId || typeof userId !== 'string') {
-    return null;
-  }
+  if (!userId || typeof userId !== 'string') return null;
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!validUuidPattern.test(userId)) {
-    return null;
-  }
-
-  const existingProgress = await getBookReadingProgress(userId, book.id);
-  if (existingProgress) {
-    return existingProgress;
-  }
+  if (!validUuidPattern.test(userId)) return null;
 
   const newProgress: ReadingProgressInsert = {
     user_id: userId,
@@ -67,22 +57,19 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
  * @returns Progression de lecture ou null
  */
 export const initializeNewBookReading = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
-  if (!userId) {
-    return null;
-  }
+  if (!userId) return null;
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!validUuidPattern.test(userId)) {
-    return null;
-  }
-  
+  if (!validUuidPattern.test(userId)) return null;
+
   try {
+    const existingProgress = await getBookReadingProgress(userId, bookId);
+    if (existingProgress) return existingProgress;
+
     const book = await getBookById(bookId);
-    if (!book) {
-      return null;
-    }
-    
-    return initializeBookReading(userId, book);
+    if (!book) return null;
+
+    return await initializeBookReading(userId, book);
   } catch (error) {
     console.error("Exception lors de l'initialisation de la lecture:", error);
     return null;
