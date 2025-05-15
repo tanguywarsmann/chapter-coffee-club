@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -15,8 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
@@ -32,7 +30,6 @@ export default defineConfig(({ mode }) => ({
         start_url: "/home",
         display: "standalone"
       },
-      // copie le service worker custom dans le build
       srcDir: "public",
       filename: "sw.js",
       devOptions: {
@@ -45,5 +42,8 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
+    sourcemap: true, // ✅ active les sourcemaps pour retrouver les lignes exactes dans les erreurs
   },
 }));
