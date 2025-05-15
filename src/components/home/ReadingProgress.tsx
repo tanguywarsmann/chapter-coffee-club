@@ -13,8 +13,18 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ progressItems, isLoading = false }: ReadingProgressProps) {
+  console.log("Rendering ReadingProgress", { 
+    progressItemsCount: progressItems?.length || 0,
+    isLoading 
+  });
+  
+  // Vérifier si progressItems est défini et c'est un array
   const availableProgresses = useMemo(() => {
-    return progressItems || [];
+    if (!progressItems || !Array.isArray(progressItems)) {
+      console.warn("progressItems n'est pas un tableau dans ReadingProgress");
+      return [];
+    }
+    return progressItems;
   }, [progressItems]);
   
   if (isLoading) {
@@ -76,12 +86,19 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
         ) : (
           <div className="space-y-4">
             {progresses.slice(0, 3).map((progress) => {
+              // S'assurer que progress est défini
+              if (!progress) {
+                console.warn("Un élément de progresses est undefined");
+                return null;
+              }
+              
               // Calcul du nombre de segments lus basé sur les validations
               const chaptersRead = progress.validations?.length ?? 0;
               const totalSegments = progress.expected_segments ?? 0;
               
               // Ne rien afficher si expected_segments est manquant ou égal à 0
               if (!totalSegments) {
+                console.warn("totalSegments est 0 ou undefined pour progress.id =", progress.id);
                 return null;
               }
               
@@ -107,7 +124,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                     {progress.book_cover ? (
                       <img 
                         src={progress.book_cover} 
-                        alt={progress.book_title} 
+                        alt={progress.book_title || "Couverture du livre"} 
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />

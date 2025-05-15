@@ -62,6 +62,10 @@ export const useReadingListPage = () => {
   }, [toReadBooks, inProgressBooks, completedBooks, isLoading, isFetching]);
 
   const navigateToBook = useCallback((bookId: string) => {
+    if (!bookId) {
+      console.warn("[DEBUG] navigateToBook appelé avec un bookId vide ou null");
+      return;
+    }
     navigate(`/books/${bookId}`);
   }, [navigate]);
 
@@ -89,9 +93,9 @@ export const useReadingListPage = () => {
       ]);
       
       // Appliquer le tri
-      setToReadBooks(sortBooks(toRead, sortBy));
-      setInProgressBooks(sortBooks(inProgress, sortBy));
-      setCompletedBooks(sortBooks(completed, sortBy));
+      setToReadBooks(sortBooks(toRead || [], sortBy));
+      setInProgressBooks(sortBooks(inProgress || [], sortBy));
+      setCompletedBooks(sortBooks(completed || [], sortBy));
       
       console.log("[DEBUG] Données récupérées et triées");
     } catch (error) {

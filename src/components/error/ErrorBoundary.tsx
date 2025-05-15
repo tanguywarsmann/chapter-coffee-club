@@ -57,8 +57,17 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               </p>
               
               {this.state.error && (
-                <div className="bg-muted p-2 rounded-md text-sm overflow-hidden">
+                <div className="bg-muted p-2 rounded-md text-sm overflow-auto max-h-40">
                   <p className="font-medium text-coffee-dark">Erreur: {this.state.error.message}</p>
+                </div>
+              )}
+              
+              {this.state.errorInfo && (
+                <div className="bg-muted p-2 rounded-md text-xs overflow-auto max-h-40">
+                  <p className="font-medium text-coffee-dark mb-1">Stack Trace:</p>
+                  <pre className="whitespace-pre-wrap break-words text-muted-foreground">
+                    {this.state.errorInfo.componentStack}
+                  </pre>
                 </div>
               )}
               

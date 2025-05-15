@@ -1,3 +1,4 @@
+
 import { Book } from "@/types/book";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,18 @@ export const CurrentBookInfo = ({
   onValidate,
   onNavigate
 }: CurrentBookInfoProps) => {
+  console.log("Rendering CurrentBookInfo", {
+    bookId: book?.id || "undefined",
+    bookTitle: book?.title || "undefined",
+    progressPercentage
+  });
+
+  // Vérification de la présence du livre
+  if (!book) {
+    console.warn("Le livre est undefined dans CurrentBookInfo");
+    return null;
+  }
+
   const chaptersRead = book.chaptersRead || 0;
   const chaptersTotal = book.totalChapters || book.expectedSegments || 1;
 
