@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
