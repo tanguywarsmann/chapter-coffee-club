@@ -1,5 +1,5 @@
 import { GoalsPreview } from "./GoalsPreview";
-import { ReadingProgress } from "./ReadingProgress";
+// import { ReadingProgress } from "./ReadingProgress"; // Désactivé temporairement
 import { ActivityFeed } from "./ActivityFeed";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
@@ -68,11 +68,9 @@ export function HomeContent({
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
       <div className="space-y-6 md:col-span-2 lg:col-span-3">
-        <ReadingProgress
-          key={`reading-progress-${readingProgress.length}`}
-          progressItems={readingProgress}
-          isLoading={isLoading}
-        />
+        <div className="p-4 border border-dashed border-red-300 text-sm text-muted-foreground rounded-md">
+          Composant <code>ReadingProgress</code> désactivé temporairement
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
