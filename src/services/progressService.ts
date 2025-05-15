@@ -24,6 +24,9 @@ interface EnrichedReadingProgress extends ReadingProgress {
 
 type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
 
+// Définition des statuts valides pour la lecture (ajout de cette variable manquante)
+const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
+
 /**
  * Récupère la progression de lecture d'un utilisateur
  * @param userId ID de l'utilisateur
