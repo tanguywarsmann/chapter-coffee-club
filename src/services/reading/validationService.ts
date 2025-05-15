@@ -67,14 +67,19 @@ export const validateReading = async (
 
     let progress = await getBookReadingProgress(request.user_id, request.book_id);
 
-    if (!progress) {
-      // Besoin d'initialiser la progression
-      const { initializeNewBookReading } = await import("./syncService");
-      progress = await initializeNewBookReading(request.user_id, request.book_id);
-      if (!progress) {
-        throw new Error("Impossible d'initialiser la progression de lecture");
-      }
-    }
+  if (!progress) {
+  const { initializeNewBookReading } = await import("./syncService");
+  try {
+    progress = await initializeNewBookReading(request.user_id, request.book_id);
+    console.log("[INIT] Résultat initializeNewBookReading :", progress);
+  } catch (e) {
+    console.error("[INIT] Échec initializeNewBookReading :", e);
+  }
+
+  if (!progress) {
+    throw new Error("❌ Impossible d'initialiser la progression de lecture (aucune ligne créée)");
+  }
+}
 
     // Calculer la nouvelle page actuelle en utilisant segment * 8000 au lieu de segment * 30
     const newCurrentPage = request.segment * 8000;
