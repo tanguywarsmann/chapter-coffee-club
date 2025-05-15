@@ -3,7 +3,7 @@ console.log("Import de useReadingProgress.ts OK");
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ReadingProgress } from "@/types/reading";
-import { getUserReadingProgress } from "@/services/progressService";
+import { getUserReadingProgress, clearProgressCache } from "@/services/progressService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -31,7 +31,7 @@ export const useReadingProgress = () => {
   }, [user]);
 
   const fetchProgress = useCallback(async () => {
-    if (!user?.id || hasFetched.current || !isMounted.current || isFetching.current) {
+    if (!user?.id || !isMounted.current || isFetching.current) {
       return;
     }
 
@@ -110,6 +110,10 @@ export const useReadingProgress = () => {
     }
 
     try {
+      // Vider le cache avant de récupérer les nouvelles données
+      console.log("Vidage du cache avant mise à jour de la progression");
+      clearProgressCache(user.id);
+      
       setIsLoading(true);
       await fetchProgress(); // Refresh la progression complète
       toast.success("Progression mise à jour", {

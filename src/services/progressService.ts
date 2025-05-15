@@ -39,7 +39,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   // Vérifier le cache
   const cacheKey = `progress_${userId}`;
   const cached = progressCache.get(cacheKey);
-  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+  
+  // Réduire la durée du cache pour éviter les problèmes d'affichage
+  const reducedCacheDuration = 30000; // 30 secondes
+  
+  if (cached && (Date.now() - cached.timestamp) < reducedCacheDuration) {
+    console.log("Utilisation du cache pour getUserReadingProgress");
     return cached.data;
   }
 
@@ -83,7 +88,8 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       const book = item.books as BookRecord | null;
       const validations = Array.isArray(item.validations) ? item.validations as ReadingValidationRecord[] : [];
 
-      // Calcul des pages
+      // Utiliser expected_segments en priorité pour le calcul du total
+      const expectedSegments = book?.expected_segments ?? book?.total_chapters ?? 1;
       const totalPages = item.total_pages || (book?.total_chapters ?? book?.expected_segments ?? 1);
       const currentPage = item.current_page || 0;
 
@@ -95,7 +101,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         updatedStatus = 'in_progress';
         
         // Si toutes les validations sont présentes, le livre est terminé
-        if (validations.length >= totalPages) {
+        if (validations.length >= expectedSegments) {
           updatedStatus = 'completed';
         }
       } else if (currentPage > 0 && currentPage < totalPages) {
@@ -115,7 +121,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "",
         book_cover: book?.cover_url ?? null,
-        total_chapters: totalPages,
+        total_chapters: book?.total_chapters ?? 1,
         expected_segments: book?.expected_segments,
         validations: validations as ReadingValidation[],
         status: updatedStatus,
@@ -267,8 +273,10 @@ export const clearProgressCache = (userId?: string): void => {
   if (userId) {
     const cacheKey = `progress_${userId}`;
     progressCache.delete(cacheKey);
+    console.log(`Cache de progression effacé pour l'utilisateur ${userId}`);
   } else {
     // Si aucun userId n'est spécifié, vider tout le cache
     progressCache.clear();
+    console.log("Cache de progression entièrement effacé");
   }
 };

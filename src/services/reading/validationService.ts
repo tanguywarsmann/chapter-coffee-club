@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
@@ -113,6 +112,11 @@ export const validateReading = async (
       throw validationError;
     }
 
+    // Vider le cache de progression pour s'assurer que les données seront rafraîchies
+    const { clearProgressCache } = await import("@/services/progressService");
+    clearProgressCache(request.user_id);
+    console.log(`Cache vidé pour l'utilisateur ${request.user_id} après validation d'un segment`);
+    
     // Enregistrer l'activité de lecture pour les séries
     await recordReadingActivity(request.user_id);
     

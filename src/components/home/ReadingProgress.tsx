@@ -1,3 +1,4 @@
+
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,18 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
               
               // Calcul du nombre de segments lus basé sur les validations
               const chaptersRead = progress.validations?.length ?? 0;
-              const totalSegments = progress.expected_segments ?? 0;
+              
+              // Utiliser expected_segments en priorité, puis total_chapters, puis 1 comme valeur par défaut
+              const totalSegments = progress.expected_segments ?? progress.total_chapters ?? 0;
+              
+              // Debug: ajouter des logs pour tracer les valeurs
+              console.log(`→ Calcul progression pour ${progress.book_title}`, {
+                chaptersRead,
+                totalSegments,
+                expected_segments: progress.expected_segments,
+                total_chapters: progress.total_chapters,
+                validations: progress.validations?.length
+              });
               
               // Ne rien afficher si expected_segments est manquant ou égal à 0
               if (!totalSegments) {
