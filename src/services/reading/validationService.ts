@@ -44,7 +44,7 @@ export const validateReading = async (
       
       return {
         message: "Segment déjà validé",
-        current_page: request.segment * 8000, // Updated to use segment * 8000
+        current_page: request.segment * 30, // Updated to use segment * 30
         already_validated: true,
         next_segment_question: null
       };
@@ -82,7 +82,7 @@ export const validateReading = async (
 }
 
     // Calculer la nouvelle page actuelle en utilisant segment * 8000 au lieu de segment * 30
-    const newCurrentPage = request.segment * 8000;
+    const newCurrentPage = request.segment * 30;
     const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
 
     // Mettre à jour la progression de lecture
@@ -109,15 +109,16 @@ export const validateReading = async (
     }
 
     // Insérer l'enregistrement de validation
-    const validationRecord: ReadingValidationRecord = {
-      user_id: request.user_id,
-      book_id: request.book_id,
-      segment: request.segment,
-      question_id: question?.id || null,
-      correct: true,
-      validated_at: new Date().toISOString()
-    };
-
+const validationRecord: ReadingValidationRecord = {
+  user_id: request.user_id,
+  book_id: request.book_id,
+  segment: request.segment,
+  question_id: question?.id || null,
+  correct: true,
+  validated_at: new Date().toISOString(),
+  answer: question?.answer || null,
+  progress_id: progress?.id || null,
+};
     const { error: validationError } = await supabase
       .from('reading_validations')
       .insert(validationRecord);
