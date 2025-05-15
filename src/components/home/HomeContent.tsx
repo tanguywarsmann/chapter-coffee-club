@@ -67,11 +67,15 @@ export function HomeContent({
       <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
         <div className="space-y-6 md:col-span-2 lg:col-span-3">
           {/* Lecture en cours d'abord */}
-          <ReadingProgress 
-            key={`reading-progress-${readingProgress.length}`}
-            progressItems={readingProgress}
-            isLoading={isLoading}
-          />
+          {readingProgress && Array.isArray(readingProgress) ? (
+            <ReadingProgress 
+              key={`reading-progress-${readingProgress.length}`}
+              progressItems={readingProgress}
+              isLoading={isLoading}
+            />
+          ) : (
+            <div>Données de lecture non disponibles</div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
@@ -86,7 +90,11 @@ export function HomeContent({
           </div>
         </div>
         <div className={`${mobileState ? 'mt-6 md:mt-0' : ''}`}>
-          <ActivityFeed activities={getUserActivities()} />
+          {activities && Array.isArray(activities) ? (
+            <ActivityFeed activities={activities} />
+          ) : (
+            <div>Données d'activité non disponibles</div>
+          )}
         </div>
       </div>
     );
