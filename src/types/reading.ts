@@ -59,13 +59,19 @@ export interface Book extends Database["public"]["Tables"]["books"]["Row"] {
 }
 
 /* enrichi par les services ---------------------------------------- */
-export type BookWithProgress = Book & {
+export type BookWithProgress = Book & ReadingProgressRow & {
   /* alias camelCase attendu par de nombreux composants */
   expectedSegments: number      // requis
   totalSegments: number
   chaptersRead: number
   progressPercent: number
   nextSegmentPage: number
+  
+  /* alias legacy explicites pour compatibilité */
+  book_id: string
+  book_title: string
+  book_author: string
+  book_cover: string
 }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */

@@ -31,14 +31,15 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
 
 /**
  * Calcule les champs dérivés pour une progression de lecture
- * @param item Base reading progress or book to enrich
+ * @param b Base book data
+ * @param p Reading progress data (optional)
  * @returns Objet avec champs dérivés ajoutés
  */
-function addDerivedFields(b: any): BookWithProgress {
+function addDerivedFields(b: any, p?: any): BookWithProgress {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
   
-  // Utiliser cover_url et non coverImage qui n'existe pas encore
-  const coverImage = b.cover_url;
+  // Utiliser directement cover_url et non coverImage qui n'existe pas encore
+  const coverUrl = b.cover_url;
 
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
@@ -47,7 +48,7 @@ function addDerivedFields(b: any): BookWithProgress {
     ? Math.floor(current_page / WORDS_PER_SEGMENT)
     : Math.floor(current_page / PAGES_PER_SEGMENT);
 
-  const expectedSegments = expected_segments ?? total_chapters ?? 1;
+  const expectedSegments = b.expected_segments ?? total_chapters ?? 1;
   
   const totalSegments = expectedSegments;
 
@@ -55,14 +56,23 @@ function addDerivedFields(b: any): BookWithProgress {
   
   return {
     ...b,
-    coverImage,               // alias front
-    expectedSegments,
+    ...p,  // Include all reading progress fields (status, updated_at, etc.)
+    
+    // Derived fields
+    coverImage: coverUrl,               // alias front
+    expectedSegments,                   // camelCase alias
     totalSegments,
     chaptersRead: clampedSegments,
     progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100),
     nextSegmentPage: isWordMode
       ? (clampedSegments + 1) * WORDS_PER_SEGMENT
       : (clampedSegments + 1) * PAGES_PER_SEGMENT,
+      
+    // Legacy aliases for compatibility
+    book_id: b.id,
+    book_title: b.title,
+    book_author: b.author,
+    book_cover: coverUrl,
   };
 }
 
