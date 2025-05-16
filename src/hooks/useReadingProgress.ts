@@ -1,13 +1,13 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ExtendedReadingProgress } from "@/services/reading/progressService";
+import { ReadingProgress } from "@/types/reading";
 import { getUserReadingProgress, clearProgressCache } from "@/services/reading/progressService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export const useReadingProgress = () => {
   const { user } = useAuth();
-  const [readingProgress, setReadingProgress] = useState<ExtendedReadingProgress[]>([]);
+  const [readingProgress, setReadingProgress] = useState<ReadingProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);

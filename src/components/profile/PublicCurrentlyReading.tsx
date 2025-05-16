@@ -1,8 +1,10 @@
+
 console.log("Import de PublicCurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserReadingProgress, ExtendedReadingProgress } from "@/services/reading/progressService";
+import { getUserReadingProgress } from "@/services/reading/progressService";
+import { ReadingProgress } from "@/types/reading";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +16,7 @@ interface PublicCurrentlyReadingProps {
 export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) {
   console.log("Rendering PublicCurrentlyReading", { userId: userId || "undefined" });
   
-  const [books, setBooks] = useState<ExtendedReadingProgress[]>([]);
+  const [books, setBooks] = useState<ReadingProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Vérification de l'userId

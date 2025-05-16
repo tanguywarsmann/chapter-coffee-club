@@ -1,4 +1,3 @@
-
 export interface ReadingQuestion {
   id: string;
   book_slug: string;
@@ -40,6 +39,11 @@ export interface ReadingProgress {
   book_author?: string;
   book_slug?: string;
   book_cover?: string | null;
+  
+  // New derived fields
+  progressPercent?: number;
+  chaptersRead?: number;
+  nextSegmentPage?: number;
 }
 
 export interface ValidateReadingRequest {

@@ -158,6 +158,3 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     return null;
   }
 };
-
-// Ajout de l'alias de type pour la rétrocompatibilité
-export type ReadingProgress = ExtendedReadingProgress;
