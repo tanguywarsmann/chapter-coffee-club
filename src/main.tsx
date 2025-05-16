@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Toaster as SonnerToaster } from 'sonner'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query/devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from './lib/query.ts'
 
 // Clean up potentially corrupted data

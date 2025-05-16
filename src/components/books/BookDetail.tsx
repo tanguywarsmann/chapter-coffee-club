@@ -130,7 +130,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     if (readingProgress) {
       const segmentsDone = readingProgress.chaptersRead || 0;
       const totalSegments = readingProgress.totalSegments || 
-                           currentBook.expectedSegments || 1;
+                           currentBook.expectedSegments || 
+                           currentBook.total_chapters || 1;
 
       console.log("📊 Calcul progression", { 
         segmentsDone, 
@@ -139,7 +140,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
       setProgressPercent(readingProgress.progressPercent || 0);
     }
-  }, [readingProgress, currentBook.expectedSegments]);
+  }, [readingProgress, currentBook.expectedSegments, currentBook.total_chapters]);
 
   const getCurrentSegmentToValidate = () => {
     if (!readingProgress) return 1;
@@ -264,7 +265,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const chaptersRead = readingProgress?.chaptersRead || currentBook.chaptersRead || 0;
   const totalChapters = readingProgress?.totalSegments || 
                        currentBook.totalChapters || 
-                       currentBook.expectedSegments || 1;
+                       currentBook.expectedSegments || 
+                       currentBook.total_chapters || 1;
   const isBookCompleted = chaptersRead >= totalChapters;
   const showValidationButton = !isBookCompleted;
 

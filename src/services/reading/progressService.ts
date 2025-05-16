@@ -36,7 +36,7 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
  * @returns Objet avec champs dérivés ajoutés
  */
 function addDerivedFields(item: any): BookWithProgress {
-  const { total_pages, current_page, expectedSegments, total_chapters } = item;
+  const { total_pages, current_page, expected_segments, total_chapters } = item;
 
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
@@ -46,7 +46,7 @@ function addDerivedFields(item: any): BookWithProgress {
     : Math.floor(current_page / PAGES_PER_SEGMENT);
 
   const totalSegments =
-    expectedSegments ??
+    expected_segments ??
     total_chapters ??
     Math.ceil(total_pages / PAGES_PER_SEGMENT);
 
@@ -54,6 +54,8 @@ function addDerivedFields(item: any): BookWithProgress {
 
   return {
     ...item,
+    coverImage: item.cover_url,
+    expectedSegments: expected_segments ?? total_chapters ?? 1,
     chaptersRead: clampedSegments,
     totalSegments: totalSegments,
     progressPercent: Math.round(
@@ -199,7 +201,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       const baseProgress = {
         ...data,
         ...fetchedBook,
-        total_chapters: fetchedBook?.total_chapters ?? fetchedBook?.expectedSegments ?? 1,
+        total_chapters: fetchedBook?.total_chapters ?? fetchedBook?.expected_segments ?? 1,
         book_title: fetchedBook?.title ?? "Titre inconnu",
         book_author: fetchedBook?.author ?? "Auteur inconnu",
         book_slug: fetchedBook?.slug ?? "slug inconnu",
@@ -213,7 +215,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     const baseProgress = {
       ...data,
       ...book,
-      total_chapters: book?.total_chapters ?? book?.expectedSegments ?? 1,
+      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu", 

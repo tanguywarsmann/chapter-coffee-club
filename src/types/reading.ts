@@ -1,3 +1,4 @@
+
 /* ----------  Types de base  ---------- */
 
 export interface ReadingQuestion {
@@ -53,6 +54,7 @@ export type BookWithProgress = ReadingProgressRow & Book & {
   chaptersRead:    number
   totalSegments:   number
   nextSegmentPage: number
+  expectedSegments: number  // Alias camelCase pour expected_segments
 }
 
 /* Alias publics (usage dans les services / hooks / composants) */

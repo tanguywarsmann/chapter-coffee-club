@@ -26,7 +26,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [totalPages, setTotalPages] = useState<number | string>(book.total_pages || 0);
-  const [expectedSegments, setExpectedSegments] = useState(book.expectedSegments);
+  const [expectedSegments, setExpectedSegments] = useState(book.expected_segments);
   const [description, setDescription] = useState("");
   const [isPublished, setIsPublished] = useState(true);
   const [bookSlug, setBookSlug] = useState<string | undefined>(book.slug);

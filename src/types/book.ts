@@ -20,8 +20,8 @@ export interface Book {
   // Admin-specific fields
   slug?: string;
   total_pages?: number;
-  expected_segments?: number;
-  total_chapters?: number; // Add this field to match database structure
+  expected_segments?: number; // Snake case from database
+  total_chapters?: number; // Snake case from database
   missingSegments?: number[];
   cover_url?: string;
   
@@ -29,4 +29,7 @@ export interface Book {
   totalSegments?: number;
   progressPercent?: number;
   nextSegmentPage?: number;
+  
+  // Add camelCase alias for expected_segments to fix type errors
+  expectedSegments?: number;
 }
