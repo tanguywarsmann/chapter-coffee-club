@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -15,26 +16,6 @@ const progressCache = new Map<string, {
 }>();
 const CACHE_DURATION = 30000; // 30 secondes (réduit de 60000)
 
-export interface EnrichedReadingProgress extends ReadingProgress {
-  book_title: string;
-  book_author: string;
-  book_slug: string;
-  book_cover: string | null;
-  total_chapters: number;
-  validations: ReadingValidation[];
-}
-
-export interface ExtendedReadingProgress extends EnrichedReadingProgress {
-  progressPercent: number;
-  chaptersRead: number;
-  nextSegmentPage: number;
-}
-
-type ReadingStatus = 'to_read' | 'in_progress' | 'completed';
-
-// Définition des statuts valides pour la lecture
-const validStatuses: ReadingStatus[] = ['to_read', 'in_progress', 'completed'];
-
 /**
  * Nettoie le cache de progression pour un utilisateur ou tout le cache
  * @param userId Identifiant de l'utilisateur (optionnel)
@@ -50,10 +31,10 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
 
 /**
  * Calcule les champs dérivés pour une progression de lecture
- * @param progress Progression de lecture enrichie
+ * @param progress Progression de lecture à enrichir
  * @returns Progression de lecture avec champs dérivés
  */
-const addDerivedFields = (progress: EnrichedReadingProgress): ExtendedReadingProgress => {
+const addDerivedFields = (progress: Omit<ReadingProgress, 'progressPercent' | 'chaptersRead' | 'nextSegmentPage'>): ReadingProgress => {
   const totalPages = progress.total_pages || 0;
   const currentPage = progress.current_page || 0;
   
@@ -77,7 +58,7 @@ const addDerivedFields = (progress: EnrichedReadingProgress): ExtendedReadingPro
  * @param userId Identifiant de l'utilisateur
  * @returns Liste des progressions de lecture avec champs dérivés
  */
-export const getUserReadingProgress = async (userId: string): Promise<ExtendedReadingProgress[]> => {
+export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) return [];
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -92,10 +73,10 @@ export const getUserReadingProgress = async (userId: string): Promise<ExtendedRe
     if (error || !data) return [];
 
     // Récupération et enrichissement des données avec total_chapters
-    const enrichedProgress: EnrichedReadingProgress[] = await Promise.all(
+    const enrichedProgress = await Promise.all(
       data.map(async (item: ReadingProgressRecord) => {
         const book = await getBookById(item.book_id);
-        return {
+        const baseProgress = {
           ...item,
           total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
           book_title: book?.title ?? "Titre inconnu",
@@ -104,13 +85,13 @@ export const getUserReadingProgress = async (userId: string): Promise<ExtendedRe
           book_cover: book?.cover_url ?? book?.coverImage ?? "",
           validations: [],
         };
+        
+        // Ajouter les champs dérivés
+        return addDerivedFields(baseProgress);
       })
     );
 
-    // Ajouter les champs dérivés à chaque progression
-    const extendedProgress: ExtendedReadingProgress[] = enrichedProgress.map(addDerivedFields);
-
-    return extendedProgress;
+    return enrichedProgress;
   } catch (error) {
     console.error("Erreur dans getUserReadingProgress:", error);
     return [];
@@ -123,7 +104,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ExtendedRe
  * @param bookId Identifiant du livre
  * @returns Progression de lecture ou null
  */
-export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ExtendedReadingProgress | null> => {
+export const getBookReadingProgress = async (userId: string, bookId: string): Promise<ReadingProgress | null> => {
   if (!userId) return null;
 
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -141,7 +122,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
 
     const book = await getBookById(bookId);
 
-    const enrichedProgress: EnrichedReadingProgress = {
+    const baseProgress = {
       ...data,
       total_chapters: book?.totalChapters ?? book?.expectedSegments ?? 1,
       book_title: book?.title ?? "Titre inconnu",
@@ -152,7 +133,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     };
 
     // Ajouter les champs dérivés
-    return addDerivedFields(enrichedProgress);
+    return addDerivedFields(baseProgress);
   } catch (error) {
     console.error("Erreur dans getBookReadingProgress:", error);
     return null;

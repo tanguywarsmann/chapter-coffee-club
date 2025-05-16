@@ -1,3 +1,4 @@
+
 export interface ReadingQuestion {
   id: string;
   book_slug: string;
@@ -40,10 +41,10 @@ export interface ReadingProgress {
   book_slug?: string;
   book_cover?: string | null;
   
-  // New derived fields
-  progressPercent?: number;
-  chaptersRead?: number;
-  nextSegmentPage?: number;
+  // New derived fields - now required
+  progressPercent: number;
+  chaptersRead: number;
+  nextSegmentPage: number;
 }
 
 export interface ValidateReadingRequest {
@@ -77,3 +78,6 @@ export interface ReadingStreak {
   longest_streak: number;
   last_validation_date: string;
 }
+
+// Simple alias for backward compatibility if needed
+export type ExtendedReadingProgress = ReadingProgress;
