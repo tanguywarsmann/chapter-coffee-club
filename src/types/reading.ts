@@ -47,6 +47,13 @@ export interface ReadingProgress {
   nextSegmentPage: number;
 }
 
+// New type for Book with reading progress information
+export type BookWithProgress = import('@/types/book').Book & {
+  progressPercent: number;
+  chaptersRead: number;
+  nextSegmentPage: number;
+};
+
 export interface ValidateReadingRequest {
   user_id: string;
   book_id: string;
@@ -81,3 +88,6 @@ export interface ReadingStreak {
 
 // Simple alias for backward compatibility if needed
 export type ExtendedReadingProgress = ReadingProgress;
+
+// Alias for BookWithProgress for use in reading-related services
+export type ReadingListItem = BookWithProgress;

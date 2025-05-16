@@ -7,6 +7,7 @@ import { getBookById } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
 import { Book } from "@/types/book";
+import { BookWithProgress } from "@/types/reading"; // Import the new type
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
@@ -14,7 +15,7 @@ import { getBookReadingProgress } from "@/services/reading/progressService";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<BookWithProgress | null>(null); // Update the type
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ export default function BookPage() {
         }
 
         // Set initial book data
-        setBook(fetchedBook);
+        setBook(fetchedBook as BookWithProgress);
         
         // Fetch reading progress if user is authenticated
         if (user?.id) {
@@ -66,7 +67,7 @@ export default function BookPage() {
             // Update book with pre-calculated chaptersRead and progressPercent
             if (progress) {
               setBook(prevBook => {
-                if (!prevBook) return fetchedBook;
+                if (!prevBook) return fetchedBook as BookWithProgress;
                 return {
                   ...prevBook,
                   chaptersRead: progress.chaptersRead,
@@ -84,12 +85,13 @@ export default function BookPage() {
             if (syncedBook) {
               // Use the pre-calculated values from progress if available
               setBook(prevBook => {
-                if (!prevBook) return syncedBook;
+                if (!prevBook) return syncedBook as BookWithProgress;
                 return {
                   ...syncedBook,
                   chaptersRead: progress?.chaptersRead ?? syncedBook.chaptersRead,
-                  progressPercent: progress?.progressPercent ?? syncedBook.progressPercent
-                };
+                  progressPercent: progress?.progressPercent ?? syncedBook.progressPercent,
+                  nextSegmentPage: progress?.nextSegmentPage ?? ((syncedBook.chaptersRead + 1) * 30)
+                } as BookWithProgress;
               });
             }
           } catch (syncError) {
@@ -141,7 +143,7 @@ export default function BookPage() {
             chaptersRead: progress.chaptersRead,
             progressPercent: progress.progressPercent,
             isCompleted: progress.progressPercent >= 100
-          };
+          } as BookWithProgress;
         });
       }
       
@@ -154,12 +156,13 @@ export default function BookPage() {
       if (updatedBook) {
         // Use the pre-calculated values from progress if available
         setBook(prevBook => {
-          if (!prevBook) return updatedBook;
+          if (!prevBook) return updatedBook as BookWithProgress;
           return {
             ...updatedBook,
             chaptersRead: progress?.chaptersRead ?? updatedBook.chaptersRead,
-            progressPercent: progress?.progressPercent ?? updatedBook.progressPercent
-          };
+            progressPercent: progress?.progressPercent ?? 0,
+            nextSegmentPage: progress?.nextSegmentPage ?? ((updatedBook.chaptersRead + 1) * 30)
+          } as BookWithProgress;
         });
         toast.success("Lecture validée avec succès");
       } else {

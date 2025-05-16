@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
-import { ReadingProgress } from "@/types/reading";
+import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { getBookById as getMockBookById } from "@/mock/books";
 import { getBookById } from "@/services/books/bookQueries";
 import { getUserReadingProgress, getBookReadingProgress } from "./progressService";
@@ -81,24 +82,25 @@ export const initializeNewBookReading = async (userId: string, bookId: string): 
  * @param userId ID de l'utilisateur
  * @returns Liste des livres en cours
  */
-export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]> => {
+export const getBooksInProgressFromAPI = async (userId: string): Promise<BookWithProgress[]> => {
   const userProgress = await getUserReadingProgress(userId);
   return Promise.all(userProgress.map(async progress => {
     try {
       const book = await getBookById(progress.book_id);
       if (!book) return null;
 
-      const chaptersRead = Math.floor(progress.current_page / 30);
       return {
         ...book,
-        chaptersRead,
-        isCompleted: chaptersRead >= book.totalChapters
-      };
+        chaptersRead: progress.chaptersRead,
+        progressPercent: progress.progressPercent,
+        nextSegmentPage: progress.nextSegmentPage,
+        isCompleted: progress.progressPercent >= 100
+      } as BookWithProgress;
     } catch (error) {
       console.error(`Error fetching book ${progress.book_id}:`, error);
       return null;
     }
-  })).then(books => books.filter((book): book is Book => book !== null));
+  })).then(books => books.filter((book): book is BookWithProgress => book !== null));
 };
 
 /**
@@ -106,7 +108,7 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<Book[]>
  * @param userId ID de l'utilisateur
  * @returns Liste des livres terminés
  */
-export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> => {
+export const getCompletedBooksFromAPI = async (userId: string): Promise<BookWithProgress[]> => {
   const books = await getBooksInProgressFromAPI(userId);
   return books.filter(book => book.isCompleted);
 };
@@ -117,7 +119,7 @@ export const getCompletedBooksFromAPI = async (userId: string): Promise<Book[]> 
  * @param bookId ID du livre
  * @returns Livre synchronisé ou null
  */
-export const syncBookWithAPI = async (userId: string, bookId: string): Promise<Book | null> => {
+export const syncBookWithAPI = async (userId: string, bookId: string): Promise<BookWithProgress | null> => {
   try {
     const progress = await getBookReadingProgress(userId, bookId);
     const book = await getBookById(bookId);
@@ -129,15 +131,23 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
 
     if (!progress) {
       await initializeBookReading(userId, book);
-      return book;
+      // Return a default BookWithProgress even if no progress exists
+      return {
+        ...book,
+        chaptersRead: 0,
+        progressPercent: 0,
+        nextSegmentPage: 30,
+        isCompleted: false
+      } as BookWithProgress;
     }
 
-    const chaptersRead = Math.floor(progress.current_page / 30);
     return {
       ...book,
-      chaptersRead,
-      isCompleted: chaptersRead >= book.totalChapters
-    };
+      chaptersRead: progress.chaptersRead,
+      progressPercent: progress.progressPercent,
+      nextSegmentPage: progress.nextSegmentPage,
+      isCompleted: progress.progressPercent >= 100
+    } as BookWithProgress;
   } catch (error) {
     console.error(`Error syncing book ${bookId}:`, error);
     return null;
