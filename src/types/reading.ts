@@ -56,6 +56,7 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
   title: string
   author: string
   cover_url: string
+  description: string   // Maintenant requis
   
   /** nouveau champ optionnel pour compatibilité avec BookPage */
   publicationYear?: number
