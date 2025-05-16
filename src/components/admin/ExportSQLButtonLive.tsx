@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
-import { saveAs } from "file-saver"
+import { Database } from "lucide-react"
 
-export default function ExportSQLButtonLive() {
+export default function ExportSQLButtonFinal() {
   async function exportData() {
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const
     let fullSQL = "-- Export SQL pour READ\n\n"
@@ -27,15 +27,24 @@ export default function ExportSQLButtonLive() {
         })
         fullSQL += `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${values.join(", ")});\n`
       }
-      fullSQL += `\n`
+      fullSQL += "\n"
     }
 
+    /* téléchargement natif sans file-saver */
     const blob = new Blob([fullSQL], { type: "text/sql;charset=utf-8" })
-    saveAs(blob, "read_export.sql")
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "read_export.sql"
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   }
 
   return (
-    <Button onClick={exportData}>
+    <Button onClick={exportData} variant="outline" className="gap-2">
+      <Database className="h-4 w-4" />
       Exporter la base READ (SQL)
     </Button>
   )
