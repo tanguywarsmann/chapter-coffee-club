@@ -1,9 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
 import { getBookById } from "@/services/books/bookQueries";
 import { PAGES_PER_SEGMENT, WORDS_PER_SEGMENT } from "@/utils/constants";
-import { Book } from "@/types/book";
+import { Book } from "@/types/reading";
 
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];

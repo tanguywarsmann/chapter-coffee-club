@@ -47,10 +47,11 @@ export interface ReadingProgressRow {
 
 /* ----------  Type enrichi utilisé partout  ---------- */
 
-import type { Book } from "@/types/book"
+// Supprimé l'import qui crée le conflit de nom
+import type { Database } from "@/integrations/supabase/types"
 
 /* alias internes --------------------------------------------------- */
-export interface Book extends Database["public"]["Tables"]["books"]["Row"] {
+export type Book = Database["public"]["Tables"]["books"]["Row"] & {
   /** alias front de cover_url */
   coverImage?: string
   /** garde le snake_case venant de la BDD */
