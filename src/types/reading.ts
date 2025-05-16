@@ -1,3 +1,4 @@
+
 /* ----------  Types de base  ---------- */
 
 export interface ReadingQuestion {
@@ -71,25 +72,24 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
 /* enrichi par les services ---------------------------------------- */
 export type BookWithProgress =
   Book &
-  Partial<ReadingProgressRow> & {
-    /* dérivés – désormais obligatoires */
+  ProgressRow & {
+    /* -------- champs dérivés (requis) -------- */
     chaptersRead:     number
     progressPercent:  number
     expectedSegments: number
     totalSegments:    number
     nextSegmentPage:  number
 
-    /* flags / legacy optionnels */
-    status?:               "to_read" | "in_progress" | "completed"
-    isUnavailable?:        boolean
-    isStableUnavailable?:  boolean
-    isCompleted?:          boolean
+    /* -------- compat / legacy -------- */
+    book_id?:     string          // 🔄  désormais optionnel
+    book_title?:  string
+    book_author?: string
+    book_cover?:  string
 
-    /* alias legacy (book_id requis pour readingListService) */
-    book_id:     string
-    book_title?: string
-    book_author?:string
-    book_cover?: string
+    /* -------- autres champs attendus -------- */
+    language?:    string
+    categories?:  string[]
+    pages?:       number
   }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */
