@@ -13,7 +13,6 @@ import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { toast } from "sonner";
 import { checkBadgesForUser, recordReadingSession } from "@/services/badgeService";
-import { calculateReadingProgress } from "@/lib/progress";
 import { ReadingProgress } from "@/types/reading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BadgeCard } from "@/components/achievements/BadgeCard";
@@ -100,15 +99,14 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           if (progress) {
             console.log("📚 Progression récupérée:", {
               id: progress.id,
-              validations: progress.validations?.length,
-              expected_segments: progress.expected_segments,
-              total_chapters: progress.total_chapters
+              chaptersRead: progress.chaptersRead,
+              totalSegments: progress.totalSegments
             });
             
             setReadingProgress(progress);
 
             // Update the book with validation data
-            const chaptersRead = progress.validations?.length || 0;
+            const chaptersRead = progress.chaptersRead || 0;
             if (chaptersRead !== currentBook.chaptersRead) {
               setCurrentBook(prevBook => ({
                 ...prevBook,
@@ -125,28 +123,25 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     fetchProgress();
   }, [user?.id, currentBook?.id]);
 
-  // Calculate progress percentage based on validations
+  // Update progress percentage based on the BookWithProgress data
   useEffect(() => {
-    const chapters = readingProgress?.validations?.length || 0;
-    const total = readingProgress?.expected_segments || 
-                 readingProgress?.total_chapters || 
-                 currentBook.expectedSegments || 1;
+    if (readingProgress) {
+      const segmentsDone = readingProgress.chaptersRead || 0;
+      const totalSegments = readingProgress.totalSegments || 
+                           currentBook.expectedSegments || 1;
 
-    console.log("📊 Calcul progression", { 
-      chapters, 
-      total,
-      expected_segments: readingProgress?.expected_segments,
-      total_chapters: readingProgress?.total_chapters
-    });
+      console.log("📊 Calcul progression", { 
+        segmentsDone, 
+        totalSegments
+      });
 
-    setProgressPercent(
-      calculateReadingProgress(chapters, total)
-    );
-  }, [readingProgress?.validations, currentBook.expectedSegments, readingProgress?.expected_segments, readingProgress?.total_chapters]);
+      setProgressPercent(readingProgress.progressPercent || 0);
+    }
+  }, [readingProgress, currentBook.expectedSegments]);
 
   const getCurrentSegmentToValidate = () => {
-    if (!readingProgress || !readingProgress.validations) return 1;
-    return (readingProgress.validations.length || 0) + 1;
+    if (!readingProgress) return 1;
+    return (readingProgress.chaptersRead || 0) + 1;
   };
 
   const handleMainButtonClick = async () => {
@@ -243,10 +238,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   // Manage already validated case
   useEffect(() => {
     if (showValidationModal && validationSegment) {
-      // Check if segment is already validated (compare with validations array)
-      const isAlreadyValidated = readingProgress?.validations?.some(
-        v => v.segment === validationSegment
-      );
+      // Check if segment is already validated (compare with chaptersRead)
+      const isAlreadyValidated = readingProgress && 
+        validationSegment <= (readingProgress.chaptersRead || 0);
       
       if (isAlreadyValidated) {
         console.log("⚠️ Segment déjà validé détecté:", validationSegment);
@@ -262,11 +256,11 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         forceRefresh();
       }
     }
-  }, [showValidationModal, validationSegment, readingProgress?.validations, forceRefresh]);
+  }, [showValidationModal, validationSegment, readingProgress, forceRefresh]);
 
-  // Check if book is completed based on validations
-  const chaptersRead = readingProgress?.validations?.length || currentBook.chaptersRead || 0;
-  const totalChapters = readingProgress?.total_chapters || 
+  // Check if book is completed based on chaptersRead
+  const chaptersRead = readingProgress?.chaptersRead || currentBook.chaptersRead || 0;
+  const totalChapters = readingProgress?.totalSegments || 
                        currentBook.totalChapters || 
                        currentBook.expectedSegments || 1;
   const isBookCompleted = chaptersRead >= totalChapters;
