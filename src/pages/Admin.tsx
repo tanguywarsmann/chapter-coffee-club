@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, AlertTriangle, Settings, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
-import { ExportSQLButton } from "@/components/admin/ExportSQLButton";
+import { ExportSQLButtonV2 } from "@/components/admin/ExportSQLButton";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -50,7 +50,7 @@ export default function Admin() {
                   <FileText className="h-4 w-4" />
                   Exporter les segments manquants
                 </Button>
-                <ExportSQLButton />
+                <ExportSQLButtonV2 />
               </div>
             </div>
             
