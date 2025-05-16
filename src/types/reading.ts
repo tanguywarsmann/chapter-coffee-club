@@ -57,6 +57,9 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
   author: string
   cover_url: string
   
+  /** nouveau champ optionnel pour compatibilité avec BookPage */
+  publicationYear?: number
+  
   /** alias front de cover_url */
   coverImage?: string
   /** garde le snake_case venant de la BDD */
@@ -79,7 +82,7 @@ export type BookWithProgress = Book & Partial<ReadingProgressRow> & {
   isCompleted?: boolean
   
   /* alias legacy explicites pour compatibilité */
-  book_id?: string
+  book_id: string      /* maintenant requis */
   book_title?: string
   book_author?: string
   book_cover?: string
