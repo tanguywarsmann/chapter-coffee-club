@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -5,7 +6,7 @@ import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
-import { BookWithProgress } from "@/types/reading";
+import { BookWithProgress, EMPTY_BOOK_PROGRESS } from "@/types/reading";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
@@ -58,32 +59,15 @@ export default function BookPage() {
             }, 2000);
             return;
           }
-          
-          // Initialize with default progress values and process as BookWithProgress
-          bookWithProgress = {
-            ...fetchedBook,
-            id: fetchedBook.id,
-            user_id: user?.id || '',
-            book_id: fetchedBook.id,
-            current_page: 0,
-            total_pages: fetchedBook.total_pages || 0,
-            started_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            status: 'to_read',
-            streak_current: 0,
-            streak_best: 0,
-            chaptersRead: 0,
-            progressPercent: 0,
-            totalSegments: fetchedBook.total_chapters || fetchedBook.expectedSegments || 1,
-            nextSegmentPage: 30 // Default first segment
-          };
         }
         
         // Set the book data
-        setBook(bookWithProgress);
+        if (bookWithProgress) {
+          setBook(bookWithProgress);
+        }
         
         // Also sync with API for good measure if authenticated
-        if (user?.id) {
+        if (user?.id && bookWithProgress) {
           try {
             // S'assurer qu'on a un identifiant valide pour la synchronisation
             const bookIdentifier = bookWithProgress.id || bookWithProgress.slug || '';
@@ -93,13 +77,7 @@ export default function BookPage() {
             
             if (syncedBook && bookWithProgress) {
               // Update book with synced data while preserving progress values
-              setBook({
-                ...syncedBook as BookWithProgress,
-                chaptersRead: bookWithProgress.chaptersRead,
-                progressPercent: bookWithProgress.progressPercent,
-                totalSegments: bookWithProgress.totalSegments,
-                nextSegmentPage: bookWithProgress.nextSegmentPage
-              });
+              setBook(syncedBook as BookWithProgress);
             }
           } catch (syncError) {
             console.error("Error syncing book with API:", syncError);

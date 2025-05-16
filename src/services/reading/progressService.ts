@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -35,8 +34,11 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
  * @param item Base reading progress or book to enrich
  * @returns Objet avec champs dérivés ajoutés
  */
-function addDerivedFields(item: any): BookWithProgress {
-  const { total_pages, current_page, expected_segments, total_chapters } = item;
+function addDerivedFields(b: any): BookWithProgress {
+  const { total_pages, current_page, expected_segments, total_chapters } = b;
+  
+  // Utiliser cover_url et non coverImage qui n'existe pas encore
+  const coverImage = b.cover_url;
 
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
@@ -45,26 +47,22 @@ function addDerivedFields(item: any): BookWithProgress {
     ? Math.floor(current_page / WORDS_PER_SEGMENT)
     : Math.floor(current_page / PAGES_PER_SEGMENT);
 
-  const totalSegments =
-    expected_segments ??
-    total_chapters ??
-    Math.ceil(total_pages / PAGES_PER_SEGMENT);
+  const expectedSegments = expected_segments ?? total_chapters ?? 1;
+  
+  const totalSegments = expectedSegments;
 
   const clampedSegments = Math.min(segmentsRead, totalSegments);
-
+  
   return {
-    ...item,
-    coverImage: item.cover_url,
-    expectedSegments: expected_segments ?? total_chapters ?? 1,
+    ...b,
+    coverImage,               // alias front
+    expectedSegments,
+    totalSegments,
     chaptersRead: clampedSegments,
-    totalSegments: totalSegments,
-    progressPercent: Math.round(
-      (clampedSegments / (totalSegments || 1)) * 100
-    ),
-    nextSegmentPage:
-      isWordMode
-        ? (clampedSegments + 1) * WORDS_PER_SEGMENT
-        : (clampedSegments + 1) * PAGES_PER_SEGMENT,
+    progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100),
+    nextSegmentPage: isWordMode
+      ? (clampedSegments + 1) * WORDS_PER_SEGMENT
+      : (clampedSegments + 1) * PAGES_PER_SEGMENT,
   };
 }
 

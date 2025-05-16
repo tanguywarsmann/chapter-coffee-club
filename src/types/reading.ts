@@ -49,13 +49,27 @@ export interface ReadingProgressRow {
 
 import type { Book } from "@/types/book"
 
-export type BookWithProgress = ReadingProgressRow & Book & {
-  progressPercent: number
-  chaptersRead:    number
-  totalSegments:   number
-  nextSegmentPage: number
-  expectedSegments: number  // Alias camelCase pour expected_segments
+/* alias internes --------------------------------------------------- */
+export interface Book extends Database["public"]["Tables"]["books"]["Row"] {
+  /** alias front de cover_url */
+  coverImage?: string
+  /** garde le snake_case venant de la BDD */
+  expected_segments: number
+  total_chapters: number
 }
+
+/* enrichi par les services ---------------------------------------- */
+export type BookWithProgress = Book & {
+  /* alias camelCase attendu par de nombreux composants */
+  expectedSegments: number      // requis
+  totalSegments: number
+  chaptersRead: number
+  progressPercent: number
+  nextSegmentPage: number
+}
+
+/* Helper utilitaire pour créer un objet vide sans casser le typage */
+export const EMPTY_BOOK_PROGRESS = {} as BookWithProgress
 
 /* Alias publics (usage dans les services / hooks / composants) */
 export type ReadingProgress = BookWithProgress
