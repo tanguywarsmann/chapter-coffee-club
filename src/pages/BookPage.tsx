@@ -6,7 +6,7 @@ import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
-import { BookWithProgress } from "@/types/reading"; // Import the new type
+import { BookWithProgress } from "@/types/reading";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
@@ -14,7 +14,7 @@ import { getBookReadingProgress } from "@/services/reading/progressService";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
-  const [book, setBook] = useState<BookWithProgress | null>(null); // Update the type
+  const [book, setBook] = useState<BookWithProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -36,61 +36,59 @@ export default function BookPage() {
         setLoading(true);
         setError(null);
         
-        const fetchedBook = await getBookById(id);
+        let bookWithProgress: BookWithProgress | null = null;
         
-        // Safety check to prevent state updates on unmounted component
-        if (!isMounted.current) return;
-        
-        if (!fetchedBook) {
-          setError("Ce livre n'existe pas dans notre base de données");
-          toast.error("Ce livre n'existe pas dans notre base de données");
-          setTimeout(() => {
-            if (isMounted.current) {
-              navigate("/home");
-            }
-          }, 2000);
-          return;
+        // If user is authenticated, attempt to get reading progress first
+        if (user?.id) {
+          bookWithProgress = await getBookReadingProgress(user.id, id);
         }
-
-        // Set initial book data
-        setBook(fetchedBook as BookWithProgress);
         
-        // Fetch reading progress if user is authenticated
+        // If no reading progress or not authenticated, fetch basic book info
+        if (!bookWithProgress) {
+          const fetchedBook = await getBookById(id);
+          
+          if (!isMounted.current) return;
+          
+          if (!fetchedBook) {
+            setError("Ce livre n'existe pas dans notre base de données");
+            toast.error("Ce livre n'existe pas dans notre base de données");
+            setTimeout(() => {
+              if (isMounted.current) {
+                navigate("/home");
+              }
+            }, 2000);
+            return;
+          }
+          
+          // Initialize with default progress values
+          bookWithProgress = {
+            ...fetchedBook,
+            chaptersRead: 0,
+            progressPercent: 0,
+            totalSegments: fetchedBook.totalChapters || fetchedBook.expectedSegments || 1,
+            nextSegmentPage: 30, // Default first segment
+            isCompleted: false
+          };
+        }
+        
+        // Set the book data
+        setBook(bookWithProgress);
+        
+        // Also sync with API for good measure if authenticated
         if (user?.id) {
           try {
-            // Get reading progress with pre-calculated values
-            const progress = await getBookReadingProgress(user.id, id);
-            
-            if (!isMounted.current) return;
-            
-            // Update book with pre-calculated chaptersRead and progressPercent
-            if (progress) {
-              setBook(prevBook => {
-                if (!prevBook) return fetchedBook as BookWithProgress;
-                return {
-                  ...prevBook,
-                  chaptersRead: progress.chaptersRead,
-                  progressPercent: progress.progressPercent,
-                  isCompleted: progress.progressPercent >= 100
-                };
-              });
-            }
-            
-            // Also sync with API for good measure
             const syncedBook = await syncBookWithAPI(user.id, id);
             
             if (!isMounted.current) return;
             
-            if (syncedBook) {
-              // Use the pre-calculated values from progress if available
-              setBook(prevBook => {
-                if (!prevBook) return syncedBook as BookWithProgress;
-                return {
-                  ...syncedBook,
-                  chaptersRead: progress?.chaptersRead ?? syncedBook.chaptersRead,
-                  progressPercent: progress?.progressPercent ?? syncedBook.progressPercent,
-                  nextSegmentPage: progress?.nextSegmentPage ?? ((syncedBook.chaptersRead + 1) * 30)
-                } as BookWithProgress;
+            if (syncedBook && bookWithProgress) {
+              // Use the pre-calculated values from bookWithProgress
+              setBook({
+                ...syncedBook,
+                chaptersRead: bookWithProgress.chaptersRead,
+                progressPercent: bookWithProgress.progressPercent,
+                totalSegments: bookWithProgress.totalSegments,
+                nextSegmentPage: bookWithProgress.nextSegmentPage
               });
             }
           } catch (syncError) {
@@ -129,43 +127,26 @@ export default function BookPage() {
     
     try {
       // First get up-to-date reading progress
-      const progress = await getBookReadingProgress(user.id, bookId);
+      const updatedProgress = await getBookReadingProgress(user.id, bookId);
       
       if (!isMounted.current) return;
       
-      // Update book with pre-calculated values from progress
-      if (progress) {
-        setBook(prevBook => {
-          if (!prevBook) return null;
-          return {
-            ...prevBook,
-            chaptersRead: progress.chaptersRead,
-            progressPercent: progress.progressPercent,
-            isCompleted: progress.progressPercent >= 100
-          } as BookWithProgress;
-        });
-      }
-      
-      // Also sync with API
-      const updatedBook = await syncBookWithAPI(user.id, bookId);
-      
-      // Safety check to prevent state updates on unmounted component
-      if (!isMounted.current) return;
-      
-      if (updatedBook) {
-        // Use the pre-calculated values from progress if available
-        setBook(prevBook => {
-          if (!prevBook) return updatedBook as BookWithProgress;
-          return {
-            ...updatedBook,
-            chaptersRead: progress?.chaptersRead ?? updatedBook.chaptersRead,
-            progressPercent: progress?.progressPercent ?? 0,
-            nextSegmentPage: progress?.nextSegmentPage ?? ((updatedBook.chaptersRead + 1) * 30)
-          } as BookWithProgress;
-        });
+      // Update book with progress values
+      if (updatedProgress) {
+        setBook(updatedProgress);
         toast.success("Lecture validée avec succès");
       } else {
-        toast.error("Impossible de mettre à jour le livre");
+        // Also sync with API as fallback
+        const updatedBook = await syncBookWithAPI(user.id, bookId);
+        
+        if (!isMounted.current) return;
+        
+        if (updatedBook) {
+          setBook(updatedBook as BookWithProgress);
+          toast.success("Lecture validée avec succès");
+        } else {
+          toast.error("Impossible de mettre à jour le livre");
+        }
       }
     } catch (error) {
       console.error("Error updating book after chapter completion:", error);

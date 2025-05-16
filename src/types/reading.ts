@@ -1,4 +1,27 @@
 
+// Renamed interface to distinguish from the enriched type
+export interface ReadingProgressRow {
+  id: string;
+  user_id: string;
+  book_id: string;
+  total_pages: number;
+  current_page: number;
+  started_at: string;
+  updated_at: string;
+  status: "to_read" | "in_progress" | "completed";
+  streak_current: number;
+  streak_best: number;
+  validations?: ReadingValidation[]; // Optional for flexibility
+  total_chapters?: number; // Added field from backend
+  expected_segments?: number; // Added field for total segments
+  
+  // New enriched fields
+  book_title?: string;
+  book_author?: string;
+  book_slug?: string;
+  book_cover?: string | null;
+}
+
 export interface ReadingQuestion {
   id: string;
   book_slug: string;
@@ -20,37 +43,11 @@ export interface ReadingValidation {
   date_validated?: string; // Optional for backward compatibility
 }
 
-export interface ReadingProgress {
-  id: string;
-  user_id: string;
-  book_id: string;
-  total_pages: number;
-  current_page: number;
-  started_at: string;
-  updated_at: string;
-  status: "to_read" | "in_progress" | "completed";
-  streak_current: number;
-  streak_best: number;
-  validations?: ReadingValidation[]; // Optional for flexibility
-  total_chapters?: number; // Added field from backend
-  expected_segments?: number; // Added field for total segments
-  
-  // New enriched fields
-  book_title?: string;
-  book_author?: string;
-  book_slug?: string;
-  book_cover?: string | null;
-  
-  // New derived fields - now required
-  progressPercent: number;
-  chaptersRead: number;
-  nextSegmentPage: number;
-}
-
 // New type for Book with reading progress information
 export type BookWithProgress = import('@/types/book').Book & {
   progressPercent: number;
   chaptersRead: number;
+  totalSegments: number;
   nextSegmentPage: number;
 };
 
@@ -74,7 +71,7 @@ export interface ReadingList {
   added_at: string;
 }
 
-// New interfaces for reading activity
+// Reading activity interfaces
 export interface ReadingActivity {
   user_id: string;
   date: string; // ISO string
@@ -86,8 +83,8 @@ export interface ReadingStreak {
   last_validation_date: string;
 }
 
-// Simple alias for backward compatibility if needed
-export type ExtendedReadingProgress = ReadingProgress;
+// Alias for backward compatibility
+export type ReadingProgress = BookWithProgress;
 
 // Alias for BookWithProgress for use in reading-related services
 export type ReadingListItem = BookWithProgress;

@@ -1,3 +1,4 @@
+
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,18 +15,6 @@ interface ReadingProgressProps {
 }
 
 export function ReadingProgress({ progressItems, isLoading = false }: ReadingProgressProps) {
-  console.log("📊 Rendering ReadingProgress", { 
-    progressItemsCount: progressItems?.length || 0,
-    isLoading,
-    itemsData: progressItems?.map(p => ({
-      id: p.id,
-      title: p.book_title,
-      chaptersRead: p.chaptersRead,
-      expected_segments: p.expected_segments,
-      total_chapters: p.total_chapters
-    }))
-  });
-  
   // Vérifier si progressItems est défini et c'est un array
   const availableProgresses = useMemo(() => {
     if (!progressItems || !Array.isArray(progressItems)) {
@@ -101,12 +90,9 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
               }
               
               // Utiliser directement les valeurs pré-calculées
-              const { chaptersRead, progressPercent } = progress;
+              const { chaptersRead, progressPercent, totalSegments } = progress;
               
-              // Priorité: expected_segments > total_chapters > 1
-              const totalSegments = progress.expected_segments ?? progress.total_chapters ?? 0;
-              
-              // Ne rien afficher si expected_segments est manquant ou égal à 0
+              // Ne rien afficher si totalSegments est manquant ou égal à 0
               if (!totalSegments) {
                 console.warn("⚠️ totalSegments est 0 ou undefined pour progress.id =", progress.id);
                 return null;

@@ -8,10 +8,10 @@ import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { BookOpen, AlertTriangle, Settings, FileText, Database } from "lucide-react";
+import { BookOpen, AlertTriangle, Settings, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
-import ExportSQLButtonLive from "@/components/admin/ExportSQLButtonLive"
+import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -31,11 +31,6 @@ export default function Admin() {
     }
   };
 
-  // Ajout d'une trace de débogage pour l'initialisation de la page
-  useEffect(() => {
-    console.log("Admin page initialized");
-  }, []);
-
   return (
     <AuthGuard>
       <AdminGuard>
@@ -50,7 +45,7 @@ export default function Admin() {
                   <FileText className="h-4 w-4" />
                   Exporter les segments manquants
                 </Button>
-                <ExportSQLButtonLive />
+                <ExportSQLButtonFinal />
               </div>
             </div>
             

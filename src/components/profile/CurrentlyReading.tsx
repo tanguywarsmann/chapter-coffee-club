@@ -1,10 +1,8 @@
 
-console.log("Import de CurrentlyReading.tsx OK");
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/reading/progressService";
-import { ReadingProgress } from "@/types/reading";
+import { BookWithProgress } from "@/types/reading";
 import { Link } from "react-router-dom";
 import { BookCover } from "@/components/books/BookCover";
 import { Progress } from "@/components/ui/progress";
@@ -14,9 +12,7 @@ interface CurrentlyReadingProps {
 }
 
 export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
-  console.log("Rendering CurrentlyReading", { userId: userId || "undefined" });
-
-  const [currentBook, setCurrentBook] = useState<ReadingProgress | null>(null);
+  const [currentBook, setCurrentBook] = useState<BookWithProgress | null>(null);
   const [loading, setLoading] = useState(true);
 
   // S'assurer que userId existe
@@ -37,23 +33,18 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   }
 
   useEffect(() => {
-    console.log("✅ CurrentlyReading monté avec userId =", userId);
-
     async function fetchCurrentlyReading() {
       try {
         setLoading(true);
         
         const progress = await getUserReadingProgress(userId);
-        console.log("📚 Progress récupéré :", progress);
 
         if (!progress || progress.length === 0) {
-          console.log("Aucun progrès de lecture trouvé pour cet utilisateur");
           setCurrentBook(null);
           return;
         }
 
         const inProgressBooks = progress.filter(p => p.status === "in_progress");
-        console.log("🔍 Livres en cours trouvés :", inProgressBooks);
 
         if (inProgressBooks.length > 0) {
           const mostRecentBook = inProgressBooks.sort((a, b) => {
@@ -109,8 +100,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     );
   }
 
-  // Calcul du pourcentage de progression basé sur les validations si disponibles
-  // Utiliser le progressPercent maintenant disponible dans ExtendedReadingProgress
+  // Utiliser directement le progressPercent maintenant disponible
   const progress = currentBook.progressPercent;
 
   return (
@@ -144,7 +134,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
               </div>
               <Progress value={progress} className="h-2" />
               <div className="text-xs text-muted-foreground text-right">
-                {currentBook.chaptersRead} validation{currentBook.chaptersRead > 1 ? 's' : ''} sur {currentBook.total_chapters || 0} segment{(currentBook.total_chapters || 0) > 1 ? 's' : ''}
+                {currentBook.chaptersRead} validation{currentBook.chaptersRead > 1 ? 's' : ''} sur {currentBook.totalSegments || 0} segment{(currentBook.totalSegments || 0) > 1 ? 's' : ''}
               </div>
             </div>
           </div>

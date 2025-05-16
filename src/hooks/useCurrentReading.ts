@@ -1,16 +1,15 @@
 
-console.log("Import de useCurrentReading.ts OK");
-
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Book } from "@/types/book";
+import { BookWithProgress } from "@/types/reading";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
+import { getBooksByStatus } from "@/services/reading/progressService";
 
 export const useCurrentReading = () => {
   const { user } = useAuth();
-  const { getBooksByStatus, readingList, inProgress } = useReadingList();
-  const [currentReading, setCurrentReading] = useState<Book | null>(null);
+  const { inProgress } = useReadingList();
+  const [currentReading, setCurrentReading] = useState<BookWithProgress | null>(null);
   const [isLoadingCurrentBook, setIsLoadingCurrentBook] = useState(true);
   const isMounted = useRef(true);
   const fetchingCurrentReading = useRef(false);
@@ -43,7 +42,7 @@ export const useCurrentReading = () => {
       const newId = memoizedCurrentReading.id;
       
       if (currentId !== newId || !currentReading) {
-        setCurrentReading(memoizedCurrentReading);
+        setCurrentReading(memoizedCurrentReading as BookWithProgress);
         setIsLoadingCurrentBook(false);
       }
     }
@@ -73,7 +72,7 @@ export const useCurrentReading = () => {
       setIsLoadingCurrentBook(true);
       lastFetchTime.current = now;
       
-      const inProgressBooks = await getBooksByStatus("in_progress");
+      const inProgressBooks = await getBooksByStatus(user.id, "in_progress");
       
       if (!isMounted.current) return;
       
@@ -86,7 +85,7 @@ export const useCurrentReading = () => {
             ...inProgressBooks[0],
             isStableUnavailable: true
           };
-          setCurrentReading(stableUnavailableBook);
+          setCurrentReading(stableUnavailableBook as BookWithProgress);
         } else {
           setCurrentReading(null);
         }
@@ -109,7 +108,7 @@ export const useCurrentReading = () => {
         fetchingCurrentReading.current = false;
       }
     }
-  }, [user?.id, getBooksByStatus, inProgress, currentReading]);
+  }, [user?.id, inProgress, currentReading]);
 
   useEffect(() => {
     if (user?.id && isMounted.current) {

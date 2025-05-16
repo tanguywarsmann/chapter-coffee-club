@@ -1,8 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse, ReadingProgress } from "@/types/reading";
-import { getBookById } from "@/services/books/bookQueries";
+import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse, BookWithProgress } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
 import { recordReadingActivity } from "../streakService";
 import { getBookReadingProgress, clearProgressCache } from "./progressService";
@@ -26,16 +25,17 @@ export const validateReading = async (
   try {
     console.log('🔍 Début de validateReading pour segment:', request.segment);
 
-    const alreadyValidated = await isSegmentAlreadyValidated(
-      request.user_id,
-      request.book_id,
-      request.segment
-    );
-
-    if (alreadyValidated) {
-      console.log('📝 Segment already validated, refreshing progress data', request);
-      await clearProgressCache(request.user_id);
-
+    // Vérifier si le segment est déjà validé
+    const progress = await getBookReadingProgress(request.user_id, request.book_id);
+    
+    if (!progress) {
+      throw new Error("❌ Impossible de récupérer la progression du livre");
+    }
+    
+    // Utiliser maintenant chaptersRead au lieu de vérifier la DB
+    if (request.segment <= progress.chaptersRead) {
+      console.log('📝 Segment already validated:', request.segment, 'chaptersRead:', progress.chaptersRead);
+      
       return {
         message: "Segment déjà validé",
         current_page: request.segment * 30,
@@ -44,29 +44,11 @@ export const validateReading = async (
       };
     }
 
-    const book = await getBookById(request.book_id);
-    if (!book) throw new Error("Livre non trouvé");
-
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
     console.log("📚 Question récupérée :", question);
 
-    let progress = await getBookReadingProgress(request.user_id, request.book_id);
-    if (!progress) {
-      const { initializeNewBookReading } = await import("./syncService");
-      try {
-        progress = await initializeNewBookReading(request.user_id, request.book_id);
-        console.log("[INIT] Résultat initializeNewBookReading :", progress);
-      } catch (e) {
-        console.error("[INIT] Échec initializeNewBookReading :", e);
-      }
-
-      if (!progress) {
-        throw new Error("❌ Impossible d'initialiser la progression de lecture (aucune ligne créée)");
-      }
-    }
-
     const newCurrentPage = request.segment * 30;
-    const newStatus = newCurrentPage >= book.pages ? 'completed' : 'in_progress';
+    const newStatus = newCurrentPage >= progress.pages ? 'completed' : 'in_progress';
 
     console.log('📊 Updating reading progress:', {
       user_id: request.user_id,
@@ -143,16 +125,9 @@ export const validateReading = async (
       }
     }, 0);
 
-    // Add a debug statement to validate that progressPercent is updated
+    // Get updated progress after validation
     const updatedProgress = await getBookReadingProgress(request.user_id, request.book_id);
     console.debug("[validateReading] New progress", updatedProgress);
-
-    console.log('✅ Validation du segment réussie:', {
-      segment: request.segment,
-      currentPage: newCurrentPage,
-      progress_id: progress?.id,
-      newBadges: newBadges.length
-    });
 
     return {
       message: "Segment validé avec succès",
