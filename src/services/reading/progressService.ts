@@ -259,7 +259,7 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu",
-      book_cover: book?.cover_url ?? book?.cover_url ?? "",
+      book_cover: book?.cover_url ??,
       validations: [],
     };
 
