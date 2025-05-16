@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -57,20 +58,20 @@ export default function BookPage() {
         // Fetch reading progress if user is authenticated
         if (user?.id) {
           try {
-            // First get reading progress to get validations data
+            // Get reading progress with pre-calculated values
             const progress = await getBookReadingProgress(user.id, id);
             
             if (!isMounted.current) return;
             
-            // Update book with chapters read from validations
-            if (progress && progress.validations) {
-              const chaptersRead = progress.validations.length;
+            // Update book with pre-calculated chaptersRead and progressPercent
+            if (progress) {
               setBook(prevBook => {
                 if (!prevBook) return fetchedBook;
                 return {
                   ...prevBook,
-                  chaptersRead,
-                  isCompleted: chaptersRead >= (prevBook.totalChapters || prevBook.expectedSegments || 1)
+                  chaptersRead: progress.chaptersRead,
+                  progressPercent: progress.progressPercent,
+                  isCompleted: progress.progressPercent >= 100
                 };
               });
             }
@@ -81,12 +82,13 @@ export default function BookPage() {
             if (!isMounted.current) return;
             
             if (syncedBook) {
-              // Preserve chaptersRead from validations if available
+              // Use the pre-calculated values from progress if available
               setBook(prevBook => {
                 if (!prevBook) return syncedBook;
                 return {
                   ...syncedBook,
-                  chaptersRead: progress?.validations?.length ?? syncedBook.chaptersRead
+                  chaptersRead: progress?.chaptersRead ?? syncedBook.chaptersRead,
+                  progressPercent: progress?.progressPercent ?? syncedBook.progressPercent
                 };
               });
             }
@@ -130,15 +132,15 @@ export default function BookPage() {
       
       if (!isMounted.current) return;
       
-      // Update book with chapters read from validations
-      if (progress && progress.validations) {
-        const chaptersRead = progress.validations.length;
+      // Update book with pre-calculated values from progress
+      if (progress) {
         setBook(prevBook => {
           if (!prevBook) return null;
           return {
             ...prevBook,
-            chaptersRead,
-            isCompleted: chaptersRead >= (prevBook.totalChapters || prevBook.expectedSegments || 1)
+            chaptersRead: progress.chaptersRead,
+            progressPercent: progress.progressPercent,
+            isCompleted: progress.progressPercent >= 100
           };
         });
       }
@@ -150,12 +152,13 @@ export default function BookPage() {
       if (!isMounted.current) return;
       
       if (updatedBook) {
-        // Preserve chaptersRead from validations if available
+        // Use the pre-calculated values from progress if available
         setBook(prevBook => {
           if (!prevBook) return updatedBook;
           return {
             ...updatedBook,
-            chaptersRead: progress?.validations?.length ?? updatedBook.chaptersRead
+            chaptersRead: progress?.chaptersRead ?? updatedBook.chaptersRead,
+            progressPercent: progress?.progressPercent ?? updatedBook.progressPercent
           };
         });
         toast.success("Lecture validée avec succès");
