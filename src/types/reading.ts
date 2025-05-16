@@ -50,6 +50,9 @@ export interface ReadingProgressRow {
 // Supprimé l'import qui crée le conflit de nom
 import type { Database } from "@/integrations/supabase/types"
 
+/* ligne à ajouter pour que ProgressRow soit reconnu */
+type ProgressRow = Database["public"]["Tables"]["reading_progress"]["Row"]
+
 /* alias internes --------------------------------------------------- */
 export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
   id: string            // Ces quatre champs restent requis
