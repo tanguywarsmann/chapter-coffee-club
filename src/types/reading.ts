@@ -51,28 +51,45 @@ export interface ReadingProgressRow {
 import type { Database } from "@/integrations/supabase/types"
 
 /* alias internes --------------------------------------------------- */
-export type Book = Database["public"]["Tables"]["books"]["Row"] & {
+export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
+  id: string            // Ces quatre champs restent requis
+  title: string
+  author: string
+  cover_url: string
+  
   /** alias front de cover_url */
   coverImage?: string
   /** garde le snake_case venant de la BDD */
-  expected_segments: number
-  total_chapters: number
+  expected_segments?: number
+  total_chapters?: number
 }
 
 /* enrichi par les services ---------------------------------------- */
-export type BookWithProgress = Book & ReadingProgressRow & {
+export type BookWithProgress = Book & Partial<ReadingProgressRow> & {
   /* alias camelCase attendu par de nombreux composants */
-  expectedSegments: number      // requis
-  totalSegments: number
-  chaptersRead: number
-  progressPercent: number
-  nextSegmentPage: number
+  expectedSegments?: number
+  totalSegments?: number
+  chaptersRead?: number
+  progressPercent?: number
+  nextSegmentPage?: number
+  
+  /* flags / statut (legacy) */
+  isUnavailable?: boolean
+  isStableUnavailable?: boolean
+  isCompleted?: boolean
   
   /* alias legacy explicites pour compatibilité */
-  book_id: string
-  book_title: string
-  book_author: string
-  book_cover: string
+  book_id?: string
+  book_title?: string
+  book_author?: string
+  book_cover?: string
+  
+  /* champs divers référencés */
+  language?: string
+  categories?: string[]
+  pages?: number
+  totalPages?: number
+  totalChapters?: number
 }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */
