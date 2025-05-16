@@ -1,4 +1,3 @@
-
 console.log("Import de BookListSection.tsx OK");
 
 import React, { useMemo } from 'react';
@@ -77,8 +76,11 @@ export function BookListSection({
           const totalChapters = book.totalChapters || 1;
           const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
             
+          // S'assurer qu'on a un identifiant valide
+          const bookIdentifier = book.id || book.slug || '';
+            
           return (
-            <div key={book.id} className="flex gap-6 p-4 bg-background rounded-lg border border-border">
+            <div key={bookIdentifier} className="flex gap-6 p-4 bg-background rounded-lg border border-border">
               {/* Book cover */}
               <div className="book-cover w-20 h-28 overflow-hidden flex-shrink-0 relative">
                 {book.coverImage ? (
@@ -148,7 +150,7 @@ export function BookListSection({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => onAction(book.id)}
+                    onClick={() => onAction(bookIdentifier)}
                     className="mt-2"
                     disabled={book.isUnavailable}
                   >

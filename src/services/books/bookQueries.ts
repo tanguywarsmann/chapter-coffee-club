@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
@@ -85,8 +84,17 @@ export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> =
 };
 
 /**
- * Récupère un livre par son ID
- * @param id ID du livre
+ * Vérifie si une chaîne est un UUID valide
+ * @param id Chaîne à vérifier
+ * @returns true si la chaîne est un UUID valide
+ */
+const isValidUuid = (id: string): boolean => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+};
+
+/**
+ * Récupère un livre par son ID ou son slug
+ * @param id ID ou slug du livre
  * @returns Livre ou null
  */
 export const getBookById = async (id: string): Promise<Book | null> => {
@@ -104,19 +112,23 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   try {
     console.log(`[DEBUG] getBookById: Construction requête pour id=${id}`);
     
+    // Déterminer si l'ID est un UUID ou un slug
+    const isUuid = isValidUuid(id);
+    const fieldToQuery = isUuid ? 'id' : 'slug';
+    
     const { data, error } = await supabase
       .from('books')
       .select('*')
-      .eq('id', id)
+      .eq(fieldToQuery, id)
       .maybeSingle();
 
     if (error) {
-      console.error(`[ERREUR] Error fetching book ID ${id}:`, error);
+      console.error(`[ERREUR] Error fetching book with ${fieldToQuery}=${id}:`, error);
       return null;
     }
 
     if (!data) {
-      console.log(`[DEBUG] getBookById: Aucune donnée trouvée pour id=${id}`);
+      console.log(`[DEBUG] getBookById: Aucune donnée trouvée pour ${fieldToQuery}=${id}`);
       return null;
     }
 
@@ -127,7 +139,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
     
     return book;
   } catch (error) {
-    console.error(`[ERREUR] Exception fetching book ID ${id}:`, error);
+    console.error(`[ERREUR] Exception fetching book with id=${id}:`, error);
     return null;
   }
 };
@@ -211,5 +223,10 @@ export const clearBookCache = (bookId?: string): void => {
     bookCache.delete(bookId);
   } else {
     bookCache.clear();
+  }
+  
+  // Supprimer également le cache persistant
+  if (!bookId) {
+    localStorage.removeItem(BOOKS_CACHE_KEY);
   }
 };

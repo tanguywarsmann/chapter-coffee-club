@@ -1,4 +1,3 @@
-
 console.log("Import de BookCard.tsx OK");
 
 import React, { useState, useEffect } from "react";
@@ -46,6 +45,9 @@ export function BookCard({
     console.warn("⚠️ BookCard: le livre est undefined");
     return null;
   }
+  
+  // S'assurer qu'on a un identifiant valide pour la navigation
+  const bookIdentifier = book.id || book.slug || '';
 
   const [isAdding, setIsAdding] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -175,7 +177,7 @@ export function BookCard({
 
   return (
     <Link 
-      to={`/books/${book.id}`} 
+      to={`/books/${bookIdentifier}`} 
       className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md"
       aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}`}
     >

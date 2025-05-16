@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -77,7 +76,9 @@ export default function BookPage() {
         // Also sync with API for good measure if authenticated
         if (user?.id) {
           try {
-            const syncedBook = await syncBookWithAPI(user.id, id);
+            // S'assurer qu'on a un identifiant valide pour la synchronisation
+            const bookIdentifier = bookWithProgress.id || bookWithProgress.slug || '';
+            const syncedBook = await syncBookWithAPI(user.id, bookIdentifier);
             
             if (!isMounted.current) return;
             

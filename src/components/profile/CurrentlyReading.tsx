@@ -111,7 +111,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-shrink-0 w-32 mx-auto md:mx-0">
-            <Link to={`/books/${currentBook.book_id}`}>
+            <Link to={`/books/${currentBook.book_id || currentBook.slug || ''}`}>
               <BookCover
                 image={currentBook.book_cover}
                 title={currentBook.book_title || "Titre inconnu"}
@@ -121,7 +121,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
           </div>
           <div className="flex-grow space-y-4">
             <h3 className="text-lg font-medium text-coffee-darker">
-              <Link to={`/books/${currentBook.book_id}`} className="hover:underline">
+              <Link to={`/books/${currentBook.book_id || currentBook.slug || ''}`} className="hover:underline">
                 {currentBook.book_title || "Titre inconnu"}
               </Link>
             </h3>

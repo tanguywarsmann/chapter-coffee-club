@@ -1,4 +1,3 @@
-
 console.log("Import de PublicCurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
@@ -8,6 +7,7 @@ import { ReadingProgress } from "@/types/reading";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
 
 interface PublicCurrentlyReadingProps {
   userId: string;
@@ -116,6 +116,9 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
               return null;
             }
             
+            // S'assurer qu'on a un identifiant valide
+            const bookIdentifier = book.book_id || book.slug || '';
+            
             return (
               <div key={book.id} className="flex flex-col space-y-3">
                 <div className="relative border border-coffee-light rounded-md overflow-hidden">
@@ -134,7 +137,11 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
                   </AspectRatio>
                 </div>
                 <div>
-                  <h3 className="font-medium text-coffee-darker truncate">{book.book_title || "Titre inconnu"}</h3>
+                  <h3 className="font-medium text-coffee-darker truncate">
+                    <Link to={`/books/${bookIdentifier}`}>
+                      {book.book_title || "Titre inconnu"}
+                    </Link>
+                  </h3>
                   <p className="text-sm text-muted-foreground">{book.book_author || "Auteur inconnu"}</p>
                 </div>
                 <div className="space-y-1">

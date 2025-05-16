@@ -56,18 +56,23 @@ export function BookGrid({
       )}
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-        {books.map((book) => (
-          <BookCard 
-            key={book.id} 
-            book={book}
-            showProgress={showProgress}
-            showDate={showDate}
-            showAddButton={showAddButton}
-            showDeleteButton={showDeleteButton}
-            actionLabel={actionLabel}
-            onAction={() => onAction?.(book.id)}
-          />
-        ))}
+        {books.map((book) => {
+          // S'assurer qu'on a un identifiant valide
+          const bookIdentifier = book.id || book.slug || '';
+          
+          return (
+            <BookCard 
+              key={bookIdentifier} 
+              book={book}
+              showProgress={showProgress}
+              showDate={showDate}
+              showAddButton={showAddButton}
+              showDeleteButton={showDeleteButton}
+              actionLabel={actionLabel}
+              onAction={() => onAction?.(bookIdentifier)}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -39,6 +38,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [showMonthlyReward, setShowMonthlyReward] = useState(false);
   const { refetch: refreshReadingProgress } = useReadingProgress();
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // S'assurer qu'on a un identifiant valide
+  const bookIdentifier = currentBook?.id || currentBook?.slug || '';
 
   const {
     isValidating,
@@ -92,10 +94,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   // Fetch reading progress whenever the book or user changes
   useEffect(() => {
     const fetchProgress = async () => {
-      if (user?.id && currentBook?.id) {
+      if (user?.id && bookIdentifier) {
         try {
-          console.log("🔄 Récupération de la progression pour le livre:", currentBook.id);
-          const progress = await getBookReadingProgress(user.id, currentBook.id);
+          console.log("🔄 Récupération de la progression pour le livre:", bookIdentifier);
+          const progress = await getBookReadingProgress(user.id, bookIdentifier);
           if (progress) {
             console.log("📚 Progression récupérée:", {
               id: progress.id,
@@ -121,7 +123,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     };
 
     fetchProgress();
-  }, [user?.id, currentBook?.id]);
+  }, [user?.id, bookIdentifier]);
 
   // Update progress percentage based on the BookWithProgress data
   useEffect(() => {
@@ -276,7 +278,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         {isBookCompleted ? (
           <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
             <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
-            <p className="text-sm text-green-600 mt-1">Ce livre contient {currentBook.expectedSegments} segments de lecture.</p>
+            <p className="text-sm text-green-600 mt-1">Ce livre contient {currentBook.totalSegments} segments de lecture.</p>
           </div>
         ) : showValidationButton && (
           <>
@@ -288,7 +290,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
               {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Ce livre contient {currentBook.expectedSegments} segments de lecture.
+              Ce livre contient {currentBook.totalSegments} segments de lecture.
             </p>
           </>
         )}
