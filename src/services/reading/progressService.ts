@@ -40,7 +40,7 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
   
   // Utiliser directement cover_url et non coverImage qui n'existe pas encore
-  const coverUrl = b.cover_url;
+  const coverImage = b.cover_url;
 
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
@@ -60,8 +60,8 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
     ...p,  // Include all reading progress fields (status, updated_at, etc.)
     
     // Derived fields
-    coverImage: coverUrl,               // alias front
-    expectedSegments,                   // camelCase alias
+    coverImage,               // alias front
+    expectedSegments,         // camelCase alias
     totalSegments,
     chaptersRead: clampedSegments,
     progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100),
@@ -73,7 +73,7 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
     book_id: b.id,
     book_title: b.title,
     book_author: b.author,
-    book_cover: coverUrl,
+    book_cover: b.cover_url,
   };
 }
 

@@ -1,4 +1,3 @@
-
 /* ----------  Types de base  ---------- */
 
 export interface ReadingQuestion {
@@ -70,32 +69,28 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
 }
 
 /* enrichi par les services ---------------------------------------- */
-export type BookWithProgress = Book & Partial<ReadingProgressRow> & {
-  /* alias camelCase attendu par de nombreux composants */
-  expectedSegments?: number
-  totalSegments?: number
-  chaptersRead?: number
-  progressPercent?: number
-  nextSegmentPage?: number
-  
-  /* flags / statut (legacy) */
-  isUnavailable?: boolean
-  isStableUnavailable?: boolean
-  isCompleted?: boolean
-  
-  /* alias legacy explicites pour compatibilité */
-  book_id: string      /* maintenant requis */
-  book_title?: string
-  book_author?: string
-  book_cover?: string
-  
-  /* champs divers référencés */
-  language?: string
-  categories?: string[]
-  pages?: number
-  totalPages?: number
-  totalChapters?: number
-}
+export type BookWithProgress =
+  Book &
+  Partial<ReadingProgressRow> & {
+    /* dérivés – désormais obligatoires */
+    chaptersRead:     number
+    progressPercent:  number
+    expectedSegments: number
+    totalSegments:    number
+    nextSegmentPage:  number
+
+    /* flags / legacy optionnels */
+    status?:               "to_read" | "in_progress" | "completed"
+    isUnavailable?:        boolean
+    isStableUnavailable?:  boolean
+    isCompleted?:          boolean
+
+    /* alias legacy (book_id requis pour readingListService) */
+    book_id:     string
+    book_title?: string
+    book_author?:string
+    book_cover?: string
+  }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */
 export const EMPTY_BOOK_PROGRESS = {} as BookWithProgress
