@@ -8,6 +8,7 @@ import { Book } from "@/types/reading";
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
+type ProgressRow = Database["public"]["Tables"]["reading_progress"]["Row"];
 
 // Cache pour les données de progression de lecture
 const progressCache = new Map<string, { 
@@ -56,7 +57,7 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
     ...p,  // Include all reading progress fields (status, updated_at, etc.)
     
     // Derived fields
-    coverImage: b.cover_url,         // alias front
+    coverImage: b.cover_url,         // alias for cover_url
     expectedSegments,                // camelCase alias
     totalSegments,
     chaptersRead: clampedSegments,
@@ -210,7 +211,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
         book_title: fetchedBook?.title ?? "Titre inconnu",
         book_author: fetchedBook?.author ?? "Auteur inconnu",
         book_slug: fetchedBook?.slug ?? "slug inconnu",
-        book_cover: fetchedBook?.cover_url ?? fetchedBook?.coverImage ?? "",
+        book_cover: fetchedBook?.cover_url ?? "",
       };
       
       return addDerivedFields(baseProgress);
@@ -224,7 +225,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu", 
-      book_cover: book?.cover_url ?? book?.cover_url ?? "",
+      book_cover: book?.cover_url ?? "",
       validations: [],
     };
     
@@ -259,7 +260,7 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu",
-      book_cover: book?.cover_url ??,
+      book_cover: book?.cover_url ?? "",
       validations: [],
     };
 
