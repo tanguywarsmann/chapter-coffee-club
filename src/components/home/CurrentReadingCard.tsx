@@ -35,8 +35,8 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   // Calculate segment based on current page (with validation)
   const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) : 0;
 
-  // Utiliser expectedSegments s'il est disponible, sinon totalChapters
-  const totalSegments = book.expectedSegments || book.totalChapters || 0;
+  // Utiliser totalSegments s'il est disponible, sinon expectedSegments ou totalChapters
+  const totalSegments = book.totalSegments || book.expectedSegments || book.totalChapters || 0;
 
   const handleContinueReading = () => {
     if (!isReadingInvalid) {

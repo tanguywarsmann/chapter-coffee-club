@@ -59,14 +59,23 @@ export default function BookPage() {
             return;
           }
           
-          // Initialize with default progress values
+          // Initialize with default progress values and process as BookWithProgress
           bookWithProgress = {
             ...fetchedBook,
+            id: fetchedBook.id,
+            user_id: user?.id || '',
+            book_id: fetchedBook.id,
+            current_page: 0,
+            total_pages: fetchedBook.total_pages || 0,
+            started_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            status: 'to_read',
+            streak_current: 0,
+            streak_best: 0,
             chaptersRead: 0,
             progressPercent: 0,
-            totalSegments: fetchedBook.totalChapters || fetchedBook.expectedSegments || 1,
-            nextSegmentPage: 30, // Default first segment
-            isCompleted: false
+            totalSegments: fetchedBook.total_chapters || fetchedBook.expectedSegments || 1,
+            nextSegmentPage: 30 // Default first segment
           };
         }
         
@@ -83,9 +92,9 @@ export default function BookPage() {
             if (!isMounted.current) return;
             
             if (syncedBook && bookWithProgress) {
-              // Use the pre-calculated values from bookWithProgress
+              // Update book with synced data while preserving progress values
               setBook({
-                ...syncedBook,
+                ...syncedBook as BookWithProgress,
                 chaptersRead: bookWithProgress.chaptersRead,
                 progressPercent: bookWithProgress.progressPercent,
                 totalSegments: bookWithProgress.totalSegments,

@@ -20,8 +20,13 @@ export interface Book {
   // Admin-specific fields
   slug?: string;
   total_pages?: number;
-  expectedSegments?: number;
+  expected_segments?: number;
   total_chapters?: number; // Add this field to match database structure
   missingSegments?: number[];
   cover_url?: string;
+  
+  // Add these properties to fix type errors
+  totalSegments?: number;
+  progressPercent?: number;
+  nextSegmentPage?: number;
 }
