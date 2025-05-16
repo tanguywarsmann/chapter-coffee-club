@@ -1,13 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ReadingProgress, ReadingValidation } from "@/types/reading";
+import { ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
 import { getBookById } from "@/services/books/bookQueries";
-import { PAGES_PER_SEGMENT } from "@/utils/constants";
+import { PAGES_PER_SEGMENT, WORDS_PER_SEGMENT } from "@/utils/constants";
 
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
+
+// Type sans champs dérivés pour l'entrée de addDerivedFields
+type BaseReadingProgress = Omit<ReadingProgress, 'progressPercent' | 'chaptersRead' | 'nextSegmentPage'>;
 
 // Cache pour les données de progression de lecture
 const progressCache = new Map<string, { 
@@ -31,27 +34,37 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
 
 /**
  * Calcule les champs dérivés pour une progression de lecture
- * @param progress Progression de lecture à enrichir
+ * @param item Progression de lecture à enrichir
  * @returns Progression de lecture avec champs dérivés
  */
-const addDerivedFields = (progress: Omit<ReadingProgress, 'progressPercent' | 'chaptersRead' | 'nextSegmentPage'>): ReadingProgress => {
-  const totalPages = progress.total_pages || 0;
-  const currentPage = progress.current_page || 0;
-  
-  const progressPercent = totalPages > 0 
-    ? Math.round((currentPage / totalPages) * 100) 
-    : 0;
-  
-  const chaptersRead = Math.floor(currentPage / PAGES_PER_SEGMENT);
-  const nextSegmentPage = Math.min(currentPage + PAGES_PER_SEGMENT, totalPages);
+function addDerivedFields(item: BaseReadingProgress): ReadingProgress {
+  const { total_pages, current_page, expected_segments } = item;
+
+  // Détecter l'unité : mots si current_page > total_pages * 2
+  const isWordMode = current_page > total_pages * 2;
+
+  const segmentsRead = isWordMode
+    ? Math.floor(current_page / WORDS_PER_SEGMENT)
+    : Math.floor(current_page / PAGES_PER_SEGMENT);
+
+  const totalSegments =
+    expected_segments ??
+    Math.ceil(total_pages / PAGES_PER_SEGMENT);
+
+  const clampedSegments = Math.min(segmentsRead, totalSegments);
 
   return {
-    ...progress,
-    progressPercent,
-    chaptersRead,
-    nextSegmentPage
+    ...item,
+    chaptersRead: clampedSegments,
+    progressPercent: Math.round(
+      (clampedSegments / totalSegments) * 100
+    ),
+    nextSegmentPage:
+      isWordMode
+        ? current_page + WORDS_PER_SEGMENT
+        : current_page + PAGES_PER_SEGMENT,
   };
-};
+}
 
 /**
  * Récupère la progression de lecture d'un utilisateur
