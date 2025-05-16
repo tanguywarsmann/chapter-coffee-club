@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";

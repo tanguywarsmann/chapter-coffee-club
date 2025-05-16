@@ -1,10 +1,11 @@
+
 import { Book } from "@/types/book";
 import { useRef, useEffect, useMemo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
 import { Search } from "lucide-react";
-import { ReadingProgress } from "@/types/reading";
+import { ReadingProgress, BookWithProgress } from "@/types/reading";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -14,6 +15,9 @@ interface MainContentProps {
   isRedirecting?: boolean;
   readingProgress: ReadingProgress[];
   onProgressUpdate: (bookId: string) => void;
+  currentReading: BookWithProgress | null;
+  isLoadingCurrentBook: boolean;
+  onContinueReading: () => void;
 }
 
 export function MainContent({
@@ -23,7 +27,10 @@ export function MainContent({
   isLoading,
   isSearching = false,
   isRedirecting = false,
-  onProgressUpdate
+  onProgressUpdate,
+  currentReading,
+  isLoadingCurrentBook,
+  onContinueReading
 }: MainContentProps) {
   const renderCount = useRef(0);
 

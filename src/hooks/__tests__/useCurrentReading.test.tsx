@@ -19,6 +19,8 @@ describe("useCurrentReading", () => {
     totalChapters: 10,
     chaptersRead: 5,
     isCompleted: false,
+    isUnavailable: false,
+    isStableUnavailable: false,
     language: "français",
     categories: ["test"],
     pages: 100,

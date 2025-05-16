@@ -1,4 +1,5 @@
 
+
 /* ----------  Types de base  ---------- */
 
 export interface ReadingQuestion {
@@ -50,33 +51,28 @@ export interface ReadingProgressRow {
 // Supprimé l'import qui crée le conflit de nom
 import type { Database } from "@/integrations/supabase/types"
 
-/* ligne à ajouter pour que ProgressRow soit reconnu */
+/* lignes à ajouter pour que les Row soient reconnues */
+type BookRow = Database["public"]["Tables"]["books"]["Row"]
 type ProgressRow = Database["public"]["Tables"]["reading_progress"]["Row"]
 
 /* alias internes --------------------------------------------------- */
-export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
-  id: string            // Ces quatre champs restent requis
+export type Book = Partial<BookRow> & {
+  id:    string
   title: string
-  author: string
-  cover_url: string
-  description: string   // Maintenant requis
-  totalChapters: number // Nouveau champ requis pour BookPage.tsx
-  
-  /** nouveau champ optionnel pour compatibilité avec BookPage */
-  publicationYear?: number
-  
-  /** alias front de cover_url */
-  coverImage?: string
-  /** garde le snake_case venant de la BDD */
-  expected_segments?: number
-  total_chapters?: number
+  author:string
+
+  /* ces champs deviennent optionnels pour éviter les casts forcés */
+  cover_url?:      string
+  description?:    string
+  totalChapters?:  number
+  isCompleted?:    boolean
 }
 
 /* Type pour gérer les flags d'état du livre */
 type AvailabilityFlags = {
-  isUnavailable?: boolean
+  isUnavailable?:       boolean
   isStableUnavailable?: boolean
-  isCompleted?: boolean
+  isCompleted?:         boolean
 }
 
 /* enrichi par les services ---------------------------------------- */
@@ -85,22 +81,22 @@ export type BookWithProgress =
   ProgressRow &
   AvailabilityFlags & {
     /* dérivés (requis) */
-    chaptersRead: number
-    progressPercent: number
+    chaptersRead:     number
+    progressPercent:  number
     expectedSegments: number
-    totalSegments: number
-    nextSegmentPage: number
+    totalSegments:    number
+    nextSegmentPage:  number
 
     /* legacy (tous optionnels) */
-    book_id?: string
-    book_title?: string
+    book_id?:     string
+    book_title?:  string
     book_author?: string
-    book_cover?: string
+    book_cover?:  string
 
     /* autres éventuels */
-    language?: string
-    categories?: string[]
-    pages?: number
+    language?:    string
+    categories?:  string[]
+    pages?:       number
   }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */
@@ -142,3 +138,4 @@ export interface ReadingStreak {
   longest_streak: number
   last_validation_date: string
 }
+

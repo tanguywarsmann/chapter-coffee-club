@@ -80,7 +80,7 @@ export default function BookPage() {
               setBook({
                 ...syncedBook,
                 isCompleted: syncedBook.progressPercent >= 100
-              });
+              } as BookWithProgress);
             }
           } catch (syncError) {
             console.error("Error syncing book with API:", syncError);
