@@ -1,4 +1,3 @@
-
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
     itemsData: progressItems?.map(p => ({
       id: p.id,
       title: p.book_title,
-      validations: p.validations?.length,
+      chaptersRead: p.chaptersRead,
       expected_segments: p.expected_segments,
       total_chapters: p.total_chapters
     }))
@@ -101,32 +100,17 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                 return null;
               }
               
-              // Calcul du nombre de segments lus basé sur les validations
-              const chaptersRead = progress.validations?.length ?? 0;
+              // Utiliser directement les valeurs pré-calculées
+              const { chaptersRead, progressPercent } = progress;
               
               // Priorité: expected_segments > total_chapters > 1
               const totalSegments = progress.expected_segments ?? progress.total_chapters ?? 0;
-              
-              // Logs détaillés pour tracer les valeurs utilisées pour le calcul
-              console.log(`📈 Calcul progression pour ${progress.book_title}`, {
-                chaptersRead,
-                totalSegments,
-                expected_segments: progress.expected_segments,
-                total_chapters: progress.total_chapters,
-                validations: progress.validations?.length,
-                status: progress.status
-              });
               
               // Ne rien afficher si expected_segments est manquant ou égal à 0
               if (!totalSegments) {
                 console.warn("⚠️ totalSegments est 0 ou undefined pour progress.id =", progress.id);
                 return null;
               }
-              
-              // Calcul du pourcentage d'avancement
-              const progressPercentage = totalSegments > 0 
-                ? Math.min(Math.floor((chaptersRead / totalSegments) * 100), 100)
-                : 0;
               
               // Icône de statut en fonction de l'état de lecture
               const getProgressStatusIcon = () => {
@@ -182,11 +166,11 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                           <div 
                             className="h-full rounded-full bg-coffee-dark transition-all duration-500 ease-out"
-                            style={{ width: `${progressPercentage}%` }}
+                            style={{ width: `${progressPercent}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{progressPercentage}% terminé</span>
+                          <span>{progressPercent}% terminé</span>
                           <span>
                             {`${chaptersRead}/${totalSegments} segments`}
                           </span>
