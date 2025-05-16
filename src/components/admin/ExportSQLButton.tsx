@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
 import { saveAs } from "file-saver"
 
-export default function ExportSQLButton() {
+export default function ExportSQLButtonV2() {
   async function exportData() {
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"]
 
