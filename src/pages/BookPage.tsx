@@ -6,7 +6,6 @@ import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
-import { Book } from "@/types/book";
 import { BookWithProgress } from "@/types/reading"; // Import the new type
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
