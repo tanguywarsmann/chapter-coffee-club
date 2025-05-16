@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { MemoryRouter } from "react-router-dom";
 
 interface WelcomeModalIframeProps {
   open: boolean;

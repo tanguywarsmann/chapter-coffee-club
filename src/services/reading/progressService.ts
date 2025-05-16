@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -113,7 +114,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "slug inconnu",
-        book_cover: book?.cover_url ?? book?.coverImage ?? "",
+        book_cover: book?.cover_url ?? "",
         validations: [],
       };
       
@@ -150,7 +151,7 @@ const getUserReadingProgressLegacy = async (userId: string): Promise<ReadingProg
           book_title: book?.title ?? "Titre inconnu",
           book_author: book?.author ?? "Auteur inconnu",
           book_slug: book?.slug ?? "slug inconnu",
-          book_cover: book?.cover_url ?? book?.coverImage ?? "",
+          book_cover: book?.cover_url ?? "",
           validations: [],
         };
         
@@ -307,7 +308,7 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "slug inconnu",
-        book_cover: book?.cover_url ?? book?.coverImage ?? "",
+        book_cover: book?.cover_url ?? "",
       };
       
       return addDerivedFields(baseProgress);
