@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, AlertTriangle, Settings, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
+import { ExportSQLButton } from "@/components/admin/ExportSQLButton";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -43,10 +45,13 @@ export default function Admin() {
           <main className="container py-6 space-y-6">
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-serif font-medium text-coffee-darker">Administration</h1>
-              <Button onClick={handleExportCsv} variant="outline" className="gap-2">
-                <FileText className="h-4 w-4" />
-                Exporter les segments manquants
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={handleExportCsv} variant="outline" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Exporter les segments manquants
+                </Button>
+                <ExportSQLButton />
+              </div>
             </div>
             
             {/* Debug panel - can be removed after testing */}
