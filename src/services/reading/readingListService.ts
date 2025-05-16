@@ -1,3 +1,4 @@
+
 import { Book } from "@/types/book";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,9 @@ type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['R
 type BookRecord = Database['public']['Tables']['books']['Row'];
 
 const BATCH_SIZE = 3;
+
+// Type alias for the merged book and reading progress data
+export type ReadingListItem = ReadingProgress & Book;
 
 /**
  * Ajoute un livre à la liste de lecture d'un utilisateur
@@ -205,10 +209,8 @@ export const fetchBooksForStatus = async (
         const chaptersRead = validations.length;
         const totalChapters = bookData.total_chapters || bookData.expected_segments || 1;
 
-        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${bookData.title}, 
-                  chaptersRead=${chaptersRead}, totalChapters=${totalChapters}`);
-        
-        books.push({
+        // Créer l'objet de métadonnées du livre
+        const bookMeta = {
           id: item.book_id,
           title: bookData.title || "Titre inconnu",
           author: bookData.author || "Auteur inconnu",
@@ -230,7 +232,24 @@ export const fetchBooksForStatus = async (
           created_at: bookData.created_at || new Date().toISOString(),
           is_published: bookData.is_published !== undefined ? bookData.is_published : true,
           tags: bookData.tags || [],
-        } as Book);
+        };
+
+        // CORRECTION: Inverser l'ordre du merge pour que progressItem ait la priorité
+        const enriched = { ...bookMeta, ...item };
+        
+        // DEBUG: Vérifier que les champs critiques sont bien préservés
+        console.debug("[merge]", {
+          id: bookMeta.id,
+          title: bookMeta.title,
+          chaptersRead: enriched.chaptersRead,
+          progressPercent: enriched.progressPercent,
+          nextSegmentPage: enriched.nextSegmentPage
+        });
+
+        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${bookData.title}, 
+                  chaptersRead=${chaptersRead}, totalChapters=${totalChapters}`);
+        
+        books.push(enriched as Book);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
         console.error(`[ERREUR] Exception lors du traitement du livre id=${item.book_id}:`, error);
