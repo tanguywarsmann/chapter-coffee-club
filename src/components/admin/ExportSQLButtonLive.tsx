@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { saveAs } from "file-saver"
 
-export default function ExportSQLButtonFinal() {
+export default function ExportSQLButtonLive() {
   async function exportData() {
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const
     let fullSQL = "-- Export SQL pour READ\n\n"
@@ -40,4 +40,3 @@ export default function ExportSQLButtonFinal() {
     </Button>
   )
 }
-
