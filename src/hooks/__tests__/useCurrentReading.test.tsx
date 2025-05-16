@@ -23,6 +23,12 @@ describe("useCurrentReading", () => {
     categories: ["test"],
     pages: 100,
     publicationYear: 2024,
+    cover_url: "test-cover.jpg",
+    description: "Test description",
+    progressPercent: 50,
+    nextSegmentPage: 30,
+    expectedSegments: 10,
+    totalSegments: 10
   };
 
   beforeEach(() => {

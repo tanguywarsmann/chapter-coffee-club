@@ -90,7 +90,18 @@ export default function Home() {
             />
           </div>
 
-          <MainContent {...mainContentProps} />
+          <MainContent 
+            searchResults={searchResults}
+            onResetSearch={() => setSearchResults(null)}
+            currentReading={currentReading}
+            isLoadingCurrentBook={isLoadingCurrentBook}
+            readingProgress={readingProgress}
+            isLoading={isLoading}
+            isSearching={isSearching}
+            isRedirecting={isRedirecting}
+            onProgressUpdate={handleProgressUpdate}
+            onContinueReading={handleContinueReading}
+          />
         </main>
       </div>
     </AuthGuard>

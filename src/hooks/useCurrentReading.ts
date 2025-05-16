@@ -29,7 +29,7 @@ export const useCurrentReading = () => {
         return {
           ...inProgress[0],
           isStableUnavailable: true
-        };
+        } as unknown as BookWithProgress;
       }
     }
     return null;
@@ -42,7 +42,7 @@ export const useCurrentReading = () => {
       const newId = memoizedCurrentReading.id;
       
       if (currentId !== newId || !currentReading) {
-        setCurrentReading(memoizedCurrentReading as BookWithProgress);
+        setCurrentReading(memoizedCurrentReading);
         setIsLoadingCurrentBook(false);
       }
     }

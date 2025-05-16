@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
@@ -44,7 +43,7 @@ export const initializeBookReading = async (userId: string, book: Book): Promise
       return null;
     }
 
-    return { ...data, validations: [] } as ReadingProgress;
+    return { ...data, validations: [] } as unknown as ReadingProgress;
   } catch (error) {
     console.error("Exception lors de l'initialisation de la lecture:", error);
     return null;
@@ -95,7 +94,7 @@ export const getBooksInProgressFromAPI = async (userId: string): Promise<BookWit
         progressPercent: progress.progressPercent,
         nextSegmentPage: progress.nextSegmentPage,
         isCompleted: progress.progressPercent >= 100
-      } as BookWithProgress;
+      } as unknown as BookWithProgress;
     } catch (error) {
       console.error(`Error fetching book ${progress.book_id}:`, error);
       return null;
@@ -138,7 +137,7 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
         progressPercent: 0,
         nextSegmentPage: 30,
         isCompleted: false
-      } as BookWithProgress;
+      } as unknown as BookWithProgress;
     }
 
     return {
@@ -147,7 +146,7 @@ export const syncBookWithAPI = async (userId: string, bookId: string): Promise<B
       progressPercent: progress.progressPercent,
       nextSegmentPage: progress.nextSegmentPage,
       isCompleted: progress.progressPercent >= 100
-    } as BookWithProgress;
+    } as unknown as BookWithProgress;
   } catch (error) {
     console.error(`Error syncing book ${bookId}:`, error);
     return null;

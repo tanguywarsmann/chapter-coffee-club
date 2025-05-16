@@ -72,27 +72,35 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
   total_chapters?: number
 }
 
+/* Type pour gérer les flags d'état du livre */
+type AvailabilityFlags = {
+  isUnavailable?: boolean
+  isStableUnavailable?: boolean
+  isCompleted?: boolean
+}
+
 /* enrichi par les services ---------------------------------------- */
 export type BookWithProgress =
   Book &
-  ProgressRow & {
-    /* -------- champs dérivés (requis) -------- */
-    chaptersRead:     number
-    progressPercent:  number
+  ProgressRow &
+  AvailabilityFlags & {
+    /* dérivés (requis) */
+    chaptersRead: number
+    progressPercent: number
     expectedSegments: number
-    totalSegments:    number
-    nextSegmentPage:  number
+    totalSegments: number
+    nextSegmentPage: number
 
-    /* -------- compat / legacy -------- */
-    book_id?:     string          // 🔄  désormais optionnel
-    book_title?:  string
+    /* legacy (tous optionnels) */
+    book_id?: string
+    book_title?: string
     book_author?: string
-    book_cover?:  string
+    book_cover?: string
 
-    /* -------- autres champs attendus -------- */
-    language?:    string
-    categories?:  string[]
-    pages?:       number
+    /* autres éventuels */
+    language?: string
+    categories?: string[]
+    pages?: number
   }
 
 /* Helper utilitaire pour créer un objet vide sans casser le typage */

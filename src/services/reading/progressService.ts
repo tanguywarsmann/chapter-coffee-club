@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -39,9 +38,6 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
 function addDerivedFields(b: any, p?: any): BookWithProgress {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
   
-  // Utiliser directement cover_url et non coverImage qui n'existe pas encore
-  const coverImage = b.cover_url;
-
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
 
@@ -60,8 +56,8 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
     ...p,  // Include all reading progress fields (status, updated_at, etc.)
     
     // Derived fields
-    coverImage,               // alias front
-    expectedSegments,         // camelCase alias
+    coverImage: b.cover_url,         // alias front
+    expectedSegments,                // camelCase alias
     totalSegments,
     chaptersRead: clampedSegments,
     progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100),

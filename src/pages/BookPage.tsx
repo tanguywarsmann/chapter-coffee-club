@@ -77,7 +77,10 @@ export default function BookPage() {
             
             if (syncedBook && bookWithProgress) {
               // Update book with synced data while preserving progress values
-              setBook(syncedBook as BookWithProgress);
+              setBook({
+                ...syncedBook,
+                isCompleted: syncedBook.progressPercent >= 100
+              });
             }
           } catch (syncError) {
             console.error("Error syncing book with API:", syncError);
