@@ -57,6 +57,7 @@ export type Book = Partial<Database["public"]["Tables"]["books"]["Row"]> & {
   author: string
   cover_url: string
   description: string   // Maintenant requis
+  totalChapters: number // Nouveau champ requis pour BookPage.tsx
   
   /** nouveau champ optionnel pour compatibilité avec BookPage */
   publicationYear?: number
