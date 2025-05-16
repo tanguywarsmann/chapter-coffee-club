@@ -31,7 +31,7 @@ export default function ExportSQLButtonLive() {
     }
 
     /* téléchargement natif sans file-saver */
-    const blob = new Blob([fullSQL], { type: "text/sql;charset=utf-8" })
+   console.log("click") const blob = new Blob([fullSQL], { type: "text/sql;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
