@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
@@ -6,7 +7,6 @@ import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
-// Correction de l'import pour SimilarReaders - utilisation du chemin complet
 import SimilarReaders from "@/components/home/SimilarReaders";
 import { isInIframe, isPreview, isMobile } from "@/utils/environment";
 
@@ -14,12 +14,6 @@ console.log("Chargement de HomeContent.tsx", {
   isPreview: isPreview(),
   isInIframe: isInIframe(),
   isMobile: isMobile(),
-});
-
-console.log(">>> Début HomeContent.tsx - Contexte", {
-  isInIframe: isInIframe(),
-  isPreview: isPreview(),
-  userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
 });
 
 interface HomeContentProps {
@@ -39,6 +33,13 @@ export function HomeContent({
     console.log("Rendering HomeContent", {
       readingProgressCount: readingProgress?.length || 0,
       isLoading,
+      progressItems: readingProgress?.map(p => ({
+        id: p.id,
+        title: p.book_title,
+        chaptersRead: p.chaptersRead,
+        totalSegments: p.totalSegments,
+        progressPercent: p.progressPercent
+      }))
     });
   } catch (e) {
     console.error("Erreur dans le logging initial:", e);

@@ -1,6 +1,4 @@
 
-console.log("Import de CurrentReadingCard.tsx OK");
-
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +16,9 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   console.log("Rendering CurrentReadingCard", { 
     bookId: book?.id || 'book undefined',
     bookTitle: book?.title || 'title undefined', 
-    currentPage: currentPage || 0 
+    currentPage: currentPage || 0,
+    totalChapters: book?.totalChapters || 0,
+    expectedSegments: book?.expectedSegments || 0
   });
 
   const navigate = useNavigate();
@@ -34,6 +34,9 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
 
   // Calculate segment based on current page (with validation)
   const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) : 0;
+
+  // Utiliser expectedSegments s'il est disponible, sinon totalChapters
+  const totalSegments = book.expectedSegments || book.totalChapters || 0;
 
   const handleContinueReading = () => {
     if (!isReadingInvalid) {
@@ -64,7 +67,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
             <h3 className="font-medium text-coffee-darker">{book.title}</h3>
             <p className="text-sm text-muted-foreground">{book.author}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {book.chaptersRead} sur {book.totalChapters} chapitres
+              {segment + 1} sur {totalSegments || '?'} segments
             </p>
           </div>
 

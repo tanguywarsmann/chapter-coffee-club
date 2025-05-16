@@ -101,7 +101,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       const baseProgress = {
         ...item,
         ...book,
-        total_chapters: book?.totalChapters ?? book?.total_chapters ?? book?.expected_segments ?? 1,
+        total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "slug inconnu",
@@ -138,7 +138,7 @@ const getUserReadingProgressLegacy = async (userId: string): Promise<ReadingProg
         const baseProgress = {
           ...item,
           ...book,
-          total_chapters: book?.totalChapters ?? book?.expected_segments ?? 1,
+          total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
           book_title: book?.title ?? "Titre inconnu",
           book_author: book?.author ?? "Auteur inconnu",
           book_slug: book?.slug ?? "slug inconnu",
@@ -199,7 +199,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       const baseProgress = {
         ...data,
         ...fetchedBook,
-        total_chapters: fetchedBook?.totalChapters ?? fetchedBook?.expected_segments ?? 1,
+        total_chapters: fetchedBook?.total_chapters ?? fetchedBook?.expected_segments ?? 1,
         book_title: fetchedBook?.title ?? "Titre inconnu",
         book_author: fetchedBook?.author ?? "Auteur inconnu",
         book_slug: fetchedBook?.slug ?? "slug inconnu",
@@ -213,7 +213,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     const baseProgress = {
       ...data,
       ...book,
-      total_chapters: book?.totalChapters ?? book?.total_chapters ?? book?.expected_segments ?? 1,
+      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu", 
@@ -248,7 +248,7 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
     const baseProgress = {
       ...data,
       ...book,
-      total_chapters: book?.totalChapters ?? book?.expected_segments ?? 1,
+      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
       book_title: book?.title ?? "Titre inconnu",
       book_author: book?.author ?? "Auteur inconnu",
       book_slug: book?.slug ?? "slug inconnu",
@@ -295,7 +295,7 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
       const baseProgress = {
         ...item,
         ...book,
-        total_chapters: book?.totalChapters ?? book?.total_chapters ?? book?.expected_segments ?? 1,
+        total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
         book_title: book?.title ?? "Titre inconnu",
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "slug inconnu",

@@ -21,6 +21,7 @@ export interface Book {
   slug?: string;
   total_pages?: number;
   expectedSegments?: number;
+  total_chapters?: number; // Add this field to match database structure
   missingSegments?: number[];
   cover_url?: string;
 }
