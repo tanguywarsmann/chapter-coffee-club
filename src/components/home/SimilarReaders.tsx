@@ -1,10 +1,10 @@
-console.log("Import de SimilarReaders.tsx OK");
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SimilarReader {
   id: string;
@@ -18,33 +18,39 @@ export default function SimilarReaders() {
   const [readers, setReaders] = useState<SimilarReader[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  
+  // If mobile, don't even try to load this component
+  if (isMobile) {
+    return null;
+  }
 
   useEffect(() => {
-    // Simulation de chargement des lecteurs similaires
-    // Dans une version future, ce sera connecté à un service réel
+    // Simulation of loading similar readers
+    // In a future version, this will be connected to a real service
     const loadReaders = async () => {
       setLoading(true);
       try {
-        // Ceci est un placeholder pour le futur service de lecteurs similaires
+        // This is a placeholder for the future similar readers service
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Données de test
+        // Test data
         setReaders([
           {
             id: "user-1",
             name: "Marie L.",
             matchPercentage: 85,
-            commonInterests: ["Philosophie", "Romans"]
+            commonInterests: ["Philosophy", "Novels"]
           },
           {
             id: "user-2",
             name: "Thomas K.",
             matchPercentage: 72,
-            commonInterests: ["Science-fiction", "Classiques"]
+            commonInterests: ["Science Fiction", "Classics"]
           }
         ]);
       } catch (error) {
-        console.error("Erreur lors du chargement des lecteurs similaires:", error);
+        console.error("Error loading similar readers:", error);
       } finally {
         setLoading(false);
       }
@@ -61,8 +67,8 @@ export default function SimilarReaders() {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-serif">Lecteurs similaires</CardTitle>
-          <CardDescription>Chargement...</CardDescription>
+          <CardTitle className="text-base font-serif">Similar Readers</CardTitle>
+          <CardDescription>Loading...</CardDescription>
         </CardHeader>
         <CardContent>
           {[1, 2].map(i => (
@@ -83,13 +89,13 @@ export default function SimilarReaders() {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-serif">Lecteurs similaires</CardTitle>
-          <CardDescription>Découvrez des personnes aux goûts proches</CardDescription>
+          <CardTitle className="text-base font-serif">Similar Readers</CardTitle>
+          <CardDescription>Discover people with similar tastes</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
             <p className="text-sm text-muted-foreground">
-              Continuez à lire pour découvrir des lecteurs aux goûts similaires
+              Continue reading to discover readers with similar tastes
             </p>
           </div>
         </CardContent>
@@ -100,8 +106,8 @@ export default function SimilarReaders() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-serif">Lecteurs similaires</CardTitle>
-        <CardDescription>Basé sur vos lectures récentes</CardDescription>
+        <CardTitle className="text-base font-serif">Similar Readers</CardTitle>
+        <CardDescription>Based on your recent readings</CardDescription>
       </CardHeader>
       <CardContent>
         {readers.map(reader => (

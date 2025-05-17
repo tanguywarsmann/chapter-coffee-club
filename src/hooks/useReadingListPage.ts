@@ -6,11 +6,13 @@ import { useReadingList } from "@/hooks/useReadingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookSorting } from "@/hooks/useBookSorting";
 import { useBookFetching } from "./useBookFetching";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const useReadingListPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id;
+  const isMobile = useIsMobile();
   
   const { 
     getBooksByStatus, 
@@ -27,10 +29,10 @@ export const useReadingListPage = () => {
 
   // Add reference to track if initial fetch was triggered
   const initialFetchTriggered = useRef(false);
-  // Nouvelle référence pour suivre si le premier useEffect spécifique à userId a été exécuté
+  // New reference to track if the first userId-specific useEffect has been executed
   const initialUserIdFetchDone = useRef(false);
 
-  // Utilisons directement useBookFetching avec la bonne signature
+  // Use useBookFetching with the correct signature
   const { 
     isLoading, 
     isFetching, 
@@ -39,59 +41,69 @@ export const useReadingListPage = () => {
     hasLoaded
   } = useBookFetching();
 
-  // Effet pour suivre l'état des données et mettre à jour isDataReady
+  // Effect to track data state and update isDataReady
   useEffect(() => {
     try {
       if (!isLoading && !isFetching) {
-        // Marquer les données comme prêtes seulement quand le chargement est terminé
-        // et qu'au moins une des listes contient des données
+        // Mark data as ready only when loading is complete
+        // and at least one of the lists contains data
         const hasData = toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0;
         setIsDataReady(hasData);
       }
     } catch (e) {
-      console.error("Erreur dans useEffect pour isDataReady:", e);
+      console.error("Error in useEffect for isDataReady:", e);
     }
   }, [toReadBooks, inProgressBooks, completedBooks, isLoading, isFetching]);
 
   const navigateToBook = useCallback((bookId: string) => {
     try {
       if (!bookId) {
-        console.warn("navigateToBook appelé avec un bookId vide ou null");
+        console.warn("navigateToBook called with empty or null bookId");
         return;
       }
       if (typeof window !== "undefined") {
         navigate(`/books/${bookId}`);
       }
     } catch (e) {
-      console.error("Erreur dans navigateToBook:", e);
+      console.error("Error in navigateToBook:", e);
     }
   }, [navigate]);
 
   const handleFetchBooks = useCallback(async () => {
-    // N'effectuer le fetch que si aucun chargement n'est en cours et que userId existe
+    // Only fetch if no loading is in progress and userId exists
     if (!userId || isFetching || isLoading) {
       return;
     }
 
-    // Si les données sont déjà chargées, ne pas refetch
+    // If data is already loaded, don't refetch
     if (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0) {
       return;
     }
     
     try {
-      // Récupérer les livres par statut en utilisant directement getBooksByStatus
-      const [toRead, inProgress, completed] = await Promise.all([
-        getBooksByStatus('to_read'),
-        getBooksByStatus('in_progress'),
-        getBooksByStatus('completed')
-      ]);
-      
-      // Appliquer le tri
-      setToReadBooks(sortBooks(toRead || [], sortBy));
-      setInProgressBooks(sortBooks(inProgress || [], sortBy));
-      setCompletedBooks(sortBooks(completed || [], sortBy));
+      // On mobile, only fetch in-progress books to reduce load
+      if (isMobile) {
+        const inProgress = await getBooksByStatus('in_progress');
+        setInProgressBooks(sortBooks(inProgress || [], sortBy));
+        
+        // Set empty arrays for other categories on mobile to indicate they've been "loaded"
+        setToReadBooks([]);
+        setCompletedBooks([]);
+      } else {
+        // On desktop, fetch all categories
+        const [toRead, inProgress, completed] = await Promise.all([
+          getBooksByStatus('to_read'),
+          getBooksByStatus('in_progress'),
+          getBooksByStatus('completed')
+        ]);
+        
+        // Apply sorting
+        setToReadBooks(sortBooks(toRead || [], sortBy));
+        setInProgressBooks(sortBooks(inProgress || [], sortBy));
+        setCompletedBooks(sortBooks(completed || [], sortBy));
+      }
     } catch (error) {
-      console.error("Erreur lors de la récupération des livres:", error);
+      console.error("Error fetching books:", error);
     }
     
   }, [
@@ -103,24 +115,25 @@ export const useReadingListPage = () => {
     inProgressBooks.length,
     completedBooks.length,
     sortBooks,
-    sortBy
+    sortBy,
+    isMobile
   ]);
 
-  // NOUVEL EFFET: Surveiller spécifiquement UNIQUEMENT l'apparition d'un userId
-  // sans dépendre des listes pour éviter les boucles
+  // NEW EFFECT: Watch specifically ONLY for userId appearance
+  // without depending on the lists to avoid loops
   useEffect(() => {
     if (userId && !initialUserIdFetchDone.current) {
       initialUserIdFetchDone.current = true;
       
-      // Vérifier si les listes sont vides avant de déclencher le fetch
+      // Check if lists are empty before triggering fetch
       if (toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
         handleFetchBooks();
       }
     }
   }, [userId, handleFetchBooks, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
 
-  // NOUVEL EFFET: Surveiller spécifiquement l'apparition d'un userId
-  // et déclencher le fetch initial si nécessaire
+  // NEW EFFECT: Watch specifically for userId appearance
+  // and trigger initial fetch if needed
   useEffect(() => {
     if (userId && !initialFetchTriggered.current && !isLoading && !isFetching) {
       initialFetchTriggered.current = true;
@@ -128,19 +141,19 @@ export const useReadingListPage = () => {
     }
   }, [userId, handleFetchBooks, isLoading, isFetching]);
 
-  // Effet de montage pour la première récupération de données
+  // Mount effect for first data retrieval
   useEffect(() => {
-    // Ne déclencher que si userId existe, qu'aucun chargement n'est en cours et qu'il n'y a pas déjà des données
+    // Only trigger if userId exists, no loading is in progress and there's no data yet
     if (userId && !isLoading && !isFetching && 
        toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
       handleFetchBooks();
     }
   }, [userId, handleFetchBooks, isLoading, isFetching, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
 
-  // Effet pour les changements de readingList
+  // Effect for readingList changes
   useEffect(() => {
     if (userId && readingList && !isLoading && !isFetching) {
-      // Ne déclencher que si readingList change réellement
+      // Only trigger if readingList actually changes
       handleFetchBooks();
     }
   }, [userId, readingList, handleFetchBooks, isLoading, isFetching]);
@@ -162,6 +175,7 @@ export const useReadingListPage = () => {
     sortBy,
     setSortBy,
     navigateToBook,
-    fetchBooks: handleFetchBooks
+    fetchBooks: handleFetchBooks,
+    isMobile // Add this to allow components to check if mobile view is active
   };
 };

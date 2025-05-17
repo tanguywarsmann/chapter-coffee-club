@@ -11,27 +11,47 @@ import { MainContent } from "@/components/home/MainContent";
 import { useHomeSearch } from "@/hooks/useHomeSearch";
 import { useCurrentReading } from "@/hooks/useCurrentReading";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Home() {
-  // Cache le nombre de rendus au lieu de le logger pour optimiser les performances
+  // Cache render count instead of logging to optimize performance
   const renderCount = useRef(0);
+  const isMobile = useIsMobile();
   
-  // État memoïsé pour le message de bienvenue
+  // Memoized state for welcome message
   const [showWelcome, setShowWelcome] = useState(() => {
     return !localStorage.getItem("onboardingDone");
   });
 
-  const { searchResults, setSearchResults, handleSearch, isSearching, isRedirecting } = useHomeSearch();
-  const { currentReading, isLoadingCurrentBook } = useCurrentReading();
-  const { readingProgress, isLoading, handleProgressUpdate } = useReadingProgress();
+  const { 
+    searchResults, 
+    setSearchResults, 
+    handleSearch, 
+    isSearching, 
+    isRedirecting 
+  } = useHomeSearch();
+  
+  // Only fetch current reading data when needed
+  const { 
+    currentReading, 
+    isLoadingCurrentBook 
+  } = useCurrentReading();
+  
+  // Conditionally fetch reading progress based on mobile state
+  const { 
+    readingProgress, 
+    isLoading, 
+    handleProgressUpdate 
+  } = useReadingProgress();
+  
   const navigate = useNavigate();
 
-  // Mémoiser cette fonction pour éviter les re-rendus inutiles
+  // Memoize this function to avoid unnecessary re-renders
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
       if (currentReading.isUnavailable) {
-        toast.error("Ce livre n'est pas disponible actuellement", {
-          id: "book-unavailable" // Éviter les toasts dupliqués
+        toast.error("This book is currently unavailable", {
+          id: "book-unavailable" // Avoid duplicate toasts
         });
         return;
       }
@@ -39,10 +59,10 @@ export default function Home() {
     }
   }, [currentReading, navigate]);
 
-  // Mémoiser l'état de recherche pour éviter des rendus inutiles
+  // Memoize search state to avoid unnecessary renders
   const showSearchResults = useMemo(() => !!searchResults, [searchResults]);
   
-  // Mémoiser les props passées à MainContent pour assurer la stabilité
+  // Memoize props passed to MainContent to ensure stability
   const mainContentProps = useMemo(() => ({
     searchResults,
     onResetSearch: () => setSearchResults(null),
@@ -67,7 +87,7 @@ export default function Home() {
     handleContinueReading
   ]);
 
-  // Uniquement incrémenter le compteur de rendu en dev pour le débogage
+  // Only increment render counter in dev for debugging
   if (process.env.NODE_ENV === 'development') {
     renderCount.current++;
   }
@@ -81,9 +101,9 @@ export default function Home() {
           onClose={() => setShowWelcome(false)}
         />
         
-        <main className="container py-4 sm:py-6 space-y-6 sm:space-y-8 animate-fade-in focus:outline-none" tabIndex={-1}>
+        <main className={`container ${isMobile ? 'py-2' : 'py-4 sm:py-6'} space-y-4 sm:space-y-8 animate-fade-in focus:outline-none`} tabIndex={-1}>
           <div className="max-w-2xl mx-auto px-2 sm:px-0">
-            <h1 className="sr-only">Accueil - READ</h1>
+            <h1 className="sr-only">Home - READ</h1>
             <SearchBar 
               onSearch={handleSearch}
               isSearching={isSearching} 

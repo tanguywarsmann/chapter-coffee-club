@@ -11,29 +11,27 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
+  const isMobile = useIsMobile();
 
   const handleExportCsv = async () => {
     try {
       await generateCsvExport();
       toast({
-        title: "Export réussi : Le fichier CSV des segments manquants a été téléchargé",
+        title: "Export successful: Missing segments CSV has been downloaded",
       });
     } catch (error) {
-      console.error("Erreur lors de l'export CSV:", error);
+      console.error("Error during CSV export:", error);
       toast({
-        title: "Erreur d'export : Impossible de générer le fichier CSV",
+        title: "Export error: Unable to generate CSV file",
         variant: "destructive",
       });
     }
   };
-
-  useEffect(() => {
-    console.log("Admin page initialized");
-  }, []);
 
   return (
     <AuthGuard>
@@ -41,24 +39,38 @@ export default function Admin() {
         <div className="min-h-screen bg-logo-background text-logo-text">
           <AppHeader />
           <main className="container py-6 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h1 className="text-3xl font-serif font-medium text-coffee-darker">Administration</h1>
-              <div className="flex gap-3">
-                <Button onClick={handleExportCsv} variant="outline" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Exporter les segments manquants
-                </Button>
-                <ExportSQLButtonFinal />
-              </div>
+              
+              {/* Simplified buttons on mobile */}
+              {!isMobile && (
+                <div className="flex gap-3">
+                  <Button onClick={handleExportCsv} variant="outline" className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Export missing segments
+                  </Button>
+                  <ExportSQLButtonFinal />
+                </div>
+              )}
+              
+              {/* Mobile simplified actions */}
+              {isMobile && (
+                <div className="flex">
+                  <Button onClick={handleExportCsv} variant="outline" size="sm" className="w-full">
+                    Export CSV
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <AdminDebugPanel />
+            {/* Only render debug panel on desktop */}
+            {!isMobile && <AdminDebugPanel />}
 
             <Card className="border-coffee-light">
               <CardHeader className="pb-3">
-                <CardTitle>Tableau de bord administrateur</CardTitle>
+                <CardTitle>Admin Dashboard</CardTitle>
                 <CardDescription>
-                  Gérez les livres et vérifiez l'état des questions de validation
+                  Manage books and check validation questions status
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -66,11 +78,11 @@ export default function Admin() {
                   <TabsList className="mb-6">
                     <TabsTrigger value="books" className="flex items-center">
                       <span className="w-4 h-4 mr-2">📚</span>
-                      Validation des livres
+                      Book Validation
                     </TabsTrigger>
                     <TabsTrigger value="settings" className="flex items-center">
                       <span className="w-4 h-4 mr-2">⚙️</span>
-                      Paramètres
+                      Settings
                     </TabsTrigger>
                   </TabsList>
 
@@ -82,10 +94,10 @@ export default function Admin() {
                     <div className="p-8 text-center border border-dashed rounded-lg">
                       <AlertTriangle className="w-12 h-12 mx-auto text-amber-500 mb-4" />
                       <h3 className="text-lg font-medium text-coffee-darker mb-2">
-                        Section en développement
+                        Section under development
                       </h3>
                       <p className="text-muted-foreground">
-                        Les paramètres d'administration seront disponibles prochainement
+                        Admin settings will be available soon
                       </p>
                     </div>
                   </TabsContent>
