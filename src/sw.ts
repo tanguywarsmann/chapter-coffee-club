@@ -1,9 +1,10 @@
 
 /// <reference lib="webworker" />
+export {}; // Cela empêche TypeScript de traiter ce fichier comme un script global.
 
 import { precacheAndRoute } from 'workbox-precaching';
 
-// Cette ligne est nécessaire pour permettre à Workbox d'injecter la liste des ressources à mettre en cache
+// Cette ligne est injectée automatiquement au build par VitePWA
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Conservons le comportement personnalisé du service worker existant
