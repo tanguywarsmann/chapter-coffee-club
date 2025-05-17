@@ -18,7 +18,7 @@ export default function Home() {
   const renderCount = useRef(0);
   const isMobile = useIsMobile();
   
-  // Memoized state for welcome message
+  // Memoized state for welcome message - only show if not seen before
   const [showWelcome, setShowWelcome] = useState(() => {
     return !localStorage.getItem("onboardingDone");
   });
@@ -45,6 +45,15 @@ export default function Home() {
   } = useReadingProgress();
   
   const navigate = useNavigate();
+
+  // Warm the service worker cache if available
+  useEffect(() => {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'WARM_CACHE'
+      });
+    }
+  }, []);
 
   // Memoize this function to avoid unnecessary re-renders
   const handleContinueReading = useCallback(() => {
@@ -87,19 +96,16 @@ export default function Home() {
     handleContinueReading
   ]);
 
-  // Only increment render counter in dev for debugging
-  if (process.env.NODE_ENV === 'development') {
-    renderCount.current++;
-  }
-
   return (
     <AuthGuard>
       <div className="min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
-        <WelcomeModal 
-          open={showWelcome} 
-          onClose={() => setShowWelcome(false)}
-        />
+        {showWelcome && (
+          <WelcomeModal 
+            open={showWelcome} 
+            onClose={() => setShowWelcome(false)}
+          />
+        )}
         
         <main className={`container ${isMobile ? 'py-2' : 'py-4 sm:py-6'} space-y-4 sm:space-y-8 animate-fade-in focus:outline-none`} tabIndex={-1}>
           <div className="max-w-2xl mx-auto px-2 sm:px-0">
@@ -110,18 +116,7 @@ export default function Home() {
             />
           </div>
 
-          <MainContent 
-            searchResults={searchResults}
-            onResetSearch={() => setSearchResults(null)}
-            currentReading={currentReading}
-            isLoadingCurrentBook={isLoadingCurrentBook}
-            readingProgress={readingProgress}
-            isLoading={isLoading}
-            isSearching={isSearching}
-            isRedirecting={isRedirecting}
-            onProgressUpdate={handleProgressUpdate}
-            onContinueReading={handleContinueReading}
-          />
+          <MainContent {...mainContentProps} />
         </main>
       </div>
     </AuthGuard>

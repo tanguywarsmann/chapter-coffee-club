@@ -3,7 +3,6 @@ import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
@@ -11,7 +10,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import { UserOnboarding } from "./components/onboarding/UserOnboarding";
 
-// Composant de chargement pour Suspense
+// Simplified loading fallback for better performance
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-logo-background">
     <div className="text-center">
@@ -21,7 +20,7 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Chargement différé des composants non critiques
+// Non-critical components loaded with React.lazy
 const BookPage = lazy(() => import("./pages/BookPage"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
@@ -33,11 +32,10 @@ const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Followers = lazy(() => import("./pages/Followers"));
 
+// Create query client instance directly in App to avoid importing from external file
 const queryClient = new QueryClient();
 
 const App = () => {
-  console.log("Rendering App component");
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -50,7 +48,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/home" element={<Home />} />
             
-            {/* Routes avec chargement différé */}
+            {/* Routes with lazy loading */}
             <Route path="/books/:id" element={
               <Suspense fallback={<LoadingFallback />}>
                 <BookPage />

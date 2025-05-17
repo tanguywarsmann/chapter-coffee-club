@@ -6,28 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>READ - Remets-toi à la lecture</title>
     <link rel="icon" href="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" type="image/png">
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
-    <meta property="og:title" content="chapter-coffee-club" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta name="description" content="READ - Reprends goût à la lecture, page après page" />
+    <meta name="author" content="READ" />
+    <meta property="og:title" content="READ" />
+    <meta property="og:description" content="Reprends goût à la lecture, page après page" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-    <!-- Ajout Progressive Web App & Apple -->
+    <!-- Progressive Web App & Apple -->
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#A75A2A" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- Suppression de la directive frame-ancestors de la balise meta CSP -->
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/playfair-display-var.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Preconnect to origins -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Script to warm up cache for homepage -->
+    <script>
+      // Warm up the cache for the home page
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'WARM_CACHE'
+        });
+      }
+    </script>
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -10,14 +10,14 @@ import { queryClient } from './lib/query.ts'
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
 
-// Charge les composants de toast dynamiquement car ils ne sont pas nécessaires immédiatement
+// Only load React Query Devtools in development mode and only when needed
 const ReactQueryDevtools = React.lazy(() => 
-  import('@tanstack/react-query-devtools').then(module => ({
-    default: module.ReactQueryDevtools
-  }))
+  process.env.NODE_ENV === 'development' 
+    ? import('@tanstack/react-query-devtools').then(module => ({ default: module.ReactQueryDevtools }))
+    : Promise.resolve({ default: () => null })
 );
 
-// Limiter les imports en mode production
+// Set development flag
 const isDev = process.env.NODE_ENV === 'development';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
 import { ActivityFeed } from "./ActivityFeed";
@@ -16,20 +16,25 @@ interface HomeContentProps {
   onProgressUpdate: (bookId: string) => void;
 }
 
-export function HomeContent({
+// Memoize the component to prevent unnecessary re-renders
+export const HomeContent = memo(function HomeContent({
   readingProgress,
   isLoading,
   onProgressUpdate,
 }: HomeContentProps) {
   const isMobile = useIsMobile();
 
-  let activities: any[] = [];
-  try {
-    activities = getUserActivities();
-  } catch (e) {
-    console.error("Error loading activities:", e);
-    activities = [];
-  }
+  // Load activities only if needed (non-mobile or empty placeholder)
+  const activities = React.useMemo(() => {
+    if (isMobile) return [];
+    
+    try {
+      return getUserActivities();
+    } catch (e) {
+      console.error("Error loading activities:", e);
+      return [];
+    }
+  }, [isMobile]);
 
   if (!readingProgress || !Array.isArray(readingProgress)) {
     return <div>Loading reading data...</div>;
@@ -69,15 +74,13 @@ export function HomeContent({
       </div>
 
       {/* Activity feed with conditional rendering */}
-      {(!isMobile || activities.length > 0) && (
+      {(!isMobile && activities.length > 0) && (
         <div>
-          {activities.length > 0 ? (
-            <ActivityFeed activities={activities} />
-          ) : (
-            <div>No activity data available</div>
-          )}
+          <ActivityFeed activities={activities} />
         </div>
       )}
     </div>
   );
-}
+});
+
+export default HomeContent;

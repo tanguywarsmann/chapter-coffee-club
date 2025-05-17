@@ -1,8 +1,10 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { compression } from 'vite-plugin-compression2'
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -10,11 +12,15 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   optimizeDeps: {
-    include: ['canvas-confetti']
+    include: ['canvas-confetti'],
+    exclude: ['@tanstack/react-query-devtools']
   },
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    // Implement both Brotli and Gzip compression for assets
+    compression({ algorithm: 'gzip', exclude: [/\.(br)$/, /\.(gz)$/] }),
+    compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
@@ -30,12 +36,44 @@ export default defineConfig(({ mode }) => ({
         start_url: "/home",
         display: "standalone"
       },
+      strategies: 'injectManifest', // Use this for custom service worker
       srcDir: "public",
       filename: "sw.js",
+      injectRegister: 'auto',
       devOptions: {
         enabled: true,
         type: "module"
-      }
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
     })
   ].filter(Boolean),
   resolve: {
@@ -44,6 +82,24 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: true, // ✅ active les sourcemaps pour retrouver les lignes exactes dans les erreurs
+    sourcemap: mode === 'development', // Only enable sourcemaps in development
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-components': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+          'data-management': ['@tanstack/react-query'],
+        },
+      },
+    },
+    target: 'esnext', // Modern browsers for smaller bundle size
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode !== 'development', // Drop console logs in production
+        drop_debugger: true,
+      },
+    },
   },
 }));
