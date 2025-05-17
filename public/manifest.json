@@ -2,8 +2,8 @@
 {
   "name": "READ",
   "short_name": "READ",
-  "start_url": "/",
-  "display": "browser",
+  "start_url": "/home",
+  "display": "standalone",
   "background_color": "#A75A2A",
   "theme_color": "#A75A2A",
   "icons": [
