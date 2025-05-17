@@ -48,7 +48,10 @@ export const validateReading = async (
     console.log("📚 Question récupérée :", question);
 
     const newCurrentPage = request.segment * 30;
-    const newStatus = newCurrentPage >= progress.pages ? 'completed' : 'in_progress';
+    
+    // Correction: Déterminer le statut en comparant (chaptersRead + 1) à totalSegments
+    // au lieu d'utiliser progress.pages (qui n'existe plus)
+    const newStatus = (progress.chaptersRead + 1) >= progress.totalSegments ? 'completed' : 'in_progress';
 
     console.log('📊 Updating reading progress:', {
       user_id: request.user_id,
