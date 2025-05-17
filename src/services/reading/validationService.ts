@@ -11,6 +11,7 @@ import { checkUserQuests } from "@/services/questService";
 import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { Database } from "@/integrations/supabase/types";
+import { mutate } from 'swr';
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 
@@ -73,8 +74,11 @@ export const validateReading = async (
 
     if (progressError) {
       console.error('Error updating reading progress:', progressError);
+      toast.error("Échec de mise à jour dans Supabase");
       throw progressError;
     }
+    
+    console.log("✅ Supabase update success - reading_progress");
 
     const validationRecord: ReadingValidationRecord = {
       user_id: request.user_id,
@@ -95,11 +99,21 @@ export const validateReading = async (
 
     if (validationError) {
       console.error('Error inserting validation record:', validationError);
+      toast.error("Échec d'enregistrement de la validation dans Supabase");
       throw validationError;
     }
+    
+    console.log("✅ Supabase insert success - reading_validations");
 
     await clearProgressCache(request.user_id);
     console.log(`✅ Cache vidé pour l'utilisateur ${request.user_id} après validation d'un segment`);
+
+    // Mutation SWR - force refresh des données pour SWR
+    mutate((key) => typeof key === 'string' && key.includes(`reading-progress-${request.user_id}`), undefined, true);
+    // Mutation alternative si la première ne fonctionne pas
+    mutate(() => getBookReadingProgress(request.user_id, request.book_id));
+    
+    console.log("✅ SWR cache mutation triggered");
 
     await recordReadingActivity(request.user_id);
     await addXP(request.user_id, 10);
@@ -132,6 +146,9 @@ export const validateReading = async (
     const updatedProgress = await getBookReadingProgress(request.user_id, request.book_id);
     console.debug("[validateReading] New progress", updatedProgress);
 
+    // Success toast only at the end when everything worked
+    toast.success("Segment validé avec succès");
+    
     return {
       message: "Segment validé avec succès",
       current_page: newCurrentPage,
