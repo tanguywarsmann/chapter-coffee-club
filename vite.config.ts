@@ -36,14 +36,15 @@ export default defineConfig(({ mode }) => ({
         start_url: "/home",
         display: "standalone"
       },
-      strategies: 'injectManifest', // Use this for custom service worker
-      srcDir: "public",
-      filename: "sw.js",
+      strategies: 'injectManifest',
       injectRegister: 'auto',
       devOptions: {
         enabled: true,
         type: "module"
       },
+      // Mise à jour de la configuration de l'injection du service worker
+      swSrc: 'src/sw.ts',
+      swDest: 'dist/sw.js',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
