@@ -81,7 +81,7 @@ export const validateReading = async (
       correct: true,
       validated_at: new Date().toISOString(),
       answer: question?.answer ?? undefined,
-      progress_id: progress?.id ?? undefined
+      progress_id: progress.id
     };
 
     console.log("🧾 Enregistrement validation :", validationRecord);
