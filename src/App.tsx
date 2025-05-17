@@ -5,6 +5,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query";
 import Login from "./pages/Login";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
@@ -31,9 +33,6 @@ const Achievements = lazy(() => import("./pages/Achievements"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Followers = lazy(() => import("./pages/Followers"));
-
-// Create query client instance directly in App to avoid importing from external file
-const queryClient = new QueryClient();
 
 const App = () => {
   return (
