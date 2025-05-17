@@ -1,8 +1,7 @@
 
-import { precacheAndRoute } from 'workbox-precaching';
+/// <reference lib="webworker" />
 
-// Déclarer le type global pour le manifest injecté par workbox
-declare const self: ServiceWorkerGlobalScope;
+import { precacheAndRoute } from 'workbox-precaching';
 
 // Cette ligne est nécessaire pour permettre à Workbox d'injecter la liste des ressources à mettre en cache
 precacheAndRoute(self.__WB_MANIFEST);
@@ -30,7 +29,7 @@ const STATIC_ASSETS = [
 // Détection du contexte iframe
 const isInIframe = () => {
   try {
-    return self.window !== self.parent;
+    return self !== self.top;
   } catch (e) {
     return true;
   }
