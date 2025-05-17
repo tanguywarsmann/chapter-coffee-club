@@ -6,7 +6,7 @@ import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { syncBookWithAPI } from "@/services/reading";
-import { BookWithProgress, EMPTY_BOOK_PROGRESS } from "@/types/reading";
+import { BookWithProgress } from "@/types/reading";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";

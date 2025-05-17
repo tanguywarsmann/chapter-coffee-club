@@ -2,11 +2,6 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { isInIframe, isPreview } from "@/utils/environment";
 
-console.log("Chargement de WelcomeModal.tsx", {
-  isPreview: isPreview(),
-  isInIframe: isInIframe(),
-});
-
 // Chargement différé des composants de modal
 const WelcomeModalWithNavigate = lazy(() => import("./WelcomeModalWithNavigate").then(module => ({
   default: module.WelcomeModalWithNavigate

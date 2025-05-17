@@ -8,13 +8,7 @@ import { getUserActivities } from "@/mock/activities";
 import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
 import SimilarReaders from "@/components/home/SimilarReaders";
-import { isInIframe, isPreview, isMobile } from "@/utils/environment";
-
-console.log("Chargement de HomeContent.tsx", {
-  isPreview: isPreview(),
-  isInIframe: isInIframe(),
-  isMobile: isMobile(),
-});
+import { isMobile } from "@/utils/environment";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -27,28 +21,9 @@ export function HomeContent({
   isLoading,
   onProgressUpdate,
 }: HomeContentProps) {
-  console.log(">>> HomeContent START rendu");
-
-  try {
-    console.log("Rendering HomeContent", {
-      readingProgressCount: readingProgress?.length || 0,
-      isLoading,
-      progressItems: readingProgress?.map(p => ({
-        id: p.id,
-        title: p.book_title,
-        chaptersRead: p.chaptersRead,
-        totalSegments: p.totalSegments,
-        progressPercent: p.progressPercent
-      }))
-    });
-  } catch (e) {
-    console.error("Erreur dans le logging initial:", e);
-  }
-
   let mobileState;
   try {
     mobileState = isMobile();
-    console.log("useIsMobile helper successful", { isMobile: mobileState });
   } catch (e) {
     console.error("Erreur dans l'évaluation du mode mobile :", e);
     return <div>Erreur : impossible de déterminer le mode d'affichage</div>;
@@ -57,9 +32,6 @@ export function HomeContent({
   let activities: any[] = [];
   try {
     activities = getUserActivities();
-    console.log("getUserActivities successful", {
-      activitiesCount: activities.length,
-    });
   } catch (e) {
     console.error("Erreur dans getUserActivities :", e);
     activities = [];

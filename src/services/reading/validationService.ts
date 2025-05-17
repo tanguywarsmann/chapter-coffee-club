@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ReadingValidation, ValidateReadingRequest, ValidateReadingResponse, BookWithProgress } from "@/types/reading";
-import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "../questionService";
+import { ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
+import { getQuestionForBookSegment } from "../questionService";
 import { recordReadingActivity } from "../streakService";
 import { getBookReadingProgress, clearProgressCache } from "./progressService";
 import { Badge } from "@/types/badge";

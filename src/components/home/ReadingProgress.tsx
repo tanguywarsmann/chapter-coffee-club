@@ -7,8 +7,6 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 
-console.log("Import de ReadingProgress.tsx OK");
-
 interface ReadingProgressProps {
   progressItems: ReadingProgressType[];
   isLoading?: boolean;

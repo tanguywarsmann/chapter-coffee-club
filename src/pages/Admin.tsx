@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -7,7 +8,7 @@ import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { BookOpen, AlertTriangle, Settings, FileText } from "lucide-react";
+import { AlertTriangle, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
@@ -64,11 +65,11 @@ export default function Admin() {
                 <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="mb-6">
                     <TabsTrigger value="books" className="flex items-center">
-                      <BookOpen className="w-4 h-4 mr-2" />
+                      <span className="w-4 h-4 mr-2">📚</span>
                       Validation des livres
                     </TabsTrigger>
                     <TabsTrigger value="settings" className="flex items-center">
-                      <Settings className="w-4 h-4 mr-2" />
+                      <span className="w-4 h-4 mr-2">⚙️</span>
                       Paramètres
                     </TabsTrigger>
                   </TabsList>
