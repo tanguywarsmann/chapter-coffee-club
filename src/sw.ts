@@ -7,11 +7,11 @@ import { precacheAndRoute } from 'workbox-precaching';
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Conservons le comportement personnalisé du service worker existant
-self.addEventListener("install", (event) => {
+addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
@@ -36,7 +36,7 @@ const isInIframe = () => {
 };
 
 // Mises en cache personnalisées pour les ressources statiques
-self.addEventListener("fetch", (event: FetchEvent) => {
+addEventListener("fetch", (event: FetchEvent) => {
   // Ne pas intercepter les requêtes dans Lovable iframe
   if (isInIframe()) {
     return;
@@ -73,7 +73,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 });
 
 // Gestion des messages pour le préchauffage du cache
-self.addEventListener('message', (event: ExtendableMessageEvent) => {
+addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data && event.data.type === 'WARM_CACHE') {
     // Précharger les ressources de la page d'accueil
     const PRELOAD_ROUTES = ["/home"];
