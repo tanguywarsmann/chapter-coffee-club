@@ -1,6 +1,9 @@
 
 import { precacheAndRoute } from 'workbox-precaching';
 
+// Déclarer le type global pour le manifest injecté par workbox
+declare const self: ServiceWorkerGlobalScope;
+
 // Cette ligne est nécessaire pour permettre à Workbox d'injecter la liste des ressources à mettre en cache
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -34,7 +37,7 @@ const isInIframe = () => {
 };
 
 // Mises en cache personnalisées pour les ressources statiques
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", (event: FetchEvent) => {
   // Ne pas intercepter les requêtes dans Lovable iframe
   if (isInIframe()) {
     return;
@@ -71,7 +74,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 // Gestion des messages pour le préchauffage du cache
-self.addEventListener('message', (event) => {
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data && event.data.type === 'WARM_CACHE') {
     // Précharger les ressources de la page d'accueil
     const PRELOAD_ROUTES = ["/home"];

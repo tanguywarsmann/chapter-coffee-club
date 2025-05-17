@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -42,9 +41,12 @@ export default defineConfig(({ mode }) => ({
         enabled: true,
         type: "module"
       },
-      // Mise à jour de la configuration de l'injection du service worker
-      swSrc: 'src/sw.ts',
-      swDest: 'dist/sw.js',
+      // Configuration correcte pour l'injection du service worker
+      injectManifest: {
+        swSrc: 'src/sw.ts',
+        swDest: 'dist/sw.js',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
