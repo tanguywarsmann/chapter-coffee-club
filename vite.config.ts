@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => ({
       },
       injectManifest: {
         swSrc: 'src/sw.ts',
+        swDest: 'dist/sw.js', // ✅ Évite les conflits
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
       workbox: {
