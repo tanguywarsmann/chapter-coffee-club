@@ -1,23 +1,21 @@
-
 /// <reference lib="webworker" />
-
 export {};
 
-declare global {
-  const self: ServiceWorkerGlobalScope;
+declare const self: ServiceWorkerGlobalScope;
 
-  interface FetchEvent extends ExtendableEvent {
-    readonly clientId: string;
-    readonly request: Request;
-    readonly resultingClientId: string;
-    respondWith(r: Response | PromiseLike<Response>): void;
-  }
+interface ServiceWorkerGlobalScope extends EventTarget {
+  __WB_MANIFEST: Array<{
+    url: string;
+    revision: string;
+  }>;
+  skipWaiting(): void;
+  clients: Clients;
+}
 
-  interface ExtendableMessageEvent extends ExtendableEvent {
-    readonly data: any;
-    readonly lastEventId: string;
-    readonly origin: string;
-    readonly ports: ReadonlyArray<MessagePort>;
-    readonly source: Client | ServiceWorker | MessagePort | null;
-  }
+interface Clients {
+  claim(): void;
+}
+
+interface ExtendableMessageEvent extends ExtendableEvent {
+  data?: any;
 }
