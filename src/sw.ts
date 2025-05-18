@@ -29,14 +29,8 @@ const STATIC_ASSETS = [
   "/icons/icon-512.png"
 ];
 
-// Détection du contexte iframe
-const isInIframe = () => {
-  try {
-    return self !== self.top;
-  } catch (e) {
-    return true;
-  }
-};
+// Les service workers ne peuvent pas être exécutés dans des iframes, cette logique est inutile ici
+const isInIframe = () => false;
 
 // Mises en cache personnalisées pour les ressources statiques
 addEventListener("fetch", (event: FetchEvent) => {
