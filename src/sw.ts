@@ -4,6 +4,8 @@ export {}; // Cela empêche TypeScript de traiter ce fichier comme un script glo
 
 import { precacheAndRoute } from 'workbox-precaching';
 
+declare const self: ServiceWorkerGlobalScope;
+
 // Cette ligne est injectée automatiquement au build par VitePWA
 precacheAndRoute(self.__WB_MANIFEST);
 
