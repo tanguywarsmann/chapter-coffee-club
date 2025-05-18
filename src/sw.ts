@@ -29,7 +29,7 @@ const STATIC_ASSETS = [
   "/icons/icon-512.png"
 ];
 
-// Les service workers ne peuvent pas être exécutés dans des iframes, cette logique est inutile ici
+// Fonction corrigée sans utilisation de self.top
 const isInIframe = () => false;
 
 // Mises en cache personnalisées pour les ressources statiques
