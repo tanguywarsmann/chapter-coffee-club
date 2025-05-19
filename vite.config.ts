@@ -14,32 +14,30 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
-
     VitePWA({
-      strategies: 'injectManifest',
-      injectRegister: null,
-      workbox: undefined,
-      registerType: 'autoUpdate',
-      devOptions: { enabled: true, type: 'module' },
-      injectManifest: {
-        swSrc: 'src/sw.ts', // ← fichier source réel
-        swDest: 'sw.js',     // ← nom du fichier généré dans dist
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-      },
-      manifest: {
-        short_name: 'READ',
-        name: 'READ — Reprends goût à la lecture, page après page',
-        icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
-        ],
-        background_color: '#B05F2C',
-        theme_color     : '#E9CBA4',
-        start_url       : '/home',
-        display         : 'standalone'
-      }
-    })
+  strategies: 'injectManifest',
+  injectRegister: null,
+  workbox: undefined,
+  registerType: 'autoUpdate',
+  devOptions: { enabled: true, type: 'module' },
+  injectManifest: {
+    swSrc: 'src/sw.ts', // ← fichier source réel
+    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+  },
+  manifest: {
+    short_name: 'READ',
+    name: 'READ — Reprends goût à la lecture, page après page',
+    icons: [
+      { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
+      { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+    ],
+    background_color: '#B05F2C',
+    theme_color: '#E9CBA4',
+    start_url: '/home',
+    display: 'standalone'
+  }
+})
   ].filter(Boolean),
 
   resolve: {
