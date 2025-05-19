@@ -18,7 +18,7 @@ addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Stratégie de cache adaptée de public/sw.js
+// Stratégie de cache adaptée de 
 const CACHE_NAME = "read-pwa-v3";
 const STATIC_ASSETS = [
   "/",
