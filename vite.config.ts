@@ -1,10 +1,9 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
-import { compression } from 'vite-plugin-compression2'
+import { compression } from 'vite-plugin-compression2';
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -18,12 +17,11 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    // Implement both Brotli and Gzip compression for assets
     compression({ algorithm: 'gzip', exclude: [/\.(br)$/, /\.(gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: null, // Empêche la génération auto de registerSW.js
+      injectRegister: null, // 👈 empêche la génération de registerSW.js
       manifest: {
         short_name: "READ",
         name: "READ — Reprends goût à la lecture, page après page",
@@ -38,16 +36,16 @@ export default defineConfig(({ mode }) => ({
         display: "standalone"
       },
       strategies: 'injectManifest',
-      workbox: undefined, // empêche le fallback generateSW
+      workbox: undefined, // 👈 empêche tout fallback generateSW
+      injectManifest: {
+        swSrc: 'src/sw.ts', // 👈 service worker réel
+        swDest: 'sw.js',     // 👈 généré dans dist/
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
       devOptions: {
         enabled: true,
         type: "module"
-      },
-      injectManifest: {
-        swSrc: 'src/sw.ts', // Source du service worker
-        swDest: 'sw.js', // Destination dans dist/
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-      },
+      }
     })
   ].filter(Boolean),
   resolve: {
@@ -60,9 +58,10 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     cssCodeSplit: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'), // S'assurer que le seul point d'entrée est index.html
-      // Empêche explicitement l'inclusion de fichiers inexistants comme public/sw.js
-external: (id) => id.includes('public/sw.js'),
+      // 👇 forcer un seul point d'entrée explicite
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
