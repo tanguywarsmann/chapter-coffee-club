@@ -38,14 +38,14 @@ export default defineConfig(({ mode }) => ({
       },
       strategies: 'injectManifest',
       injectRegister: 'auto',
-      workbox: undefined, // Ajout de cette ligne pour désactiver le fallback Workbox
+      workbox: undefined, // Désactive explicitement Workbox pour éviter les fallbacks automatiques
       devOptions: {
         enabled: true,
         type: "module"
       },
       injectManifest: {
-        swSrc: 'src/sw.ts',
-        swDest: 'dist/sw.js',
+        swSrc: 'src/sw.ts', // Source du service worker dans src/
+        swDest: 'dist/sw.js', // Destination dans dist/
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
     })
