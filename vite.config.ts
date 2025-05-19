@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
     compression({ algorithm: 'gzip', exclude: [/\.(br)$/, /\.(gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: 'autoUpdate',
       manifest: {
         short_name: "READ",
         name: "READ — Reprends goût à la lecture, page après page",
@@ -38,14 +38,14 @@ export default defineConfig(({ mode }) => ({
       },
       strategies: 'injectManifest',
       injectRegister: 'auto',
-      workbox: undefined, // Désactive explicitement Workbox pour éviter les fallbacks automatiques
+      workbox: undefined, // empêche le fallback generateSW
       devOptions: {
         enabled: true,
         type: "module"
       },
       injectManifest: {
-        swSrc: 'src/sw.ts', // Source du service worker dans src/
-        swDest: 'dist/sw.js', // Destination dans dist/
+        swSrc: 'src/sw.ts', // Source du service worker
+        swDest: 'sw.js', // Destination directement dans dist/
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
     })
