@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -51,6 +52,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "public/sw.js": path.resolve(__dirname, "./src/empty-sw.js") // 👈 neutralise toute référence fantôme
     },
   },
   build: {
