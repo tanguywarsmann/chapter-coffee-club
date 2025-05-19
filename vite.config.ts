@@ -1,4 +1,4 @@
-
+fv
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -55,24 +55,26 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: mode === 'development', // Only enable sourcemaps in development
-    cssCodeSplit: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-components': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
-          'data-management': ['@tanstack/react-query'],
-        },
-      },
-    },
-    target: 'esnext', // Modern browsers for smaller bundle size
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode !== 'development', // Drop console logs in production
-        drop_debugger: true,
+  emptyOutDir: true,
+  sourcemap: mode === 'development',
+  cssCodeSplit: true,
+  rollupOptions: {
+    input: path.resolve(__dirname, 'index.html'), // 👈 Fixe l'entrée unique
+    output: {
+      manualChunks: {
+        'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+        'ui-components': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+        'data-management': ['@tanstack/react-query'],
       },
     },
   },
+  target: 'esnext',
+  minify: 'terser',
+  terserOptions: {
+    compress: {
+      drop_console: mode !== 'development',
+      drop_debugger: true,
+    },
+  },
+},
 }));
