@@ -29,7 +29,7 @@ const STATIC_ASSETS = [
   "/icons/icon-512.png"
 ];
 
-// Fonction corrigée sans utilisation de self.top
+// Fonction simplifiée pour éviter toute référence à self.top
 const isInIframe = () => false;
 
 // Mises en cache personnalisées pour les ressources statiques
