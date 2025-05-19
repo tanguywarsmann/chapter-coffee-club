@@ -15,34 +15,32 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
+
     VitePWA({
       strategies: 'injectManifest',
-      injectRegister: null,       // plus de registerSW.js
-      workbox: undefined,         // plus de fallback generateSW
+      injectRegister: null,    // plus de registerSW.js
+      workbox: undefined,      // désactive generateSW
       registerType: 'autoUpdate',
       devOptions: { enabled: true, type: 'module' },
-      
-      srcDir: 'src',     // ← dossier racine du SW source
-      filename: 'sw.ts', // ← nom du fichier service worker source
-    
+
       injectManifest: {
-        swSrc: 'sw.ts',    // ← accessible depuis srcDir
-        swDest: 'sw.js',   // ← nom du SW généré dans dist/
+        swSrc:  'src/sw.ts',    // ← chemin complet vers ton SW source
+        swDest: 'sw.js',        // ← nom du service-worker généré dans dist/
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
-    
+
       manifest: {
         short_name: 'READ',
-        name: 'READ — Reprends goût à la lecture, page après page',
+        name:       'READ — Reprends goût à la lecture, page après page',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
         ],
         background_color: '#B05F2C',
-        theme_color: '#E9CBA4',
-        start_url: '/home',
-        display: 'standalone'
+        theme_color:      '#E9CBA4',
+        start_url:        '/home',
+        display:          'standalone'
       }
     })
   ].filter(Boolean),
