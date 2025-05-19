@@ -21,10 +21,13 @@ export default defineConfig(({ mode }) => ({
       workbox: undefined,         // plus de fallback generateSW
       registerType: 'autoUpdate',
       devOptions: { enabled: true, type: 'module' },
+      
+      srcDir: 'src',     // ← dossier racine du SW source
+      filename: 'sw.ts', // ← nom du fichier service worker source
     
       injectManifest: {
-        swSrc: 'src/sw.ts',       // ← fichier source (avec self.__WB_MANIFEST)
-        swDest: 'sw.js',          // ← nom du service worker généré dans dist/
+        swSrc: 'sw.ts',    // ← accessible depuis srcDir
+        swDest: 'sw.js',   // ← nom du SW généré dans dist/
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
     
@@ -47,8 +50,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      // Redirige toute résolution « public/sw.js » vers un SW vide
-      "public/sw.js": path.resolve(__dirname, "./src/empty-sw.ts"),
     }
   },
 
