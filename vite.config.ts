@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "public/sw.js": path.resolve(__dirname, "./src/empty-sw.js") // 👈 neutralise toute référence fantôme
+      "public/sw.js": path.resolve(__dirname, "./src/empty-sw.ts") // 👈 neutralise toute référence fantôme
     },
   },
   build: {
