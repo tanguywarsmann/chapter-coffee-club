@@ -15,27 +15,17 @@ export default defineConfig(({ mode }) => ({
     compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
 
-    /* ←—— LE SEUL ENDROIT À MODIFIER ———→ */
     VitePWA({
       strategies: 'injectManifest',
-
-      /* 1️⃣  Où se trouve ton sw.ts              */
-      srcDir   : 'src',
-      /* 2️⃣  Comment tu veux qu’il s’appelle dans dist/ */
-      filename : 'sw.js',
-
-      /* 3️⃣  Options injectManifest (on garde juste swSrc) */
-      injectManifest: {
-        swSrc: 'src/sw.ts',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-      },
-
-      /* 4️⃣  Le reste inchangé */
-      injectRegister: null,   // tu ne veux pas de registerSW.js
-      workbox: undefined,     // pas de fallback generateSW
+      injectRegister: null,
+      workbox: undefined,
       registerType: 'autoUpdate',
       devOptions: { enabled: true, type: 'module' },
-
+      injectManifest: {
+        swSrc: 'src/sw.ts', // ← fichier source réel
+        swDest: 'sw.js',     // ← nom du fichier généré dans dist
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
       manifest: {
         short_name: 'READ',
         name: 'READ — Reprends goût à la lecture, page après page',
@@ -52,7 +42,11 @@ export default defineConfig(({ mode }) => ({
     })
   ].filter(Boolean),
 
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
 
   build: {
     emptyOutDir: true,
@@ -63,12 +57,17 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'react-vendor'   : ['react', 'react-dom', 'react-router-dom'],
           'ui-components'  : ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
-          'data-management': ['@tanstack/react-query'],
+          'data-management': ['@tanstack/react-query']
         }
       }
     },
     target: 'esnext',
     minify: 'terser',
-    terserOptions: { compress: { drop_console: mode !== 'development', drop_debugger: true } }
+    terserOptions: {
+      compress: {
+        drop_console: mode !== 'development',
+        drop_debugger: true
+      }
+    }
   }
 }))
