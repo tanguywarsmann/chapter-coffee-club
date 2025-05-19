@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       devOptions: { enabled: true, type: 'module' },
       injectManifest: {
-        swSrc: 'src/sw.ts',
+        swSrc: path.resolve(__dirname, 'src/sw.ts'),  // Utilisation d'un chemin absolu
         swDest: 'sw.js',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },

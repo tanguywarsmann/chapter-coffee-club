@@ -1,11 +1,11 @@
 
 {
-  "name": "READ",
+  "name": "READ — Reprends goût à la lecture, page après page",
   "short_name": "READ",
   "start_url": "/home",
   "display": "standalone",
-  "background_color": "#A75A2A",
-  "theme_color": "#A75A2A",
+  "background_color": "#B05F2C",
+  "theme_color": "#E9CBA4",
   "icons": [
     {
       "src": "/icons/icon-192.png",

@@ -1,1 +1,0 @@
-/* stub – generated elsewhere */
