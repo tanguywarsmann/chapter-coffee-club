@@ -1,3 +1,4 @@
+
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -15,34 +16,39 @@ export default defineConfig(({ mode }) => ({
     compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
     VitePWA({
-  strategies: 'injectManifest',
-  injectRegister: null,
-  workbox: undefined,
-  registerType: 'autoUpdate',
-  devOptions: { enabled: true, type: 'module' },
-  injectManifest: {
-    swSrc: 'src/sw.ts', // ← fichier source réel
-    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-  },
-  manifest: {
-    short_name: 'READ',
-    name: 'READ — Reprends goût à la lecture, page après page',
-    icons: [
-      { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
-      { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
-    ],
-    background_color: '#B05F2C',
-    theme_color: '#E9CBA4',
-    start_url: '/home',
-    display: 'standalone'
-  }
-})
+      strategies: 'injectManifest',
+      injectRegister: null,       // plus de registerSW.js
+      workbox: undefined,         // plus de fallback generateSW
+      registerType: 'autoUpdate',
+      devOptions: { enabled: true, type: 'module' },
+    
+      injectManifest: {
+        swSrc: 'src/sw.ts',       // ← fichier source (avec self.__WB_MANIFEST)
+        swDest: 'sw.js',          // ← nom du service worker généré dans dist/
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
+    
+      manifest: {
+        short_name: 'READ',
+        name: 'READ — Reprends goût à la lecture, page après page',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+        ],
+        background_color: '#B05F2C',
+        theme_color: '#E9CBA4',
+        start_url: '/home',
+        display: 'standalone'
+      }
+    })
   ].filter(Boolean),
 
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      // Redirige toute résolution « public/sw.js » vers un SW vide
+      "public/sw.js": path.resolve(__dirname, "./src/empty-sw.ts"),
     }
   },
 
