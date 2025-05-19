@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => ({
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null, // Empêche la génération auto de registerSW.js
       manifest: {
         short_name: "READ",
         name: "READ — Reprends goût à la lecture, page après page",
@@ -37,7 +38,6 @@ export default defineConfig(({ mode }) => ({
         display: "standalone"
       },
       strategies: 'injectManifest',
-      injectRegister: null,
       workbox: undefined, // empêche le fallback generateSW
       devOptions: {
         enabled: true,
@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => ({
       },
       injectManifest: {
         swSrc: 'src/sw.ts', // Source du service worker
-        swDest: 'sw.js', // Destination directement dans dist/
+        swDest: 'sw.js', // Destination dans dist/
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
     })
