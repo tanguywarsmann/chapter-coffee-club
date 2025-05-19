@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => ({
         display: "standalone"
       },
       strategies: 'injectManifest',
-      injectRegister: 'auto',
+      injectRegister: null,
       workbox: undefined, // empêche le fallback generateSW
       devOptions: {
         enabled: true,
