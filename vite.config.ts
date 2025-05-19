@@ -18,29 +18,27 @@ export default defineConfig(({ mode }) => ({
 
     VitePWA({
       strategies: 'injectManifest',
-      injectRegister: null,    // plus de registerSW.js
-      workbox: undefined,      // désactive generateSW
+      injectRegister: null,
+      workbox: undefined,
       registerType: 'autoUpdate',
       devOptions: { enabled: true, type: 'module' },
-
       injectManifest: {
-        swSrc:  'src/sw.ts',    // ← chemin complet vers ton SW source
-        swDest: 'sw.js',        // ← nom du service-worker généré dans dist/
+        swSrc: 'src/sw.ts',
+        swDest: 'sw.js',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
       },
-
       manifest: {
         short_name: 'READ',
-        name:       'READ — Reprends goût à la lecture, page après page',
+        name: 'READ — Reprends goût à la lecture, page après page',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
         ],
         background_color: '#B05F2C',
-        theme_color:      '#E9CBA4',
-        start_url:        '/home',
-        display:          'standalone'
+        theme_color: '#E9CBA4',
+        start_url: '/home',
+        display: 'standalone'
       }
     })
   ].filter(Boolean),
@@ -53,13 +51,13 @@ export default defineConfig(({ mode }) => ({
 
   build: {
     emptyOutDir: true,
-    sourcemap : mode === 'development',
+    sourcemap: mode === 'development',
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks: {
-          'react-vendor'   : ['react', 'react-dom', 'react-router-dom'],
-          'ui-components'  : ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-components': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
           'data-management': ['@tanstack/react-query']
         }
       }
