@@ -61,6 +61,8 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'), // S'assurer que le seul point d'entrée est index.html
+      // Empêche explicitement l'inclusion de fichiers inexistants comme public/sw.js
+external: (id) => id.includes('public/sw.js'),
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
