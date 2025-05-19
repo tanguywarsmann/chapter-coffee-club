@@ -38,6 +38,7 @@ export default defineConfig(({ mode }) => ({
       },
       strategies: 'injectManifest',
       injectRegister: 'auto',
+      workbox: undefined, // Ajout de cette ligne pour désactiver le fallback Workbox
       devOptions: {
         enabled: true,
         type: "module"
