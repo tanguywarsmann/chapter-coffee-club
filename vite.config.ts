@@ -60,7 +60,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     cssCodeSplit: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
+      input: path.resolve(__dirname, 'index.html'), // S'assurer que le seul point d'entrée est index.html
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
