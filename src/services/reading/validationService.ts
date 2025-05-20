@@ -28,7 +28,13 @@ export const validateReading = async (
     console.log('🚀 [validateReading] Validation démarrée pour user_id:', request.user_id, 'livre:', request.book_id, 'segment:', request.segment);
     
     // Vérifier si l'utilisateur est connecté
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('❌ [validateReading] Erreur session:', sessionError);
+      toast.error("Erreur de session: " + sessionError.message);
+      throw sessionError;
+    }
+    
     if (!sessionData?.session) {
       const errorMsg = "❌ Utilisateur non authentifié lors de la validation";
       console.error(errorMsg);
@@ -143,6 +149,9 @@ export const validateReading = async (
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
     console.log("📚 [validateReading] Question récupérée:", question);
 
+    // Utiliser progressId (qui est maintenant correctement défini) comme progress_id
+    console.log("🔑 [validateReading] progress_id utilisé:", progressId);
+    
     const validationRecord: ReadingValidationRecord = {
       user_id: request.user_id,
       book_id: request.book_id,
