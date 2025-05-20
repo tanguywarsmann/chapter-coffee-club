@@ -29,56 +29,92 @@ export const validateReading = async (
     // Vérifier si le segment est déjà validé
     const progress = await getBookReadingProgress(request.user_id, request.book_id);
     
-    if (!progress) {
-      throw new Error("❌ Impossible de récupérer la progression du livre");
+    // Récupérer les informations du livre pour connaître total_pages
+    const { data: bookData, error: bookError } = await supabase
+      .from('books')
+      .select('total_pages')
+      .eq('id', request.book_id)
+      .single();
+    
+    if (bookError) {
+      console.error('Error fetching book:', bookError);
+      throw new Error("❌ Impossible de récupérer les informations du livre");
     }
     
-    // Utiliser maintenant chaptersRead au lieu de vérifier la DB
-    if (request.segment <= progress.chaptersRead) {
-      console.log('📝 Segment already validated:', request.segment, 'chaptersRead:', progress.chaptersRead);
+    const totalPages = bookData?.total_pages || 0;
+    const newCurrentPage = (request.segment + 1) * 8000;
+    
+    // Déterminer si le livre sera complété après cette validation
+    const newStatus = newCurrentPage >= totalPages ? 'completed' : 'in_progress';
+    
+    let progressId: string;
+    
+    if (!progress) {
+      console.log('📚 Aucune progression existante, création d\'une nouvelle entrée');
       
-      return {
-        message: "Segment déjà validé",
-        current_page: request.segment * 30,
-        already_validated: true,
-        next_segment_question: null
-      };
+      // Créer une nouvelle entrée de progression si elle n'existe pas
+      const { data: newProgress, error: insertError } = await supabase
+        .from('reading_progress')
+        .insert({
+          user_id: request.user_id,
+          book_id: request.book_id,
+          current_page: newCurrentPage,
+          total_pages: totalPages,
+          status: newStatus,
+          started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error('Error creating reading progress:', insertError);
+        toast.error("Échec de création de la progression de lecture");
+        throw insertError;
+      }
+      
+      progressId = newProgress.id;
+      console.log("✅ Nouvelle progression créée avec ID:", progressId);
+    } else {
+      // Utiliser la progression existante et la mettre à jour si nécessaire
+      progressId = progress.id;
+      
+      // Ne mettre à jour current_page que si la nouvelle valeur est supérieure
+      const updatedCurrentPage = Math.max(newCurrentPage, progress.current_page || 0);
+      
+      // Vérifier si le segment est déjà validé
+      if (request.segment <= progress.chaptersRead) {
+        console.log('📝 Segment already validated:', request.segment, 'chaptersRead:', progress.chaptersRead);
+        
+        return {
+          message: "Segment déjà validé",
+          current_page: progress.current_page,
+          already_validated: true,
+          next_segment_question: null
+        };
+      }
+      
+      const { error: progressError } = await supabase
+        .from('reading_progress')
+        .update({
+          current_page: updatedCurrentPage,
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', request.user_id)
+        .eq('book_id', request.book_id);
+
+      if (progressError) {
+        console.error('Error updating reading progress:', progressError);
+        toast.error("Échec de mise à jour dans Supabase");
+        throw progressError;
+      }
+      
+      console.log("✅ Progression mise à jour, ID:", progressId);
     }
 
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
     console.log("📚 Question récupérée :", question);
-
-    const newCurrentPage = request.segment * 30;
-    
-    // Correction: Déterminer le statut en comparant (chaptersRead + 1) à totalSegments
-    // au lieu d'utiliser progress.pages (qui n'existe plus)
-    const newStatus = (progress.chaptersRead + 1) >= progress.totalSegments ? 'completed' : 'in_progress';
-
-    console.log('📊 Updating reading progress:', {
-      user_id: request.user_id,
-      book_id: request.book_id,
-      current_page: newCurrentPage,
-      status: newStatus,
-      progress_id: progress.id
-    });
-
-    const { error: progressError } = await supabase
-      .from('reading_progress')
-      .update({
-        current_page: newCurrentPage,
-        status: newStatus,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', request.user_id)
-      .eq('book_id', request.book_id);
-
-    if (progressError) {
-      console.error('Error updating reading progress:', progressError);
-      toast.error("Échec de mise à jour dans Supabase");
-      throw progressError;
-    }
-    
-    console.log("✅ Supabase update success - reading_progress");
 
     const validationRecord: ReadingValidationRecord = {
       user_id: request.user_id,
@@ -88,7 +124,7 @@ export const validateReading = async (
       correct: true,
       validated_at: new Date().toISOString(),
       answer: question?.answer ?? undefined,
-      progress_id: progress.id
+      progress_id: progressId  // Utiliser l'ID de progression obtenu
     };
 
     console.log("🧾 Enregistrement validation :", validationRecord);
