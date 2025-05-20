@@ -89,13 +89,20 @@ export const validateReading = async (
       const { data: newProgress, error: insertError } = await supabase
         .from('reading_progress')
         .insert(newProgressData)
-        .select()
+        .select('id') // Important: Sélectionner l'ID après insertion
         .single();
       
       if (insertError) {
         console.error('❌ [validateReading] Erreur création reading_progress:', insertError);
         toast.error("Échec de création de la progression de lecture: " + insertError.message);
         throw insertError;
+      }
+      
+      if (!newProgress || !newProgress.id) {
+        const errorMsg = "❌ ID de progression non récupéré après insertion";
+        console.error(errorMsg);
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
       }
       
       console.log('✅ [validateReading] reading_progress créé avec succès:', newProgress);
@@ -131,17 +138,26 @@ export const validateReading = async (
       const { data: updatedProgress, error: progressError } = await supabase
         .from('reading_progress')
         .update(updateData)
-        .eq('user_id', request.user_id)
-        .eq('book_id', request.book_id)
-        .select();
+        .eq('id', progressId) // Utiliser l'ID pour la mise à jour
+        .select('id') // Récupérer l'ID après la mise à jour
+        .single();
 
       if (progressError) {
         console.error('❌ [validateReading] Erreur mise à jour reading_progress:', progressError);
         toast.error("Échec de mise à jour de la progression: " + progressError.message);
         throw progressError;
       }
+
+      if (!updatedProgress || !updatedProgress.id) {
+        const errorMsg = "❌ ID de progression non récupéré après mise à jour";
+        console.error(errorMsg);
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
+      }
       
       console.log('✅ [validateReading] reading_progress mis à jour avec succès:', updatedProgress);
+      // Réassigner progressId au cas où l'ID aurait changé (par sécurité)
+      progressId = updatedProgress.id;
       toast.success("Progression de lecture mise à jour!");
     }
 
@@ -149,8 +165,15 @@ export const validateReading = async (
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
     console.log("📚 [validateReading] Question récupérée:", question);
 
-    // Utiliser progressId (qui est maintenant correctement défini) comme progress_id
+    // Log explicite pour le progress_id utilisé
     console.log("🔑 [validateReading] progress_id utilisé:", progressId);
+    
+    if (!progressId) {
+      const errorMsg = "❌ progress_id est null ou undefined, impossible de procéder à la validation";
+      console.error(errorMsg);
+      toast.error(errorMsg);
+      throw new Error(errorMsg);
+    }
     
     const validationRecord: ReadingValidationRecord = {
       user_id: request.user_id,
@@ -160,7 +183,7 @@ export const validateReading = async (
       correct: true,
       validated_at: new Date().toISOString(),
       answer: question?.answer ?? undefined,
-      progress_id: progressId
+      progress_id: progressId // Utilisation correcte du progress_id
     };
 
     console.log("📝 [validateReading] Insertion reading_validations avec données:", validationRecord);
@@ -170,7 +193,11 @@ export const validateReading = async (
 
     if (validationError) {
       console.error('❌ [validateReading] Erreur insertion reading_validations:', validationError);
-      toast.error("Échec d'enregistrement de la validation: " + validationError.message);
+      if (validationError.message.includes('violates foreign key constraint')) {
+        toast.error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.", { duration: 8000 });
+      } else {
+        toast.error("Échec d'enregistrement de la validation: " + validationError.message);
+      }
       throw validationError;
     }
     
