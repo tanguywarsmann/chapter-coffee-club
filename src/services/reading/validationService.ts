@@ -14,6 +14,7 @@ import { Database } from "@/integrations/supabase/types";
 import { mutate } from 'swr';
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
+type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
 
 /**
  * Valide un segment de lecture
@@ -59,7 +60,7 @@ export const validateReading = async (
     const newCurrentPage = (request.segment + 1) * 8000;
     
     // Déterminer si le livre sera complété après cette validation
-    const newStatus = newCurrentPage >= totalPages ? 'completed' : 'in_progress';
+    const newStatus: ReadingProgressStatus = newCurrentPage >= totalPages ? 'completed' : 'in_progress';
     console.log(`📘 [validateReading] Status calculé: ${newStatus} (newCurrentPage: ${newCurrentPage}, totalPages: ${totalPages})`);
     
     let progressId: string;
