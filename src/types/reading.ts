@@ -86,7 +86,9 @@ export type BookWithProgress =
     expectedSegments: number
     totalSegments:    number
     nextSegmentPage:  number
+    currentSegment?:  number // ✅ <-- ajout ici
 
+    
     /* legacy (tous optionnels) */
     book_id?:     string
     book_title?:  string
