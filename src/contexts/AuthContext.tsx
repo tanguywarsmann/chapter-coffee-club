@@ -125,13 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAdmin(false);
         }
   
+        // Always set isInitialized to true, even if no session is found
         if (!isInitialized) {
           setIsInitialized(true);
         }
         setIsLoading(false);
       } catch (err) {
         console.error("Error handling auth state change:", err);
-        setIsInitialized(true);
+        setIsInitialized(true);  // Ensure initialization completes even on error
         setIsLoading(false);
       }
     });
@@ -162,12 +163,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         }
 
+        // Always set isInitialized to true, regardless of session status
         setIsInitialized(true);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching session:", error);
         toast.error("Erreur de connexion à Supabase");
         setError("Erreur de connexion à Supabase");
+        // Ensure initialization completes even on error
         setIsInitialized(true);
         setIsLoading(false);
       }
@@ -175,7 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth().catch(err => {
       console.error("Failed to initialize auth:", err);
-      setIsInitialized(true);
+      setIsInitialized(true);  // Ensure initialization completes on error
       setIsLoading(false);
     });
 
