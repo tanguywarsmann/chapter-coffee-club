@@ -15,6 +15,7 @@ import { mutate } from 'swr';
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
+type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Insert'] & { id?: string };
 
 /**
  * Valide un segment de lecture
@@ -47,28 +48,37 @@ export const validateReading = async (
     console.log('🔍 [validateReading] Vérification défensive pour détecter les progressions multiples...');
     const { data: existingProgresses, error: checkError } = await supabase
       .from("reading_progress")
-      .select("id, current_page")
+      .select("id, current_page, status")
       .eq("user_id", request.user_id)
       .eq("book_id", request.book_id);
     
     if (checkError) {
       console.error('❌ [validateReading] Erreur lors de la vérification défensive:', checkError);
       toast.error("Erreur lors de la vérification des progressions existantes: " + checkError.message);
-    } else if (existingProgresses && existingProgresses.length > 1) {
+      throw new Error("Erreur lors de la vérification des progressions");
+    }
+
+    // Alerte si plusieurs progressions sont détectées
+    if (existingProgresses && existingProgresses.length > 1) {
       console.error('⚠️ [validateReading] ALERTE: Plusieurs progressions détectées pour le même livre et utilisateur:', existingProgresses);
       toast.error("Anomalie détectée: plusieurs progressions pour le même livre. Contactez le support.", { duration: 10000 });
-      // Continuer avec la première progression trouvée
+      throw new Error("Anomalie: Plusieurs progressions détectées pour le même livre");
     }
     
-    // Vérifier si le segment est déjà validé (récupérer la progression existante)
-    const progress = await getBookReadingProgress(request.user_id, request.book_id);
-    console.log('📊 [validateReading] Progression existante:', progress ? `ID: ${progress.id}, chaptersRead: ${progress.chaptersRead}` : 'Aucune');
+    // Utiliser la progression existante si elle existe
+    let progressId: string | undefined;
+    let currentProgress = existingProgresses?.[0] || null;
+    
+    if (currentProgress) {
+      progressId = currentProgress.id;
+      console.log('🔄 [validateReading] Utilisation de la progression existante ID:', progressId);
+    }
     
     // Récupérer les informations du livre pour connaître total_pages
     console.log('📚 [validateReading] Récupération des infos du livre', request.book_id);
     const { data: bookData, error: bookError } = await supabase
       .from('books')
-      .select('total_pages')
+      .select('total_pages, total_chapters, expected_segments')
       .eq('id', request.book_id)
       .maybeSingle();
     
@@ -78,22 +88,23 @@ export const validateReading = async (
       throw new Error("❌ Impossible de récupérer les informations du livre");
     }
     
+    if (!bookData) {
+      console.error('❌ [validateReading] Livre non trouvé:', request.book_id);
+      toast.error("Livre non trouvé dans la base de données");
+      throw new Error("❌ Livre non trouvé dans la base de données");
+    }
+    
     console.log('📚 [validateReading] Infos du livre récupérées:', bookData);
-    const totalPages = bookData?.total_pages || 0;
+    const totalPages = bookData.total_pages || 0;
     const newCurrentPage = (request.segment + 1) * 8000;
     
     // Déterminer si le livre sera complété après cette validation
     const newStatus: ReadingProgressStatus = newCurrentPage >= totalPages ? 'completed' : 'in_progress';
     console.log(`📘 [validateReading] Status calculé: ${newStatus} (newCurrentPage: ${newCurrentPage}, totalPages: ${totalPages})`);
     
-    let progressId: string;
-    
-    // Si des progressions multiples ont été détectées, utiliser la première par sécurité
-    if (existingProgresses && existingProgresses.length > 0) {
-      progressId = existingProgresses[0].id;
-      console.log('🔄 [validateReading] Utilisation de la progression existante ID:', progressId);
-    } else if (!progress) {
-      // Vérification supplémentaire avant de créer une nouvelle progression
+    // Si pas de progression existante, en créer une nouvelle
+    if (!progressId) {
+      // Vérification finale avant de créer une nouvelle progression
       console.log('🔍 [validateReading] Vérification finale avant création de nouvelle progression...');
       const { data: finalCheck, error: finalCheckError } = await supabase
         .from("reading_progress")
@@ -110,11 +121,12 @@ export const validateReading = async (
       if (finalCheck && finalCheck.id) {
         console.log('🔄 [validateReading] Progression trouvée lors de la vérification finale, ID:', finalCheck.id);
         progressId = finalCheck.id;
+        currentProgress = finalCheck;
       } else {
         console.log('📚 [validateReading] Aucune progression existante, création d\'une nouvelle entrée');
         
-        // Créer une nouvelle entrée de progression si elle n'existe pas
-        const newProgressData = {
+        // Créer une nouvelle entrée de progression
+        const newProgressData: ReadingProgressRecord = {
           user_id: request.user_id,
           book_id: request.book_id,
           current_page: newCurrentPage,
@@ -128,8 +140,8 @@ export const validateReading = async (
         const { data: newProgress, error: insertError } = await supabase
           .from('reading_progress')
           .insert(newProgressData)
-          .select('id') // Important: Sélectionner l'ID après insertion
-          .maybeSingle(); // Utiliser maybeSingle au lieu de single
+          .select('id, current_page, status') // Important: Sélectionner l'ID après insertion
+          .maybeSingle();
         
         if (insertError) {
           // Si l'erreur indique un conflit (duplicate key), essayer de récupérer l'entrée existante
@@ -137,23 +149,24 @@ export const validateReading = async (
             console.warn('⚠️ [validateReading] Conflit lors de l\'insertion, tentative de récupération...');
             const { data: conflictData, error: conflictError } = await supabase
               .from("reading_progress")
-              .select("id")
+              .select("id, current_page, status")
               .eq("user_id", request.user_id)
               .eq("book_id", request.book_id)
               .maybeSingle();
               
             if (conflictError || !conflictData) {
               console.error('❌ [validateReading] Échec de récupération après conflit:', conflictError);
-              toast.error("Échec de création de la progression de lecture: " + insertError.message);
-              throw insertError;
+              toast.error("Échec de création de la progression de lecture");
+              throw new Error("Échec de création de la progression de lecture");
             }
             
             console.log('✅ [validateReading] Progression récupérée après conflit:', conflictData);
             progressId = conflictData.id;
+            currentProgress = conflictData;
           } else {
             console.error('❌ [validateReading] Erreur création reading_progress:', insertError);
-            toast.error("Échec de création de la progression de lecture: " + insertError.message);
-            throw insertError;
+            toast.error("Échec de création de la progression de lecture");
+            throw new Error("Échec de création de la progression de lecture");
           }
         } else if (!newProgress || !newProgress.id) {
           const errorMsg = "❌ ID de progression non récupéré après insertion";
@@ -163,23 +176,21 @@ export const validateReading = async (
         } else {
           console.log('✅ [validateReading] reading_progress créé avec succès:', newProgress);
           progressId = newProgress.id;
+          currentProgress = newProgress;
           toast.success("Nouvelle progression de lecture créée!");
         }
       }
-    } else {
-      // Utiliser la progression existante et la mettre à jour si nécessaire
-      progressId = progress.id;
-      
+    } else if (currentProgress) {
+      // Mettre à jour la progression existante si nécessaire
       // Ne mettre à jour current_page que si la nouvelle valeur est supérieure
-      const updatedCurrentPage = Math.max(newCurrentPage, progress.current_page || 0);
+      const updatedCurrentPage = Math.max(newCurrentPage, currentProgress.current_page || 0);
       
       // Vérifier si le segment est déjà validé
-      if (request.segment <= progress.chaptersRead) {
-        console.log('📝 [validateReading] Segment already validated:', request.segment, 'chaptersRead:', progress.chaptersRead);
-        
+      if (request.segment <= (await getSegmentsRead(currentProgress.id))) {
+        console.log('📝 [validateReading] Segment déjà validé:', request.segment);
         return {
           message: "Segment déjà validé",
-          current_page: progress.current_page,
+          current_page: currentProgress.current_page || 0,
           already_validated: true,
           next_segment_question: null
         };
@@ -195,14 +206,14 @@ export const validateReading = async (
       const { data: updatedProgress, error: progressError } = await supabase
         .from('reading_progress')
         .update(updateData)
-        .eq('id', progressId) // Utiliser l'ID pour la mise à jour
-        .select('id') // Récupérer l'ID après la mise à jour
-        .maybeSingle(); // Utiliser maybeSingle au lieu de single
+        .eq('id', progressId)
+        .select('id, current_page, status')
+        .maybeSingle();
 
       if (progressError) {
         console.error('❌ [validateReading] Erreur mise à jour reading_progress:', progressError);
-        toast.error("Échec de mise à jour de la progression: " + progressError.message);
-        throw progressError;
+        toast.error("Échec de mise à jour de la progression");
+        throw new Error("Échec de mise à jour de la progression");
       }
 
       if (!updatedProgress || !updatedProgress.id) {
@@ -213,9 +224,17 @@ export const validateReading = async (
       }
       
       console.log('✅ [validateReading] reading_progress mis à jour avec succès:', updatedProgress);
-      // Réassigner progressId au cas où l'ID aurait changé (par sécurité)
+      // Réassigner progressId et currentProgress en utilisant les données mises à jour
       progressId = updatedProgress.id;
-      toast.success("Progression de lecture mise à jour!");
+      currentProgress = updatedProgress;
+    }
+
+    // Vérification finale que nous avons bien un progress_id valide
+    if (!progressId) {
+      const errorMsg = "❌ Impossible d'obtenir un progress_id valide pour user_id: " + request.user_id + ", book_id: " + request.book_id;
+      console.error(errorMsg);
+      toast.error("Erreur critique: ID de progression manquant");
+      throw new Error(errorMsg);
     }
 
     console.log('🔍 [validateReading] Récupération de la question pour segment suivant...');
@@ -225,11 +244,18 @@ export const validateReading = async (
     // Log explicite pour le progress_id utilisé
     console.log("🔑 [validateReading] progress_id utilisé:", progressId);
     
-    if (!progressId) {
-      const errorMsg = "❌ progress_id est null ou undefined, impossible de procéder à la validation";
-      console.error(errorMsg);
-      toast.error(errorMsg);
-      throw new Error(errorMsg);
+    // Validation des préconditions avant de créer l'enregistrement de validation
+    if (!question) {
+      console.warn("⚠️ [validateReading] Aucune question trouvée pour ce segment");
+      // Continuer car on peut valider sans question
+    }
+
+    // Vérification du segment (la base a une contrainte check segment >= 0)
+    if (request.segment < 0) {
+      const segmentError = `❌ [validateReading] Segment invalide (${request.segment}), doit être >= 0`;
+      console.error(segmentError);
+      toast.error("Échec de validation: segment invalide");
+      throw new Error(segmentError);
     }
     
     const validationRecord: ReadingValidationRecord = {
@@ -246,12 +272,16 @@ export const validateReading = async (
     console.log("📝 [validateReading] Insertion reading_validations avec données:", validationRecord);
     const { data: validationData, error: validationError } = await supabase
       .from('reading_validations')
-      .insert(validationRecord);
+      .insert(validationRecord)
+      .select('id');
 
     if (validationError) {
       console.error('❌ [validateReading] Erreur insertion reading_validations:', validationError);
+      
       if (validationError.message.includes('violates foreign key constraint')) {
         toast.error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.", { duration: 8000 });
+      } else if (validationError.message.includes('reading_validations_segment_check')) {
+        toast.error("Erreur de validation : segment invalide", { duration: 5000 });
       } else {
         toast.error("Échec d'enregistrement de la validation: " + validationError.message);
       }
@@ -259,7 +289,6 @@ export const validateReading = async (
     }
     
     console.log("✅ [validateReading] reading_validations inséré avec succès:", validationData);
-    toast.success("Validation enregistrée avec succès!");
 
     await clearProgressCache(request.user_id);
     console.log(`✅ [validateReading] Cache vidé pour l'utilisateur ${request.user_id}`);
@@ -285,6 +314,7 @@ export const validateReading = async (
       console.log("🏆 [validateReading] Nouveaux badges obtenus:", newBadges);
     }
 
+    // Utilisation de EdgeRuntime.waitUntil équivalent pour les tâches en arrière-plan
     setTimeout(async () => {
       try {
         console.log("🎯 [validateReading] Vérification des quêtes en arrière-plan...");
@@ -328,3 +358,27 @@ export const validateReading = async (
     throw new Error(errorMessage);
   }
 };
+
+/**
+ * Récupère le nombre de segments lus pour une progression
+ * @param progressId ID de la progression de lecture
+ * @returns Nombre de segments validés
+ */
+async function getSegmentsRead(progressId: string): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('reading_validations')
+      .select('segment')
+      .eq('progress_id', progressId);
+      
+    if (error) {
+      console.error("❌ [getSegmentsRead] Erreur lors de la récupération des validations:", error);
+      return 0;
+    }
+    
+    return data?.length || 0;
+  } catch (error) {
+    console.error("❌ [getSegmentsRead] Erreur:", error);
+    return 0;
+  }
+}
