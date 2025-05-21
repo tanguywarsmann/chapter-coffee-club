@@ -108,7 +108,7 @@ export const validateReading = async (
       console.log('🔍 [validateReading] Vérification finale avant création de nouvelle progression...');
       const { data: finalCheck, error: finalCheckError } = await supabase
         .from("reading_progress")
-        .select("id")
+        .select("id, current_page, status")
         .eq("user_id", request.user_id)
         .eq("book_id", request.book_id)
         .maybeSingle();
@@ -140,7 +140,7 @@ export const validateReading = async (
         const { data: newProgress, error: insertError } = await supabase
           .from('reading_progress')
           .insert(newProgressData)
-          .select('id, current_page, status') // Important: Sélectionner l'ID après insertion
+          .select('id, current_page, status') // Important: Sélectionner les champs nécessaires après insertion
           .maybeSingle();
         
         if (insertError) {
