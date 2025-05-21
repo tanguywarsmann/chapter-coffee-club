@@ -10,6 +10,9 @@ import { queryClient } from './lib/query.ts'
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
 
+// Log application startup for debugging
+console.info("[MAIN] Application starting - initializing React root");
+
 // Only load React Query Devtools in development mode and only when needed
 const ReactQueryDevtools = React.lazy(() => 
   process.env.NODE_ENV === 'development' 
@@ -34,3 +37,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </React.StrictMode>,
 )
+

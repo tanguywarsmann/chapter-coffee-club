@@ -1,5 +1,5 @@
 
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import { UserOnboarding } from "./components/onboarding/UserOnboarding";
+
+console.info("[APP] Rendering App component - Router initialized");
 
 // Simplified loading fallback for better performance
 const LoadingFallback = () => (
@@ -35,6 +37,21 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Followers = lazy(() => import("./pages/Followers"));
 
 const App = () => {
+  // Log document ready state for debugging
+  useEffect(() => {
+    console.info(`[APP] Document readyState=${document.readyState}`);
+    
+    // Log when document is fully loaded
+    if (document.readyState !== "complete") {
+      const handleLoad = () => {
+        console.info("[APP] Document fully loaded");
+        window.removeEventListener("load", handleLoad);
+      };
+      window.addEventListener("load", handleLoad);
+      return () => window.removeEventListener("load", handleLoad);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

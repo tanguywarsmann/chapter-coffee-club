@@ -1,22 +1,42 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const navigationAttempted = useRef(false);
+  const documentReady = useRef(false);
   const { isLoading, isInitialized, user } = useAuth();
   const [redirectTimeout, setRedirectTimeout] = useState(false);
 
-  // Log the auth state on each render for debugging
-  console.info("[INDEX] Auth state:", {
+  // Log the auth and navigation state on each render for debugging
+  console.info("[INDEX] Current state:", {
+    pathname: location.pathname,
     isLoading,
     isInitialized,
     hasUser: !!user,
     userId: user?.id,
-    navigationAttempted: navigationAttempted.current
+    navigationAttempted: navigationAttempted.current,
+    documentReady: documentReady.current,
+    readyState: document.readyState
   });
+
+  // Document ready check for PWA
+  useEffect(() => {
+    const handleDocumentReady = () => {
+      console.info("[INDEX] Document fully loaded");
+      documentReady.current = true;
+    };
+    
+    if (document.readyState === "complete") {
+      documentReady.current = true;
+    } else {
+      window.addEventListener("load", handleDocumentReady);
+      return () => window.removeEventListener("load", handleDocumentReady);
+    }
+  }, []);
 
   useEffect(() => {
     // Safety timeout to show a message if redirection takes too long
@@ -27,45 +47,61 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Main navigation logic - runs when auth state is determined
   useEffect(() => {
     // Only redirect when auth state is fully determined and only once
     if (!navigationAttempted.current && !isLoading && isInitialized) {
       navigationAttempted.current = true;
       
-      if (user) {
-        console.info("[INDEX] INITIAL REDIRECT TO HOME (user authenticated)");
-        // Use a timeout to ensure the component is fully mounted
-        setTimeout(() => {
-          navigate("/home");
-        }, 50);
-      } else {
-        console.info("[INDEX] INITIAL REDIRECT TO AUTH (no user)");
-        // Use a timeout to ensure the component is fully mounted
-        setTimeout(() => {
-          navigate("/auth");
-        }, 50);
-      }
+      const performNavigation = () => {
+        if (user) {
+          console.info("[INDEX] REDIRECTING TO HOME (user authenticated)");
+          
+          // Try React Router navigation first
+          try {
+            navigate("/home");
+          } catch (err) {
+            console.error("[INDEX] React Router navigation failed:", err);
+            // Fallback to direct location change
+            window.location.replace("/home");
+          }
+        } else {
+          console.info("[INDEX] REDIRECTING TO AUTH (no user)");
+          
+          // Try React Router navigation first  
+          try {
+            navigate("/auth");
+          } catch (err) {
+            console.error("[INDEX] React Router navigation failed:", err);
+            // Fallback to direct location change
+            window.location.replace("/auth");
+          }
+        }
+      };
+
+      // Use a short timeout to ensure React is ready for navigation
+      setTimeout(performNavigation, 50);
     }
   }, [navigate, isLoading, isInitialized, user]);
   
-  // Safety timeout of 5 seconds to force navigation if stuck
+  // Ultimate safety timeout - force navigation after 5 seconds if stuck
   useEffect(() => {
     const safetyTimer = setTimeout(() => {
       if (!navigationAttempted.current) {
-        console.warn("[INDEX] Safety timer triggered - forcing navigation");
+        console.warn("[INDEX] Safety timer triggered - forcing direct navigation");
         navigationAttempted.current = true;
         
-        // Also check user status for safety redirect
+        // Last resort - direct browser navigation
         if (user) {
-          navigate("/home");
+          window.location.replace("/home");
         } else {
-          navigate("/auth");
+          window.location.replace("/auth");
         }
       }
     }, 5000);
     
     return () => clearTimeout(safetyTimer);
-  }, [navigate, user]);
+  }, [user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
