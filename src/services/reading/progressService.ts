@@ -32,26 +32,62 @@ export const clearProgressCache = async (userId?: string): Promise<void> => {
 };
 
 /**
+ * Récupère le nombre réel de segments validés pour un livre et un utilisateur
+ * @param userId Identifiant de l'utilisateur
+ * @param bookId Identifiant du livre
+ * @returns Nombre de segments validés
+ */
+async function getValidatedSegmentCount(userId: string, bookId: string): Promise<number> {
+  try {
+    // Compter les segments validés dans reading_validations
+    const { count, error } = await supabase
+      .from('reading_validations')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('book_id', bookId);
+    
+    if (error) {
+      console.error('[getValidatedSegmentCount] Error:', error);
+      return 0;
+    }
+    
+    return count || 0;
+  } catch (error) {
+    console.error('[getValidatedSegmentCount] Exception:', error);
+    return 0;
+  }
+}
+
+/**
  * Calcule les champs dérivés pour une progression de lecture
  * @param b Base book data
  * @param p Reading progress data (optional)
  * @returns Objet avec champs dérivés ajoutés
  */
-function addDerivedFields(b: any, p?: any): BookWithProgress {
+async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
   
   // Détecter l'unité : mots si current_page > total_pages * 2
   const isWordMode = current_page > total_pages * 2;
 
+  // Calculer les segments estimés à partir de la progression actuelle
   const segmentsRead = isWordMode
     ? Math.floor(current_page / WORDS_PER_SEGMENT)
     : Math.floor(current_page / PAGES_PER_SEGMENT);
 
-  const expectedSegments = b.expected_segments ?? total_chapters ?? 1;
+  // Récupérer le nombre réel de segments validés depuis la base de données
+  const validatedSegments = await getValidatedSegmentCount(p?.user_id || b.user_id, b.id || b.book_id);
   
+  console.log(`[progress] Segments validés: ${validatedSegments}, segments estimés: ${segmentsRead}`);
+
+  const expectedSegments = b.expected_segments ?? total_chapters ?? 1;
   const totalSegments = expectedSegments;
 
-  const clampedSegments = Math.min(segmentsRead, totalSegments);
+  // Utiliser le minimum entre les segments calculés et les segments réellement validés
+  const clampedSegments = Math.min(
+    Math.min(segmentsRead, validatedSegments), 
+    totalSegments
+  );
   
   return {
     ...b,
@@ -66,6 +102,7 @@ function addDerivedFields(b: any, p?: any): BookWithProgress {
     nextSegmentPage: isWordMode
       ? (clampedSegments + 1) * WORDS_PER_SEGMENT
       : (clampedSegments + 1) * PAGES_PER_SEGMENT,
+    currentSegment: clampedSegments,
       
     // Legacy aliases for compatibility
     book_id: b.id,
