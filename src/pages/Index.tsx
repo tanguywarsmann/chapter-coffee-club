@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const Index = () => {
   const navigate = useNavigate();
   const navigationAttempted = useRef(false);
-  const { isLoading, isInitialized } = useAuth();
+  const { isLoading, isInitialized, user } = useAuth();
   const [redirectTimeout, setRedirectTimeout] = useState(false);
 
   useEffect(() => {
@@ -22,14 +22,22 @@ const Index = () => {
     // Only redirect when auth state is fully determined and only once
     if (!navigationAttempted.current && !isLoading && isInitialized) {
       navigationAttempted.current = true;
-      console.info("INITIAL REDIRECT TO HOME");
       
-      // Use a timeout to ensure the component is fully mounted
-      setTimeout(() => {
-        navigate("/home");
-      }, 50);
+      if (user) {
+        console.info("INITIAL REDIRECT TO HOME (user authenticated)");
+        // Use a timeout to ensure the component is fully mounted
+        setTimeout(() => {
+          navigate("/home");
+        }, 50);
+      } else {
+        console.info("INITIAL REDIRECT TO AUTH (no user)");
+        // Use a timeout to ensure the component is fully mounted
+        setTimeout(() => {
+          navigate("/auth");
+        }, 50);
+      }
     }
-  }, [navigate, isLoading, isInitialized]);
+  }, [navigate, isLoading, isInitialized, user]);
   
   // Safety timeout of 5 seconds to force navigation if stuck
   useEffect(() => {
@@ -37,12 +45,18 @@ const Index = () => {
       if (!navigationAttempted.current) {
         console.warn("Index safety timer triggered - forcing navigation");
         navigationAttempted.current = true;
-        navigate("/home");
+        
+        // Also check user status for safety redirect
+        if (user) {
+          navigate("/home");
+        } else {
+          navigate("/auth");
+        }
       }
     }, 5000);
     
     return () => clearTimeout(safetyTimer);
-  }, [navigate]);
+  }, [navigate, user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
