@@ -9,6 +9,15 @@ const Index = () => {
   const { isLoading, isInitialized, user } = useAuth();
   const [redirectTimeout, setRedirectTimeout] = useState(false);
 
+  // Log the auth state on each render for debugging
+  console.info("[INDEX] Auth state:", {
+    isLoading,
+    isInitialized,
+    hasUser: !!user,
+    userId: user?.id,
+    navigationAttempted: navigationAttempted.current
+  });
+
   useEffect(() => {
     // Safety timeout to show a message if redirection takes too long
     const timer = setTimeout(() => {
@@ -24,13 +33,13 @@ const Index = () => {
       navigationAttempted.current = true;
       
       if (user) {
-        console.info("INITIAL REDIRECT TO HOME (user authenticated)");
+        console.info("[INDEX] INITIAL REDIRECT TO HOME (user authenticated)");
         // Use a timeout to ensure the component is fully mounted
         setTimeout(() => {
           navigate("/home");
         }, 50);
       } else {
-        console.info("INITIAL REDIRECT TO AUTH (no user)");
+        console.info("[INDEX] INITIAL REDIRECT TO AUTH (no user)");
         // Use a timeout to ensure the component is fully mounted
         setTimeout(() => {
           navigate("/auth");
@@ -43,7 +52,7 @@ const Index = () => {
   useEffect(() => {
     const safetyTimer = setTimeout(() => {
       if (!navigationAttempted.current) {
-        console.warn("Index safety timer triggered - forcing navigation");
+        console.warn("[INDEX] Safety timer triggered - forcing navigation");
         navigationAttempted.current = true;
         
         // Also check user status for safety redirect

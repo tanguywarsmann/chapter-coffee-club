@@ -68,10 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Safety mechanism to ensure we don't get stuck
   useEffect(() => {
+    console.info("[AUTH CONTEXT] Safety initialization timeout started");
+    
     // Set a safety timeout to mark initialization as complete if it takes too long
     initTimeoutRef.current = window.setTimeout(() => {
       if (!isInitialized) {
-        console.warn("Auth initialization timed out - forcing completion");
+        console.warn("[AUTH CONTEXT] Auth initialization timed out - forcing completion");
         setIsInitialized(true);
         setIsLoading(false);
       }
@@ -85,9 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isInitialized]);
 
   useEffect(() => {
-    // Set up auth state change listener
+    console.info("[AUTH CONTEXT] Initial setup starting");
+    
+    // Set up auth state change listener FIRST
+    console.info("[AUTH CONTEXT] Setting up auth state change listener");
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       try {
+        console.info(`[AUTH CONTEXT] Auth state change event: ${event}, user: ${currentSession?.user?.id || 'none'}`);
+        
+        // Debounce to avoid multiple rapid updates
         if (!stateChangeHandled.current) {
           stateChangeHandled.current = true;
           setTimeout(() => {
@@ -99,14 +107,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentSession?.user ?? null);
   
         if (currentSession?.user) {
-          // Synchroniser le profil utilisateur (mettre à jour l'email)
+          console.info(`[AUTH CONTEXT] User authenticated: ${currentSession.user.id}`);
+          
           // Use setTimeout to avoid potential deadlock with Supabase auth state change
           setTimeout(async () => {
             try {
               await syncUserProfile(currentSession.user.id, currentSession.user.email);
               await fetchAdminStatus(currentSession.user.id);
             } catch (err) {
-              console.error("Error syncing user profile:", err);
+              console.error("[AUTH CONTEXT] Error syncing user profile:", err);
             }
           }, 0);
   
@@ -115,39 +124,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: currentSession.user.email 
           }));
         } else if (event === 'SIGNED_OUT') {
+          console.info("[AUTH CONTEXT] User signed out");
           try {
             localStorage.removeItem("user");
           } catch (e) {
-            console.warn("Could not remove user from localStorage:", e);
+            console.warn("[AUTH CONTEXT] Could not remove user from localStorage:", e);
           }
           setSession(null);
           setUser(null);
           setIsAdmin(false);
         }
   
-        // Always set isInitialized to true, even if no session is found
+        // Always set isInitialized to true and isLoading to false, regardless of session status
         if (!isInitialized) {
+          console.info("[AUTH CONTEXT] Setting isInitialized to true from onAuthStateChange");
           setIsInitialized(true);
         }
         setIsLoading(false);
       } catch (err) {
-        console.error("Error handling auth state change:", err);
-        setIsInitialized(true);  // Ensure initialization completes even on error
+        console.error("[AUTH CONTEXT] Error handling auth state change:", err);
+        // Ensure initialization completes even on error
+        console.info("[AUTH CONTEXT] Forcing isInitialized to true after error");
+        setIsInitialized(true);
         setIsLoading(false);
       }
     });
 
     const initializeAuth = async () => {
       try {
-        if (authChecked.current) return;
+        if (authChecked.current) {
+          console.info("[AUTH CONTEXT] Auth already checked, skipping initialization");
+          return;
+        }
+        console.info("[AUTH CONTEXT] Starting auth initialization");
         authChecked.current = true;
 
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
+          console.error("[AUTH CONTEXT] Error fetching session:", error);
           throw error;
         }
 
+        console.info(`[AUTH CONTEXT] Session fetched, user: ${currentSession?.user?.id || 'none'}`);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -158,31 +177,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               await syncUserProfile(currentSession.user.id, currentSession.user.email);
               await fetchAdminStatus(currentSession.user.id);
             } catch (err) {
-              console.error("Error during user profile sync:", err);
+              console.error("[AUTH CONTEXT] Error during user profile sync:", err);
             }
           }, 0);
         }
 
         // Always set isInitialized to true, regardless of session status
+        console.info("[AUTH CONTEXT] Setting isInitialized to true from getSession");
         setIsInitialized(true);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching session:", error);
+        console.error("[AUTH CONTEXT] Error in initializeAuth:", error);
         toast.error("Erreur de connexion à Supabase");
         setError("Erreur de connexion à Supabase");
         // Ensure initialization completes even on error
+        console.info("[AUTH CONTEXT] Forcing isInitialized to true after initialization error");
         setIsInitialized(true);
         setIsLoading(false);
       }
     };
 
     initializeAuth().catch(err => {
-      console.error("Failed to initialize auth:", err);
-      setIsInitialized(true);  // Ensure initialization completes on error
+      console.error("[AUTH CONTEXT] Failed to initialize auth:", err);
+      console.info("[AUTH CONTEXT] Forcing isInitialized to true after unhandled error");
+      setIsInitialized(true);
       setIsLoading(false);
     });
 
     return () => {
+      console.info("[AUTH CONTEXT] Cleaning up auth subscription");
       subscription.unsubscribe();
       if (initTimeoutRef.current !== null) {
         clearTimeout(initTimeoutRef.current);
