@@ -6,32 +6,61 @@ import { useAuth } from "@/contexts/AuthContext";
 export function UserOnboarding() {
   const { user, isInitialized } = useAuth();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [initAttempted, setInitAttempted] = useState(false);
 
   useEffect(() => {
-    // Check if onboarding is required when auth is initialized and user is logged in
-    if (isInitialized && user) {
-      const onboardingDone = localStorage.getItem("onboardingDone");
-      if (!onboardingDone) {
+    // Safety mechanism to make sure this doesn't permanently fail
+    const safetyTimer = setTimeout(() => {
+      if (!initAttempted) {
+        console.warn("UserOnboarding failed to initialize properly, attempting recovery");
+        try {
+          const onboardingDone = localStorage.getItem("onboardingDone");
+          setShowWelcomeModal(!onboardingDone);
+        } catch (e) {
+          console.error("Failed localStorage recovery in UserOnboarding:", e);
+          // Default to showing welcome modal if we can't determine state
+          setShowWelcomeModal(true);
+        }
+        setInitAttempted(true);
+      }
+    }, 3000);
+    
+    // Check if onboarding is required when auth is initialized
+    if (isInitialized) {
+      try {
+        const onboardingDone = localStorage.getItem("onboardingDone");
+        setShowWelcomeModal(!onboardingDone);
+        setInitAttempted(true);
+      } catch (e) {
+        console.error("Error checking onboarding status:", e);
+        // Default to showing welcome modal on error
         setShowWelcomeModal(true);
+        setInitAttempted(true);
       }
     }
-  }, [user, isInitialized]);
+    
+    return () => clearTimeout(safetyTimer);
+  }, [isInitialized, initAttempted]);
 
-  return (
-    showWelcomeModal && (
-      <WelcomeModal
-        open={showWelcomeModal} 
-        onClose={(skip) => {
-          if (skip) {
-            // If skipped, we'll show it again later
-            setShowWelcomeModal(false);
-          } else {
-            // If completed, mark as done in localStorage and close
-            localStorage.setItem("onboardingDone", "true");
-            setShowWelcomeModal(false);
-          }
-        }}
-      />
-    )
-  );
+  const handleClose = (skip?: boolean) => {
+    try {
+      if (!skip) {
+        localStorage.setItem("onboardingDone", "true");
+      }
+      setShowWelcomeModal(false);
+    } catch (e) {
+      console.error("Error saving onboarding status:", e);
+      // Still close the modal even if storage fails
+      setShowWelcomeModal(false);
+    }
+  };
+
+  // Only show onboarding UI if explicitly set to true
+  // This prevents flashing during state determination
+  return showWelcomeModal ? (
+    <WelcomeModal 
+      open={showWelcomeModal} 
+      onClose={handleClose}
+    />
+  ) : null;
 }

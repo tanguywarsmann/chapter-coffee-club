@@ -34,9 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const authChecked = useRef(false);
   const stateChangeHandled = useRef(false);
+  const initTimeoutRef = useRef<number | null>(null);
 
   const fetchAdminStatus = async (userId: string) => {
     try {
+      if (!userId) return false;
+      
       if (process.env.NODE_ENV === 'development') {
         console.log("Fetching admin status for user ID:", userId);
       }
@@ -45,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('is_admin')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Erreur lors de la récupération du statut admin:', error);
@@ -63,40 +66,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Safety mechanism to ensure we don't get stuck
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (!stateChangeHandled.current) {
-        stateChangeHandled.current = true;
-        setTimeout(() => {
-          stateChangeHandled.current = false;
-        }, 100);
-      }
-
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        // Synchroniser le profil utilisateur (mettre à jour l'email)
-        setTimeout(async () => {
-          await syncUserProfile(currentSession.user.id, currentSession.user.email);
-          await fetchAdminStatus(currentSession.user.id);
-        }, 0);
-
-        localStorage.setItem("user", JSON.stringify({ 
-          id: currentSession.user.id,
-          email: currentSession.user.email 
-        }));
-      } else if (event === 'SIGNED_OUT') {
-        localStorage.removeItem("user");
-        setSession(null);
-        setUser(null);
-        setIsAdmin(false);
-      }
-
+    // Set a safety timeout to mark initialization as complete if it takes too long
+    initTimeoutRef.current = window.setTimeout(() => {
       if (!isInitialized) {
+        console.warn("Auth initialization timed out - forcing completion");
         setIsInitialized(true);
+        setIsLoading(false);
       }
-      setIsLoading(false);
+    }, 5000);
+
+    return () => {
+      if (initTimeoutRef.current !== null) {
+        clearTimeout(initTimeoutRef.current);
+      }
+    };
+  }, [isInitialized]);
+
+  useEffect(() => {
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      try {
+        if (!stateChangeHandled.current) {
+          stateChangeHandled.current = true;
+          setTimeout(() => {
+            stateChangeHandled.current = false;
+          }, 100);
+        }
+  
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+  
+        if (currentSession?.user) {
+          // Synchroniser le profil utilisateur (mettre à jour l'email)
+          // Use setTimeout to avoid potential deadlock with Supabase auth state change
+          setTimeout(async () => {
+            try {
+              await syncUserProfile(currentSession.user.id, currentSession.user.email);
+              await fetchAdminStatus(currentSession.user.id);
+            } catch (err) {
+              console.error("Error syncing user profile:", err);
+            }
+          }, 0);
+  
+          localStorage.setItem("user", JSON.stringify({ 
+            id: currentSession.user.id,
+            email: currentSession.user.email 
+          }));
+        } else if (event === 'SIGNED_OUT') {
+          try {
+            localStorage.removeItem("user");
+          } catch (e) {
+            console.warn("Could not remove user from localStorage:", e);
+          }
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+        }
+  
+        if (!isInitialized) {
+          setIsInitialized(true);
+        }
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error handling auth state change:", err);
+        setIsInitialized(true);
+        setIsLoading(false);
+      }
     });
 
     const initializeAuth = async () => {
@@ -114,10 +151,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Synchroniser le profil utilisateur lors de l'initialisation
-          await syncUserProfile(currentSession.user.id, currentSession.user.email);
-          const adminStatus = await fetchAdminStatus(currentSession.user.id);
-          setIsAdmin(adminStatus);
+          // Use setTimeout to avoid potential deadlock with Supabase auth
+          setTimeout(async () => {
+            try {
+              await syncUserProfile(currentSession.user.id, currentSession.user.email);
+              await fetchAdminStatus(currentSession.user.id);
+            } catch (err) {
+              console.error("Error during user profile sync:", err);
+            }
+          }, 0);
         }
 
         setIsInitialized(true);
@@ -131,10 +173,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    initializeAuth();
+    initializeAuth().catch(err => {
+      console.error("Failed to initialize auth:", err);
+      setIsInitialized(true);
+      setIsLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();
+      if (initTimeoutRef.current !== null) {
+        clearTimeout(initTimeoutRef.current);
+      }
     };
   }, []);
 

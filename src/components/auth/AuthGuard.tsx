@@ -9,10 +9,11 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { user, isLoading, isInitialized } = useAuth();
+  const { user, isLoading, isInitialized, error } = useAuth();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [navigationAttempted, setNavigationAttempted] = useState(false);
 
   // Set a timeout to show a more detailed loading message if auth takes too long
   useEffect(() => {
@@ -25,6 +26,20 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return () => clearTimeout(timer);
   }, [isLoading]);
 
+  // Safety timeout to prevent getting stuck
+  useEffect(() => {
+    // If we're still loading after 15 seconds, force redirect to auth page
+    const safetyTimer = setTimeout(() => {
+      if ((isLoading || !isInitialized) && !navigationAttempted) {
+        console.warn("AuthGuard safety timer triggered - forcing navigation");
+        setNavigationAttempted(true);
+        navigate("/auth");
+      }
+    }, 15000);
+
+    return () => clearTimeout(safetyTimer);
+  }, [isLoading, isInitialized, navigationAttempted, navigate]);
+
   // Handle auth state changes and navigate accordingly
   useEffect(() => {
     // FIX: Log auth state for debugging only in development
@@ -33,8 +48,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     }
     
     // Initialization is complete and user is not authenticated
-    if (isInitialized && !isLoading && !user && !isRedirecting) {
+    if (isInitialized && !isLoading && !user && !isRedirecting && !navigationAttempted) {
       setIsRedirecting(true);
+      setNavigationAttempted(true);
       
       if (process.env.NODE_ENV === 'development') {
         console.log("AuthGuard: redirecting to /auth due to no user");
@@ -47,7 +63,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       
       return () => clearTimeout(timer);
     }
-  }, [user, isLoading, isInitialized, navigate, isRedirecting]);
+  }, [user, isLoading, isInitialized, navigate, isRedirecting, navigationAttempted]);
 
   // Show loading state while checking auth - prevent render during loading
   if (isLoading || !isInitialized) {
@@ -61,9 +77,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
               : "Chargement..."}
           </p>
           {loadingTimeout && (
-            <p className="text-sm text-muted-foreground mt-2 max-w-md">
-              Si cela persiste, essayez de rafraîchir la page ou vérifiez votre connexion internet.
-            </p>
+            <div className="text-sm text-muted-foreground mt-2 max-w-md">
+              <p className="mb-2">Si cela persiste, essayez de rafraîchir la page ou vérifiez votre connexion internet.</p>
+              {error && <p className="text-red-500">Erreur: {error}</p>}
+            </div>
           )}
         </div>
       </div>

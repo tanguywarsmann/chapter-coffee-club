@@ -6,12 +6,37 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://xjumsrjuyzvsixvfwoiz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqdW1zcmp1eXp2c2l4dmZ3b2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNTU1NjYsImV4cCI6MjA2MDczMTU2Nn0.GXAF1p5iTeI3mLwwYi4rnXLsWHSUwglmdQJ7SoC3rH8";
 
+// Create a safe storage fallback to handle PWA storage errors
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn(`Failed to retrieve ${key} from localStorage:`, error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn(`Failed to set ${key} in localStorage:`, error);
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn(`Failed to remove ${key} from localStorage:`, error);
+    }
+  }
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
-
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: safeStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
