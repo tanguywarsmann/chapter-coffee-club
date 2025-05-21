@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { isMobile as checkIsMobile } from "@/utils/environment";
+import { isMobile } from "@/utils/environment";
 
 const MOBILE_BREAKPOINT = 768;
 let cachedIsMobile: boolean | undefined = undefined;
@@ -9,7 +9,7 @@ let cachedIsMobile: boolean | undefined = undefined;
 // to minimize unnecessary re-renders
 if (typeof window !== "undefined") {
   const updateMobileCache = () => {
-    cachedIsMobile = checkIsMobile();
+    cachedIsMobile = isMobile();
   };
 
   // Set initial value

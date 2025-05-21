@@ -1,3 +1,4 @@
+
 /**
  * Vérifie si l'application est en mode "preview" (Lovable)
  */
@@ -24,4 +25,13 @@ export function isInIframe(): boolean {
     // avec une origine différente
     return true;
   }
+}
+
+/**
+ * Vérifie si l'appareil est mobile en se basant sur la largeur d'écran
+ * plutôt que sur l'user-agent pour plus de fiabilité
+ */
+export function isMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 768px)").matches;
 }
