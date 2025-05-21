@@ -47,14 +47,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
       console.log("AuthGuard: user=", user?.id, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
     
-    // Initialization is complete and user is not authenticated
+    // IMPORTANT: Only redirect when initialization is complete, loading is done, and user is not authenticated
     if (isInitialized && !isLoading && !user && !isRedirecting && !navigationAttempted) {
       setIsRedirecting(true);
       setNavigationAttempted(true);
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log("AuthGuard: redirecting to /auth due to no user");
-      }
+      console.info("NO SESSION, REDIRECT from AuthGuard");
       
       // A short delay to prevent flash of content
       const timer = setTimeout(() => {

@@ -8,14 +8,16 @@ import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user, isInitialized, setError } = useAuth();
+  const { user, isInitialized, isLoading, setError } = useAuth();
   
+  // Navigation effect - only when auth state is fully determined
   useEffect(() => {
-    // Rediriger vers la page d'accueil si déjà connecté
-    if (isInitialized && user) {
+    // Rediriger vers la page d'accueil si déjà connecté ET chargement terminé
+    if (isInitialized && !isLoading && user) {
+      console.info("USER AUTHENTICATED, REDIRECT TO HOME");
       navigate("/home");
     }
-  }, [user, isInitialized, navigate]);
+  }, [user, isInitialized, isLoading, navigate]);
 
   // Afficher une notification si une erreur d'authentification est détectée depuis le contexte
   useEffect(() => {
