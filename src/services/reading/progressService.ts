@@ -10,6 +10,7 @@ type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['R
 type BookRecord = Database['public']['Tables']['books']['Row'];
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Row'];
 type ProgressRow = Database["public"]["Tables"]["reading_progress"]["Row"];
+type ReadingProgressStatus = "to_read" | "in_progress" | "completed";
 
 // Cache pour les données de progression de lecture
 const progressCache = new Map<string, { 
@@ -142,7 +143,8 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     if (!data || data.length === 0) return [];
 
     // Transformer les données jointes en format BookWithProgress
-    const enrichedProgress = data.map((item: any) => {
+    // Modifié: Utilisation de Promise.all pour gérer les promesses de addDerivedFields
+    const enrichedProgress = await Promise.all(data.map(async (item: any) => {
       const book = item.books;
       const baseProgress = {
         ...item,
@@ -155,8 +157,8 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         validations: [],
       };
       
-      return addDerivedFields(baseProgress);
-    });
+      return await addDerivedFields(baseProgress);
+    }));
 
     return enrichedProgress;
   } catch (error) {
@@ -178,6 +180,7 @@ const getUserReadingProgressLegacy = async (userId: string): Promise<ReadingProg
     if (error || !data) return [];
 
     // Récupération et enrichissement des données avec total_chapters
+    // Modifié: Utilisation de Promise.all pour gérer les promesses de addDerivedFields
     const enrichedProgress = await Promise.all(
       data.map(async (item: ReadingProgressRecord) => {
         const book = await getBookById(item.book_id);
@@ -192,8 +195,8 @@ const getUserReadingProgressLegacy = async (userId: string): Promise<ReadingProg
           validations: [],
         };
         
-        // Ajouter les champs dérivés
-        return addDerivedFields(baseProgress);
+        // Ajouter les champs dérivés - maintenant avec await
+        return await addDerivedFields(baseProgress);
       })
     );
 
@@ -252,7 +255,8 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
         book_cover: fetchedBook?.cover_url ?? "",
       };
       
-      return addDerivedFields(baseProgress);
+      // Modifié: Utilisation de await pour addDerivedFields
+      return await addDerivedFields(baseProgress);
     }
     
     // If we have the joined book data
@@ -267,7 +271,8 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
       validations: [],
     };
     
-    return addDerivedFields(baseProgress);
+    // Modifié: Utilisation de await pour addDerivedFields
+    return await addDerivedFields(baseProgress);
   } catch (error) {
     console.error("Erreur dans getBookReadingProgress:", error);
     return null;
@@ -302,8 +307,8 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
       validations: [],
     };
 
-    // Ajouter les champs dérivés
-    return addDerivedFields(baseProgress);
+    // Modifié: Utilisation de await pour addDerivedFields
+    return await addDerivedFields(baseProgress);
   } catch (error) {
     console.debug("Erreur dans getBookReadingProgressLegacy:", error);
     return null;
@@ -336,7 +341,8 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
 
     if (!data || data.length === 0) return [];
 
-    const enrichedBooks = data.map((item: any) => {
+    // Modifié: Utilisation de Promise.all pour gérer les promesses de addDerivedFields
+    const enrichedBooks = await Promise.all(data.map(async (item: any) => {
       const book = item.books;
       const baseProgress = {
         ...item,
@@ -348,8 +354,8 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
         book_cover: book?.cover_url ?? "",
       };
       
-      return addDerivedFields(baseProgress);
-    });
+      return await addDerivedFields(baseProgress);
+    }));
 
     return enrichedBooks;
   } catch (error) {
@@ -357,3 +363,4 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
     return [];
   }
 };
+
