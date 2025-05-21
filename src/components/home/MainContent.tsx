@@ -80,20 +80,22 @@ export function MainContent({
     );
   }
 
-  if (isRedirecting && searchResults && searchResults.length === 1) {
-    return (
-      <div className="animate-fade-out transition-all duration-300 ease-in-out">
-        <SearchResults 
-          searchResults={searchResults} 
-          onReset={onResetSearch}
-          redirecting={true}
-        />
-        <div className="mt-6 text-center text-coffee-dark animate-pulse">
-          <p>Redirection vers {searchResults[0].title}...</p>
-        </div>
-      </div>
-    );
-  }
+  // TEMPORARILY DISABLED redirection logic per user request
+  // Original code:
+  // if (isRedirecting && searchResults && searchResults.length === 1) {
+  //   return (
+  //     <div className="animate-fade-out transition-all duration-300 ease-in-out">
+  //       <SearchResults 
+  //         searchResults={searchResults} 
+  //         onReset={onResetSearch}
+  //         redirecting={true}
+  //       />
+  //       <div className="mt-6 text-center text-coffee-dark animate-pulse">
+  //         <p>Redirection vers {searchResults[0].title}...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (searchResults) {
     return (
