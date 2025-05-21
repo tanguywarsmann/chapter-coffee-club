@@ -217,9 +217,12 @@ export const validateReading = async (
         };
       }
       
+      // Corriger le typage ici en utilisant ReadingProgressStatus
+      const updatedStatus: ReadingProgressStatus = updatedCurrentPage >= totalPages ? 'completed' : 'in_progress';
+      
       const updateData = {
         current_page: updatedCurrentPage,
-        status: updatedCurrentPage >= totalPages ? 'completed' : 'in_progress',
+        status: updatedStatus,
         updated_at: new Date().toISOString()
       };
       
@@ -416,4 +419,3 @@ async function getSegmentsRead(progressId: string): Promise<number> {
     return 0;
   }
 }
-
