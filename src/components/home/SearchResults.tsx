@@ -13,6 +13,16 @@ interface SearchResultsProps {
 export function SearchResults({ searchResults, onReset, redirecting = false }: SearchResultsProps) {
   const navigate = useNavigate();
 
+  // Add detailed logging to identify what triggers redirects
+  console.info("[SEARCH RESULTS]", {
+    resultsCount: searchResults?.length || 0,
+    redirecting,
+    firstResult: searchResults?.[0] ? {
+      id: searchResults[0].id,
+      title: searchResults[0].title
+    } : null,
+  });
+
   if (!searchResults) return null;
 
   return (

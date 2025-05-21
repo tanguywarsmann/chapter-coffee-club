@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,19 @@ export const useHomeSearch = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Check for cached/saved searches that might trigger auto-redirect
+  useEffect(() => {
+    const savedSearchKey = 'read_app_last_search';
+    // Clear any saved search that might trigger automatic redirection
+    if (localStorage.getItem(savedSearchKey)) {
+      console.info("[HOME SEARCH] Clearing saved search to prevent auto-redirect");
+      localStorage.removeItem(savedSearchKey);
+    }
+    
+    // Clear search results on mount to prevent auto-redirections
+    setSearchResults(null);
+  }, []);
+
   const handleSearch = async (query: string) => {
     if (!query?.trim()) {
       setSearchResults(null);
@@ -19,6 +33,7 @@ export const useHomeSearch = () => {
       return;
     }
     
+    console.info("[HOME SEARCH] Performing search:", query);
     setIsSearching(true);
     setIsRedirecting(false);
     setError(null);
@@ -40,11 +55,14 @@ export const useHomeSearch = () => {
       }
       
       const books: Book[] = data ? data.map(mapBookFromRecord) : [];
+      console.info(`[HOME SEARCH] Found ${books.length} results`);
       
       // Si un seul livre est trouvé, rediriger après une courte animation
       if (books.length === 1) {
         setIsRedirecting(true);
         setSearchResults(books); // Afficher brièvement le résultat
+        
+        console.info("[HOME SEARCH] Single result found, preparing redirect to:", books[0].id);
         
         // Attendre 300ms pour l'animation avant de rediriger
         setTimeout(() => {

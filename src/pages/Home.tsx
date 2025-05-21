@@ -17,6 +17,15 @@ export default function Home() {
   // Cache render count instead of logging to optimize performance
   const renderCount = useRef(0);
   const isMobile = useIsMobile();
+  const initialRender = useRef(true);
+  
+  // Log mount for debugging
+  useEffect(() => {
+    console.info("[HOME] Component mounted, pathname:", window.location.pathname);
+    return () => {
+      console.info("[HOME] Component unmounting");
+    };
+  }, []);
   
   // Memoized state for welcome message - only show if not seen before
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -45,6 +54,24 @@ export default function Home() {
   } = useReadingProgress();
   
   const navigate = useNavigate();
+
+  // Verify if we're properly on /home and not redirected
+  useEffect(() => {
+    if (initialRender.current) {
+      initialRender.current = false;
+      console.info("[HOME] Initial render completed:", {
+        pathname: window.location.pathname,
+        hasSearchResults: !!searchResults,
+        isRedirecting
+      });
+      
+      // Clear any search results on first mount to prevent automatic redirects
+      if (searchResults) {
+        console.info("[HOME] Clearing search results on initial render to prevent auto-redirect");
+        setSearchResults(null);
+      }
+    }
+  }, [searchResults, setSearchResults, isRedirecting]);
 
   // Warm the service worker cache if available
   useEffect(() => {
