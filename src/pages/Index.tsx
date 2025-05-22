@@ -56,26 +56,10 @@ const Index = () => {
       const performNavigation = () => {
         if (user) {
           console.info("[INDEX] REDIRECTING TO HOME (user authenticated)");
-          
-          // Try React Router navigation first
-          try {
-            navigate("/home");
-          } catch (err) {
-            console.error("[INDEX] React Router navigation failed:", err);
-            // Fallback to direct location change
-            window.location.replace("/home");
-          }
+          navigate("/home", { replace: true });
         } else {
           console.info("[INDEX] REDIRECTING TO AUTH (no user)");
-          
-          // Try React Router navigation first  
-          try {
-            navigate("/auth");
-          } catch (err) {
-            console.error("[INDEX] React Router navigation failed:", err);
-            // Fallback to direct location change
-            window.location.replace("/auth");
-          }
+          navigate("/auth", { replace: true });
         }
       };
 

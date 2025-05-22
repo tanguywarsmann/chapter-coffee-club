@@ -10,15 +10,17 @@ export default defineConfig(({ mode }) => ({
   server: { host: '::', port: 8080 },
 
   plugins: [
-    // 1) VitePWA en mode generateSW
+    // PWA simplified configuration with better defaults
     VitePWA({
-      strategies: 'generateSW',
-      registerType: 'autoUpdate',
-      devOptions: { enabled: true, type: 'module' },
+      registerType: 'prompt',
+      includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
+      devOptions: { enabled: true },
 
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {
@@ -33,7 +35,7 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/your\.api\.domain\/.*$/,
+            urlPattern: /^https:\/\/xjumsrjuyzvsixvfwoiz\.supabase\.co\/.*$/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-calls',
@@ -43,25 +45,13 @@ export default defineConfig(({ mode }) => ({
         ]
       },
 
-      manifest: {
-        short_name: 'READ',
-        name: 'READ — Reprends goût à la lecture, page après page',
-        icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
-        ],
-        background_color: '#B05F2C',
-        theme_color: '#E9CBA4',
-        start_url: '/home',
-        display: 'standalone'
-      }
+      manifest: false // Use the manifest.json from the public folder
     }),
 
-    // 2) Tes autres plugins
+    // Other plugins
     react(),
     mode === 'development' && componentTagger(),
-    compression({ algorithm: 'gzip',         exclude: [/\.(br|gz)$/] }),
+    compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
     compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
   ].filter(Boolean),
 
@@ -81,12 +71,11 @@ export default defineConfig(({ mode }) => ({
       input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks: {
-          'react-vendor':    ['react','react-dom','react-router-dom'],
-          'ui-components':   ['@radix-ui/react-dialog','@radix-ui/react-popover'],
+          'react-vendor': ['react','react-dom','react-router-dom'],
+          'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover'],
           'data-management': ['@tanstack/react-query']
         }
       }
     }
   }
 }))
-

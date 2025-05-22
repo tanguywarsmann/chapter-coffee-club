@@ -15,10 +15,10 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-    <!-- Progressive Web App & Apple -->
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <!-- Progressive Web App setup -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#A75A2A" />
+    <meta name="theme-color" content="#B05F2C" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="READ" />
@@ -30,16 +30,6 @@
     <!-- Preconnect to origins -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Script to warm up cache for homepage -->
-    <script>
-      // Warm up the cache for the home page
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'WARM_CACHE'
-        });
-      }
-    </script>
-    
     <!-- Lovable script tag for new features -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
@@ -47,5 +37,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Offline fallback content -->
+    <div id="offline-message" style="display: none; text-align: center; padding: 2rem; font-family: sans-serif;">
+      <h2>READ est actuellement hors ligne</h2>
+      <p>Vérifiez votre connexion internet et réessayez.</p>
+    </div>
+    
+    <script>
+      // Simple offline detection
+      window.addEventListener('online', () => document.getElementById('offline-message').style.display = 'none');
+      window.addEventListener('offline', () => document.getElementById('offline-message').style.display = 'block');
+    </script>
   </body>
 </html>

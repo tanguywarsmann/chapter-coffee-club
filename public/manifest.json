@@ -2,10 +2,11 @@
 {
   "name": "READ — Reprends goût à la lecture, page après page",
   "short_name": "READ",
-  "start_url": "/home",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#B05F2C",
   "theme_color": "#E9CBA4",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -20,7 +21,14 @@
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
