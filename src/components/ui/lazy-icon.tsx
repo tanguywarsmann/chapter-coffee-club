@@ -1,16 +1,26 @@
-
+// src/components/ui/lazy-icon.tsx
 import { forwardRef } from "react";
-import type { Icon as LucideIcon } from "lucide-react";
+import type { LucideProps } from "lucide-react";
 
-type Props = {
-  icon: LucideIcon;
-  className?: string;
+type IconType = (props: LucideProps) => JSX.Element;
+
+interface Props extends Omit<LucideProps, "size"> {
+  icon: IconType;
   size?: string | number;
-};
+}
 
+/**
+ * Wrapper universel pour charger une icône Lucide en lazy-loading
+ * et propager correctement la ref vers le SVG.
+ */
 export const LazyIcon = forwardRef<SVGSVGElement, Props>(
-  ({ icon: Icon, className, size = 20, ...rest }, ref) => (
-    <Icon ref={ref} className={className} width={size} height={size} {...rest} />
+  ({ icon: Icon, size = 20, ...rest }, ref) => (
+    <Icon
+      ref={ref}
+      width={size}
+      height={size}
+      {...rest}
+    />
   )
 );
 
