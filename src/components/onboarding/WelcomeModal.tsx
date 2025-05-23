@@ -84,3 +84,5 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
     </Suspense>
   );
 }
+
+export default { WelcomeModal };

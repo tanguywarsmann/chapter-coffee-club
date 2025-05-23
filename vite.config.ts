@@ -1,3 +1,4 @@
+
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -64,6 +65,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     target: 'esnext',
     minify: 'terser',
+    chunkSizeWarningLimit: 1000,
     terserOptions: {
       compress: { drop_console: mode !== 'development', drop_debugger: true }
     },
@@ -73,7 +75,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'react-vendor': ['react','react-dom','react-router-dom'],
           'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover'],
-          'data-management': ['@tanstack/react-query']
+          'data-management': ['@tanstack/react-query'],
+          'supabase': ['@supabase/supabase-js']
         }
       }
     }

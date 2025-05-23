@@ -1,7 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { WelcomeModal } from "./WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { lazy, Suspense } from "react";
+
+// Lazy load the WelcomeModal
+const WelcomeModal = lazy(() => import("./WelcomeModal").then(module => ({
+  default: module.WelcomeModal
+})));
 
 export function UserOnboarding() {
   const { user, isInitialized } = useAuth();
@@ -55,12 +60,20 @@ export function UserOnboarding() {
     }
   };
 
-  // Only show onboarding UI if explicitly set to true
-  // This prevents flashing during state determination
+  // Only show onboarding UI if explicitly set to true with Suspense fallback
   return showWelcomeModal ? (
-    <WelcomeModal 
-      open={showWelcomeModal} 
-      onClose={handleClose}
-    />
+    <Suspense fallback={
+      <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+        <div className="bg-background p-4 rounded-md shadow-lg">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent border-coffee-medium mx-auto"></div>
+          <p className="mt-2 text-sm text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <WelcomeModal 
+        open={showWelcomeModal} 
+        onClose={handleClose}
+      />
+    </Suspense>
   ) : null;
 }
