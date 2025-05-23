@@ -6,6 +6,9 @@ import './index.css'
 import { BrowserRouter } from 'react-router-dom'
 import { toast } from 'sonner'
 
+// Performance measurement - start marking time
+performance.mark("read-app-start");
+
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
 
@@ -72,6 +75,22 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     toast.warning('Vous êtes actuellement hors ligne');
   });
 }
+
+// Add performance measurement completion
+window.addEventListener("load", () => {
+  performance.measure("startup", "read-app-start");
+  const m = performance.getEntriesByName("startup")[0];
+  console.info(`[PERF] Startup ${m.duration.toFixed(0)} ms`);
+
+  // Get initial JS size (approximate)
+  if (window.performance && window.performance.getEntriesByType) {
+    const resources = window.performance.getEntriesByType("resource");
+    const jsResources = resources.filter(r => r.name.endsWith('.js'));
+    const totalJsSize = jsResources.reduce((total, r) => total + (r.transferSize || 0), 0);
+    console.info(`[PERF] Initial JS bundle size: ${(totalJsSize / 1024).toFixed(1)} KB`);
+    console.info(`[PERF] Current route: ${window.location.pathname}`);
+  }
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

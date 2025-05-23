@@ -68,6 +68,10 @@ export function AppRouter() {
       if (!user && location.pathname !== "/auth" && location.pathname !== "/") {
         const target = "/auth";
         console.info("[APP ROUTER] redirect →", target, "(no authenticated user)");
+        
+        // Add performance mark for this navigation
+        performance.mark(`navigate-to-${target}`);
+        
         navigate(target, { replace: true });
         return;
       }
@@ -76,6 +80,10 @@ export function AppRouter() {
       if (user && location.pathname === "/") {
         const target = "/home";
         console.info("[APP ROUTER] redirect →", target, "(authenticated at root)");
+        
+        // Add performance mark for this navigation
+        performance.mark(`navigate-to-${target}`);
+        
         navigate(target, { replace: true });
         return;
       }
