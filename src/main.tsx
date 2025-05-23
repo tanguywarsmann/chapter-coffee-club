@@ -27,6 +27,7 @@ const isDev = process.env.NODE_ENV === 'development';
 // Register service worker (PWA support)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
+    console.info('[PWA] Registering service worker from load event handler');
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((registration) => {
         console.info('[PWA] Service Worker registered with scope:', registration.scope);
@@ -52,29 +53,27 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       .catch((error) => {
         console.error('[PWA] Service Worker registration failed:', error);
       });
-      
-    // Handle offline status
-    window.addEventListener('online', () => {
-      toast.success('Connexion internet rétablie');
-    });
-    
-    window.addEventListener('offline', () => {
-      toast.warning('Vous êtes actuellement hors ligne');
-    });
+  });
+  
+  // Handle offline status
+  window.addEventListener('online', () => {
+    toast.success('Connexion internet rétablie');
+  });
+  
+  window.addEventListener('offline', () => {
+    toast.warning('Vous êtes actuellement hors ligne');
   });
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-      {isDev && (
-        <React.Suspense fallback={null}>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </React.Suspense>
-      )}
-    </QueryClientProvider>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+    {isDev && (
+      <React.Suspense fallback={null}>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </React.Suspense>
+    )}
   </React.StrictMode>,
 );

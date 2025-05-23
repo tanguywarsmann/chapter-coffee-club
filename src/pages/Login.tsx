@@ -1,31 +1,13 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import Image from "@/components/ui/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { user, isInitialized, isLoading, error, setError } = useAuth();
+  const { error, setError } = useAuth();
   
-  // Log auth state for debugging
-  console.info("[LOGIN] Auth state:", {
-    isLoading,
-    isInitialized,
-    hasUser: !!user,
-    userId: user?.id
-  });
-  
-  // Navigation effect - only when auth state is fully determined
-  useEffect(() => {
-    if (isInitialized && !isLoading && user) {
-      console.info("[LOGIN] USER AUTHENTICATED, REDIRECT TO HOME");
-      navigate("/home");
-    }
-  }, [user, isInitialized, isLoading, navigate]);
-
   // Afficher une notification si une erreur d'authentification est détectée depuis le contexte
   useEffect(() => {
     const authError = localStorage.getItem("auth_error");
