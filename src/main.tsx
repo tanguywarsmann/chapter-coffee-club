@@ -84,10 +84,14 @@ window.addEventListener("load", () => {
 
   // Get initial JS size (approximate)
   if (window.performance && window.performance.getEntriesByType) {
-    const resources = window.performance.getEntriesByType("resource");
-    const jsResources = resources.filter(r => r.name.endsWith('.js'));
-    const totalJsSize = jsResources.reduce((total, r) => total + (r.transferSize || 0), 0);
-    console.info(`[PERF] Initial JS bundle size: ${(totalJsSize / 1024).toFixed(1)} KB`);
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+    const initialJs = resources
+      .filter(r => r.initiatorType === "script" || r.name.endsWith(".js"))
+      .reduce((sum, r) => sum + r.transferSize, 0);
+      
+    console.info(
+      `[PERF] Initial JS ≈ ${(initialJs / 1024).toFixed(1)} KB (${resources.length} files)`
+    );
     console.info(`[PERF] Current route: ${window.location.pathname}`);
   }
 });
