@@ -4,12 +4,20 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from './lib/query.ts'
 import { toast } from 'sonner'
 
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
+
+// Reset path if not on allowed routes
+const allowedStart = ["/", "/auth", "/home"];
+if (!allowedStart.includes(window.location.pathname)) {
+  console.info("[MAIN] Redirecting from invalid path:", window.location.pathname);
+  history.replaceState(null, "", "/");
+}
+
+// Clear any saved navigation state
+localStorage.removeItem("lastVisitedPath");
 
 // Log application startup for debugging
 console.info("[MAIN] Application starting - initializing React root");
