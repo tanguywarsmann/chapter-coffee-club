@@ -10,6 +10,7 @@ import { RecommendedUsers } from "./RecommendedUsers";
 import SimilarReaders from "@/components/home/SimilarReaders";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { texts } from "@/i18n/texts";
+import { Button } from "@/components/ui/button";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -61,15 +62,15 @@ export const HomeContent = memo(function HomeContent({
           </div>
         )}
         
-        {/* Simple alternative for mobile */}
+        {/* Improved mobile stats button with better contrast */}
         {isMobile && (
           <div className="text-center p-4 border border-coffee-light rounded-md">
-            <button 
-              className="text-sm text-coffee-dark hover:text-coffee-darker"
+            <Button 
+              className="bg-logo-background text-coffee-dark hover:bg-logo-background/90 rounded-xl text-sm font-medium px-6 py-3 transition-colors"
               onClick={() => window.location.href = "/profile"}
             >
               {texts.viewYourReadingStats} →
-            </button>
+            </Button>
           </div>
         )}
       </div>
