@@ -5,6 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import { AuthGuard } from "../auth/AuthGuard";
+import { PageTransition } from "@/components/ui/page-transition";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
+import { usePrefetch } from "@/hooks/usePrefetch";
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
@@ -21,12 +24,22 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Followers = lazy(() => import("@/pages/Followers"));
 
-// Simplified loading fallback for better performance
+// Fallbacks optimisés pour chaque type de page
+const HomeFallback = () => <PageSkeleton variant="home" />;
+const ListFallback = () => <PageSkeleton variant="list" />;
+const ProfileFallback = () => <PageSkeleton variant="profile" />;
+const BookFallback = () => <PageSkeleton variant="book" />;
+const GenericFallback = () => <PageSkeleton />;
+
+// Loading général amélioré
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-logo-background">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-coffee-dark mx-auto mb-4"></div>
-      <p className="text-coffee-dark">Chargement...</p>
+  <div className="min-h-screen flex items-center justify-center bg-logo-background transition-opacity duration-300">
+    <div className="text-center space-y-4">
+      <div className="relative">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
+        <div className="absolute inset-0 rounded-full h-12 w-12 border-2 border-coffee-light/30 mx-auto"></div>
+      </div>
+      <p className="text-coffee-dark font-medium">Chargement...</p>
     </div>
   </div>
 );
@@ -36,6 +49,9 @@ export function AppRouter() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isDocumentReady, setIsDocumentReady] = useState(document.readyState === "complete");
+
+  // Active le prefetch intelligent
+  usePrefetch();
 
   // Log AppRouter state for debugging
   console.info("[APP ROUTER] State:", {
@@ -107,115 +123,103 @@ export function AppRouter() {
 
   // Show loading until all conditions are met
   if (isLoading || !isInitialized || !isDocumentReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
-          <p className="text-muted-foreground">
-            Initialisation de l'application...
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {!isInitialized ? "Chargement de l'authentification..." : 
-             !isDocumentReady ? "Chargement des ressources..." : 
-             "Vérification de la session..."}
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
-  // Render routes when ready
+  // Render routes when ready avec transitions
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/auth" element={<Auth />} />
-      
-      {/* Protected routes - require AuthGuard */}
-      <Route path="/home" element={
-        <AuthGuard>
-          <Home />
-        </AuthGuard>
-      } />
-      
-      {/* Routes with lazy loading */}
-      <Route path="/books/:id" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <BookPage />
+    <PageTransition key={location.pathname}>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/auth" element={<Auth />} />
+        
+        {/* Protected routes - require AuthGuard */}
+        <Route path="/home" element={
+          <AuthGuard>
+            <Home />
+          </AuthGuard>
+        } />
+        
+        {/* Routes with lazy loading */}
+        <Route path="/books/:id" element={
+          <AuthGuard>
+            <Suspense fallback={<BookFallback />}>
+              <BookPage />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/profile/:userId?" element={
+          <AuthGuard>
+            <Suspense fallback={<ProfileFallback />}>
+              <Profile />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/u/:userId" element={
+          <AuthGuard>
+            <Suspense fallback={<ProfileFallback />}>
+              <PublicProfilePage />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/discover" element={
+          <AuthGuard>
+            <Suspense fallback={<ListFallback />}>
+              <Discover />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/reading-list" element={
+          <AuthGuard>
+            <Suspense fallback={<ListFallback />}>
+              <ReadingList />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/explore" element={
+          <AuthGuard>
+            <Suspense fallback={<ListFallback />}>
+              <Explore />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/achievements" element={
+          <AuthGuard>
+            <Suspense fallback={<GenericFallback />}>
+              <Achievements />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/followers/:type/:userId?" element={
+          <AuthGuard>
+            <Suspense fallback={<ListFallback />}>
+              <Followers />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="/admin" element={
+          <AuthGuard>
+            <Suspense fallback={<GenericFallback />}>
+              <Admin />
+            </Suspense>
+          </AuthGuard>
+        } />
+        
+        <Route path="*" element={
+          <Suspense fallback={<GenericFallback />}>
+            <NotFound />
           </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/profile/:userId?" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Profile />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/u/:userId" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <PublicProfilePage />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/discover" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Discover />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/reading-list" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <ReadingList />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/explore" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Explore />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/achievements" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Achievements />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/followers/:type/:userId?" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Followers />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/admin" element={
-        <AuthGuard>
-          <Suspense fallback={<LoadingFallback />}>
-            <Admin />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="*" element={
-        <Suspense fallback={<LoadingFallback />}>
-          <NotFound />
-        </Suspense>
-      } />
-    </Routes>
+        } />
+      </Routes>
+    </PageTransition>
   );
 }
 

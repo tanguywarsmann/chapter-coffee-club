@@ -144,7 +144,9 @@ export default function Home() {
             />
           </div>
 
-          <MainContent {...mainContentProps} />
+          <div className="animate-fade-in transition-all duration-300">
+            <MainContent {...mainContentProps} />
+          </div>
         </main>
       </div>
     </AuthGuard>
