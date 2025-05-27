@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Book, BookOpen } from "lucide-react";
 import { Book as BookType } from "@/types/book";
 import { toast } from "sonner";
+import { texts } from "@/i18n/texts";
 
 interface CurrentReadingCardProps {
   book: BookType;
@@ -77,11 +78,11 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
               onClick={handleContinueReading}
             >
               <BookOpen className="h-4 w-4" />
-              Continuer ma lecture
+              {texts.continueReading}
             </Button>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground italic">
-              Aucune lecture en cours
+              {texts.noCurrentReading}
             </p>
           )}
         </div>

@@ -13,6 +13,7 @@ import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
+import { texts } from "@/i18n/texts";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -22,12 +23,12 @@ export default function Admin() {
     try {
       await generateCsvExport();
       toast({
-        title: "Export successful: Missing segments CSV has been downloaded",
+        title: "Export réussi : le fichier CSV des segments manquants a été téléchargé",
       });
     } catch (error) {
-      console.error("Error during CSV export:", error);
+      console.error("Erreur lors de l'export CSV:", error);
       toast({
-        title: "Export error: Unable to generate CSV file",
+        title: "Erreur d'export : impossible de générer le fichier CSV",
         variant: "destructive",
       });
     }
@@ -40,14 +41,14 @@ export default function Admin() {
           <AppHeader />
           <main className="container py-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h1 className="text-3xl font-serif font-medium text-coffee-darker">Administration</h1>
+              <h1 className="text-3xl font-serif font-medium text-coffee-darker">{texts.admin}</h1>
               
               {/* Simplified buttons on mobile */}
               {!isMobile && (
                 <div className="flex gap-3">
                   <Button onClick={handleExportCsv} variant="outline" className="gap-2">
                     <FileText className="h-4 w-4" />
-                    Export missing segments
+                    Exporter les segments manquants
                   </Button>
                   <ExportSQLButtonFinal />
                 </div>
@@ -57,7 +58,7 @@ export default function Admin() {
               {isMobile && (
                 <div className="flex">
                   <Button onClick={handleExportCsv} variant="outline" size="sm" className="w-full">
-                    Export CSV
+                    Exporter CSV
                   </Button>
                 </div>
               )}
@@ -68,9 +69,9 @@ export default function Admin() {
 
             <Card className="border-coffee-light">
               <CardHeader className="pb-3">
-                <CardTitle>Admin Dashboard</CardTitle>
+                <CardTitle>{texts.adminDashboard}</CardTitle>
                 <CardDescription>
-                  Manage books and check validation questions status
+                  Gérer les livres et vérifier le statut des questions de validation
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -78,11 +79,11 @@ export default function Admin() {
                   <TabsList className="mb-6">
                     <TabsTrigger value="books" className="flex items-center">
                       <span className="w-4 h-4 mr-2">📚</span>
-                      Book Validation
+                      {texts.bookValidation}
                     </TabsTrigger>
                     <TabsTrigger value="settings" className="flex items-center">
                       <span className="w-4 h-4 mr-2">⚙️</span>
-                      Settings
+                      {texts.settings}
                     </TabsTrigger>
                   </TabsList>
 
@@ -94,10 +95,10 @@ export default function Admin() {
                     <div className="p-8 text-center border border-dashed rounded-lg">
                       <AlertTriangle className="w-12 h-12 mx-auto text-amber-500 mb-4" />
                       <h3 className="text-lg font-medium text-coffee-darker mb-2">
-                        Section under development
+                        {texts.sectionUnderDevelopment}
                       </h3>
                       <p className="text-muted-foreground">
-                        Admin settings will be available soon
+                        {texts.adminSettingsAvailableSoon}
                       </p>
                     </div>
                   </TabsContent>

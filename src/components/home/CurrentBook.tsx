@@ -12,6 +12,7 @@ import { CurrentBookCover } from "./CurrentBookCover";
 import { CurrentBookInfo } from "./CurrentBookInfo";
 import { useCurrentBookValidation } from "@/hooks/useCurrentBookValidation";
 import { calculateReadingProgress } from "@/lib/progress";
+import { texts } from "@/i18n/texts";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -34,17 +35,17 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-serif text-coffee-darker">Ma lecture en cours</CardTitle>
+          <CardTitle className="text-lg font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
         </CardHeader>
         <CardContent className="text-center p-6">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-coffee-darker mb-2">Aucune lecture en cours</h3>
-          <p className="text-muted-foreground mb-4">Commencez votre prochaine aventure de lecture</p>
+          <h3 className="text-lg font-medium text-coffee-darker mb-2">{texts.noCurrentReading}</h3>
+          <p className="text-muted-foreground mb-4">{texts.startYourNextAdventure}</p>
           <Button 
             className="bg-coffee-dark hover:bg-coffee-darker"
             onClick={() => navigate("/explore")}
           >
-            Explorer les livres
+            {texts.exploreBooks}
           </Button>
         </CardContent>
       </Card>
@@ -77,7 +78,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     <>
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-serif text-coffee-darker">Ma lecture en cours</CardTitle>
+          <CardTitle className="text-lg font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">

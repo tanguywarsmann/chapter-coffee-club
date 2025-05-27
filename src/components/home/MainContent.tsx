@@ -6,6 +6,7 @@ import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
+import { texts } from "@/i18n/texts";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -74,7 +75,7 @@ export function MainContent({
           <div className="animate-pulse flex justify-center">
             <Search className="h-8 w-8 text-coffee-dark" />
           </div>
-          <p className="text-coffee-dark">Recherche en cours...</p>
+          <p className="text-coffee-dark">{texts.searching}</p>
         </div>
       </div>
     );

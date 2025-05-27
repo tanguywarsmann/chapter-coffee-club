@@ -12,6 +12,7 @@ import { useHomeSearch } from "@/hooks/useHomeSearch";
 import { useCurrentReading } from "@/hooks/useCurrentReading";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { texts } from "@/i18n/texts";
 
 export default function Home() {
   // Cache render count instead of logging to optimize performance
@@ -86,7 +87,7 @@ export default function Home() {
   const handleContinueReading = useCallback(() => {
     if (currentReading) {
       if (currentReading.isUnavailable) {
-        toast.error("This book is currently unavailable", {
+        toast.error("Ce livre est actuellement indisponible", {
           id: "book-unavailable" // Avoid duplicate toasts
         });
         return;
@@ -136,7 +137,7 @@ export default function Home() {
         
         <main className={`container ${isMobile ? 'py-2' : 'py-4 sm:py-6'} space-y-4 sm:space-y-8 animate-fade-in focus:outline-none`} tabIndex={-1}>
           <div className="max-w-2xl mx-auto px-2 sm:px-0">
-            <h1 className="sr-only">Home - READ</h1>
+            <h1 className="sr-only">{texts.home} - READ</h1>
             <SearchBar 
               onSearch={handleSearch}
               isSearching={isSearching} 

@@ -9,6 +9,7 @@ import { FollowerStats } from "./FollowerStats";
 import { RecommendedUsers } from "./RecommendedUsers";
 import SimilarReaders from "@/components/home/SimilarReaders";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { texts } from "@/i18n/texts";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -37,7 +38,7 @@ export const HomeContent = memo(function HomeContent({
   }, [isMobile]);
 
   if (!readingProgress || !Array.isArray(readingProgress)) {
-    return <div>Loading reading data...</div>;
+    return <div>{texts.loading}...</div>;
   }
 
   return (
@@ -67,7 +68,7 @@ export const HomeContent = memo(function HomeContent({
               className="text-sm text-coffee-dark hover:text-coffee-darker"
               onClick={() => window.location.href = "/profile"}
             >
-              View your reading stats →
+              {texts.viewYourReadingStats} →
             </button>
           </div>
         )}

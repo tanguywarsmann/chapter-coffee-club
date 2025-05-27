@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight } from "lucide-react";
 import { calculateReadingProgress } from "@/lib/progress";
+import { texts } from "@/i18n/texts";
 
 interface CurrentBookInfoProps {
   book: Book;
@@ -53,9 +54,9 @@ export const CurrentBookInfo = ({
       
       <div className="mt-3 space-y-1">
         <div className="flex justify-between text-sm">
-          <span className="text-coffee-darker">Progression</span>
+          <span className="text-coffee-darker">{texts.progression}</span>
           <span className="text-muted-foreground">
-            {chaptersRead} chapitres sur {chaptersTotal}
+            {chaptersRead} {texts.chaptersRead} sur {chaptersTotal}
           </span>
         </div>
         <Progress value={progressPercentage} className="h-2" />
@@ -70,7 +71,7 @@ export const CurrentBookInfo = ({
           <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
         ) : (
           <>
-            <span className="text-center">Valider 30 pages</span>
+            <span className="text-center">{texts.validateSegment}</span>
             <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0" />
           </>
         )}
