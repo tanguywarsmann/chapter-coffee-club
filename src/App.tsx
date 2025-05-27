@@ -1,11 +1,21 @@
 
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
+
+// Lazy load toast components for better code splitting
+const Toaster = lazy(() => 
+  import("@/components/ui/toaster").then(mod => ({
+    default: mod.Toaster
+  }))
+);
+const Sonner = lazy(() => 
+  import("@/components/ui/sonner").then(mod => ({
+    default: mod.Toaster
+  }))
+);
 
 // Lazy load non-critical components
 const UserOnboarding = lazy(() => 
@@ -26,8 +36,13 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
+          {/* Lazy loaded toast components */}
+          <Suspense fallback={null}>
+            <Toaster />
+          </Suspense>
+          <Suspense fallback={null}>
+            <Sonner />
+          </Suspense>
           
           {/* Lazy loaded components with fallbacks */}
           <Suspense fallback={null}>

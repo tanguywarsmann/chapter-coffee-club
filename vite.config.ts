@@ -1,4 +1,3 @@
-
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -73,10 +72,12 @@ export default defineConfig(({ mode }) => ({
       input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks: {
+          supabase: ["@supabase/supabase-js"],
+          query: ["@tanstack/react-query"],
+          lucide: ["lucide-react"],
+          charts: ["recharts"],
           'react-vendor': ['react','react-dom','react-router-dom'],
-          'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover'],
-          'data-management': ['@tanstack/react-query'],
-          'supabase': ['@supabase/supabase-js']
+          'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover']
         }
       }
     }

@@ -1,9 +1,4 @@
 
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { BrowserRouter } from 'react-router-dom'
 import { toast } from 'sonner'
 
 // Performance measurement - start marking time
@@ -23,17 +18,7 @@ if (!allowedStart.includes(window.location.pathname)) {
 localStorage.removeItem("lastVisitedPath");
 
 // Log application startup for debugging
-console.info("[MAIN] Application starting - initializing React root");
-
-// Only load React Query Devtools in development mode and only when needed
-const ReactQueryDevtools = React.lazy(() => 
-  process.env.NODE_ENV === 'development' 
-    ? import('@tanstack/react-query-devtools').then(module => ({ default: module.ReactQueryDevtools }))
-    : Promise.resolve({ default: () => null })
-);
-
-// Set development flag
-const isDev = process.env.NODE_ENV === 'development';
+console.info("[MAIN] Application starting - deferring React load");
 
 // Register service worker (PWA support)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -96,15 +81,5 @@ window.addEventListener("load", () => {
   }
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-    {isDev && (
-      <React.Suspense fallback={null}>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </React.Suspense>
-    )}
-  </React.StrictMode>,
-);
+// Defer React app loading
+import("@/bootstrap");
