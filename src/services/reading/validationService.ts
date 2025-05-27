@@ -105,16 +105,17 @@ export const validateReading = async (
     console.log('📚 [validateReading] Infos du livre récupérées:', bookData);
     const totalPages = bookData.total_pages || 0;
     
-    // CORRECTION: Limitation de current_page à total_pages maximum
+    // CORRECTION: Calcul avec bornes strictes selon les exigences
     const calculatedPage = (request.segment + 1) * 8000;
     const newCurrentPage = Math.min(calculatedPage, totalPages);
+    const updatedCurrentPage = Math.max(newCurrentPage, currentProgress?.current_page || 0);
+    const clampedPage = Math.min(updatedCurrentPage, totalPages);
     
-    // Déterminer si le livre sera complété après cette validation
-    const newStatus: ReadingProgressStatus = newCurrentPage >= totalPages ? 'completed' : 'in_progress';
+    // Déterminer le statut selon la page finale
+    const newStatus: ReadingProgressStatus = clampedPage >= totalPages ? 'completed' : 'in_progress';
     
     // Log explicite du calcul final
-    console.log(`📏 [validateReading] Calcul final: current_page = ${newCurrentPage}, total_pages = ${totalPages}, statut = ${newStatus}`);
-    console.log(`📘 [validateReading] Status calculé: ${newStatus} (calculatedPage: ${calculatedPage}, limité à totalPages: ${totalPages})`);
+    console.info(`[VALIDATION] current_page = ${clampedPage}, total_pages = ${totalPages}, status = ${newStatus}`);
     
     // Si pas de progression existante, en créer une nouvelle
     if (!progressId) {
@@ -143,7 +144,7 @@ export const validateReading = async (
         const newProgressData: ReadingProgressRecord = {
           user_id: request.user_id,
           book_id: request.book_id,
-          current_page: newCurrentPage,
+          current_page: clampedPage,
           total_pages: totalPages,
           status: newStatus,
           started_at: new Date().toISOString(),
@@ -154,7 +155,7 @@ export const validateReading = async (
         const { data: newProgress, error: insertError } = await supabase
           .from('reading_progress')
           .insert(newProgressData)
-          .select('id, current_page, status') // Important: Sélectionner les champs nécessaires après insertion
+          .select('id, current_page, status')
           .maybeSingle();
         
         if (insertError) {
@@ -197,15 +198,6 @@ export const validateReading = async (
         }
       }
     } else if (currentProgress) {
-      // Mettre à jour la progression existante si nécessaire
-      // Ne mettre à jour current_page que si la nouvelle valeur est supérieure, MAIS toujours limitée à total_pages
-      const updatedCurrentPage = Math.min(
-        Math.max(newCurrentPage, currentProgress.current_page || 0),
-        totalPages
-      );
-      
-      console.log(`📏 [validateReading] Mise à jour progress: current_page calculée = ${updatedCurrentPage} (max entre ${newCurrentPage} et ${currentProgress.current_page || 0}, limité à ${totalPages})`);
-      
       // Vérifier si le segment est déjà validé
       if (request.segment <= (await getSegmentsRead(currentProgress.id))) {
         console.log('📝 [validateReading] Segment déjà validé:', request.segment);
@@ -217,12 +209,10 @@ export const validateReading = async (
         };
       }
       
-      // Corriger le typage ici en utilisant ReadingProgressStatus
-      const updatedStatus: ReadingProgressStatus = updatedCurrentPage >= totalPages ? 'completed' : 'in_progress';
-      
+      // Mettre à jour la progression existante avec les nouvelles bornes
       const updateData = {
-        current_page: updatedCurrentPage,
-        status: updatedStatus,
+        current_page: clampedPage,
+        status: newStatus,
         updated_at: new Date().toISOString()
       };
       
@@ -250,7 +240,6 @@ export const validateReading = async (
       }
       
       console.log('✅ [validateReading] reading_progress mis à jour avec succès:', updatedProgress);
-      // Réassigner progressId et currentProgress en utilisant les données mises à jour
       progressId = updatedProgress.id;
       currentProgress = updatedProgress;
     }
@@ -294,7 +283,7 @@ export const validateReading = async (
       correct: true,
       validated_at: new Date().toISOString(),
       answer: question?.answer ?? undefined,
-      progress_id: progressId // Utilisation correcte du progress_id
+      progress_id: progressId
     };
 
     console.log("📝 [validateReading] Insertion reading_validations avec données:", validationRecord);
@@ -326,7 +315,6 @@ export const validateReading = async (
 
     // Mutation SWR - force refresh des données pour SWR
     mutate((key) => typeof key === 'string' && key.includes(`reading-progress-${request.user_id}`), undefined, true);
-    // Mutation alternative si la première ne fonctionne pas
     mutate(() => getBookReadingProgress(request.user_id, request.book_id));
     
     console.log("✅ [validateReading] SWR cache mutation triggered");
@@ -379,7 +367,7 @@ export const validateReading = async (
     console.log("🏁 [validateReading] Processus de validation terminé avec succès");
     return {
       message: "Segment validé avec succès",
-      current_page: newCurrentPage,
+      current_page: clampedPage,
       already_validated: false,
       next_segment_question: nextQuestion?.question ?? null,
       newBadges: newBadges.length > 0 ? newBadges : undefined
