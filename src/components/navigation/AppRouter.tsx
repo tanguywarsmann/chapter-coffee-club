@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import { AuthGuard } from "../auth/AuthGuard";
 import { PageTransition } from "@/components/ui/page-transition";
@@ -24,14 +23,12 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Followers = lazy(() => import("@/pages/Followers"));
 
-// Fallbacks optimisés pour chaque type de page
 const HomeFallback = () => <PageSkeleton variant="home" />;
 const ListFallback = () => <PageSkeleton variant="list" />;
 const ProfileFallback = () => <PageSkeleton variant="profile" />;
 const BookFallback = () => <PageSkeleton variant="book" />;
 const GenericFallback = () => <PageSkeleton />;
 
-// Loading général amélioré
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-logo-background transition-opacity duration-300">
     <div className="text-center space-y-4">
@@ -53,22 +50,10 @@ export function AppRouter() {
   // Active le prefetch intelligent
   usePrefetch();
 
-  // Log AppRouter state for debugging
-  console.info("[APP ROUTER] State:", {
-    currentPath: location.pathname,
-    isLoading,
-    isInitialized,
-    hasUser: !!user,
-    userId: user?.id,
-    isDocumentReady,
-    readyState: document.readyState
-  });
-
   // Check for document ready state
   useEffect(() => {
     if (document.readyState !== "complete") {
       const handleDocumentReady = () => {
-        console.info("[APP ROUTER] Document fully loaded");
         setIsDocumentReady(true);
       };
       window.addEventListener("load", handleDocumentReady);
@@ -78,11 +63,9 @@ export function AppRouter() {
 
   // Central navigation logic
   useEffect(() => {
-    // Only perform navigation when all conditions are met
     if (!isLoading && isInitialized && isDocumentReady) {
       const allowed = ["/", "/home", "/auth", "/discover", "/explore", "/reading-list"];
       
-      // Check if current path is allowed
       const isAllowedPath = allowed.some(path => 
         location.pathname === path || 
         location.pathname.startsWith(path + "/") ||
@@ -96,51 +79,40 @@ export function AppRouter() {
       
       if (!isAllowedPath) {
         const target = "/";
-        console.info("[ROUTER] redirect →", target, "(path not in whitelist)");
         navigate(target, { replace: true });
         return;
       }
       
-      console.info("[ROUTER] accept", location.pathname);
-      
-      // Navigate to auth if no user and not on auth/root
       if (!user && location.pathname !== "/auth" && location.pathname !== "/") {
         const target = "/auth";
-        console.info("[ROUTER] redirect →", target, "(no authenticated user)");
         navigate(target, { replace: true });
         return;
       }
       
-      // Navigate to home if user is at root
       if (user && location.pathname === "/") {
         const target = "/home";
-        console.info("[ROUTER] redirect →", target, "(authenticated at root)");
         navigate(target, { replace: true });
         return;
       }
     }
   }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
 
-  // Show loading until all conditions are met
   if (isLoading || !isInitialized || !isDocumentReady) {
     return <LoadingFallback />;
   }
 
-  // Render routes when ready avec transitions
   return (
     <PageTransition key={location.pathname}>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/auth" element={<Auth />} />
         
-        {/* Protected routes - require AuthGuard */}
         <Route path="/home" element={
           <AuthGuard>
             <Home />
           </AuthGuard>
         } />
         
-        {/* Routes with lazy loading */}
         <Route path="/books/:id" element={
           <AuthGuard>
             <Suspense fallback={<BookFallback />}>

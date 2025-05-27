@@ -6,12 +6,10 @@ declare const self: ServiceWorkerGlobalScope;
 // Gère l'installation, l'activation et les requêtes offline
 
 self.addEventListener("install", () => {
-  console.info("[SW] Installed – skipWaiting triggered");
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  console.info("[SW] Activated – clientsClaim triggered");
   self.clients.claim();
 });
 
@@ -54,6 +52,3 @@ self.addEventListener('message', (event) => {
     });
   }
 });
-
-// Log pour confirmer que le SW personnalisé est chargé
-console.info("[SW] Custom service worker with offline support loaded");

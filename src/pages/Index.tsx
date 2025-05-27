@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const [redirectTimeout, setRedirectTimeout] = useState(false);
 
-  // Display a message if loading takes too long
   useEffect(() => {
     const timer = setTimeout(() => {
       setRedirectTimeout(true);

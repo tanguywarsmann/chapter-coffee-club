@@ -1,25 +1,12 @@
 
 import { Book } from "@/types/book";
-import { isInIframe, isPreview } from "@/utils/environment";
-
-console.log("Chargement de CurrentBookCover.tsx", {
-  isPreview: isPreview(),
-  isInIframe: isInIframe(),
-});
 
 interface CurrentBookCoverProps {
   book: Book;
 }
 
 export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
-  console.log("Rendering CurrentBookCover", {
-    bookId: book?.id || "undefined",
-    bookTitle: book?.title || "undefined"
-  });
-
-  // Vérification de la présence du livre
   if (!book) {
-    console.warn("Le livre est undefined dans CurrentBookCover");
     return null;
   }
 

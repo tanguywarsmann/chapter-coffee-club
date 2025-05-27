@@ -1,4 +1,3 @@
-console.log("Import de BookCard.tsx OK");
 
 import React, { useState, useEffect } from "react";
 import { Book } from "@/types/book";
@@ -9,12 +8,6 @@ import { useReadingList } from "@/hooks/useReadingList";
 import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
 import { BookOpen, BookMarked, CheckCircle } from "lucide-react";
-import { isInIframe, isPreview } from "@/utils/environment";
-
-console.log("Chargement de BookCard.tsx", {
-  isPreview: isPreview(),
-  isInIframe: isInIframe(),
-});
 
 interface BookCardProps {
   book: Book;
@@ -35,67 +28,50 @@ export function BookCard({
   actionLabel,
   onAction,
 }: BookCardProps) {
-  console.log("Rendering BookCard", { 
-    bookId: book?.id || "undefined", 
-    bookTitle: book?.title || "undefined" 
-  });
+  const [isAdding, setIsAdding] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { addToReadingList } = useReadingList();
 
   // Vérification importante : si livre undefined, retourner null
   if (!book) {
-    console.warn("⚠️ BookCard: le livre est undefined");
     return null;
   }
   
   // S'assurer qu'on a un identifiant valide pour la navigation
   const bookIdentifier = book.id || book.slug || '';
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { addToReadingList } = useReadingList();
-
   // Get the user ID from Supabase auth session
   useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      
-      const getUser = async () => {
-        try {
-          const { supabase } = await import("@/integrations/supabase/client");
-          const { data } = await supabase.auth.getUser();
-          
-          if (data?.user?.id) {
-            console.log("[DIAGNOSTIQUE] Utilisateur authentifié dans BookCard:", data.user.id);
-            setUserId(data.user.id);
-          } else {
-            console.warn("No authenticated user found in BookCard");
-          }
-        } catch (error) {
-          console.error("Error getting authenticated user:", error);
+    const getUser = async () => {
+      try {
+        if (typeof window === "undefined") return;
+        
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase.auth.getUser();
+        
+        if (data?.user?.id) {
+          setUserId(data.user.id);
         }
-      };
+      } catch (error) {
+        console.error("Error getting authenticated user:", error);
+      }
+    };
 
-      getUser();
-    } catch (e) {
-      console.error("Erreur dans useEffect BookCard:", e);
-    }
+    getUser();
   }, []);
 
-  // Handle keyboard navigation
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      // The Link component will handle the navigation
     }
   };
 
-  // Utility to truncate the book title
   const truncateTitle = (title: string, maxLength: number = 50) => {
     if (!title) return "Titre inconnu";
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + "...";
   };
 
-  // Handle removal from reading list
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -106,7 +82,6 @@ export function BookCard({
     }
 
     try {
-      // Remove the book
       if (typeof window !== "undefined") {
         const storedList = localStorage.getItem("reading_list");
         const readingList = storedList ? JSON.parse(storedList) : [];
@@ -122,7 +97,6 @@ export function BookCard({
     }
   };
 
-  // Handle adding to reading list
   const handleAddToReadingList = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -133,12 +107,10 @@ export function BookCard({
     }
 
     try {
-      console.log("[DIAGNOSTIQUE] Début du processus d'ajout pour le livre:", book.title);
       setIsAdding(true);
       await addToReadingList(book);
-      console.log("[DIAGNOSTIQUE] Fin du processus d'ajout");
     } catch (error) {
-      console.error("[DIAGNOSTIQUE] Erreur dans handleAddToReadingList:", error);
+      console.error("Erreur dans handleAddToReadingList:", error);
       toast.error(
         "Une erreur est survenue: " +
           (error instanceof Error ? error.message : String(error))
@@ -148,7 +120,6 @@ export function BookCard({
     }
   };
 
-  // Handle the custom action
   const handleAction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -161,7 +132,6 @@ export function BookCard({
     onAction?.();
   };
   
-  // Determine book status icon
   const getBookStatusIcon = () => {
     if (book.isCompleted) {
       return <CheckCircle className="h-5 w-5 text-green-600 absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-0.5" aria-hidden="true" />;
@@ -172,7 +142,6 @@ export function BookCard({
     }
   };
 
-  // Get the appropriate status label for screen readers
   const getStatusLabel = () => {
     if (book.isCompleted) {
       return "Terminé";

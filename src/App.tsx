@@ -29,14 +29,11 @@ const AppRouter = lazy(() =>
   }))
 );
 
-console.info("[APP] Rendering App component - Router initialized");
-
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          {/* Lazy loaded toast components */}
           <Suspense fallback={null}>
             <Toaster />
           </Suspense>
@@ -44,7 +41,6 @@ const App = () => {
             <Sonner />
           </Suspense>
           
-          {/* Lazy loaded components with fallbacks */}
           <Suspense fallback={null}>
             <UserOnboarding />
           </Suspense>

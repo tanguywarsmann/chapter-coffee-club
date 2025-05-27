@@ -30,7 +30,6 @@ export function AppHeader() {
       }
       
       localStorage.removeItem("user");
-      
       toast.success("Déconnexion réussie");
       
       setTimeout(() => {
@@ -47,7 +46,6 @@ export function AppHeader() {
     navigate(path);
   };
 
-  // Handle keyboard navigation for menu items
   const handleKeyPress = (event: React.KeyboardEvent, action: () => void) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -80,7 +78,6 @@ export function AppHeader() {
         className="w-72 overflow-y-auto focus-visible:outline-none"
         id="mobile-menu"
         onOpenAutoFocus={(e) => {
-          // Focus the first navigation item instead of the close button
           e.preventDefault();
           const currentTarget = e.currentTarget as HTMLElement;
           const firstNavItem = currentTarget.querySelector('[role="button"]');
