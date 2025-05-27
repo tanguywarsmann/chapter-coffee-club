@@ -64,14 +64,33 @@ export function AppRouter() {
   useEffect(() => {
     // Only perform navigation when all conditions are met
     if (!isLoading && isInitialized && isDocumentReady) {
-      // Navigate to auth if no user
+      const allowed = ["/", "/home", "/auth", "/discover", "/explore", "/reading-list"];
+      
+      // Check if current path is allowed
+      const isAllowedPath = allowed.some(path => 
+        location.pathname === path || 
+        location.pathname.startsWith(path + "/") ||
+        location.pathname.startsWith("/books/") ||
+        location.pathname.startsWith("/profile/") ||
+        location.pathname.startsWith("/u/") ||
+        location.pathname.startsWith("/followers/") ||
+        location.pathname.startsWith("/achievements") ||
+        location.pathname.startsWith("/admin")
+      );
+      
+      if (!isAllowedPath) {
+        const target = "/";
+        console.info("[ROUTER] redirect →", target, "(path not in whitelist)");
+        navigate(target, { replace: true });
+        return;
+      }
+      
+      console.info("[ROUTER] accept", location.pathname);
+      
+      // Navigate to auth if no user and not on auth/root
       if (!user && location.pathname !== "/auth" && location.pathname !== "/") {
         const target = "/auth";
-        console.info("[APP ROUTER] redirect →", target, "(no authenticated user)");
-        
-        // Add performance mark for this navigation
-        performance.mark(`navigate-to-${target}`);
-        
+        console.info("[ROUTER] redirect →", target, "(no authenticated user)");
         navigate(target, { replace: true });
         return;
       }
@@ -79,11 +98,7 @@ export function AppRouter() {
       // Navigate to home if user is at root
       if (user && location.pathname === "/") {
         const target = "/home";
-        console.info("[APP ROUTER] redirect →", target, "(authenticated at root)");
-        
-        // Add performance mark for this navigation
-        performance.mark(`navigate-to-${target}`);
-        
+        console.info("[ROUTER] redirect →", target, "(authenticated at root)");
         navigate(target, { replace: true });
         return;
       }
