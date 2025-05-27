@@ -8,6 +8,8 @@ export const texts = {
   admin: "Administration",
   profile: "Profil",
   settings: "Paramètres",
+  menu: "Menu",
+  viewAll: "Voir tout",
   
   // Page d'accueil
   currentReadings: "Lectures en cours",
