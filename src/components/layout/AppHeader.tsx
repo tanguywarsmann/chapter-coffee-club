@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,8 @@ export function AppHeader() {
         onOpenAutoFocus={(e) => {
           // Focus the first navigation item instead of the close button
           e.preventDefault();
-          const firstNavItem = e.currentTarget.querySelector('[role="button"]');
+          const currentTarget = e.currentTarget as HTMLElement;
+          const firstNavItem = currentTarget.querySelector('[role="button"]');
           if (firstNavItem) {
             (firstNavItem as HTMLElement).focus();
           }
