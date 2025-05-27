@@ -61,12 +61,11 @@ export const HomeContent = memo(function HomeContent({
           </div>
         )}
         
-        {/* Mobile stats button with guaranteed visible contrast */}
+        {/* Mobile stats button harmonized with "Continue reading" button style */}
         {isMobile && (
-          <div className="text-center p-4 bg-white/80 border border-amber-200 rounded-lg shadow-sm">
+          <div className="text-center p-4">
             <Button 
-              variant="default"
-              className="w-full bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 rounded-xl text-sm font-medium px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="w-full bg-coffee-dark text-white hover:bg-coffee-darker rounded-xl text-base font-semibold px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
               onClick={() => window.location.href = "/profile"}
             >
               {texts.viewYourReadingStats} →
