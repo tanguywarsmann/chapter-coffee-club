@@ -1,4 +1,7 @@
 
+/// <reference lib="webworker" />
+declare const self: ServiceWorkerGlobalScope;
+
 // Service Worker personnalisé pour READ
 // Gère l'installation et l'activation avec skipWaiting et clientsClaim
 
