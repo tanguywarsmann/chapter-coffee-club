@@ -6,6 +6,7 @@ import { Book, BookOpen } from "lucide-react";
 import { Book as BookType } from "@/types/book";
 import { toast } from "sonner";
 import { texts } from "@/i18n/texts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CurrentReadingCardProps {
   book: BookType;
@@ -14,6 +15,8 @@ interface CurrentReadingCardProps {
 }
 
 export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
+  const isMobile = useIsMobile();
+  
   console.log("Rendering CurrentReadingCard", { 
     bookId: book?.id || 'book undefined',
     bookTitle: book?.title || 'title undefined', 
@@ -47,41 +50,47 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   };
 
   return (
-    <Card className="border-coffee-light shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="flex gap-4 p-4">
-        <div className="book-cover w-20 h-30 flex-shrink-0">
+    <Card className="border-coffee-light shadow-sm hover:shadow-md transition-shadow mobile-optimized">
+      <CardContent className={`flex gap-4 ${isMobile ? 'p-4' : 'p-4'}`}>
+        <div className={`book-cover ${isMobile ? 'w-20 h-28' : 'w-20 h-30'} flex-shrink-0`}>
           {book.coverImage ? (
             <img 
               src={book.coverImage} 
               alt={book.title} 
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-cover rounded" 
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-              <Book className="h-8 w-8 text-white" />
+            <div className="w-full h-full flex items-center justify-center bg-chocolate-medium rounded">
+              <Book className={`${isMobile ? 'h-10 w-10' : 'h-8 w-8'} text-white`} />
             </div>
           )}
         </div>
 
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <h3 className="font-medium text-coffee-darker">{book.title}</h3>
-            <p className="text-sm text-muted-foreground">{book.author}</p>
-            <p className="text-sm text-muted-foreground mt-1">
+        <div className="flex-1 flex flex-col justify-between min-w-0">
+          <div className="mb-4">
+            <h3 className={`font-medium text-coffee-darker line-clamp-2 ${isMobile ? 'text-lg mb-2' : 'text-base mb-1'}`}>
+              {book.title}
+            </h3>
+            <p className={`text-muted-foreground ${isMobile ? 'text-base mb-2' : 'text-sm mb-1'}`}>
+              {book.author}
+            </p>
+            <p className={`text-muted-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>
               {segment + 1} sur {totalSegments || '?'} segments
             </p>
           </div>
 
           {!isReadingInvalid ? (
             <Button 
-              className="mt-4 bg-coffee-dark text-white hover:bg-coffee-darker gap-2"
+              className={`bg-coffee-dark text-white hover:bg-coffee-darker gap-2 transition-all duration-200 ${
+                isMobile ? 'min-h-[48px] text-base w-full' : 'mt-4'
+              }`}
               onClick={handleContinueReading}
             >
               <BookOpen className="h-4 w-4" />
               {texts.continueReading}
             </Button>
           ) : (
-            <p className="mt-4 text-sm text-muted-foreground italic">
+            <p className={`text-muted-foreground italic ${isMobile ? 'text-base mt-4' : 'text-sm mt-4'}`}>
               {texts.noCurrentReading}
             </p>
           )}

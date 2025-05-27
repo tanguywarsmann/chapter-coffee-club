@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { texts } from "@/i18n/texts";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user, isAdmin } = useAuth();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   
   const handleLogout = async () => {
     try {
@@ -39,54 +42,78 @@ export function AppHeader() {
     }
   };
 
+  const handleNavigation = (path: string) => {
+    setIsSheetOpen(false);
+    navigate(path);
+  };
+
   const getUserInitials = () => {
     if (!user?.email) return "U";
     return user.email.charAt(0).toUpperCase();
   };
 
   const MobileMenu = () => (
-    <Sheet>
+    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72">
-        <SheetHeader>
-          <SheetTitle className="text-left">Menu</SheetTitle>
+      <SheetContent side="left" className="w-72 overflow-y-auto">
+        <SheetHeader className="pb-4">
+          <SheetTitle className="text-left text-lg">{texts.menu || "Menu"}</SheetTitle>
         </SheetHeader>
         <nav className="mt-4">
-          <ul className="space-y-2">
+          <ul className="space-y-1">
             <li>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/home")}>
-                <Home className="h-4 w-4 mr-2" />
-                Accueil
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item" 
+                onClick={() => handleNavigation("/home")}
+              >
+                <Home className="h-5 w-5 mr-3" />
+                {texts.home}
               </Button>
             </li>
             <li>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/explore")}>
-                <BookCheck className="h-4 w-4 mr-2" />
-                Explorer
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item" 
+                onClick={() => handleNavigation("/explore")}
+              >
+                <BookCheck className="h-5 w-5 mr-3" />
+                {texts.explore}
               </Button>
             </li>
             <li>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/achievements")}>
-                <Trophy className="h-4 w-4 mr-2" />
-                Récompenses
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item" 
+                onClick={() => handleNavigation("/achievements")}
+              >
+                <Trophy className="h-5 w-5 mr-3" />
+                {texts.achievements}
               </Button>
             </li>
             <li>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/reading-list")}>
-                <BookCheck className="h-4 w-4 mr-2" />
-                Ma liste
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item" 
+                onClick={() => handleNavigation("/reading-list")}
+              >
+                <BookCheck className="h-5 w-5 mr-3" />
+                {texts.readingList}
               </Button>
             </li>
-            {/* Temporarily show admin link to all users */}
             <li>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/admin")}>
-                <Shield className="h-4 w-4 mr-2" />
-                Administration
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item" 
+                onClick={() => handleNavigation("/admin")}
+              >
+                <Shield className="h-5 w-5 mr-3" />
+                {texts.admin}
               </Button>
             </li>
           </ul>
@@ -97,10 +124,10 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur">
-      <div className="container flex h-14 items-center gap-4">
+      <div className="container flex h-16 sm:h-14 items-center gap-4">
         {isMobile && <MobileMenu />}
         
-        <Link to="/home" className="flex items-center gap-2">
+        <Link to="/home" className="flex items-center gap-2 transition-transform duration-200 hover:scale-105">
           <Image 
             src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
             alt="READ Logo" 
@@ -112,34 +139,48 @@ export function AppHeader() {
         <nav className="flex-1 hidden md:block">
           <ul className="flex items-center justify-center gap-6">
             <li>
-              <Link to="/home" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+              <Link 
+                to="/home" 
+                className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent transition-colors duration-200 p-2 rounded-md hover:bg-logo-accent/10"
+              >
                 <Home className="h-4 w-4 mr-1" />
-                Accueil
+                {texts.home}
               </Link>
             </li>
             <li>
-              <Link to="/explore" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+              <Link 
+                to="/explore" 
+                className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent transition-colors duration-200 p-2 rounded-md hover:bg-logo-accent/10"
+              >
                 <BookCheck className="h-4 w-4 mr-1" />
-                Explorer
+                {texts.explore}
               </Link>
             </li>
             <li>
-              <Link to="/achievements" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+              <Link 
+                to="/achievements" 
+                className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent transition-colors duration-200 p-2 rounded-md hover:bg-logo-accent/10"
+              >
                 <Trophy className="h-4 w-4 mr-1" />
-                Récompenses
+                {texts.achievements}
               </Link>
             </li>
             <li>
-              <Link to="/reading-list" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+              <Link 
+                to="/reading-list" 
+                className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent transition-colors duration-200 p-2 rounded-md hover:bg-logo-accent/10"
+              >
                 <BookCheck className="h-4 w-4 mr-1" />
-                Ma liste
+                {texts.readingList}
               </Link>
             </li>
-            {/* Temporarily show admin link to all users */}
             <li>
-              <Link to="/admin" className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent">
+              <Link 
+                to="/admin" 
+                className="flex items-center text-sm font-medium text-logo-text hover:text-logo-accent transition-colors duration-200 p-2 rounded-md hover:bg-logo-accent/10"
+              >
                 <Shield className="h-4 w-4 mr-1" />
-                Administration
+                {texts.admin}
               </Link>
             </li>
           </ul>
@@ -148,7 +189,7 @@ export function AppHeader() {
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-logo-accent">
                 <Avatar className="h-8 w-8 border border-logo-accent">
                   <AvatarImage src="/avatar.png" alt="Avatar" />
                   <AvatarFallback className="bg-logo-accent text-primary-foreground">
@@ -157,7 +198,7 @@ export function AppHeader() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 bg-background border border-border" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user.email}</p>
@@ -167,21 +208,32 @@ export function AppHeader() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/profile")}>
+              <DropdownMenuItem 
+                onClick={() => navigate("/profile")}
+                className="cursor-pointer hover:bg-accent focus:bg-accent"
+              >
                 <User className="mr-2 h-4 w-4" />
-                <span>Profil</span>
+                <span>{texts.profile}</span>
               </DropdownMenuItem>
-              {/* Temporarily show admin link to all users */}
-              <DropdownMenuItem onClick={() => navigate("/admin")}>
+              <DropdownMenuItem 
+                onClick={() => navigate("/admin")}
+                className="cursor-pointer hover:bg-accent focus:bg-accent"
+              >
                 <Shield className="mr-2 h-4 w-4" />
-                <span>Administration</span>
+                <span>{texts.admin}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <DropdownMenuItem 
+                onClick={() => navigate("/settings")}
+                className="cursor-pointer hover:bg-accent focus:bg-accent"
+              >
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Paramètres</span>
+                <span>{texts.settings}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="cursor-pointer hover:bg-accent focus:bg-accent"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Déconnexion</span>
               </DropdownMenuItem>

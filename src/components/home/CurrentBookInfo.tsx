@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight } from "lucide-react";
 import { calculateReadingProgress } from "@/lib/progress";
 import { texts } from "@/i18n/texts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CurrentBookInfoProps {
   book: Book;
@@ -21,6 +22,8 @@ export const CurrentBookInfo = ({
   onValidate,
   onNavigate
 }: CurrentBookInfoProps) => {
+  const isMobile = useIsMobile();
+
   console.log("Rendering CurrentBookInfo", {
     bookId: book?.id || "undefined",
     bookTitle: book?.title || "undefined",
@@ -43,37 +46,46 @@ export const CurrentBookInfo = ({
   });
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 min-w-0">
       <h3 
-        className="font-medium text-coffee-darker hover:underline cursor-pointer" 
+        className={`font-medium text-coffee-darker hover:underline cursor-pointer transition-colors duration-200 ${
+          isMobile ? 'text-lg mb-2 line-clamp-2' : 'text-base mb-1'
+        }`}
         onClick={onNavigate}
       >
         {book.title}
       </h3>
-      <p className="text-sm text-muted-foreground">{book.author}</p>
+      <p className={`text-muted-foreground ${isMobile ? 'text-base mb-4' : 'text-sm mb-3'}`}>
+        {book.author}
+      </p>
       
-      <div className="mt-3 space-y-1">
+      <div className={`space-y-2 ${isMobile ? 'mb-6' : 'mb-4'}`}>
         <div className="flex justify-between text-sm">
-          <span className="text-coffee-darker">{texts.progression}</span>
+          <span className="text-coffee-darker font-medium">{texts.progression}</span>
           <span className="text-muted-foreground">
             {chaptersRead} {texts.chaptersRead} sur {chaptersTotal}
           </span>
         </div>
-        <Progress value={progressPercentage} className="h-2" />
+        <Progress value={progressPercentage} className={`${isMobile ? 'h-3' : 'h-2'}`} />
       </div>
       
       <Button 
-        className="mt-4 w-full bg-coffee-dark hover:bg-coffee-darker text-center"
+        className={`w-full bg-coffee-dark hover:bg-coffee-darker text-center transition-all duration-200 ${
+          isMobile ? 'min-h-[48px] text-base' : 'min-h-[44px]'
+        }`}
         onClick={onValidate}
         disabled={isValidating}
       >
         {isValidating ? (
-          <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Validation...</>
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <span>Validation...</span>
+          </div>
         ) : (
-          <>
+          <div className="flex items-center justify-center">
             <span className="text-center">{texts.validateSegment}</span>
-            <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0" />
-          </>
+            <ChevronRight className="h-4 w-4 ml-2 flex-shrink-0" />
+          </div>
         )}
       </Button>
     </div>

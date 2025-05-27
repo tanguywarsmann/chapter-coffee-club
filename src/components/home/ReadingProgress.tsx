@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { texts } from "@/i18n/texts";
 
 interface ReadingProgressProps {
   progressItems: ReadingProgressType[];
@@ -26,20 +27,21 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
   }, [progressItems]);
   
   if (isLoading) {
-    // Simpler skeleton for mobile
+    // Skeleton optimisé pour mobile
     if (isMobile) {
       return (
-        <Card className="border-coffee-light">
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
+        <Card className="border-coffee-light mobile-optimized">
+          <CardHeader className="pb-4">
+            <Skeleton className="loading-skeleton-title" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {[1, 2].map((i) => (
-              <div key={i} className="flex gap-3 mb-3">
-                <Skeleton className="h-16 w-12" />
-                <div className="flex-1">
-                  <Skeleton className="h-5 w-full max-w-[150px] mb-2" />
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-20 w-16 rounded" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="loading-skeleton-text" />
                   <Skeleton className="h-2 w-full" />
+                  <Skeleton className="h-3 w-1/2" />
                 </div>
               </div>
             ))}
@@ -48,11 +50,11 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
       );
     }
     
-    // Full skeleton for desktop
+    // Skeleton complet pour desktop
     return (
       <Card className="border-coffee-light">
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+          <div className="space-y-2">
             <Skeleton className="h-7 w-52" />
             <Skeleton className="h-4 w-40" />
           </div>
@@ -61,12 +63,12 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex gap-4">
-                <Skeleton className="h-20 w-16" />
-                <div className="flex-1">
-                  <Skeleton className="h-5 w-full max-w-[200px] mb-1" />
-                  <Skeleton className="h-4 w-24 mb-3" />
-                  <Skeleton className="h-2 w-full mb-1" />
-                  <Skeleton className="h-3 w-full max-w-[150px]" />
+                <Skeleton className="h-24 w-16 rounded" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="loading-skeleton-text" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-2 w-full" />
+                  <Skeleton className="h-3 w-1/2" />
                 </div>
               </div>
             ))}
@@ -79,38 +81,38 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
   const progresses = availableProgresses;
   
   return (
-    <Card className="border-coffee-light">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="border-coffee-light mobile-optimized">
+      <CardHeader className={`flex flex-row items-center justify-between ${isMobile ? 'pb-4' : ''}`}>
         <div>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Current Readings</CardTitle>
-          <CardDescription>Continue where you left off</CardDescription>
+          <CardTitle className="mobile-title">{texts.currentReadings}</CardTitle>
+          <CardDescription className="text-base sm:text-sm">{texts.continueWhereYouLeftOff}</CardDescription>
         </div>
         
         {progresses.length > 0 && !isMobile && (
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="sm" asChild className="hover:bg-coffee-light/20">
             <Link to="/reading-list" className="text-coffee-dark hover:text-coffee-darker">
-              View all <ArrowRight className="ml-1 h-4 w-4" />
+              {texts.viewAll} <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className={isMobile ? "pt-0" : ""}>
         {progresses.length === 0 ? (
-          <div className="text-center p-6 border border-dashed border-coffee-light rounded-lg">
-            <BookOpen className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <h3 className="text-lg font-medium text-coffee-darker mb-1">No current readings</h3>
-            <p className="text-muted-foreground mb-4">Start your first reading</p>
+          <div className="text-center p-8 sm:p-6 border border-dashed border-coffee-light rounded-lg mobile-optimized">
+            <BookOpen className="mx-auto h-12 w-12 sm:h-8 sm:w-8 text-muted-foreground mb-4 sm:mb-2" />
+            <h3 className="mobile-subtitle">{texts.noCurrentReading}</h3>
+            <p className="text-muted-foreground mb-6 sm:mb-4 text-base sm:text-sm">{texts.startYourNextAdventure}</p>
             <Button className="bg-coffee-dark hover:bg-coffee-darker" asChild>
-              <Link to="/explore">Explore books</Link>
+              <Link to="/explore">{texts.exploreBooks}</Link>
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* Show fewer items on mobile */}
+          <div className="space-y-6 sm:space-y-4">
+            {/* Affiche moins d'éléments sur mobile */}
             {progresses.slice(0, isMobile ? 2 : 3).map((progress) => {
               // Ensure progress is defined
               if (!progress) {
-                console.warn("⚠️ An element of progresses is undefined");
+                console.warn("⚠️ Un élément des progrès est undefined");
                 return null;
               }
               
@@ -119,7 +121,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
               
               // Don't show if totalSegments is missing or equal to 0
               if (!totalSegments) {
-                console.warn("⚠️ totalSegments is 0 or undefined for progress.id =", progress.id);
+                console.warn("⚠️ totalSegments est 0 ou undefined pour progress.id =", progress.id);
                 return null;
               }
               
@@ -134,53 +136,73 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                 }
               };
               
-              // Simplified mobile view
+              // Vue mobile simplifiée
               if (isMobile) {
                 return (
-                  <div key={progress.id} className="flex gap-3 group border-b pb-3 last:border-0">
-                    {progress.book_cover ? (
-                      <img 
-                        src={progress.book_cover} 
-                        alt={progress.book_title || "Book cover"} 
-                        className="w-12 h-16 object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-12 h-16 flex items-center justify-center bg-chocolate-medium">
-                        <span className="font-serif italic text-white">
-                          {(progress.book_title || "?").substring(0, 1)}
-                        </span>
-                      </div>
-                    )}
-                    
-                    <div className="flex-1">
-                      <Link to={`/books/${progress.book_id}`} className="block">
-                        <h3 className="font-medium line-clamp-1 group-hover:underline text-coffee-darker">
-                          {progress.book_title || "Unknown title"}
-                        </h3>
-                        
-                        <div className="mt-2">
-                          <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full rounded-full bg-coffee-dark"
-                              style={{ width: `${progressPercent}%` }}
-                            ></div>
-                          </div>
+                  <div key={progress.id} className="mobile-book-card group">
+                    <div className="flex gap-4">
+                      {progress.book_cover ? (
+                        <img 
+                          src={progress.book_cover} 
+                          alt={progress.book_title || "Couverture de livre"} 
+                          className="w-16 h-20 object-cover rounded"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-16 h-20 flex items-center justify-center bg-chocolate-medium rounded">
+                          <span className="font-serif italic text-white text-lg">
+                            {(progress.book_title || "?").substring(0, 1)}
+                          </span>
                         </div>
-                      </Link>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/books/${progress.book_id}`} className="block">
+                          <h3 className="font-medium text-coffee-darker group-hover:underline text-base mb-2 line-clamp-2">
+                            {progress.book_title || "Titre inconnu"}
+                          </h3>
+                          
+                          <div className="space-y-2">
+                            <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full rounded-full bg-coffee-dark transition-all duration-500 ease-out"
+                                style={{ width: `${progressPercent}%` }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                              <span>{progressPercent}% terminé</span>
+                              <span>{chaptersRead}/{totalSegments}</span>
+                            </div>
+                          </div>
+                        </Link>
+                        
+                        {/* Bouton continuer pour les livres en cours */}
+                        {chaptersRead > 0 && progress.status !== "completed" && (
+                          <Button
+                            size="sm"
+                            className="mt-3 w-full bg-coffee-dark hover:bg-coffee-darker"
+                            asChild
+                          >
+                            <Link to={`/books/${progress.book_id}`}>
+                              <PlayCircle className="h-4 w-4 mr-2" />
+                              {texts.continueReading}
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               }
               
-              // Full desktop view
+              // Vue desktop complète
               return (
-                <div key={progress.id} className="flex gap-4 group transition-transform duration-300 hover:scale-[1.01]">
+                <div key={progress.id} className="flex gap-4 group transition-all duration-300 hover:scale-[1.01] p-3 rounded-lg hover:bg-coffee-light/10">
                   <div className="book-cover w-16 h-24 overflow-hidden relative">
                     {progress.book_cover ? (
                       <img 
                         src={progress.book_cover} 
-                        alt={progress.book_title || "Book cover"} 
+                        alt={progress.book_title || "Couverture de livre"} 
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
@@ -192,7 +214,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                       </div>
                     )}
                     
-                    {/* Status indicator */}
+                    {/* Indicateur de statut */}
                     <div className="absolute top-1 right-1 bg-white bg-opacity-70 rounded-full p-0.5">
                       {progress.status === "completed" ? (
                         <CheckCircle className="h-3 w-3 text-green-600" />
@@ -208,10 +230,10 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                     <Link to={`/books/${progress.book_id}`} className="block">
                       <h3 className="font-medium line-clamp-1 group-hover:underline text-coffee-darker flex items-center">
                         <span className="hidden md:inline-block">{getProgressStatusIcon()}</span>
-                        {progress.book_title || "Unknown title"}
+                        {progress.book_title || "Titre inconnu"}
                       </h3>
                       
-                      <p className="text-xs text-muted-foreground">{progress.book_author || "Unknown author"}</p>
+                      <p className="text-xs text-muted-foreground">{progress.book_author || "Auteur inconnu"}</p>
                       
                       <div className="mt-2 space-y-1">
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -221,7 +243,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                           ></div>
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{progressPercent}% complete</span>
+                          <span>{progressPercent}% terminé</span>
                           <span>
                             {`${chaptersRead}/${totalSegments} segments`}
                           </span>
@@ -229,7 +251,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                       </div>
                     </Link>
                     
-                    {/* Continue button - only for books in progress that aren't completed */}
+                    {/* Bouton continuer - seulement pour les livres en cours qui ne sont pas terminés */}
                     {chaptersRead > 0 && progress.status !== "completed" && (
                       <Button
                         size="sm"
@@ -238,7 +260,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                       >
                         <Link to={`/books/${progress.book_id}`}>
                           <PlayCircle className="h-4 w-4 mr-1" />
-                          Continue
+                          {texts.continueReading}
                         </Link>
                       </Button>
                     )}
@@ -247,12 +269,12 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
               );
             })}
             
-            {/* Show "View all" link at the bottom on mobile */}
+            {/* Lien "Voir tout" en bas sur mobile */}
             {isMobile && progresses.length > 2 && (
-              <div className="text-center pt-2">
-                <Button variant="outline" size="sm" asChild>
+              <div className="text-center pt-4">
+                <Button variant="outline" size="sm" asChild className="w-full">
                   <Link to="/reading-list">
-                    View all {progresses.length} books
+                    Voir les {progresses.length} livres
                   </Link>
                 </Button>
               </div>
