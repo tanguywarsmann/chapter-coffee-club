@@ -33,7 +33,6 @@ export const HomeContent = memo(function HomeContent({
     try {
       return getUserActivities();
     } catch (e) {
-      console.error("Error loading activities:", e);
       return [];
     }
   }, [isMobile]);
@@ -62,11 +61,12 @@ export const HomeContent = memo(function HomeContent({
           </div>
         )}
         
-        {/* Improved mobile stats button with better contrast */}
+        {/* Mobile stats button with guaranteed visible contrast */}
         {isMobile && (
-          <div className="text-center p-4 border border-coffee-light rounded-md">
+          <div className="text-center p-4 bg-white/80 border border-amber-200 rounded-lg shadow-sm">
             <Button 
-              className="bg-logo-background text-coffee-dark hover:bg-logo-background/90 rounded-xl text-sm font-medium px-6 py-3 transition-colors"
+              variant="default"
+              className="w-full bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 rounded-xl text-sm font-medium px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
               onClick={() => window.location.href = "/profile"}
             >
               {texts.viewYourReadingStats} →
