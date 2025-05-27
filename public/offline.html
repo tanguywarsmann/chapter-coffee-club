@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>READ - Hors ligne</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f3f0;
+            color: #3d2914;
+        }
+        
+        .offline-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d4a574;
+        }
+        
+        .offline-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            background-color: #d4a574;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        h1 {
+            margin: 0 0 1rem;
+            font-size: 1.5rem;
+            color: #3d2914;
+        }
+        
+        p {
+            margin: 0 0 2rem;
+            color: #6b5b73;
+            line-height: 1.5;
+        }
+        
+        .retry-btn {
+            background-color: #3d2914;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 44px;
+            min-width: 120px;
+        }
+        
+        .retry-btn:hover {
+            background-color: #2a1c0f;
+        }
+        
+        .retry-btn:focus {
+            outline: 2px solid #3d2914;
+            outline-offset: 2px;
+        }
+        
+        @media (max-width: 480px) {
+            .offline-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon" aria-hidden="true">📚</div>
+        <h1>Vous êtes hors ligne</h1>
+        <p>Vérifiez votre connexion internet et réessayez.</p>
+        <button class="retry-btn" onclick="window.location.reload()" aria-label="Réessayer de charger la page">
+            Réessayer
+        </button>
+    </div>
+</body>
+</html>

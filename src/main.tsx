@@ -51,13 +51,36 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       });
   });
   
-  // Handle offline status
+  // Handle offline status with improved accessibility
   window.addEventListener('online', () => {
-    toast.success('Connexion internet rétablie');
+    const toastElement = toast.success('Connexion internet rétablie', {
+      duration: 4000
+    });
+    
+    // Add aria-live region for screen readers
+    if (toastElement) {
+      const toastContainer = document.querySelector('[data-sonner-toaster]');
+      if (toastContainer) {
+        toastContainer.setAttribute('role', 'status');
+        toastContainer.setAttribute('aria-live', 'polite');
+      }
+    }
   });
   
   window.addEventListener('offline', () => {
-    toast.warning('Vous êtes actuellement hors ligne');
+    const toastElement = toast.warning('Vous êtes actuellement hors ligne', {
+      duration: 6000,
+      description: 'Certaines fonctionnalités peuvent être limitées'
+    });
+    
+    // Add aria-live region for screen readers
+    if (toastElement) {
+      const toastContainer = document.querySelector('[data-sonner-toaster]');
+      if (toastContainer) {
+        toastContainer.setAttribute('role', 'status');
+        toastContainer.setAttribute('aria-live', 'assertive');
+      }
+    }
   });
 }
 

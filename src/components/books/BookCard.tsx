@@ -80,6 +80,14 @@ export function BookCard({
     }
   }, []);
 
+  // Handle keyboard navigation
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      // The Link component will handle the navigation
+    }
+  };
+
   // Utility to truncate the book title
   const truncateTitle = (title: string, maxLength: number = 50) => {
     if (!title) return "Titre inconnu";
@@ -178,17 +186,20 @@ export function BookCard({
   return (
     <Link 
       to={`/books/${bookIdentifier}`} 
-      className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md"
-      aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}`}
+      className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
+      aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}. Appuyez sur Entrée pour ouvrir.`}
+      onKeyDown={handleKeyPress}
+      tabIndex={0}
+      role="link"
     >
-      <div className="book-card flex flex-col h-full bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium">
+      <article className="book-card flex flex-col h-full bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-offset-2">
         <div className="relative">
           <BookCover book={book} showProgress={showProgress} />
           {getBookStatusIcon()}
           <span className="sr-only">{getStatusLabel()}</span>
         </div>
         <div className="p-3 flex-grow flex flex-col">
-          <h3 className="font-medium text-coffee-darker mb-1">
+          <h3 className="font-medium text-coffee-darker mb-1 focus:outline-none">
             {truncateTitle(book.title)}
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -201,6 +212,7 @@ export function BookCard({
                 key={index}
                 variant="outline"
                 className="text-xs border-coffee-light"
+                aria-label={`Catégorie: ${category}`}
               >
                 {category}
               </Badge>
@@ -218,7 +230,7 @@ export function BookCard({
             onAction={handleAction}
           />
         </div>
-      </div>
+      </article>
     </Link>
   );
 }
