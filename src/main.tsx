@@ -16,28 +16,61 @@ if (!allowedStart.includes(window.location.pathname)) {
 // Clear any saved navigation state
 localStorage.removeItem("lastVisitedPath");
 
-// Register service worker (PWA support)
+// Register service worker (PWA support) with forced update
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    navigator.serviceWorker.register('/sw.js', { 
+      scope: '/',
+      updateViaCache: 'none' // Force le rechargement du SW
+    })
       .then((registration) => {
+        console.log('[PWA] Service Worker registered successfully');
+        
+        // Force la vérification des mises à jour
+        registration.update();
+        
+        // Écouter les messages du service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'SW_UPDATED') {
+            console.log('[PWA] New service worker version active:', event.data.version);
+            toast.success('Application mise à jour avec succès!', {
+              duration: 4000,
+              description: 'Les dernières améliorations sont maintenant disponibles'
+            });
+          }
+        });
+        
         // Notify on update
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
+            console.log('[PWA] New service worker found, installing...');
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                toast.info('Une mise à jour est disponible! Redémarrez l\'application.', {
-                  duration: 8000,
-                  action: {
-                    label: 'Rafraîchir',
-                    onClick: () => window.location.reload()
-                  }
-                });
+              if (newWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // Forcer la mise à jour immédiate
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  toast.info('Mise à jour prête! Redémarrage automatique...', {
+                    duration: 3000
+                  });
+                  
+                  // Redémarrer automatiquement après 2 secondes
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 2000);
+                } else {
+                  // Premier chargement
+                  console.log('[PWA] App ready for offline use');
+                }
               }
             });
           }
         });
+        
+        // Vérifier les mises à jour périodiquement
+        setInterval(() => {
+          registration.update();
+        }, 60000); // Toutes les minutes
       })
       .catch((error) => {
         console.error('[PWA] Service Worker registration failed:', error);
@@ -49,6 +82,13 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     const toastElement = toast.success('Connexion internet rétablie', {
       duration: 4000
     });
+    
+    // Force la vérification des mises à jour quand on revient en ligne
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.update();
+      });
+    }
     
     // Add aria-live region for screen readers
     if (toastElement) {
