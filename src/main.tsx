@@ -1,143 +1,118 @@
 
 import { toast } from 'sonner'
 
-// Performance measurement - start marking time
+// Performance measurement
 performance.mark("read-app-start");
 
-// Clean up potentially corrupted data
-localStorage.removeItem("read_app_books_cache");
+// Nettoyage conditionnel et sécurisé
+const isFirstVisit = !localStorage.getItem("read_app_initialized");
+if (isFirstVisit) {
+  // Seulement au premier lancement
+  localStorage.removeItem("read_app_books_cache");
+  localStorage.setItem("read_app_initialized", "true");
+}
 
-// Reset path if not on allowed routes
-const allowedStart = ["/", "/auth", "/home"];
-if (!allowedStart.includes(window.location.pathname)) {
+// Reset path seulement si invalide
+const currentPath = window.location.pathname;
+const allowedPaths = ["/", "/auth", "/home", "/books", "/profile", "/achievements", "/discover"];
+const isValidPath = allowedPaths.some(path => 
+  currentPath === path || currentPath.startsWith(path + "/")
+);
+
+if (!isValidPath) {
+  console.log("[PWA] Redirecting invalid path:", currentPath);
   history.replaceState(null, "", "/");
 }
 
-// Clear any saved navigation state
-localStorage.removeItem("lastVisitedPath");
-
-// UX AUDIT: Importer le système d'audit pour surveillance en développement
-if (import.meta.env.DEV) {
-  import('./utils/uxAudit').then(({ detectSuspiciousElements }) => {
-    // Vérifier les éléments suspects après chargement
-    setTimeout(detectSuspiciousElements, 3000);
-  });
-}
-
-// Register service worker (PWA support) with forced update
+// Service Worker optimisé pour iOS
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { 
       scope: '/',
-      updateViaCache: 'none' // Force le rechargement du SW
+      updateViaCache: 'none'
     })
       .then((registration) => {
         console.log('[PWA] Service Worker registered successfully');
         
-        // Force la vérification des mises à jour
-        registration.update();
+        // Vérification des mises à jour moins fréquente
+        const checkForUpdates = () => {
+          registration.update();
+        };
+        
+        // Vérifier les mises à jour toutes les 5 minutes (au lieu de 1)
+        setInterval(checkForUpdates, 5 * 60 * 1000);
         
         // Écouter les messages du service worker
         navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data && event.data.type === 'SW_UPDATED') {
-            console.log('[PWA] New service worker version active:', event.data.version);
-            toast.success('Application mise à jour avec succès!', {
-              duration: 4000,
-              description: 'Les dernières améliorations sont maintenant disponibles'
+          if (event.data?.type === 'SW_UPDATED') {
+            console.log('[PWA] New service worker version active');
+            toast.success('Application mise à jour', {
+              duration: 3000,
+              description: 'Redémarrage automatique dans 3 secondes...'
             });
+            
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
           }
         });
         
-        // Notify on update
+        // Gestion des mises à jour
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
-            console.log('[PWA] New service worker found, installing...');
+            console.log('[PWA] New service worker found');
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  // Forcer la mise à jour immédiate
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  toast.info('Mise à jour prête! Redémarrage automatique...', {
-                    duration: 3000
-                  });
-                  
-                  // Redémarrer automatiquement après 2 secondes
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 2000);
-                } else {
-                  // Premier chargement
-                  console.log('[PWA] App ready for offline use');
-                }
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Mise à jour disponible
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
           }
         });
-        
-        // Vérifier les mises à jour périodiquement
-        setInterval(() => {
-          registration.update();
-        }, 60000); // Toutes les minutes
       })
       .catch((error) => {
         console.error('[PWA] Service Worker registration failed:', error);
       });
   });
   
-  // Handle offline status with improved accessibility
+  // Gestion réseau améliorée pour iOS
+  let isOnline = navigator.onLine;
+  
   window.addEventListener('online', () => {
-    const toastElement = toast.success('Connexion internet rétablie', {
-      duration: 4000
-    });
-    
-    // Force la vérification des mises à jour quand on revient en ligne
-    if ('serviceWorker' in navigator) {
+    if (!isOnline) {
+      isOnline = true;
+      toast.success('Connexion rétablie', {
+        duration: 3000
+      });
+      
+      // Vérifier les mises à jour quand on revient en ligne
       navigator.serviceWorker.ready.then((registration) => {
         registration.update();
       });
     }
-    
-    // Add aria-live region for screen readers
-    if (toastElement) {
-      const toastContainer = document.querySelector('[data-sonner-toaster]');
-      if (toastContainer) {
-        toastContainer.setAttribute('role', 'status');
-        toastContainer.setAttribute('aria-live', 'polite');
-      }
-    }
   });
   
   window.addEventListener('offline', () => {
-    const toastElement = toast.warning('Vous êtes actuellement hors ligne', {
-      duration: 6000,
-      description: 'Certaines fonctionnalités peuvent être limitées'
-    });
-    
-    // Add aria-live region for screen readers
-    if (toastElement) {
-      const toastContainer = document.querySelector('[data-sonner-toaster]');
-      if (toastContainer) {
-        toastContainer.setAttribute('role', 'status');
-        toastContainer.setAttribute('aria-live', 'assertive');
-      }
+    if (isOnline) {
+      isOnline = false;
+      toast.warning('Mode hors ligne', {
+        duration: 4000,
+        description: 'Fonctionnalités limitées'
+      });
     }
   });
 }
 
-// Add performance measurement completion
+// Performance monitoring optimisé
 window.addEventListener("load", () => {
   performance.measure("startup", "read-app-start");
-  const m = performance.getEntriesByName("startup")[0];
+  const measurement = performance.getEntriesByName("startup")[0];
   
-  // [PERF] Critical performance monitoring
-  if (window.performance && window.performance.getEntriesByType) {
-    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
-    const initialJs = resources
-      .filter(r => r.initiatorType === "script" || r.name.endsWith(".js"))
-      .reduce((sum, r) => sum + r.transferSize, 0);
+  if (measurement && measurement.duration > 3000) {
+    console.warn('[PERF] Startup time is slow:', measurement.duration + 'ms');
   }
 });
 
-// Defer React app loading
+// Chargement React optimisé
 import("@/bootstrap");

@@ -3,34 +3,45 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>READ - Remets-toi à la lecture</title>
     <link rel="icon" href="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" type="image/png">
     <meta name="description" content="READ - Reprends goût à la lecture, page après page" />
     <meta name="author" content="READ" />
+    
+    <!-- Open Graph -->
     <meta property="og:title" content="READ" />
     <meta property="og:description" content="Reprends goût à la lecture, page après page" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-    <!-- Progressive Web App setup -->
+    <!-- PWA Configuration optimisée pour iOS -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#B05F2C" />
+    
+    <!-- iOS spécifique - Configuration optimisée -->
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="READ" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Prevent iOS Safari zoom on input focus -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
     <!-- Preload critical assets -->
     <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/playfair-display-var.woff2" as="font" type="font/woff2" crossorigin />
     
-    <!-- Preconnect to origins -->
+    <!-- DNS prefetch -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://xjumsrjuyzvsixvfwoiz.supabase.co" />
     
-    <!-- Lovable script tag for new features -->
+    <!-- Lovable script tag -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
 
@@ -38,16 +49,45 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Offline fallback content -->
-    <div id="offline-message" style="display: none; text-align: center; padding: 2rem; font-family: sans-serif;">
-      <h2>READ est actuellement hors ligne</h2>
-      <p>Vérifiez votre connexion internet et réessayez.</p>
+    <!-- Splash screen pour iOS -->
+    <div id="loading-splash" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #B05F2C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    ">
+      <div style="color: white; font-size: 2rem; font-weight: bold;">READ</div>
     </div>
     
     <script>
-      // Simple offline detection
-      window.addEventListener('online', () => document.getElementById('offline-message').style.display = 'none');
-      window.addEventListener('offline', () => document.getElementById('offline-message').style.display = 'block');
+      // Masquer le splash screen une fois l'app chargée
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('loading-splash');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 500);
+          }
+        }, 1000);
+      });
+      
+      // Gestion offline/online simplifiée
+      function updateNetworkStatus() {
+        const isOnline = navigator.onLine;
+        document.body.setAttribute('data-network', isOnline ? 'online' : 'offline');
+      }
+      
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+      updateNetworkStatus();
     </script>
   </body>
 </html>
