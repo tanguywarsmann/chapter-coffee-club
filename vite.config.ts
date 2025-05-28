@@ -10,30 +10,38 @@ export default defineConfig(({ mode }) => ({
   server: { host: '::', port: 8080 },
 
   plugins: [
-    // PWA configuration corrigée
+    // Configuration PWA simplifiée et fonctionnelle
     VitePWA({
       strategies: 'injectManifest',
-      registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
+      srcDir: 'src',
+      filename: 'custom-sw.ts',
+      injectRegister: 'auto',
+      registerType: 'autoUpdate',
       devOptions: { 
         enabled: true,
         type: 'module'
       },
       
-      injectManifest: {
-        swSrc: 'src/custom-sw.ts',
-        swDest: 'sw.js',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        maximumFileSizeToCacheInBytes: 5000000, // 5MB
-      },
-      
-      workbox: {
-        cleanupOutdatedCaches: true,
-        skipWaiting: false,
-        clientsClaim: false,
-      },
-
-      manifest: false // Utiliser le manifest.json du dossier public
+      manifest: {
+        name: 'READ',
+        short_name: 'READ',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#B05F2C',
+        icons: [
+          {
+            src: '/icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
     }),
 
     react(),
