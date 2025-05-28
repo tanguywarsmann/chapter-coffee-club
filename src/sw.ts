@@ -119,21 +119,13 @@ self.addEventListener("fetch", (event) => {
       })
     );
   }
-  // API calls - Network First avec timeout corrigé
+  // API calls - Network First avec timeout simplifié
   else if (url.hostname.includes('supabase.co')) {
     event.respondWith(
-      (async (): Promise<Response> => {
-        try {
-          // Utiliser AbortController pour un timeout propre
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-          
-          const response = await fetch(request, { 
-            signal: controller.signal 
-          });
-          
-          clearTimeout(timeoutId);
-          
+      fetch(request, { 
+        signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined 
+      })
+        .then((response: Response) => {
           // Vérifier que c'est bien une Response et la mettre en cache si applicable
           if (response instanceof Response && response.ok && request.method === 'GET') {
             const responseClone = response.clone();
@@ -141,14 +133,13 @@ self.addEventListener("fetch", (event) => {
               cache.put(request, responseClone);
             });
           }
-          
           return response;
-        } catch (error) {
+        })
+        .catch(async () => {
           // En cas d'erreur (timeout ou réseau), essayer le cache puis fallback
           const cachedResponse = await caches.match(request);
           return cachedResponse || new Response('Network Error', { status: 503 });
-        }
-      })()
+        })
     );
   }
 });
