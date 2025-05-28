@@ -63,8 +63,8 @@ self.addEventListener("fetch", (event) => {
     // Pages HTML - Network First avec fallback
     event.respondWith(
       fetch(request)
-        .then(response => {
-          if (response.ok) {
+        .then((response: Response) => {
+          if (response instanceof Response && response.ok) {
             const responseClone = response.clone();
             caches.open(STATIC_CACHE).then(cache => {
               cache.put(request, responseClone);
@@ -73,7 +73,11 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          return caches.match(request) || caches.match('/offline.html');
+          return caches.match(request).then(cachedResponse => {
+            return cachedResponse || caches.match('/offline.html').then(offlineResponse => {
+              return offlineResponse || new Response('Offline', { status: 503 });
+            });
+          });
         })
     );
   } 
@@ -87,8 +91,8 @@ self.addEventListener("fetch", (event) => {
         if (response) {
           return response;
         }
-        return fetch(request).then(fetchResponse => {
-          if (fetchResponse.ok) {
+        return fetch(request).then((fetchResponse: Response) => {
+          if (fetchResponse instanceof Response && fetchResponse.ok) {
             const responseClone = fetchResponse.clone();
             caches.open(STATIC_CACHE).then(cache => {
               cache.put(request, responseClone);
@@ -103,8 +107,8 @@ self.addEventListener("fetch", (event) => {
     // Images - Cache First
     event.respondWith(
       caches.match(request).then(response => {
-        return response || fetch(request).then(fetchResponse => {
-          if (fetchResponse.ok) {
+        return response || fetch(request).then((fetchResponse: Response) => {
+          if (fetchResponse instanceof Response && fetchResponse.ok) {
             const responseClone = fetchResponse.clone();
             caches.open(STATIC_CACHE).then(cache => {
               cache.put(request, responseClone);
@@ -120,11 +124,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       Promise.race([
         fetch(request),
-        new Promise((_, reject) => 
+        new Promise<Response>((_, reject) => 
           setTimeout(() => reject(new Error('Network timeout')), 10000)
         )
-      ]).then(response => {
-        if (response.ok && request.method === 'GET') {
+      ]).then((response: Response) => {
+        if (response instanceof Response && response.ok && request.method === 'GET') {
           const responseClone = response.clone();
           caches.open(API_CACHE).then(cache => {
             cache.put(request, responseClone);
@@ -132,7 +136,9 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       }).catch(() => {
-        return caches.match(request);
+        return caches.match(request).then(cachedResponse => {
+          return cachedResponse || new Response('Network Error', { status: 503 });
+        });
       })
     );
   }
