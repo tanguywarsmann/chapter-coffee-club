@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = "v0.1"; // Version modifiable facilement en une seule ligne
+const APP_VERSION = "v0.11"; // Version mise à jour suite aux améliorations UX
 
 export const AppFooter = () => {
   return (

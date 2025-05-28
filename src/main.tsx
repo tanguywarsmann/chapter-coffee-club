@@ -16,6 +16,14 @@ if (!allowedStart.includes(window.location.pathname)) {
 // Clear any saved navigation state
 localStorage.removeItem("lastVisitedPath");
 
+// UX AUDIT: Importer le système d'audit pour surveillance en développement
+if (import.meta.env.DEV) {
+  import('./utils/uxAudit').then(({ detectSuspiciousElements }) => {
+    // Vérifier les éléments suspects après chargement
+    setTimeout(detectSuspiciousElements, 3000);
+  });
+}
+
 // Register service worker (PWA support) with forced update
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
