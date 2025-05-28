@@ -1,9 +1,9 @@
-
 import { Suspense, lazy } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
+import { AppFooter } from "@/components/layout/AppFooter";
 
 // Lazy load toast components for better code splitting
 const Toaster = lazy(() => 
@@ -55,6 +55,8 @@ const App = () => {
           }>
             <AppRouter />
           </Suspense>
+          
+          <AppFooter />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
