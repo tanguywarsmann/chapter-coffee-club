@@ -277,6 +277,7 @@ export function AppHeader() {
                 <Shield className="mr-2 h-4 w-4" />
                 <span>{texts.admin}</span>
               </DropdownMenuItem>
+              {/* UX AUDIT: ITEM PROBLÉMATIQUE - Navigation vers /settings qui n'existe pas dans AppRouter */}
               <DropdownMenuItem 
                 onClick={() => navigate("/settings")}
                 className="cursor-pointer hover:bg-accent focus:bg-accent"

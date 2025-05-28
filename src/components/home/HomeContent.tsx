@@ -64,6 +64,7 @@ export const HomeContent = memo(function HomeContent({
         {/* Mobile stats button harmonized with "Continue reading" button style */}
         {isMobile && (
           <div className="text-center p-4">
+            {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Navigation hardcodée avec window.location au lieu de router React */}
             <Button 
               className="w-full bg-coffee-dark text-white hover:bg-coffee-darker rounded-xl text-base font-semibold px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
               onClick={() => window.location.href = "/profile"}

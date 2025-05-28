@@ -21,9 +21,11 @@ export const BookActions = ({
         {pages} pages • {language}
       </span>
       <div className="flex gap-2">
+        {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Bookmark sans action onClick */}
         <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
           <Bookmark className="h-4 w-4" />
         </Button>
+        {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Share2 sans action onClick */}
         <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
           <Share2 className="h-4 w-4" />
         </Button>
