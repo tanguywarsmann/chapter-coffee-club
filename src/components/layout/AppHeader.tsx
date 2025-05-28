@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { User, Home, LogOut, Trophy, BookCheck, Settings, Menu, Shield } from "lucide-react";
+import { User, Home, LogOut, Trophy, BookCheck, Menu, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
@@ -276,14 +275,6 @@ export function AppHeader() {
               >
                 <Shield className="mr-2 h-4 w-4" />
                 <span>{texts.admin}</span>
-              </DropdownMenuItem>
-              {/* UX AUDIT: ITEM PROBLÉMATIQUE - Navigation vers /settings qui n'existe pas dans AppRouter */}
-              <DropdownMenuItem 
-                onClick={() => navigate("/settings")}
-                className="cursor-pointer hover:bg-accent focus:bg-accent"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span>{texts.settings}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 

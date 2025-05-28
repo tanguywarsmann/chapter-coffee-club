@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Bookmark, Share2, Loader2, Book as BookIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BookActionsProps {
   isInitializing: boolean;
@@ -21,14 +22,36 @@ export const BookActions = ({
         {pages} pages • {language}
       </span>
       <div className="flex gap-2">
-        {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Bookmark sans action onClick */}
-        <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
-          <Bookmark className="h-4 w-4" />
-        </Button>
-        {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Share2 sans action onClick */}
-        <Button variant="outline" size="icon" className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20">
-          <Share2 className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20" 
+              disabled
+            >
+              <Bookmark className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fonctionnalité à venir</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="border-coffee-medium text-coffee-darker hover:bg-coffee-light/20" 
+              disabled
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fonctionnalité à venir</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
     <Button 

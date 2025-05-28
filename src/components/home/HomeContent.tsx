@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { GoalsPreview } from "./GoalsPreview";
 import { ReadingProgress } from "./ReadingProgress";
@@ -11,6 +10,7 @@ import SimilarReaders from "@/components/home/SimilarReaders";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { texts } from "@/i18n/texts";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -25,6 +25,7 @@ export const HomeContent = memo(function HomeContent({
   onProgressUpdate,
 }: HomeContentProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   // Load activities only if needed (non-mobile or empty placeholder)
   const activities = React.useMemo(() => {
@@ -67,7 +68,7 @@ export const HomeContent = memo(function HomeContent({
             {/* UX AUDIT: BOUTON PROBLÉMATIQUE - Navigation hardcodée avec window.location au lieu de router React */}
             <Button 
               className="w-full bg-coffee-dark text-white hover:bg-coffee-darker rounded-xl text-base font-semibold px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
-              onClick={() => window.location.href = "/profile"}
+              onClick={() => navigate("/achievements")}
             >
               {texts.viewYourReadingStats} →
             </Button>
