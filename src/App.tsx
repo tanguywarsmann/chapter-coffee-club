@@ -1,36 +1,13 @@
 
-import { Suspense, lazy } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
 import { AppFooter } from "@/components/layout/AppFooter";
-
-// Lazy load toast components pour un meilleur code splitting
-const Toaster = lazy(() => 
-  import("@/components/ui/toaster").then(mod => ({
-    default: mod.Toaster
-  }))
-);
-
-const Sonner = lazy(() => 
-  import("@/components/ui/sonner").then(mod => ({
-    default: mod.Toaster
-  }))
-);
-
-// Lazy load des composants non-critiques
-const UserOnboarding = lazy(() => 
-  import("./components/onboarding/UserOnboarding").then(mod => ({
-    default: mod.UserOnboarding
-  }))
-);
-
-const AppRouter = lazy(() => 
-  import("./components/navigation/AppRouter").then(mod => ({
-    default: mod.AppRouter
-  }))
-);
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { UserOnboarding } from "./components/onboarding/UserOnboarding";
+import { AppRouter } from "./components/navigation/AppRouter";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -46,21 +23,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <Suspense fallback={null}>
-            <Toaster />
-          </Suspense>
-          <Suspense fallback={null}>
-            <Sonner />
-          </Suspense>
-          
-          <Suspense fallback={null}>
-            <UserOnboarding />
-          </Suspense>
-          
-          <Suspense fallback={<LoadingSpinner />}>
-            <AppRouter />
-          </Suspense>
-          
+          <Toaster />
+          <Sonner />
+          <UserOnboarding />
+          <AppRouter />
           <AppFooter />
         </TooltipProvider>
       </AuthProvider>

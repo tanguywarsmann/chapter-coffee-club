@@ -2,43 +2,30 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Suspense, lazy } from "react";
 import { AuthGuard } from "../auth/AuthGuard";
-import { PageTransition } from "@/components/ui/page-transition";
-import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { usePrefetch } from "@/hooks/usePrefetch";
 
-// Pages critiques chargées directement
+// Pages critiques seulement
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
+import Profile from "@/pages/Profile";
+import Explore from "@/pages/Explore";
+import ReadingList from "@/pages/ReadingList";
+import BookPage from "@/pages/BookPage";
 
-// Pages secondaires en lazy loading
-const BookPage = lazy(() => import("@/pages/BookPage"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const PublicProfilePage = lazy(() => import("@/pages/PublicProfilePage"));
-const Discover = lazy(() => import("@/pages/Discover"));
-const ReadingList = lazy(() => import("@/pages/ReadingList"));
-const Explore = lazy(() => import("@/pages/Explore"));
-const Achievements = lazy(() => import("@/pages/Achievements"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
-const Followers = lazy(() => import("@/pages/Followers"));
-
-// Composants de fallback optimisés
-const HomeFallback = () => <PageSkeleton variant="home" />;
-const ListFallback = () => <PageSkeleton variant="list" />;
-const ProfileFallback = () => <PageSkeleton variant="profile" />;
-const BookFallback = () => <PageSkeleton variant="book" />;
-const GenericFallback = () => <PageSkeleton />;
+// Page de diagnostic simple
+const DiagnosticPage = () => (
+  <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'system-ui' }}>
+    <h1 style={{ color: '#B05F2C' }}>Hello from diagnostic</h1>
+    <p>Cette page teste la publication minimale de READ.</p>
+    <p>Build réussi et routing fonctionnel !</p>
+  </div>
+);
 
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-logo-background transition-opacity duration-300">
+  <div className="min-h-screen flex items-center justify-center bg-logo-background">
     <div className="text-center space-y-4">
-      <div className="relative">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
-        <div className="absolute inset-0 rounded-full h-12 w-12 border-2 border-coffee-light/30 mx-auto"></div>
-      </div>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
       <p className="text-coffee-dark font-medium">Chargement...</p>
     </div>
   </div>
@@ -48,153 +35,141 @@ export function AppRouter() {
   const { user, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDocumentReady, setIsDocumentReady] = useState(document.readyState === "complete");
+  const [isReady, setIsReady] = useState(false);
 
-  // Active le prefetch intelligent
-  usePrefetch();
-
-  // Check for document ready state
+  // Attendre que tout soit prêt
   useEffect(() => {
-    if (document.readyState !== "complete") {
-      const handleDocumentReady = () => {
-        setIsDocumentReady(true);
-      };
-      window.addEventListener("load", handleDocumentReady);
-      return () => window.removeEventListener("load", handleDocumentReady);
+    if (!isLoading && isInitialized) {
+      setIsReady(true);
     }
-  }, []);
+  }, [isLoading, isInitialized]);
 
-  // Central navigation logic with error boundaries
+  // Navigation logic simplifiée
   useEffect(() => {
-    if (!isLoading && isInitialized && isDocumentReady) {
-      const currentPath = location.pathname;
-      
-      // Chemins autorisés avec validation stricte
-      const allowedPaths = [
-        "/", "/home", "/auth", "/discover", "/explore", "/reading-list",
-        "/books", "/profile", "/u", "/followers", "/achievements", "/admin"
-      ];
-      
-      const isAllowedPath = allowedPaths.some(path => {
-        if (path === "/") return currentPath === "/";
-        return currentPath.startsWith(path);
-      });
-      
-      if (!isAllowedPath) {
-        console.warn("[ROUTER] Invalid path detected:", currentPath);
-        navigate("/", { replace: true });
-        return;
-      }
-      
-      // Redirection si non authentifié
-      if (!user && !["/auth", "/"].includes(currentPath)) {
-        navigate("/auth", { replace: true });
-        return;
-      }
-      
-      // Redirection si authentifié et sur page d'accueil
-      if (user && currentPath === "/") {
-        navigate("/home", { replace: true });
-        return;
-      }
-    }
-  }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
+    if (!isReady) return;
 
-  if (isLoading || !isInitialized || !isDocumentReady) {
+    const currentPath = location.pathname;
+    
+    // Paths autorisés (version minimale)
+    const allowedPaths = ["/", "/home", "/auth", "/explore", "/profile", "/reading-list", "/books", "/diagnostic"];
+    
+    const isAllowedPath = allowedPaths.some(path => {
+      if (path === "/") return currentPath === "/";
+      return currentPath.startsWith(path);
+    });
+    
+    if (!isAllowedPath) {
+      console.warn("[ROUTER] Invalid path detected:", currentPath);
+      navigate("/", { replace: true });
+      return;
+    }
+    
+    // Redirection auth simplifiée
+    if (!user && !["/auth", "/", "/diagnostic"].includes(currentPath)) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    
+    if (user && currentPath === "/") {
+      navigate("/home", { replace: true });
+      return;
+    }
+  }, [user, isReady, location.pathname, navigate]);
+
+  if (!isReady) {
     return <LoadingFallback />;
   }
 
   return (
-    <PageTransition key={location.pathname}>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/auth" element={<Auth />} />
-        
-        <Route path="/home" element={
-          <AuthGuard>
-            <Home />
-          </AuthGuard>
-        } />
-        
-        <Route path="/books/:id" element={
-          <AuthGuard>
-            <Suspense fallback={<BookFallback />}>
-              <BookPage />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/profile/:userId?" element={
-          <AuthGuard>
-            <Suspense fallback={<ProfileFallback />}>
-              <Profile />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/u/:userId" element={
-          <AuthGuard>
-            <Suspense fallback={<ProfileFallback />}>
-              <PublicProfilePage />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/discover" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Discover />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/reading-list" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <ReadingList />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/explore" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Explore />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/achievements" element={
-          <AuthGuard>
-            <Suspense fallback={<GenericFallback />}>
-              <Achievements />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/followers/:type/:userId?" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Followers />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/admin" element={
-          <AuthGuard>
-            <Suspense fallback={<GenericFallback />}>
-              <Admin />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="*" element={
-          <Suspense fallback={<GenericFallback />}>
-            <NotFound />
+    <Routes>
+      {/* Routes publiques */}
+      <Route path="/" element={<Login />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/diagnostic" element={<DiagnosticPage />} />
+      
+      {/* Routes protégées critiques */}
+      <Route path="/home" element={
+        <AuthGuard>
+          <Home />
+        </AuthGuard>
+      } />
+      
+      <Route path="/books/:id" element={
+        <AuthGuard>
+          <BookPage />
+        </AuthGuard>
+      } />
+      
+      <Route path="/profile/:userId?" element={
+        <AuthGuard>
+          <Profile />
+        </AuthGuard>
+      } />
+      
+      <Route path="/explore" element={
+        <AuthGuard>
+          <Explore />
+        </AuthGuard>
+      } />
+      
+      <Route path="/reading-list" element={
+        <AuthGuard>
+          <ReadingList />
+        </AuthGuard>
+      } />
+      
+      {/* Routes commentées temporairement pour diagnostic
+      <Route path="/u/:userId" element={
+        <AuthGuard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <PublicProfilePage />
           </Suspense>
-        } />
-      </Routes>
-    </PageTransition>
+        </AuthGuard>
+      } />
+      
+      <Route path="/discover" element={
+        <AuthGuard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Discover />
+          </Suspense>
+        </AuthGuard>
+      } />
+      
+      <Route path="/achievements" element={
+        <AuthGuard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Achievements />
+          </Suspense>
+        </AuthGuard>
+      } />
+      
+      <Route path="/followers/:type/:userId?" element={
+        <AuthGuard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Followers />
+          </Suspense>
+        </AuthGuard>
+      } />
+      
+      <Route path="/admin" element={
+        <AuthGuard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Admin />
+          </Suspense>
+        </AuthGuard>
+      } />
+      */}
+      
+      {/* Fallback pour routes inconnues */}
+      <Route path="*" element={
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <h1>Page non trouvée</h1>
+          <button onClick={() => navigate("/home")}>
+            Retour à l'accueil
+          </button>
+        </div>
+      } />
+    </Routes>
   );
 }
 
