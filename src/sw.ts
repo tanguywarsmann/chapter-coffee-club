@@ -122,26 +122,32 @@ self.addEventListener("fetch", (event) => {
   // API calls - Network First avec timeout corrigé
   else if (url.hostname.includes('supabase.co')) {
     event.respondWith(
-      (async () => {
+      (async (): Promise<Response> => {
         try {
-          // Timeout avec Promise.race typé explicitement
-          const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Network timeout')), 10000)
-          );
+          // Créer une promesse de timeout qui rejette
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Network timeout')), 10000);
+          });
+          
+          // Typer explicitement la course entre fetch et timeout
+          const fetchPromise: Promise<Response> = fetch(request);
           
           const response = await Promise.race([
-            fetch(request),
+            fetchPromise,
             timeoutPromise
-          ]) as Response;
+          ]);
           
+          // Vérifier que c'est bien une Response et la mettre en cache si applicable
           if (response instanceof Response && response.ok && request.method === 'GET') {
             const responseClone = response.clone();
             caches.open(API_CACHE).then(cache => {
               cache.put(request, responseClone);
             });
           }
+          
           return response;
         } catch (error) {
+          // En cas d'erreur, essayer le cache puis fallback
           const cachedResponse = await caches.match(request);
           return cachedResponse || new Response('Network Error', { status: 503 });
         }
