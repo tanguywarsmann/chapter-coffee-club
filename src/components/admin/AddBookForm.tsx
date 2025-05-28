@@ -14,16 +14,7 @@ import { slugify } from "@/services/books/utils";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Book } from "@/types/book";
-import { generateUUID, isValidUUIDAny } from "@/utils/validation";
-
-const addBookSchema = z.object({
-  title: z.string().min(1, "Le titre est requis"),
-  author: z.string().min(1, "L'auteur est requis"),
-  total_pages: z.coerce.number().min(1, "Le nombre de pages est requis"),
-  description: z.string().optional(),
-  cover_url: z.string().optional(),
-  is_published: z.boolean().default(true),
-});
+import { addBookSchema, generateUUID, isValidUUIDAny } from "@/utils/validation";
 
 type AddBookFormValues = z.infer<typeof addBookSchema>;
 

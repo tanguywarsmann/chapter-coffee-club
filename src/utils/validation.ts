@@ -34,7 +34,7 @@ export const isValidUUIDAny = (value: string): boolean => {
  * @param value - The string to validate
  * @returns boolean - true if valid UUID v4, false otherwise
  */
-export const isUuidV4 = (value: string): boolean =>
+export const isUuidV4 = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 /**
@@ -50,12 +50,38 @@ export const uuidSchema = z
   });
 
 /**
- * Custom Zod validator for UUID fields (deprecated - use uuidSchema instead)
+ * Schéma Zod pour l'ajout de livre
  */
-export const uuidValidation = (fieldName: string = "UUID") => 
-  uuidSchema.refine(() => true, {
-    message: `${fieldName} doit être un UUID valide (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)`,
-  });
+export const addBookSchema = z.object({
+  title: z.string().min(1, "Le titre est requis"),
+  author: z.string().min(1, "L'auteur est requis"),
+  total_pages: z.coerce.number().min(1, "Le nombre de pages est requis"),
+  description: z.string().optional(),
+  cover_url: z.string().optional(),
+  is_published: z.boolean().default(true),
+});
+
+/**
+ * Schéma Zod pour l'ajout de question
+ */
+export const addQuestionSchema = z.object({
+  book_slug: z.string().min(1, "Le slug du livre est requis"),
+  segment: z.coerce.number().min(0, "Le numéro de segment doit être positif"),
+  question: z.string().min(1, "La question est requise"),
+  answer: z.string().min(1, "La réponse est requise").refine(
+    (value) => value.trim().split(/\s+/).length === 1,
+    "La réponse doit contenir un seul mot"
+  ),
+});
+
+/**
+ * Schéma Zod pour la métadonnée de livre
+ */
+export const bookMetadataSchema = z.object({
+  total_pages: z.coerce.number().min(1, "Le nombre de pages est requis"),
+  description: z.string().optional(),
+  is_published: z.boolean().default(true),
+});
 
 /**
  * Generates a random UUID v4

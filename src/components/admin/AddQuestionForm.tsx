@@ -10,17 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { isValidUUIDAny, generateUUID } from "@/utils/validation";
-
-const addQuestionSchema = z.object({
-  book_slug: z.string().min(1, "Le slug du livre est requis"),
-  segment: z.coerce.number().min(0, "Le numéro de segment doit être positif"),
-  question: z.string().min(1, "La question est requise"),
-  answer: z.string().min(1, "La réponse est requise").refine(
-    (value) => value.trim().split(/\s+/).length === 1,
-    "La réponse doit contenir un seul mot"
-  ),
-});
+import { addQuestionSchema, generateUUID, isValidUUIDAny } from "@/utils/validation";
 
 type AddQuestionFormValues = z.infer<typeof addQuestionSchema>;
 

@@ -16,12 +16,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, SquarePen, Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Book } from "@/types/book";
-import { generateUUID, isValidUUIDAny } from "@/utils/validation";
+import { generateUUID, isValidUUIDAny, addQuestionSchema } from "@/utils/validation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface BookMetadataEditorProps {
   book: Book;
   onUpdate: () => void;
 }
+
+type QuestionFormValues = z.infer<typeof addQuestionSchema>;
 
 export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,9 +39,17 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   
   // Pour l'ajout rapide de questions
   const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+
+  const questionForm = useForm<QuestionFormValues>({
+    resolver: zodResolver(addQuestionSchema),
+    defaultValues: {
+      book_slug: book.slug || "",
+      segment: 0,
+      question: "",
+      answer: "",
+    },
+  });
 
   // Fonction pour recalculer automatiquement les segments
   const recalculateSegments = () => {
@@ -195,41 +208,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     }
   };
   
-  // Fonction pour ajouter une question de validation
-  const addValidationQuestion = async () => {
-    if (!selectedSegment && selectedSegment !== 0) {
-      toast({
-        title: "Segment non sélectionné : Veuillez sélectionner un segment",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!question.trim()) {
-      toast({
-        title: "Question invalide : La question ne peut pas être vide",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!answer.trim()) {
-      toast({
-        title: "Réponse invalide : La réponse ne peut pas être vide",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Vérifier si la réponse contient plus d'un mot
-    if (answer.trim().split(/\s+/).length > 1) {
-      toast({
-        title: "Réponse invalide : La réponse doit contenir un seul mot",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+  // Fonction pour ajouter une question de validation avec validation Zod
+  const addValidationQuestion = async (data: QuestionFormValues) => {
     setIsAddingQuestion(true);
     
     try {
@@ -255,20 +235,19 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         .insert({
           id: questionId,
           book_slug: bookData.slug,
-          segment: selectedSegment,
-          question: question.trim(),
-          answer: answer.trim().toLowerCase()
+          segment: data.segment,
+          question: data.question.trim(),
+          answer: data.answer.trim().toLowerCase()
         });
         
       if (error) throw error;
       
       toast({
-        title: `Question ajoutée : La question pour le segment ${selectedSegment} a été ajoutée avec succès.`
+        title: `Question ajoutée : La question pour le segment ${data.segment} a été ajoutée avec succès.`
       });
       
       // Réinitialiser les champs
-      setQuestion("");
-      setAnswer("");
+      questionForm.reset();
       
       // Fermer le dialogue et actualiser les données
       setIsOpen(false);
@@ -393,19 +372,18 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
           
           <Separator />
           
-          {/* Ajout rapide de questions de validation */}
+          {/* Ajout rapide de questions de validation avec validation Zod */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Ajouter une question de validation</h3>
             
             {book.missingSegments && book.missingSegments.length > 0 ? (
-              <div className="space-y-4">
+              <form onSubmit={questionForm.handleSubmit(addValidationQuestion)} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="segment">Segment manquant</Label>
                   <select 
                     id="segment"
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
-                    value={selectedSegment || ""}
-                    onChange={(e) => setSelectedSegment(parseInt(e.target.value))}
+                    {...questionForm.register("segment", { valueAsNumber: true })}
                   >
                     <option value="">Sélectionnez un segment</option>
                     {book.missingSegments.map((segment) => (
@@ -414,33 +392,40 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
                       </option>
                     ))}
                   </select>
+                  {questionForm.formState.errors.segment && (
+                    <p className="text-sm text-destructive">{questionForm.formState.errors.segment.message}</p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="question">Question</Label>
                   <Input 
                     id="question" 
-                    value={question} 
-                    onChange={(e) => setQuestion(e.target.value)}
                     placeholder="Exemple: Quel est le nom du personnage principal ?"
+                    {...questionForm.register("question")}
                   />
+                  {questionForm.formState.errors.question && (
+                    <p className="text-sm text-destructive">{questionForm.formState.errors.question.message}</p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="answer">Réponse (un seul mot)</Label>
                   <Input 
                     id="answer" 
-                    value={answer} 
-                    onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Exemple: Jean"
+                    {...questionForm.register("answer")}
                   />
+                  {questionForm.formState.errors.answer && (
+                    <p className="text-sm text-destructive">{questionForm.formState.errors.answer.message}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     La réponse doit contenir un seul mot, sans espace.
                   </p>
                 </div>
                 
                 <Button 
-                  onClick={addValidationQuestion} 
+                  type="submit"
                   disabled={isAddingQuestion}
                   variant="secondary"
                   className="w-full sm:w-auto"
@@ -454,7 +439,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
                     <>Ajouter la question</>
                   )}
                 </Button>
-              </div>
+              </form>
             ) : (
               <p className="text-muted-foreground">
                 Tous les segments de ce livre ont déjà des questions.
