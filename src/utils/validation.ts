@@ -34,8 +34,10 @@ export const isValidUUIDAny = (value: string): boolean => {
  * @param value - The string to validate
  * @returns boolean - true if valid UUID v4, false otherwise
  */
-export const isUuidV4 = (value: string) =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+export const isUuidV4 = (value: string): boolean => {
+  if (!value || typeof value !== 'string') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
 
 /**
  * Zod schema for UUID validation
@@ -90,3 +92,49 @@ export const bookMetadataSchema = z.object({
 export const generateUUID = (): string => {
   return crypto.randomUUID();
 };
+
+/**
+ * Test cases for UUID validation
+ */
+export const uuidTestCases = [
+  {
+    name: "UUID v4 valide",
+    value: "123e4567-e89b-12d3-a456-426614174000",
+    expected: { valid: true }
+  },
+  {
+    name: "UUID v4 généré dynamiquement",
+    value: generateUUID(),
+    expected: { valid: true }
+  },
+  {
+    name: "UUID mal formé (caractères invalides)",
+    value: "123e4567-e89b-12d3-a456-42661417400g",
+    expected: { valid: false }
+  },
+  {
+    name: "UUID trop court",
+    value: "123e4567-e89b-12d3-a456",
+    expected: { valid: false }
+  },
+  {
+    name: "UUID avec mauvais tirets",
+    value: "123e4567_e89b_12d3_a456_426614174000",
+    expected: { valid: false }
+  },
+  {
+    name: "Chaîne vide",
+    value: "",
+    expected: { valid: false }
+  },
+  {
+    name: "UUID v1 (non v4)",
+    value: "123e4567-e89b-12d3-a456-426614174000".replace('4', '1'),
+    expected: { valid: false }
+  },
+  {
+    name: "Texte aléatoire",
+    value: "pas-un-uuid-du-tout",
+    expected: { valid: false }
+  }
+];

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Loader2, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,7 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [uuidError, setUuidError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const form = useForm<AddQuestionFormValues>({
     resolver: zodResolver(addQuestionSchema),
@@ -34,6 +35,31 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
       answer: "",
     },
   });
+
+  // Validation côté client en temps réel
+  const validateFormData = (data: AddQuestionFormValues): string[] => {
+    const errors: string[] = [];
+    
+    if (!data.book_slug || data.book_slug.trim().length === 0) {
+      errors.push("Le slug du livre est requis");
+    }
+    
+    if (data.segment < 0) {
+      errors.push("Le numéro de segment doit être positif ou nul");
+    }
+    
+    if (!data.question || data.question.trim().length === 0) {
+      errors.push("La question est requise");
+    }
+    
+    if (!data.answer || data.answer.trim().length === 0) {
+      errors.push("La réponse est requise");
+    } else if (data.answer.trim().split(/\s+/).length !== 1) {
+      errors.push("La réponse doit contenir exactement un seul mot");
+    }
+    
+    return errors;
+  };
 
   const validateAndGenerateUUID = (): string | null => {
     setUuidError(null);
@@ -55,8 +81,20 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
   };
 
   const onSubmit = async (data: AddQuestionFormValues) => {
+    // Validation côté client avant soumission
+    const clientErrors = validateFormData(data);
+    if (clientErrors.length > 0) {
+      setValidationErrors(clientErrors);
+      toast({
+        title: "Erreur de validation : Veuillez corriger les erreurs dans le formulaire",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setUuidError(null);
+    setValidationErrors([]);
     
     try {
       // Validation et génération d'UUID
@@ -117,6 +155,10 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
     }
   };
 
+  // Vérification en temps réel des données du formulaire
+  const formData = form.watch();
+  const realTimeErrors = validateFormData(formData);
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
@@ -130,10 +172,35 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
           <DialogTitle>Ajouter une question de validation</DialogTitle>
         </DialogHeader>
 
+        {/* Affichage des erreurs UUID */}
         {uuidError && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{uuidError}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Affichage des erreurs de validation en temps réel */}
+        {validationErrors.length > 0 && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <ul className="list-disc list-inside">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Indicateur de validation en temps réel */}
+        {realTimeErrors.length === 0 && formData.book_slug && formData.question && formData.answer && (
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>
+              Formulaire valide - prêt pour la soumission
+            </AlertDescription>
           </Alert>
         )}
 
@@ -207,7 +274,10 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isLoading || !!uuidError}>
+              <Button 
+                type="submit" 
+                disabled={isLoading || !!uuidError || realTimeErrors.length > 0}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
