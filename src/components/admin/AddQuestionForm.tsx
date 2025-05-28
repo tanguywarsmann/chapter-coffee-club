@@ -4,13 +4,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { addQuestionSchema, generateUUID, isValidUUIDAny } from "@/utils/validation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type AddQuestionFormValues = z.infer<typeof addQuestionSchema>;
 
@@ -22,6 +23,7 @@ interface AddQuestionFormProps {
 export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [uuidError, setUuidError] = useState<string | null>(null);
 
   const form = useForm<AddQuestionFormValues>({
     resolver: zodResolver(addQuestionSchema),
@@ -33,17 +35,53 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
     },
   });
 
-  const onSubmit = async (data: AddQuestionFormValues) => {
-    setIsLoading(true);
+  const validateAndGenerateUUID = (): string | null => {
+    setUuidError(null);
+    
     try {
-      // Générer un UUID valide pour la question
       const questionId = generateUUID();
       
       // Validation supplémentaire côté client
       if (!isValidUUIDAny(questionId)) {
-        throw new Error("Erreur de génération d'UUID pour la question");
+        setUuidError("UUID généré invalide - impossible de continuer");
+        return null;
+      }
+      
+      return questionId;
+    } catch (error) {
+      setUuidError("Erreur lors de la génération d'UUID");
+      return null;
+    }
+  };
+
+  const onSubmit = async (data: AddQuestionFormValues) => {
+    setIsLoading(true);
+    setUuidError(null);
+    
+    try {
+      // Validation et génération d'UUID
+      const questionId = validateAndGenerateUUID();
+      if (!questionId) {
+        return; // L'erreur est déjà affichée
       }
 
+      // Vérifier si une question existe déjà pour ce segment et ce livre
+      const { data: existingQuestion, error: checkError } = await supabase
+        .from("reading_questions")
+        .select("id")
+        .eq("book_slug", data.book_slug)
+        .eq("segment", data.segment)
+        .maybeSingle();
+
+      if (checkError) {
+        throw new Error(`Erreur lors de la vérification: ${checkError.message}`);
+      }
+
+      if (existingQuestion) {
+        throw new Error(`Une question existe déjà pour le segment ${data.segment} de ce livre`);
+      }
+
+      // Insérer la nouvelle question
       const { error } = await supabase
         .from("reading_questions")
         .insert({
@@ -54,7 +92,12 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
           answer: data.answer.trim().toLowerCase(),
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') { // Contrainte d'unicité violée
+          throw new Error("Une question avec cet ID ou ces paramètres existe déjà");
+        }
+        throw error;
+      }
 
       toast({
         title: `Question ajoutée : La question pour le segment ${data.segment} a été créée avec succès.`,
@@ -86,6 +129,14 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
         <DialogHeader>
           <DialogTitle>Ajouter une question de validation</DialogTitle>
         </DialogHeader>
+
+        {uuidError && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{uuidError}</AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -156,7 +207,7 @@ export function AddQuestionForm({ bookSlug, onQuestionAdded }: AddQuestionFormPr
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || !!uuidError}>
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

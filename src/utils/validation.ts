@@ -35,7 +35,7 @@ export const isValidUUIDAny = (value: string): boolean => {
  * @returns boolean - true if valid UUID v4, false otherwise
  */
 export const isUuidV4 = (value: string) =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 /**
  * Zod schema for UUID validation
