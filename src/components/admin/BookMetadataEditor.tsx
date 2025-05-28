@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,7 +61,6 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   // Load book data when opening the dialog
   const loadBookData = async () => {
     try {
-      // Only select columns that we know exist in the books table
       const { data, error } = await supabase
         .from('books')
         .select('id, title, author, description, cover_url, slug, is_published, total_pages')
@@ -76,7 +76,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       if (data) {
         if (data.description) setDescription(data.description);
-        setIsPublished(data.is_published !== false); // Default to true if undefined
+        setIsPublished(data.is_published !== false);
         if (data.total_pages) setTotalPages(data.total_pages);
         if (data.slug) setBookSlug(data.slug);
       }
@@ -96,7 +96,6 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
 
     setIsSaving(true);
     try {
-      // Get the book slug
       const { data: bookData, error: bookError } = await supabase
         .from('books')
         .select('slug')
@@ -106,10 +105,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       if (bookError) throw bookError;
       
       const segmentEntries = book.missingSegments.map(segmentNum => {
-        // Générer un UUID valide pour chaque question
         const questionId = generateUUID();
         
-        // Validation côté client
         if (!isValidUUIDAny(questionId)) {
           throw new Error(`UUID invalide généré pour le segment ${segmentNum}`);
         }
@@ -117,7 +114,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         return {
           id: questionId,
           book_slug: bookData.slug,
-          segment: segmentNum, // Déjà indexé à partir de 1 depuis le composant parent
+          segment: segmentNum,
           question: "",
           answer: ""
         };
@@ -133,9 +130,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         title: `Segments générés : ${book.missingSegments.length} segments vides ont été générés avec succès.`,
       });
       
-      // Fermer le dialogue et actualiser les données
       setIsOpen(false);
-      console.log("Update triggered from generateMissingSegments");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la génération des segments:", error);
@@ -152,7 +147,6 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   const saveBookChanges = async () => {
     setIsSaving(true);
     try {
-      // Convertir totalPages en nombre entier pour s'assurer que c'est un nombre valide
       const parsedTotalPages = parseInt(String(totalPages), 10);
       
       if (isNaN(parsedTotalPages)) {
@@ -163,19 +157,12 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         throw new Error("Le slug du livre est manquant");
       }
       
-      // Log de debug simplifié
-      console.log("Mise à jour du livre via slug:", bookSlug);
-      
-      // Préparer l'objet de mise à jour
       const updatePayload = {
         total_pages: parsedTotalPages,
         description: description || null,
         is_published: isPublished
       };
       
-      console.log("Payload envoyé à Supabase:", updatePayload);
-      
-      // Exécuter la requête de mise à jour directement avec le slug
       const { data, error } = await supabase
         .from('books')
         .update(updatePayload)
@@ -187,15 +174,11 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         throw error;
       }
       
-      console.log("Réponse de Supabase:", { data, affectedRows: data?.length });
-      
       toast({
         title: `Modifications enregistrées : Les informations du livre "${book.title}" ont été mises à jour.`
       });
       
-      // Fermer le dialogue et actualiser les données
       setIsOpen(false);
-      console.log("Update triggered from saveBookChanges");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
@@ -213,7 +196,6 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     setIsAddingQuestion(true);
     
     try {
-      // Récupérer le slug du livre
       const { data: bookData, error: bookError } = await supabase
         .from('books')
         .select('slug')
@@ -222,14 +204,12 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         
       if (bookError) throw bookError;
       
-      // Générer un UUID valide pour la question
       const questionId = generateUUID();
       
       if (!isValidUUIDAny(questionId)) {
         throw new Error("Erreur de génération d'UUID pour la question");
       }
       
-      // Ajouter la question
       const { error } = await supabase
         .from('reading_questions')
         .insert({
@@ -246,12 +226,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         title: `Question ajoutée : La question pour le segment ${data.segment} a été ajoutée avec succès.`
       });
       
-      // Réinitialiser les champs
       questionForm.reset();
-      
-      // Fermer le dialogue et actualiser les données
       setIsOpen(false);
-      console.log("Update triggered from addValidationQuestion");
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de la question:", error);
@@ -372,7 +348,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
           
           <Separator />
           
-          {/* Ajout rapide de questions de validation avec validation Zod */}
+          {/* Ajout rapide de questions */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Ajouter une question de validation</h3>
             
@@ -385,64 +361,46 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
                     {...questionForm.register("segment", { valueAsNumber: true })}
                   >
-                    <option value="">Sélectionnez un segment</option>
-                    {book.missingSegments.map((segment) => (
-                      <option key={segment} value={segment}>
-                        Segment {segment}
+                    {book.missingSegments.map(segmentNum => (
+                      <option key={segmentNum} value={segmentNum}>
+                        Segment {segmentNum}
                       </option>
                     ))}
                   </select>
-                  {questionForm.formState.errors.segment && (
-                    <p className="text-sm text-destructive">{questionForm.formState.errors.segment.message}</p>
-                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="question">Question</Label>
                   <Input 
-                    id="question" 
-                    placeholder="Exemple: Quel est le nom du personnage principal ?"
+                    id="question"
+                    placeholder="Quelle est la couleur du ciel ?"
                     {...questionForm.register("question")}
                   />
-                  {questionForm.formState.errors.question && (
-                    <p className="text-sm text-destructive">{questionForm.formState.errors.question.message}</p>
-                  )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="answer">Réponse (un seul mot)</Label>
                   <Input 
-                    id="answer" 
-                    placeholder="Exemple: Jean"
+                    id="answer"
+                    placeholder="bleu"
                     {...questionForm.register("answer")}
                   />
-                  {questionForm.formState.errors.answer && (
-                    <p className="text-sm text-destructive">{questionForm.formState.errors.answer.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    La réponse doit contenir un seul mot, sans espace.
-                  </p>
                 </div>
                 
-                <Button 
-                  type="submit"
-                  disabled={isAddingQuestion}
-                  variant="secondary"
-                  className="w-full sm:w-auto"
-                >
+                <Button type="submit" disabled={isAddingQuestion}>
                   {isAddingQuestion ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Ajout en cours...
                     </>
                   ) : (
-                    <>Ajouter la question</>
+                    "Ajouter la question"
                   )}
                 </Button>
               </form>
             ) : (
-              <p className="text-muted-foreground">
-                Tous les segments de ce livre ont déjà des questions.
+              <p className="text-sm text-muted-foreground">
+                Aucun segment manquant pour ce livre.
               </p>
             )}
           </div>

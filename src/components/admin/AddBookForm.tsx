@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/services/books/utils";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Book } from "@/types/book";
 import { addBookSchema, generateUUID, isValidUUIDAny } from "@/utils/validation";
 
 type AddBookFormValues = z.infer<typeof addBookSchema>;
@@ -46,7 +46,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       setCoverFile(file);
       const fileUrl = URL.createObjectURL(file);
       setCoverPreviewUrl(fileUrl);
-      form.setValue("cover_url", ""); // Clear the URL input when file is selected
+      form.setValue("cover_url", "");
     }
   };
 
@@ -83,7 +83,6 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     return publicUrlData.publicUrl;
   };
 
-  // Function to generate empty segments for the book
   const generateEmptySegments = async (bookSlug: string, totalPages: number): Promise<void> => {
     const expectedSegments = Math.ceil(totalPages / 30);
     
@@ -93,10 +92,8 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       const segmentEntries = [];
       
       for (let i = 0; i < expectedSegments; i++) {
-        // Générer un UUID valide pour chaque question
         const questionId = generateUUID();
         
-        // Validation côté client
         if (!isValidUUIDAny(questionId)) {
           throw new Error(`UUID invalide généré pour le segment ${i}`);
         }
@@ -119,7 +116,6 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       console.log(`${expectedSegments} segments vides générés pour le livre ${bookSlug}`);
     } catch (error) {
       console.error("Erreur lors de la génération des segments vides:", error);
-      // We don't want the whole book creation process to fail if segment generation fails
       toast({
         title: "Attention : Le livre a été créé, mais la génération automatique des segments a échoué.",
         variant: "default",
@@ -130,23 +126,19 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
   const onSubmit = async (data: AddBookFormValues) => {
     setIsLoading(true);
     try {
-      // Generate a slug from title and author
       const slug = slugify(data.title + "-" + data.author);
       
-      // Upload cover image if provided
       let coverUrl = data.cover_url;
       if (coverFile) {
         coverUrl = await uploadCoverImage(coverFile, slug);
       }
       
-      // Generate a UUID for the book with client-side validation
       const bookId = generateUUID();
       
       if (!isValidUUIDAny(bookId)) {
         throw new Error("Erreur de génération d'UUID pour le livre");
       }
       
-      // Create book record
       const bookData = {
         id: bookId,
         title: data.title,
@@ -155,7 +147,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
         description: data.description || null,
         cover_url: coverUrl || null,
         slug,
-        tags: [], // Default empty tags array
+        tags: [],
         is_published: data.is_published,
       };
       
@@ -165,7 +157,6 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       
       if (error) throw error;
       
-      // Generate empty segments for the book
       await generateEmptySegments(slug, data.total_pages);
       
       toast({
@@ -176,7 +167,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       setCoverFile(null);
       setCoverPreviewUrl(null);
       setIsDialogOpen(false);
-      onBookAdded(); // Refresh book list
+      onBookAdded();
     } catch (error: any) {
       console.error("Erreur lors de l'ajout du livre:", error);
       toast({
