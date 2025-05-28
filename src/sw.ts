@@ -124,18 +124,15 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async (): Promise<Response> => {
         try {
-          // Créer une promesse de timeout qui rejette
-          const timeoutPromise = new Promise<never>((_, reject) => {
-            setTimeout(() => reject(new Error('Network timeout')), 10000);
+          // Utiliser AbortController pour un timeout propre
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          
+          const response = await fetch(request, { 
+            signal: controller.signal 
           });
           
-          // Typer explicitement la course entre fetch et timeout
-          const fetchPromise: Promise<Response> = fetch(request);
-          
-          const response = await Promise.race([
-            fetchPromise,
-            timeoutPromise
-          ]);
+          clearTimeout(timeoutId);
           
           // Vérifier que c'est bien une Response et la mettre en cache si applicable
           if (response instanceof Response && response.ok && request.method === 'GET') {
@@ -147,7 +144,7 @@ self.addEventListener("fetch", (event) => {
           
           return response;
         } catch (error) {
-          // En cas d'erreur, essayer le cache puis fallback
+          // En cas d'erreur (timeout ou réseau), essayer le cache puis fallback
           const cachedResponse = await caches.match(request);
           return cachedResponse || new Response('Network Error', { status: 503 });
         }
