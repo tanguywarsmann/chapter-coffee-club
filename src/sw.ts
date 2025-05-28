@@ -119,27 +119,33 @@ self.addEventListener("fetch", (event) => {
       })
     );
   }
-  // API calls - Network First avec timeout
+  // API calls - Network First avec timeout corrigé
   else if (url.hostname.includes('supabase.co')) {
     event.respondWith(
-      Promise.race([
-        fetch(request),
-        new Promise<Response>((_, reject) => 
-          setTimeout(() => reject(new Error('Network timeout')), 10000)
-        )
-      ]).then((response: Response) => {
-        if (response instanceof Response && response.ok && request.method === 'GET') {
-          const responseClone = response.clone();
-          caches.open(API_CACHE).then(cache => {
-            cache.put(request, responseClone);
-          });
-        }
-        return response;
-      }).catch(() => {
-        return caches.match(request).then(cachedResponse => {
+      (async () => {
+        try {
+          // Timeout avec Promise.race typé explicitement
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Network timeout')), 10000)
+          );
+          
+          const response = await Promise.race([
+            fetch(request),
+            timeoutPromise
+          ]) as Response;
+          
+          if (response instanceof Response && response.ok && request.method === 'GET') {
+            const responseClone = response.clone();
+            caches.open(API_CACHE).then(cache => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        } catch (error) {
+          const cachedResponse = await caches.match(request);
           return cachedResponse || new Response('Network Error', { status: 503 });
-        });
-      })
+        }
+      })()
     );
   }
 });
