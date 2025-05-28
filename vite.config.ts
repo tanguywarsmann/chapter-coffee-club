@@ -10,11 +10,9 @@ export default defineConfig(({ mode }) => ({
   server: { host: '::', port: 8080 },
 
   plugins: [
-    // PWA configuration optimisée pour iOS
+    // PWA configuration corrigée
     VitePWA({
       strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
       devOptions: { 
@@ -23,14 +21,16 @@ export default defineConfig(({ mode }) => ({
       },
       
       injectManifest: {
+        swSrc: 'src/custom-sw.ts',
+        swDest: 'sw.js',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         maximumFileSizeToCacheInBytes: 5000000, // 5MB
       },
       
       workbox: {
         cleanupOutdatedCaches: true,
-        skipWaiting: false, // Laisser le SW gérer cela
-        clientsClaim: false, // Laisser le SW gérer cela
+        skipWaiting: false,
+        clientsClaim: false,
       },
 
       manifest: false // Utiliser le manifest.json du dossier public
@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     target: 'esnext',
     minify: 'terser',
-    chunkSizeWarningLimit: 1500, // Augmenté pour éviter les warnings
+    chunkSizeWarningLimit: 1500,
     terserOptions: {
       compress: { 
         drop_console: mode !== 'development', 
@@ -75,7 +75,6 @@ export default defineConfig(({ mode }) => ({
     }
   },
 
-  // Optimisations pour iOS
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
     exclude: ['@vite/client', '@vite/env']
