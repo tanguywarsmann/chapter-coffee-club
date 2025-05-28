@@ -7,11 +7,13 @@ import { AuthGuard } from "../auth/AuthGuard";
 import { PageTransition } from "@/components/ui/page-transition";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { usePrefetch } from "@/hooks/usePrefetch";
+
+// Pages critiques chargées directement
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
 
-// Non-critical components loaded with React.lazy
+// Pages secondaires en lazy loading
 const BookPage = lazy(() => import("@/pages/BookPage"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const PublicProfilePage = lazy(() => import("@/pages/PublicProfilePage"));
@@ -23,6 +25,7 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Followers = lazy(() => import("@/pages/Followers"));
 
+// Composants de fallback optimisés
 const HomeFallback = () => <PageSkeleton variant="home" />;
 const ListFallback = () => <PageSkeleton variant="list" />;
 const ProfileFallback = () => <PageSkeleton variant="profile" />;
@@ -61,37 +64,37 @@ export function AppRouter() {
     }
   }, []);
 
-  // Central navigation logic
+  // Central navigation logic with error boundaries
   useEffect(() => {
     if (!isLoading && isInitialized && isDocumentReady) {
-      const allowed = ["/", "/home", "/auth", "/discover", "/explore", "/reading-list"];
+      const currentPath = location.pathname;
       
-      const isAllowedPath = allowed.some(path => 
-        location.pathname === path || 
-        location.pathname.startsWith(path + "/") ||
-        location.pathname.startsWith("/books/") ||
-        location.pathname.startsWith("/profile/") ||
-        location.pathname.startsWith("/u/") ||
-        location.pathname.startsWith("/followers/") ||
-        location.pathname.startsWith("/achievements") ||
-        location.pathname.startsWith("/admin")
-      );
+      // Chemins autorisés avec validation stricte
+      const allowedPaths = [
+        "/", "/home", "/auth", "/discover", "/explore", "/reading-list",
+        "/books", "/profile", "/u", "/followers", "/achievements", "/admin"
+      ];
+      
+      const isAllowedPath = allowedPaths.some(path => {
+        if (path === "/") return currentPath === "/";
+        return currentPath.startsWith(path);
+      });
       
       if (!isAllowedPath) {
-        const target = "/";
-        navigate(target, { replace: true });
+        console.warn("[ROUTER] Invalid path detected:", currentPath);
+        navigate("/", { replace: true });
         return;
       }
       
-      if (!user && location.pathname !== "/auth" && location.pathname !== "/") {
-        const target = "/auth";
-        navigate(target, { replace: true });
+      // Redirection si non authentifié
+      if (!user && !["/auth", "/"].includes(currentPath)) {
+        navigate("/auth", { replace: true });
         return;
       }
       
-      if (user && location.pathname === "/") {
-        const target = "/home";
-        navigate(target, { replace: true });
+      // Redirection si authentifié et sur page d'accueil
+      if (user && currentPath === "/") {
+        navigate("/home", { replace: true });
         return;
       }
     }
@@ -195,4 +198,4 @@ export function AppRouter() {
   );
 }
 
-export default { AppRouter };
+export default AppRouter;

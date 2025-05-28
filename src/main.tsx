@@ -7,13 +7,17 @@ performance.mark("read-app-start");
 // Nettoyage conditionnel et sécurisé
 const isFirstVisit = !localStorage.getItem("read_app_initialized");
 if (isFirstVisit) {
-  localStorage.removeItem("read_app_books_cache");
-  localStorage.setItem("read_app_initialized", "true");
+  try {
+    localStorage.removeItem("read_app_books_cache");
+    localStorage.setItem("read_app_initialized", "true");
+  } catch (error) {
+    console.warn("[PWA] Local storage not available");
+  }
 }
 
 // Reset path seulement si invalide
 const currentPath = window.location.pathname;
-const allowedPaths = ["/", "/auth", "/home", "/books", "/profile", "/achievements", "/discover", "/admin"];
+const allowedPaths = ["/", "/auth", "/home", "/books", "/profile", "/achievements", "/discover", "/admin", "/explore", "/reading-list", "/u", "/followers"];
 const isValidPath = allowedPaths.some(path => 
   currentPath === path || currentPath.startsWith(path + "/")
 );
@@ -91,7 +95,6 @@ if ('serviceWorker' in navigator) {
     switch (type) {
       case 'SW_ACTIVATED':
         console.log('[PWA] Service Worker activated, version:', version);
-        // Rafraîchir la page si une nouvelle version est active
         if (isUpdateAvailable) {
           window.location.reload();
         }
@@ -147,11 +150,16 @@ if ('serviceWorker' in navigator) {
   // Détection de connexion plus robuste pour mobile
   const checkConnectivity = async () => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      
       const response = await fetch('/manifest.json', { 
         method: 'HEAD',
         cache: 'no-cache',
-        signal: AbortSignal.timeout(3000)
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok && !isOnline) {
         handleOnline();
@@ -169,11 +177,15 @@ if ('serviceWorker' in navigator) {
 
 // Performance monitoring optimisé
 window.addEventListener("load", () => {
-  performance.measure("startup", "read-app-start");
-  const measurement = performance.getEntriesByName("startup")[0];
-  
-  if (measurement && measurement.duration > 3000) {
-    console.warn('[PERF] Startup time is slow:', measurement.duration + 'ms');
+  try {
+    performance.measure("startup", "read-app-start");
+    const measurement = performance.getEntriesByName("startup")[0];
+    
+    if (measurement && measurement.duration > 3000) {
+      console.warn('[PERF] Startup time is slow:', measurement.duration + 'ms');
+    }
+  } catch (error) {
+    console.warn('[PERF] Performance measurement failed:', error);
   }
   
   // Masquer le splash screen iOS
@@ -181,7 +193,11 @@ window.addEventListener("load", () => {
   if (splash) {
     setTimeout(() => {
       splash.style.opacity = '0';
-      setTimeout(() => splash.remove(), 500);
+      setTimeout(() => {
+        if (splash.parentNode) {
+          splash.parentNode.removeChild(splash);
+        }
+      }, 500);
     }, 1000);
   }
 });
@@ -203,5 +219,17 @@ window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
 });
 
-// Chargement React optimisé
-import("@/bootstrap");
+// Chargement React optimisé avec gestion d'erreur
+try {
+  import("@/bootstrap");
+} catch (error) {
+  console.error('[APP] Failed to load bootstrap:', error);
+  // Fallback en cas d'erreur de chargement
+  document.body.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; font-family: system-ui;">
+      <h1>Erreur de chargement</h1>
+      <p>Impossible de charger l'application. Veuillez actualiser la page.</p>
+      <button onclick="window.location.reload()">Actualiser</button>
+    </div>
+  `;
+}

@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 interface PrefetchRule {
   from: string;
@@ -29,9 +29,13 @@ const prefetchRules: PrefetchRule[] = [
 
 export function usePrefetch() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
+    // Désactiver le prefetch en production pour éviter les problèmes de publication
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+
     const currentPath = location.pathname;
     const matchingRule = prefetchRules.find(rule => 
       currentPath.startsWith(rule.from)
@@ -46,20 +50,24 @@ export function usePrefetch() {
           return;
         }
 
-        // Prefetch en créant un lien invisible
-        const link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.href = path;
-        document.head.appendChild(link);
+        try {
+          // Prefetch en créant un lien invisible
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = path;
+          document.head.appendChild(link);
 
-        // Nettoyer après 30 secondes
-        setTimeout(() => {
-          if (document.head.contains(link)) {
-            document.head.removeChild(link);
-          }
-        }, 30000);
+          // Nettoyer après 30 secondes
+          setTimeout(() => {
+            if (document.head.contains(link)) {
+              document.head.removeChild(link);
+            }
+          }, 30000);
+        } catch (error) {
+          console.warn('[PREFETCH] Failed to prefetch:', path, error);
+        }
       });
-    }, 1000);
+    }, 2000);
 
     return () => clearTimeout(timeoutId);
   }, [location.pathname]);

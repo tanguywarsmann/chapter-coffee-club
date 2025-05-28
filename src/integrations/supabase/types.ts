@@ -352,24 +352,6 @@ export type Database = {
         }
         Relationships: []
       }
-      reading_validations_question_id_backup: {
-        Row: {
-          id: string | null
-          question_id: string | null
-          validated_at: string | null
-        }
-        Insert: {
-          id?: string | null
-          question_id?: string | null
-          validated_at?: string | null
-        }
-        Update: {
-          id?: string | null
-          question_id?: string | null
-          validated_at?: string | null
-        }
-        Relationships: []
-      }
       user_badges: {
         Row: {
           badge_id: string | null
