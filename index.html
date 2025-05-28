@@ -3,7 +3,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>READ - Remets-toi à la lecture</title>
     <link rel="icon" href="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" type="image/png">
     <meta name="description" content="READ - Reprends goût à la lecture, page après page" />
@@ -19,19 +19,27 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-    <!-- PWA Configuration optimisée pour iOS -->
+    <!-- PWA Configuration optimisée pour iOS et Android -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#B05F2C" />
+    <meta name="msapplication-TileColor" content="#B05F2C" />
     
     <!-- iOS spécifique - Configuration optimisée -->
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="READ" />
     <meta name="format-detection" content="telephone=no" />
     
-    <!-- Prevent iOS Safari zoom on input focus -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- Android spécifique -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="READ" />
+    
+    <!-- Splash screens iOS -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
     
     <!-- Preload critical assets -->
     <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
@@ -41,6 +49,64 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://xjumsrjuyzvsixvfwoiz.supabase.co" />
     
+    <!-- Disable pull-to-refresh on mobile -->
+    <style>
+      body {
+        overscroll-behavior-y: contain;
+        touch-action: pan-x pan-y;
+      }
+      
+      /* Prevent iOS Safari bounce */
+      html, body {
+        position: fixed;
+        height: 100%;
+        overflow: hidden;
+      }
+      
+      #root {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Loading splash styles */
+      #loading-splash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #B05F2C;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+      }
+      
+      #loading-splash .logo {
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      
+      /* Prevent text selection on mobile */
+      .no-select {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+    </style>
+    
     <!-- Lovable script tag -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
@@ -49,45 +115,92 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Splash screen pour iOS -->
-    <div id="loading-splash" style="
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #B05F2C;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity 0.5s ease;
-    ">
-      <div style="color: white; font-size: 2rem; font-weight: bold;">READ</div>
+    <!-- Splash screen optimisé pour iOS/Android -->
+    <div id="loading-splash">
+      <div class="logo no-select">READ</div>
     </div>
     
     <script>
-      // Masquer le splash screen une fois l'app chargée
+      // Gestion du splash screen optimisée
+      let splashRemoved = false;
+      
+      const removeSplash = () => {
+        if (splashRemoved) return;
+        splashRemoved = true;
+        
+        const splash = document.getElementById('loading-splash');
+        if (splash) {
+          splash.style.opacity = '0';
+          setTimeout(() => {
+            if (splash.parentNode) {
+              splash.parentNode.removeChild(splash);
+            }
+          }, 500);
+        }
+      };
+      
+      // Plusieurs conditions pour masquer le splash
       window.addEventListener('load', () => {
-        setTimeout(() => {
-          const splash = document.getElementById('loading-splash');
-          if (splash) {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.remove(), 500);
-          }
-        }, 1000);
+        setTimeout(removeSplash, 1000);
       });
       
-      // Gestion offline/online simplifiée
+      // Masquer aussi quand le DOM est prêt (plus rapide)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(removeSplash, 800);
+        });
+      } else {
+        setTimeout(removeSplash, 500);
+      }
+      
+      // Gestion offline/online optimisée
       function updateNetworkStatus() {
         const isOnline = navigator.onLine;
         document.body.setAttribute('data-network', isOnline ? 'online' : 'offline');
+        
+        // Stocker l'état pour le service worker
+        localStorage.setItem('network_status', isOnline ? 'online' : 'offline');
       }
       
       window.addEventListener('online', updateNetworkStatus);
       window.addEventListener('offline', updateNetworkStatus);
       updateNetworkStatus();
+      
+      // Prévenir le zoom sur les inputs iOS
+      document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      });
+      
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+      
+      // Support du mode plein écran
+      if ('standalone' in window.navigator && window.navigator.standalone) {
+        // Mode PWA iOS
+        document.body.classList.add('pwa-mode', 'ios-pwa');
+      }
+      
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+        // Mode PWA Android
+        document.body.classList.add('pwa-mode', 'android-pwa');
+      }
+      
+      // Gestion des erreurs globales
+      window.addEventListener('error', function(event) {
+        console.error('[APP] Global error:', event.error);
+      });
+      
+      window.addEventListener('unhandledrejection', function(event) {
+        console.error('[APP] Unhandled promise rejection:', event.reason);
+      });
     </script>
   </body>
 </html>

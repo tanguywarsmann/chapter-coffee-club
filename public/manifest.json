@@ -10,6 +10,11 @@
   "scope": "/",
   "lang": "fr",
   "categories": ["books", "education", "lifestyle"],
+  "id": "app.read.lovable",
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -47,7 +52,38 @@
       "src": "/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png",
       "sizes": "320x568",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Interface principale de READ"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Ma liste de lecture",
+      "short_name": "Liste",
+      "description": "Accéder directement à votre liste de lecture",
+      "url": "/reading-list",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Découvrir",
+      "short_name": "Découvrir",
+      "description": "Explorer de nouveaux livres",
+      "url": "/explore",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "protocol_handlers": [],
+  "file_handlers": [],
+  "handle_links": "preferred"
 }
