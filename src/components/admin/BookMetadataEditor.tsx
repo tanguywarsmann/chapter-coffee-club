@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, SquarePen, Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Book } from "@/types/book";
+import { generateUUID, isValidUUIDAny } from "@/utils/validation";
 
 interface BookMetadataEditorProps {
   book: Book;
@@ -91,12 +92,23 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       if (bookError) throw bookError;
       
-      const segmentEntries = book.missingSegments.map(segmentNum => ({
-        book_slug: bookData.slug,
-        segment: segmentNum, // Déjà indexé à partir de 1 depuis le composant parent
-        question: "",
-        answer: ""
-      }));
+      const segmentEntries = book.missingSegments.map(segmentNum => {
+        // Générer un UUID valide pour chaque question
+        const questionId = generateUUID();
+        
+        // Validation côté client
+        if (!isValidUUIDAny(questionId)) {
+          throw new Error(`UUID invalide généré pour le segment ${segmentNum}`);
+        }
+        
+        return {
+          id: questionId,
+          book_slug: bookData.slug,
+          segment: segmentNum, // Déjà indexé à partir de 1 depuis le composant parent
+          question: "",
+          answer: ""
+        };
+      });
       
       const { error } = await supabase
         .from("reading_questions")
@@ -230,10 +242,18 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         
       if (bookError) throw bookError;
       
+      // Générer un UUID valide pour la question
+      const questionId = generateUUID();
+      
+      if (!isValidUUIDAny(questionId)) {
+        throw new Error("Erreur de génération d'UUID pour la question");
+      }
+      
       // Ajouter la question
       const { error } = await supabase
         .from('reading_questions')
         .insert({
+          id: questionId,
           book_slug: bookData.slug,
           segment: selectedSegment,
           question: question.trim(),

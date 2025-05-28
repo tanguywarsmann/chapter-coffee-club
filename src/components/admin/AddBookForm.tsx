@@ -14,6 +14,7 @@ import { slugify } from "@/services/books/utils";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Book } from "@/types/book";
+import { generateUUID, isValidUUIDAny } from "@/utils/validation";
 
 const addBookSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
@@ -101,7 +102,16 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       const segmentEntries = [];
       
       for (let i = 0; i < expectedSegments; i++) {
+        // Générer un UUID valide pour chaque question
+        const questionId = generateUUID();
+        
+        // Validation côté client
+        if (!isValidUUIDAny(questionId)) {
+          throw new Error(`UUID invalide généré pour le segment ${i}`);
+        }
+        
         segmentEntries.push({
+          id: questionId,
           book_slug: bookSlug,
           segment: i,
           question: "",
@@ -138,12 +148,16 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
         coverUrl = await uploadCoverImage(coverFile, slug);
       }
       
-      // Generate a UUID for the book
-      const id = crypto.randomUUID();
+      // Generate a UUID for the book with client-side validation
+      const bookId = generateUUID();
+      
+      if (!isValidUUIDAny(bookId)) {
+        throw new Error("Erreur de génération d'UUID pour le livre");
+      }
       
       // Create book record
       const bookData = {
-        id,
+        id: bookId,
         title: data.title,
         author: data.author,
         total_pages: data.total_pages,
