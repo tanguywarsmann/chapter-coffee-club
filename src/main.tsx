@@ -9,9 +9,9 @@ import { BrowserRouter } from 'react-router-dom'
 performance.mark("read-app-start");
 console.info("[MAIN] Starting READ app initialization");
 
-// Simple path validation
+// Simple path validation - FIXED: include /auth as valid path
 const currentPath = window.location.pathname;
-const allowedPaths = ["/", "/home", "/explore", "/profile", "/reading-list", "/books", "/diagnostic"];
+const allowedPaths = ["/", "/home", "/auth", "/explore", "/profile", "/reading-list", "/books", "/diagnostic"];
 const isValidPath = allowedPaths.some(path => 
   currentPath === path || currentPath.startsWith(path + "/")
 );
