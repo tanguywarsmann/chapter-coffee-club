@@ -10,16 +10,30 @@ export default defineConfig(({ mode }) => ({
   server: { host: '::', port: 8080 },
 
   plugins: [
-    // Configuration PWA simplifiée et fonctionnelle
+    // Configuration PWA simplifiée avec generateSW au lieu d'injectManifest
     VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'custom-sw.ts',
-      injectRegister: 'auto',
+      strategies: 'generateSW',
       registerType: 'autoUpdate',
       devOptions: { 
         enabled: true,
         type: 'module'
+      },
+      
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\./,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 300
+              }
+            }
+          }
+        ]
       },
       
       manifest: {
