@@ -57,70 +57,57 @@ export function AppRouter() {
   console.info("[APP ROUTER] Auth ready, rendering routes");
 
   return (
-    <div>
-      <Routes>
-        {/* Routes publiques - accessibles sans authentification */}
-        <Route path="/" element={
-          (() => {
-            console.info("[APP ROUTER] Rendering root route with Login component");
-            return <Login />;
-          })()
-        } />
-        <Route path="/auth" element={
-          (() => {
-            console.info("[APP ROUTER] Rendering /auth route");
-            return <Auth />;
-          })()
-        } />
-        <Route path="/diagnostic" element={<DiagnosticPage />} />
-        
-        {/* Routes protégées - nécessitent une authentification */}
-        <Route path="/home" element={
-          <AuthGuard>
-            <Home />
-          </AuthGuard>
-        } />
-        
-        <Route path="/books/:id" element={
-          <AuthGuard>
-            <BookPage />
-          </AuthGuard>
-        } />
-        
-        <Route path="/profile/:userId?" element={
-          <AuthGuard>
-            <Profile />
-          </AuthGuard>
-        } />
-        
-        <Route path="/explore" element={
-          <AuthGuard>
-            <Explore />
-          </AuthGuard>
-        } />
-        
-        <Route path="/reading-list" element={
-          <AuthGuard>
-            <ReadingList />
-          </AuthGuard>
-        } />
-        
-        {/* Fallback pour routes inconnues */}
-        <Route path="*" element={
-          (() => {
-            console.info("[APP ROUTER] Rendering fallback route for unknown path");
-            return (
-              <div style={{ padding: '40px', textAlign: 'center' }}>
-                <h1>Page non trouvée</h1>
-                <button onClick={() => window.location.href = "/auth"}>
-                  Retour à la connexion
-                </button>
-              </div>
-            );
-          })()
-        } />
-      </Routes>
-    </div>
+    <Routes>
+      {/* Route principale - toujours Login pour les utilisateurs non connectés */}
+      <Route path="/" element={<Login />} />
+      
+      {/* Route d'authentification alternative */}
+      <Route path="/auth" element={<Auth />} />
+      
+      {/* Page de diagnostic */}
+      <Route path="/diagnostic" element={<DiagnosticPage />} />
+      
+      {/* Routes protégées - nécessitent une authentification */}
+      <Route path="/home" element={
+        <AuthGuard>
+          <Home />
+        </AuthGuard>
+      } />
+      
+      <Route path="/books/:id" element={
+        <AuthGuard>
+          <BookPage />
+        </AuthGuard>
+      } />
+      
+      <Route path="/profile/:userId?" element={
+        <AuthGuard>
+          <Profile />
+        </AuthGuard>
+      } />
+      
+      <Route path="/explore" element={
+        <AuthGuard>
+          <Explore />
+        </AuthGuard>
+      } />
+      
+      <Route path="/reading-list" element={
+        <AuthGuard>
+          <ReadingList />
+        </AuthGuard>
+      } />
+      
+      {/* Fallback pour routes inconnues */}
+      <Route path="*" element={
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <h1>Page non trouvée</h1>
+          <button onClick={() => window.location.href = "/auth"}>
+            Retour à la connexion
+          </button>
+        </div>
+      } />
+    </Routes>
   );
 }
 

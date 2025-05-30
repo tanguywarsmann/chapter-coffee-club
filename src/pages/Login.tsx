@@ -24,13 +24,26 @@ export default function Login() {
   console.info("[LOGIN] Rendering Login component");
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 animate-fade-in">
-      <div className="w-full max-w-md mx-auto">
-        <div className="mb-8 text-center">
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      backgroundColor: '#F5F5DC',
+      padding: '16px'
+    }}>
+      <div style={{ width: '100%', maxWidth: '28rem', margin: '0 auto' }}>
+        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
           <Image 
             src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
             alt="READ Logo" 
-            className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105"
+            style={{ 
+              margin: '0 auto 16px auto', 
+              width: '160px', 
+              height: 'auto',
+              display: 'block'
+            }}
             onError={(e) => {
               console.error("[LOGIN] Error loading logo image");
               const target = e.target as HTMLImageElement;
@@ -39,14 +52,25 @@ export default function Login() {
             }}
           />
           
-          <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
+          <p style={{ 
+            color: '#8B4513', 
+            fontSize: '18px', 
+            marginBottom: '24px', 
+            maxWidth: '384px', 
+            margin: '0 auto 24px auto'
+          }}>
             Reprends goût à la lecture, page après page
           </p>
         </div>
         
         <LoginForm />
         
-        <p className="mt-8 text-center text-sm text-logo-text/80">
+        <p style={{ 
+          marginTop: '32px', 
+          textAlign: 'center', 
+          fontSize: '14px', 
+          color: 'rgba(139, 69, 19, 0.8)'
+        }}>
           READ est une application pensée pour te réconcilier avec la lecture,
           en s'inspirant des mécanismes de motivation utilisés dans le sport connecté.
         </p>
