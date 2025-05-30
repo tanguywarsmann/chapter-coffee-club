@@ -74,28 +74,13 @@ export function AppRouter() {
   return (
     <Routes>
       {/* Route principale - Login pour les utilisateurs non connectés */}
-      <Route path="/" element={
-        <div>
-          {console.log("[APP ROUTER] Rendering root route - Login component")}
-          <Login />
-        </div>
-      } />
+      <Route path="/" element={<Login />} />
       
       {/* Route d'authentification alternative */}
-      <Route path="/auth" element={
-        <div>
-          {console.log("[APP ROUTER] Rendering /auth route")}
-          <Auth />
-        </div>
-      } />
+      <Route path="/auth" element={<Auth />} />
       
       {/* Page de diagnostic */}
-      <Route path="/diagnostic" element={
-        <div>
-          {console.log("[APP ROUTER] Rendering /diagnostic route")}
-          <DiagnosticPage />
-        </div>
-      } />
+      <Route path="/diagnostic" element={<DiagnosticPage />} />
       
       {/* Routes protégées */}
       <Route path="/home" element={
@@ -131,7 +116,6 @@ export function AppRouter() {
       {/* Fallback pour routes inconnues */}
       <Route path="*" element={
         <div style={{ padding: '40px', textAlign: 'center', backgroundColor: 'yellow' }}>
-          {console.log("[APP ROUTER] Rendering fallback route for unknown path")}
           <h1>Page non trouvée</h1>
           <button onClick={() => window.location.href = "/"}>
             Retour à l'accueil

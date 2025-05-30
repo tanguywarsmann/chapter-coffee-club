@@ -1,11 +1,13 @@
 
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   console.info("[LOGIN] Login component mounting");
   
   const { error, setError } = useAuth();
+  const navigate = useNavigate();
   
   useEffect(() => {
     console.info("[LOGIN] Login component mounted, checking for auth errors");
@@ -16,6 +18,11 @@ export default function Login() {
       localStorage.removeItem("auth_error");
     }
   }, [setError]);
+
+  const handleClick = () => {
+    console.log('Button clicked! Navigating to /auth');
+    navigate('/auth');
+  };
 
   console.info("[LOGIN] Rendering Login component");
 
@@ -60,9 +67,9 @@ export default function Login() {
             cursor: 'pointer',
             fontSize: '16px'
           }}
-          onClick={() => console.log('Button clicked!')}
+          onClick={handleClick}
         >
-          Test Button
+          Aller à la page Auth
         </button>
       </div>
     </div>
