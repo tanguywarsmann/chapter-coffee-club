@@ -6,10 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function Login() {
+  console.info("[LOGIN] Login component mounting");
+  
   const { error, setError } = useAuth();
   
   // Afficher une notification si une erreur d'authentification est détectée depuis le contexte
   useEffect(() => {
+    console.info("[LOGIN] Login component mounted, checking for auth errors");
     const authError = localStorage.getItem("auth_error");
     if (authError) {
       toast.error("Erreur d'authentification. Veuillez réessayer.");
@@ -17,6 +20,8 @@ export default function Login() {
       localStorage.removeItem("auth_error");
     }
   }, [setError]);
+
+  console.info("[LOGIN] Rendering Login component");
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 animate-fade-in">
@@ -27,6 +32,7 @@ export default function Login() {
             alt="READ Logo" 
             className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105"
             onError={(e) => {
+              console.error("[LOGIN] Error loading logo image");
               const target = e.target as HTMLImageElement;
               target.src = "/placeholder.svg";
               target.alt = "Logo placeholder";
