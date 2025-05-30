@@ -1,15 +1,9 @@
 
-import { useEffect, useState, lazy, Suspense } from "react";
-import { isInIframe, isPreview } from "@/utils/environment";
+import { useEffect, useState } from "react";
+import { isInIframe } from "@/utils/environment";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-// Lazy loading modal components for code splitting
-const WelcomeModalWithNavigate = lazy(() => import("./WelcomeModalWithNavigate").then(module => ({
-  default: module.WelcomeModalWithNavigate
-})));
-const WelcomeModalIframe = lazy(() => import("./WelcomeModalIframe").then(module => ({
-  default: module.WelcomeModalIframe
-})));
+import { WelcomeModalWithNavigate } from "./WelcomeModalWithNavigate";
+import { WelcomeModalIframe } from "./WelcomeModalIframe";
 
 interface WelcomeModalProps {
   open: boolean;
@@ -22,36 +16,23 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Only run this effect if the modal is actually open to save resources
     if (open) {
       try {
-        // Use a timeout to ensure this effect doesn't block rendering
         setTimeout(() => {
           try {
             setIsInIframeState(isInIframe());
           } catch (e) {
             console.error("Error detecting iframe context:", e);
-            // If an error is thrown, assume we're in an iframe
             setIsInIframeState(true);
           }
         }, 0);
       } catch (e) {
         console.error("Error in iframe detection setup:", e);
         setError(e instanceof Error ? e : new Error(String(e)));
-        // Default to non-iframe to ensure something renders
         setIsInIframeState(false);
       }
     }
   }, [open]);
-
-  // Extremely lightweight loading state
-  const ModalLoadingFallback = () => {
-    if (!open) return null;
-    return isMobile ? 
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-        <div className="bg-white p-4 rounded-md">Chargement...</div>
-      </div> : null;
-  };
 
   // If we hit an error, render a basic version that won't break
   if (error) {
@@ -75,14 +56,9 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
   // Return null if not open or if iframe detection hasn't completed
   if (!open || isInIframeState === null) return null;
   
-  return (
-    <Suspense fallback={<ModalLoadingFallback />}>
-      {isInIframeState 
-        ? <WelcomeModalIframe open={open} onClose={onClose} />
-        : <WelcomeModalWithNavigate open={open} onClose={onClose} />
-      }
-    </Suspense>
-  );
+  return isInIframeState 
+    ? <WelcomeModalIframe open={open} onClose={onClose} />
+    : <WelcomeModalWithNavigate open={open} onClose={onClose} />;
 }
 
 export default { WelcomeModal };
