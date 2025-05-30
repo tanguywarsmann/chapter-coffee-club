@@ -19,19 +19,40 @@ const LoadingSpinner = () => (
 );
 
 const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <UserOnboarding />
-          <AppRouter />
-          <AppFooter />
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+  console.info("[APP] App component mounting");
+  
+  try {
+    console.info("[APP] Rendering App component");
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <UserOnboarding />
+            <AppRouter />
+            <AppFooter />
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+  } catch (error) {
+    console.error("[APP] Error rendering App component:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur de l'application</h1>
+          <p className="text-gray-600 mb-4">Une erreur est survenue lors du chargement de READ.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-coffee-dark text-white px-4 py-2 rounded hover:bg-coffee-darker"
+          >
+            Recharger
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default App;

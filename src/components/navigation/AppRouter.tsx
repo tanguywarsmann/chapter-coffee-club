@@ -32,23 +32,38 @@ const LoadingFallback = () => (
 );
 
 export function AppRouter() {
+  console.info("[APP ROUTER] AppRouter component mounting");
+  
   const { user, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isReady, setIsReady] = useState(false);
 
+  console.info("[APP ROUTER] Current state:", {
+    hasUser: !!user,
+    isLoading,
+    isInitialized,
+    pathname: location.pathname
+  });
+
   // Attendre que tout soit prêt
   useEffect(() => {
+    console.info("[APP ROUTER] Checking if ready:", { isLoading, isInitialized });
     if (!isLoading && isInitialized) {
+      console.info("[APP ROUTER] Setting ready to true");
       setIsReady(true);
     }
   }, [isLoading, isInitialized]);
 
   // Navigation logic simplifiée
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady) {
+      console.info("[APP ROUTER] Not ready yet, skipping navigation logic");
+      return;
+    }
 
     const currentPath = location.pathname;
+    console.info("[APP ROUTER] Navigation logic executing for path:", currentPath);
     
     // Paths autorisés (version minimale)
     const allowedPaths = ["/", "/home", "/auth", "/explore", "/profile", "/reading-list", "/books", "/diagnostic"];
@@ -59,26 +74,33 @@ export function AppRouter() {
     });
     
     if (!isAllowedPath) {
-      console.warn("[ROUTER] Invalid path detected:", currentPath);
+      console.warn("[APP ROUTER] Invalid path detected:", currentPath);
       navigate("/", { replace: true });
       return;
     }
     
     // Redirection auth simplifiée
     if (!user && !["/auth", "/", "/diagnostic"].includes(currentPath)) {
+      console.info("[APP ROUTER] User not authenticated, redirecting to /auth");
       navigate("/auth", { replace: true });
       return;
     }
     
     if (user && currentPath === "/") {
+      console.info("[APP ROUTER] User authenticated on root, redirecting to /home");
       navigate("/home", { replace: true });
       return;
     }
+    
+    console.info("[APP ROUTER] Navigation logic completed, staying on:", currentPath);
   }, [user, isReady, location.pathname, navigate]);
 
   if (!isReady) {
+    console.info("[APP ROUTER] Showing loading fallback");
     return <LoadingFallback />;
   }
+
+  console.info("[APP ROUTER] Rendering routes");
 
   return (
     <Routes>
@@ -117,48 +139,6 @@ export function AppRouter() {
           <ReadingList />
         </AuthGuard>
       } />
-      
-      {/* Routes commentées temporairement pour diagnostic
-      <Route path="/u/:userId" element={
-        <AuthGuard>
-          <Suspense fallback={<div>Loading...</div>}>
-            <PublicProfilePage />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/discover" element={
-        <AuthGuard>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Discover />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/achievements" element={
-        <AuthGuard>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Achievements />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/followers/:type/:userId?" element={
-        <AuthGuard>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Followers />
-          </Suspense>
-        </AuthGuard>
-      } />
-      
-      <Route path="/admin" element={
-        <AuthGuard>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Admin />
-          </Suspense>
-        </AuthGuard>
-      } />
-      */}
       
       {/* Fallback pour routes inconnues */}
       <Route path="*" element={

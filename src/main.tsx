@@ -1,9 +1,13 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+import { BrowserRouter } from 'react-router-dom'
 
 // Performance measurement
 performance.mark("read-app-start");
+console.info("[MAIN] Starting READ app initialization");
 
 // Simple path validation
 const currentPath = window.location.pathname;
@@ -13,17 +17,17 @@ const isValidPath = allowedPaths.some(path =>
 );
 
 if (!isValidPath) {
-  console.log("[APP] Redirecting invalid path:", currentPath);
+  console.log("[MAIN] Redirecting invalid path:", currentPath);
   history.replaceState(null, "", "/");
 }
 
 // Global error handling
 window.addEventListener('error', function(event) {
-  console.error('[APP] Global error:', event.error);
+  console.error('[MAIN] Global error:', event.error);
 });
 
 window.addEventListener('unhandledrejection', function(event) {
-  console.error('[APP] Unhandled promise rejection:', event.reason);
+  console.error('[MAIN] Unhandled promise rejection:', event.reason);
 });
 
 // Performance monitoring
@@ -40,25 +44,36 @@ window.addEventListener("load", () => {
   }
 });
 
-// Bootstrap React avec fallback d'erreur
+// Direct React bootstrap (no dynamic import)
+console.info("[MAIN] Initializing React app");
+
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+const root = ReactDOM.createRoot(rootElement);
+
 try {
-  import("./bootstrap").catch(error => {
-    console.error('[APP] Failed to load bootstrap:', error);
-    
-    // Fallback simple en cas d'erreur
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-      rootElement.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; font-family: system-ui; padding: 20px; text-align: center;">
-          <h1 style="color: #B05F2C; margin-bottom: 16px;">Erreur de chargement</h1>
-          <p style="margin-bottom: 20px; color: #666;">Impossible de charger l'application READ. Veuillez actualiser la page.</p>
-          <button onclick="window.location.reload()" style="background: #B05F2C; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer;">
-            Actualiser
-          </button>
-        </div>
-      `;
-    }
-  });
+  console.info("[MAIN] Rendering React app...");
+  root.render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </React.StrictMode>
+  );
+  console.info("[MAIN] React app rendered successfully");
 } catch (error) {
-  console.error('[APP] Critical bootstrap error:', error);
+  console.error("[MAIN] Failed to render app:", error);
+  
+  // Fallback d'urgence
+  rootElement.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; font-family: system-ui;">
+      <h1 style="color: #B05F2C;">Erreur de rendu</h1>
+      <p>Impossible de démarrer l'application READ.</p>
+      <button onclick="window.location.reload()">Relancer</button>
+    </div>
+  `;
 }
