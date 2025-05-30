@@ -84,14 +84,14 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
       output: {
+        // Simplified manual chunks to avoid conflicts
         manualChunks: {
-          'react-core': ['react', 'react-dom'],
-          'react-router': ['react-router-dom'],
+          'react': ['react', 'react-dom'],
+          'router': ['react-router-dom'],
           'supabase': ['@supabase/supabase-js'],
           'query': ['@tanstack/react-query'],
-          'ui-core': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
-          'icons': ['lucide-react'],
-          'charts': ['recharts']
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+          'vendor': ['lucide-react', 'recharts']
         }
       }
     }
