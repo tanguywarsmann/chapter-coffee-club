@@ -38,7 +38,8 @@ export function AppRouter() {
   console.info("[APP ROUTER] Current state:", {
     hasUser: !!user,
     isLoading,
-    isInitialized
+    isInitialized,
+    pathname: window.location.pathname
   });
 
   // Affichage du loader tant que l'auth n'est pas initialisée

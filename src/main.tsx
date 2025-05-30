@@ -1,4 +1,3 @@
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
@@ -18,7 +17,7 @@ const isValidPath = allowedPaths.some(path =>
 
 if (!isValidPath) {
   console.log("[MAIN] Redirecting invalid path:", currentPath);
-  history.replaceState(null, "", "/");
+  history.replaceState(null, "", "/auth"); // Redirect to auth instead of /
 }
 
 // Global error handling
