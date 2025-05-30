@@ -27,10 +27,25 @@ const DiagnosticPage = () => {
 const LoadingFallback = () => {
   console.info("[APP ROUTER] Rendering LoadingFallback");
   return (
-    <div className="min-h-screen flex items-center justify-center bg-logo-background">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
-        <p className="text-coffee-dark font-medium">Chargement...</p>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'blue',
+      color: 'white'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid white',
+          borderTop: '4px solid transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px'
+        }}></div>
+        <p>Chargement...</p>
       </div>
     </div>
   );
@@ -58,16 +73,31 @@ export function AppRouter() {
 
   return (
     <Routes>
-      {/* Route principale - toujours Login pour les utilisateurs non connectés */}
-      <Route path="/" element={<Login />} />
+      {/* Route principale - Login pour les utilisateurs non connectés */}
+      <Route path="/" element={
+        <div>
+          {console.log("[APP ROUTER] Rendering root route - Login component")}
+          <Login />
+        </div>
+      } />
       
       {/* Route d'authentification alternative */}
-      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth" element={
+        <div>
+          {console.log("[APP ROUTER] Rendering /auth route")}
+          <Auth />
+        </div>
+      } />
       
       {/* Page de diagnostic */}
-      <Route path="/diagnostic" element={<DiagnosticPage />} />
+      <Route path="/diagnostic" element={
+        <div>
+          {console.log("[APP ROUTER] Rendering /diagnostic route")}
+          <DiagnosticPage />
+        </div>
+      } />
       
-      {/* Routes protégées - nécessitent une authentification */}
+      {/* Routes protégées */}
       <Route path="/home" element={
         <AuthGuard>
           <Home />
@@ -100,10 +130,11 @@ export function AppRouter() {
       
       {/* Fallback pour routes inconnues */}
       <Route path="*" element={
-        <div style={{ padding: '40px', textAlign: 'center' }}>
+        <div style={{ padding: '40px', textAlign: 'center', backgroundColor: 'yellow' }}>
+          {console.log("[APP ROUTER] Rendering fallback route for unknown path")}
           <h1>Page non trouvée</h1>
-          <button onClick={() => window.location.href = "/auth"}>
-            Retour à la connexion
+          <button onClick={() => window.location.href = "/"}>
+            Retour à l'accueil
           </button>
         </div>
       } />
