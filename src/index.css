@@ -1,4 +1,3 @@
-@import './components/ui/animations.css';
 
 @tailwind base;
 @tailwind components;
@@ -6,65 +5,48 @@
 
 @layer base {
   :root {
-    --background: 30 35% 94%;
-    --foreground: 25 40% 15%;
-
-    --card: 30 35% 97%;
-    --card-foreground: 25 40% 15%;
-
-    --popover: 30 35% 97%;
-    --popover-foreground: 25 40% 15%;
-
-    --primary: 25 40% 20%; /* Darkened for better contrast */
-    --primary-foreground: 30 35% 97%;
-
-    --secondary: 35 30% 85%;
-    --secondary-foreground: 25 40% 20%; /* Darkened for better contrast */
-
-    --muted: 35 30% 90%;
-    --muted-foreground: 25 30% 40%; /* Darkened for better contrast */
-
-    --accent: 20 50% 85%;
-    --accent-foreground: 25 40% 20%; /* Darkened for better contrast */
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 25 30% 75%; /* Darkened for better contrast */
-    --input: 25 30% 75%; /* Darkened for better contrast */
-    --ring: 25 40% 30%; /* Darkened for better contrast */
-
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 25 40% 15%;
-    --foreground: 30 35% 94%;
-
-    --card: 25 40% 18%; /* Adjusted for better contrast */
-    --card-foreground: 30 35% 94%;
-
-    --popover: 25 40% 18%; /* Adjusted for better contrast */
-    --popover-foreground: 30 35% 94%;
-
-    --primary: 35 30% 80%; /* Lightened for better contrast */
-    --primary-foreground: 25 40% 15%;
-
-    --secondary: 25 40% 25%; /* Adjusted for better contrast */
-    --secondary-foreground: 30 35% 94%;
-
-    --muted: 25 40% 22%; /* Adjusted for better contrast */
-    --muted-foreground: 35 30% 75%; /* Lightened for better contrast */
-
-    --accent: 20 50% 25%; /* Adjusted for better contrast */
-    --accent-foreground: 30 35% 94%;
-
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 25 40% 35%; /* Lightened for better contrast */
-    --input: 25 40% 35%; /* Lightened for better contrast */
-    --ring: 35 30% 75%; /* Lightened for better contrast */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -72,273 +54,127 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground font-sans;
-    scroll-behavior: smooth;
-    /* Améliore le scroll sur mobile */
-    -webkit-overflow-scrolling: touch;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
-    /* Améliore le text-wrap sur mobile */
-    text-wrap: balance;
-    word-break: break-word;
-  }
-
-  /* Enhanced focus styles for accessibility */
-  :focus-visible {
-    outline: 2px solid #3d2914;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3d2914;
-  }
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    :focus-visible {
-      outline: 3px solid #000;
-      outline-offset: 2px;
-      box-shadow: 0 0 0 2px #fff, 0 0 0 6px #000;
-    }
-  }
-
-  /* Skip to content link for keyboard accessibility */
-  .skip-to-content {
-    @apply absolute z-50 p-3 bg-coffee-dark text-white border border-coffee-medium rounded-md shadow-lg;
-    @apply -translate-y-full focus:translate-y-0 transition-transform duration-200;
-    @apply focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2;
-    top: 1rem;
-    left: 1rem;
-    font-weight: 600;
-  }
-
-  /* Améliore la lisibilité du texte sur mobile */
-  p, span, div {
-    text-wrap: pretty;
-    word-break: break-word;
-    hyphens: auto;
+    @apply bg-background text-foreground;
   }
 }
 
-@layer components {
-  .book-cover {
-    @apply relative aspect-[2/3] overflow-hidden rounded-md shadow-md transition-all duration-300 hover:shadow-lg;
+/* Classes CSS simples pour remplacer les composants complexes */
+.btn-primary {
+  background-color: #B05F2C;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #8B4513;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #B05F2C;
+  padding: 12px 24px;
+  border: 2px solid #B05F2C;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #f5f5f5;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #B05F2C;
+  box-shadow: 0 0 0 2px rgba(176, 95, 44, 0.2);
+}
+
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mb-6 {
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.space-y-4 > * + * {
+  margin-top: 16px;
+}
+
+.space-y-6 > * + * {
+  margin-top: 24px;
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .reading-progress {
-    @apply h-2 bg-coffee-light rounded-full overflow-hidden;
-  }
-  
-  .progress-bar {
-    @apply h-full bg-coffee-dark animate-progress;
-  }
-  
-  .book-card {
-    @apply bg-card rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-opacity-50;
-  }
-  
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-
-  /* Améliorations des éléments interactifs pour mobile */
-  .interactive-element {
-    @apply transition-all duration-200 hover:bg-opacity-80;
-    @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    /* Zone de tap plus large sur mobile */
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Padding cohérent mobile/desktop avec plus d'espace sur mobile */
-  .container-padding {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Styles de cartes avec meilleur espacement mobile */
-  .content-card {
-    @apply bg-card rounded-lg shadow-md transition-all duration-200;
-    @apply p-4 sm:p-6;
-    /* Plus d'espacement interne sur mobile */
-    @apply space-y-4 sm:space-y-6;
-  }
-
-  /* Boutons avec meilleures zones de tap */
-  .btn-primary {
-    @apply bg-coffee-dark text-white hover:bg-coffee-darker;
-    @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    @apply transition-colors duration-200;
-    /* Zone de tap plus large */
-    @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast ratio */
-    background-color: #2a1c0f;
-    color: #ffffff;
-  }
-
-  .btn-primary:hover {
-    background-color: #1e140a;
-  }
-
-  .btn-secondary {
-    @apply border-2 border-coffee-medium bg-transparent hover:bg-coffee-light/20;
-    @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-coffee-medium focus-visible:outline-none;
-    @apply transition-colors duration-200;
-    @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast */
-    border-color: #8b5a3c;
-    color: #3d2914;
-  }
-
-  /* Transitions de page plus fluides */
-  .page-transition {
-    @apply transition-all duration-300 ease-in-out;
-  }
-
-  /* Champs de formulaire avec meilleures zones de tap */
-  .form-field {
-    @apply mt-1 block w-full rounded-md border-2 border-coffee-medium shadow-sm;
-    @apply focus:border-coffee-dark focus:ring-2 focus:ring-coffee-dark focus:ring-opacity-50;
-    @apply focus-visible:outline-none transition-colors duration-200;
-    @apply min-h-[44px] px-4 py-3 text-base sm:text-sm;
-    /* Better contrast */
-    border-color: #8b5a3c;
-  }
-
-  .form-field:focus {
-    border-color: #3d2914;
-    box-shadow: 0 0 0 2px rgba(61, 41, 20, 0.2);
-  }
-
-  /* Tags de statut avec meilleure lisibilité */
-  .status-reading {
-    @apply bg-coffee-light/70 text-coffee-darker px-3 py-2 text-sm font-medium border border-coffee-medium;
-  }
-  
-  .status-to-read {
-    @apply bg-gray-200 text-gray-800 px-3 py-2 text-sm font-medium border border-gray-400;
-  }
-  
-  .status-completed {
-    @apply bg-green-200 text-green-900 px-3 py-2 text-sm font-medium border border-green-400;
-  }
-
-  /* Améliorations spécifiques mobile */
-  .mobile-optimized {
-    /* Espacement généreux sur mobile */
-    @apply space-y-6 sm:space-y-4;
-  }
-
-  .mobile-title {
-    /* Titres plus grands sur mobile pour meilleure lisibilité */
-    @apply text-2xl sm:text-xl font-serif font-medium text-coffee-darker;
-    @apply mb-4 sm:mb-2;
-  }
-
-  .mobile-subtitle {
-    @apply text-lg sm:text-base font-medium text-coffee-dark;
-    @apply mb-3 sm:mb-2;
-  }
-
-  /* Navigation mobile améliorée */
-  .mobile-nav-item {
-    @apply block w-full text-left px-4 py-4 sm:py-2;
-    @apply hover:bg-coffee-light/20 active:bg-coffee-light/30;
-    @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    @apply transition-colors duration-200;
-    @apply text-base sm:text-sm font-medium;
-    /* Ensure minimum touch target */
-    min-height: 48px;
-  }
-
-  /* Cartes de livre optimisées mobile */
-  .mobile-book-card {
-    @apply p-4 sm:p-3 space-y-3 sm:space-y-2;
-    @apply border border-coffee-light rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
-  }
-
-  /* Skeletons pour le chargement */
-  .loading-skeleton {
-    @apply animate-pulse bg-gray-200 rounded;
-  }
-
-  .loading-skeleton-text {
-    @apply loading-skeleton h-4 w-3/4 mb-2;
-  }
-
-  .loading-skeleton-title {
-    @apply loading-skeleton h-6 w-1/2 mb-3;
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* Enhanced touch interactions for better accessibility */
-@media (hover: none) and (pointer: coarse) {
-  .hover\:scale-105:hover {
-    transform: none;
-  }
-  
-  .hover\:shadow-lg:hover {
-    box-shadow: none;
-  }
-  
-  /* More visible and larger focus states on mobile */
-  button:focus, 
-  a:focus, 
-  [role="button"]:focus,
-  [role="link"]:focus,
-  input:focus,
-  textarea:focus {
-    outline: 3px solid #3d2914 !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 2px #fff, 0 0 0 5px #3d2914 !important;
-  }
-  
-  /* Enhanced touch targets */
-  .interactive-element,
-  .btn-primary,
-  .btn-secondary,
-  .mobile-nav-item {
-    min-height: 48px;
-    min-width: 48px;
-  }
-}
-
-/* High contrast mode enhancements */
-@media (prefers-contrast: high) {
-  .btn-primary {
-    background-color: #000;
-    color: #fff;
-    border: 2px solid #000;
-  }
-  
-  .btn-secondary {
-    background-color: #fff;
-    color: #000;
-    border: 2px solid #000;
-  }
-  
-  .form-field {
-    border: 2px solid #000;
-  }
-  
-  .status-reading,
-  .status-to-read,
-  .status-completed {
-    border: 2px solid #000;
-  }
-}
-
-/* Optimisations pour les très petits écrans */
-@media (max-width: 360px) {
-  .container {
-    @apply px-3;
-  }
-  
-  .content-card {
-    @apply p-3;
-  }
-  
-  .mobile-title {
-    @apply text-xl;
+@media (min-width: 1024px) {
+  .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
