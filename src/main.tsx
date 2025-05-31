@@ -1,78 +1,118 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { BrowserRouter } from 'react-router-dom'
+
+import { toast } from 'sonner'
 
 // Performance measurement
 performance.mark("read-app-start");
-console.info("[MAIN] Starting READ app initialization");
 
-// Simple path validation - FIXED: include /auth as valid path
+// Nettoyage conditionnel et sécurisé
+const isFirstVisit = !localStorage.getItem("read_app_initialized");
+if (isFirstVisit) {
+  // Seulement au premier lancement
+  localStorage.removeItem("read_app_books_cache");
+  localStorage.setItem("read_app_initialized", "true");
+}
+
+// Reset path seulement si invalide
 const currentPath = window.location.pathname;
-const allowedPaths = ["/", "/home", "/auth", "/explore", "/profile", "/reading-list", "/books", "/diagnostic"];
+const allowedPaths = ["/", "/auth", "/home", "/books", "/profile", "/achievements", "/discover"];
 const isValidPath = allowedPaths.some(path => 
   currentPath === path || currentPath.startsWith(path + "/")
 );
 
 if (!isValidPath) {
-  console.log("[MAIN] Redirecting invalid path:", currentPath);
-  history.replaceState(null, "", "/auth"); // Redirect to auth instead of /
+  console.log("[PWA] Redirecting invalid path:", currentPath);
+  history.replaceState(null, "", "/");
 }
 
-// Global error handling
-window.addEventListener('error', function(event) {
-  console.error('[MAIN] Global error:', event.error);
-});
-
-window.addEventListener('unhandledrejection', function(event) {
-  console.error('[MAIN] Unhandled promise rejection:', event.reason);
-});
-
-// Performance monitoring
-window.addEventListener("load", () => {
-  try {
-    performance.measure("startup", "read-app-start");
-    const measurement = performance.getEntriesByName("startup")[0];
-    
-    if (measurement && measurement.duration > 3000) {
-      console.warn('[PERF] Startup time is slow:', measurement.duration + 'ms');
+// Service Worker optimisé pour iOS
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { 
+      scope: '/',
+      updateViaCache: 'none'
+    })
+      .then((registration) => {
+        console.log('[PWA] Service Worker registered successfully');
+        
+        // Vérification des mises à jour moins fréquente
+        const checkForUpdates = () => {
+          registration.update();
+        };
+        
+        // Vérifier les mises à jour toutes les 5 minutes (au lieu de 1)
+        setInterval(checkForUpdates, 5 * 60 * 1000);
+        
+        // Écouter les messages du service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data?.type === 'SW_UPDATED') {
+            console.log('[PWA] New service worker version active');
+            toast.success('Application mise à jour', {
+              duration: 3000,
+              description: 'Redémarrage automatique dans 3 secondes...'
+            });
+            
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
+        });
+        
+        // Gestion des mises à jour
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            console.log('[PWA] New service worker found');
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Mise à jour disponible
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error('[PWA] Service Worker registration failed:', error);
+      });
+  });
+  
+  // Gestion réseau améliorée pour iOS
+  let isOnline = navigator.onLine;
+  
+  window.addEventListener('online', () => {
+    if (!isOnline) {
+      isOnline = true;
+      toast.success('Connexion rétablie', {
+        duration: 3000
+      });
+      
+      // Vérifier les mises à jour quand on revient en ligne
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.update();
+      });
     }
-  } catch (error) {
-    console.warn('[PERF] Performance measurement failed:', error);
+  });
+  
+  window.addEventListener('offline', () => {
+    if (isOnline) {
+      isOnline = false;
+      toast.warning('Mode hors ligne', {
+        duration: 4000,
+        description: 'Fonctionnalités limitées'
+      });
+    }
+  });
+}
+
+// Performance monitoring optimisé
+window.addEventListener("load", () => {
+  performance.measure("startup", "read-app-start");
+  const measurement = performance.getEntriesByName("startup")[0];
+  
+  if (measurement && measurement.duration > 3000) {
+    console.warn('[PERF] Startup time is slow:', measurement.duration + 'ms');
   }
 });
 
-// Direct React bootstrap (no dynamic import)
-console.info("[MAIN] Initializing React app");
-
-const rootElement = document.getElementById('root');
-
-if (!rootElement) {
-  throw new Error('Root element not found');
-}
-
-const root = ReactDOM.createRoot(rootElement);
-
-try {
-  console.info("[MAIN] Rendering React app...");
-  root.render(
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>
-  );
-  console.info("[MAIN] React app rendered successfully");
-} catch (error) {
-  console.error("[MAIN] Failed to render app:", error);
-  
-  // Fallback d'urgence
-  rootElement.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; font-family: system-ui;">
-      <h1 style="color: #B05F2C;">Erreur de rendu</h1>
-      <p>Impossible de démarrer l'application READ.</p>
-      <button onclick="window.location.reload()">Relancer</button>
-    </div>
-  `;
-}
+// Chargement React optimisé
+import("@/bootstrap");

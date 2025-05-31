@@ -5,12 +5,10 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminBookList } from "@/components/admin/AdminBookList";
 import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
-import { UUIDValidationTest } from "@/components/admin/UUIDValidationTest";
-import { AdminFormTester } from "@/components/admin/AdminFormTester";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText, TestTube, FlaskConical } from "lucide-react";
+import { AlertTriangle, FileText } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,14 +81,6 @@ export default function Admin() {
                       <span className="w-4 h-4 mr-2">📚</span>
                       {texts.bookValidation}
                     </TabsTrigger>
-                    <TabsTrigger value="uuid-test" className="flex items-center">
-                      <TestTube className="h-4 w-4 mr-2" />
-                      Test UUID
-                    </TabsTrigger>
-                    <TabsTrigger value="form-tester" className="flex items-center">
-                      <FlaskConical className="h-4 w-4 mr-2" />
-                      Test Formulaires
-                    </TabsTrigger>
                     <TabsTrigger value="settings" className="flex items-center">
                       <span className="w-4 h-4 mr-2">⚙️</span>
                       {texts.settings}
@@ -99,14 +89,6 @@ export default function Admin() {
 
                   <TabsContent value="books">
                     <AdminBookList />
-                  </TabsContent>
-
-                  <TabsContent value="uuid-test">
-                    <UUIDValidationTest />
-                  </TabsContent>
-
-                  <TabsContent value="form-tester">
-                    <AdminFormTester />
                   </TabsContent>
 
                   <TabsContent value="settings">

@@ -26,8 +26,6 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  console.info("[AUTH CONTEXT] AuthProvider component mounting");
-  
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchAdminStatus = async (userId: string) => {
     try {
       if (!userId) return false;
-      
-      console.info("[AUTH CONTEXT] Fetching admin status for user:", userId);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -55,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const adminStatus = data?.is_admin || false;
       setIsAdmin(adminStatus);
-      console.info("[AUTH CONTEXT] Admin status set to:", adminStatus);
       return adminStatus;
     } catch (error) {
       console.error('Exception when fetching admin status:', error);
@@ -65,14 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    console.info("[AUTH CONTEXT] Initializing auth context");
+    console.info("[AUTH CONTEXT] Initializing");
     
     // First set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.info(`[AUTH CONTEXT] Auth state change event: ${event}`, {
-        hasSession: !!currentSession,
-        userId: currentSession?.user?.id || null
-      });
+      console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
       
       // Update state with current session data
       setSession(currentSession);
@@ -80,26 +72,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // If user exists, sync their profile
       if (currentSession?.user) {
-        console.info("[AUTH CONTEXT] User authenticated, syncing profile");
         // Use setTimeout to avoid potential deadlock with Supabase auth
         setTimeout(async () => {
           try {
             await syncUserProfile(currentSession.user.id, currentSession.user.email);
             await fetchAdminStatus(currentSession.user.id);
-            console.info("[AUTH CONTEXT] Profile sync completed");
           } catch (err) {
             console.error("[AUTH CONTEXT] Error during profile sync:", err);
           }
         }, 0);
-      } else {
-        console.info("[AUTH CONTEXT] No user session");
       }
       
       // Always set initialized to true and loading to false
       setIsInitialized(true);
       setIsLoading(false);
       
-      console.info("[AUTH CONTEXT] State updated:", { 
+      console.info("[AUTH CONTEXT]", { 
         isInitialized: true, 
         isLoading: false, 
         user: currentSession?.user?.id || null 
@@ -109,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Then check for existing session
     const initializeAuth = async () => {
       try {
-        console.info("[AUTH CONTEXT] Fetching initial session from Supabase");
+        console.info("[AUTH CONTEXT] Fetching initial session");
         
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
@@ -119,26 +107,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError("Error connecting to Supabase");
         }
         
-        console.info("[AUTH CONTEXT] Initial session fetched:", {
-          hasSession: !!currentSession,
-          userId: currentSession?.user?.id || null
-        });
-        
         // Update state with session data
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         // If user exists, sync their profile
         if (currentSession?.user) {
-          console.info("[AUTH CONTEXT] Initial user found, syncing profile");
           // Use setTimeout to avoid potential deadlock with Supabase auth
           setTimeout(async () => {
             try {
               await syncUserProfile(currentSession.user.id, currentSession.user.email);
               await fetchAdminStatus(currentSession.user.id);
-              console.info("[AUTH CONTEXT] Initial profile sync completed");
             } catch (err) {
-              console.error("[AUTH CONTEXT] Error during initial profile sync:", err);
+              console.error("[AUTH CONTEXT] Error during profile sync:", err);
             }
           }, 0);
         }
@@ -147,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
         setIsLoading(false);
         
-        console.info("[AUTH CONTEXT] Initialization completed:", { 
+        console.info("[AUTH CONTEXT]", { 
           isInitialized: true, 
           isLoading: false, 
           user: currentSession?.user?.id || null 
@@ -160,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
         setIsLoading(false);
         
-        console.info("[AUTH CONTEXT] Initialization completed with error:", { 
+        console.info("[AUTH CONTEXT]", { 
           isInitialized: true, 
           isLoading: false, 
           user: null,
@@ -179,13 +160,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  console.info("[AUTH CONTEXT] Rendering AuthProvider with state:", {
-    isLoading,
-    isInitialized,
-    hasUser: !!user,
-    isAdmin
-  });
-
   return (
     <AuthContext.Provider value={{ session, user, isLoading, isInitialized, isAdmin, error, setError }}>
       {children}
@@ -193,12 +167,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  console.info("[AUTH CONTEXT] useAuth called, context:", {
-    isLoading: context.isLoading,
-    isInitialized: context.isInitialized,
-    hasUser: !!context.user
-  });
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

@@ -1,6 +1,7 @@
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { lazy, Suspense } from "react";
 
 // Lazy load the WelcomeModal
 const WelcomeModal = lazy(() => import("./WelcomeModal").then(module => ({

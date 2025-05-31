@@ -1,76 +1,49 @@
 
 import { useEffect } from "react";
+import { LoginForm } from "@/components/auth/LoginForm";
+import Image from "@/components/ui/image";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Login() {
-  console.info("[LOGIN] Login component mounting");
-  
   const { error, setError } = useAuth();
-  const navigate = useNavigate();
   
+  // Afficher une notification si une erreur d'authentification est détectée depuis le contexte
   useEffect(() => {
-    console.info("[LOGIN] Login component mounted, checking for auth errors");
     const authError = localStorage.getItem("auth_error");
     if (authError) {
-      console.error("Auth error found:", authError);
+      toast.error("Erreur d'authentification. Veuillez réessayer.");
       setError(null);
       localStorage.removeItem("auth_error");
     }
   }, [setError]);
 
-  const handleClick = () => {
-    console.log('Button clicked! Navigating to /auth');
-    navigate('/auth');
-  };
-
-  console.info("[LOGIN] Rendering Login component");
-
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'red',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      zIndex: 9999
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        textAlign: 'center',
-        maxWidth: '400px',
-        width: '90%'
-      }}>
-        <h1 style={{ 
-          fontSize: '24px', 
-          marginBottom: '20px',
-          color: 'black'
-        }}>
-          READ - Test de rendu
-        </h1>
-        <p style={{ color: 'black', marginBottom: '20px' }}>
-          Si vous voyez ceci, le composant Login s'affiche correctement.
+    <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 animate-fade-in">
+      <div className="w-full max-w-md mx-auto">
+        <div className="mb-8 text-center">
+          <Image 
+            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
+            alt="READ Logo" 
+            className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+              target.alt = "Logo placeholder";
+            }}
+          />
+          
+          <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
+            Reprends goût à la lecture, page après page
+          </p>
+        </div>
+        
+        <LoginForm />
+        
+        <p className="mt-8 text-center text-sm text-logo-text/80">
+          READ est une application pensée pour te réconcilier avec la lecture,
+          en s'inspirant des mécanismes de motivation utilisés dans le sport connecté.
         </p>
-        <button 
-          style={{
-            backgroundColor: '#B05F2C',
-            color: 'white',
-            padding: '12px 24px',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '16px'
-          }}
-          onClick={handleClick}
-        >
-          Aller à la page Auth
-        </button>
       </div>
     </div>
   );

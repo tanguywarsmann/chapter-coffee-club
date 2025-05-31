@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,7 +13,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/services/books/utils";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addBookSchema, generateUUID, isValidUUIDAny } from "@/utils/validation";
+import { Book } from "@/types/book";
+
+const addBookSchema = z.object({
+  title: z.string().min(1, "Le titre est requis"),
+  author: z.string().min(1, "L'auteur est requis"),
+  total_pages: z.coerce.number().min(1, "Le nombre de pages est requis"),
+  description: z.string().optional(),
+  cover_url: z.string().optional(),
+  is_published: z.boolean().default(true),
+});
 
 type AddBookFormValues = z.infer<typeof addBookSchema>;
 
@@ -46,7 +54,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       setCoverFile(file);
       const fileUrl = URL.createObjectURL(file);
       setCoverPreviewUrl(fileUrl);
-      form.setValue("cover_url", "");
+      form.setValue("cover_url", ""); // Clear the URL input when file is selected
     }
   };
 
@@ -83,6 +91,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     return publicUrlData.publicUrl;
   };
 
+  // Function to generate empty segments for the book
   const generateEmptySegments = async (bookSlug: string, totalPages: number): Promise<void> => {
     const expectedSegments = Math.ceil(totalPages / 30);
     
@@ -92,14 +101,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       const segmentEntries = [];
       
       for (let i = 0; i < expectedSegments; i++) {
-        const questionId = generateUUID();
-        
-        if (!isValidUUIDAny(questionId)) {
-          throw new Error(`UUID invalide généré pour le segment ${i}`);
-        }
-        
         segmentEntries.push({
-          id: questionId,
           book_slug: bookSlug,
           segment: i,
           question: "",
@@ -116,6 +118,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       console.log(`${expectedSegments} segments vides générés pour le livre ${bookSlug}`);
     } catch (error) {
       console.error("Erreur lors de la génération des segments vides:", error);
+      // We don't want the whole book creation process to fail if segment generation fails
       toast({
         title: "Attention : Le livre a été créé, mais la génération automatique des segments a échoué.",
         variant: "default",
@@ -126,28 +129,28 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
   const onSubmit = async (data: AddBookFormValues) => {
     setIsLoading(true);
     try {
+      // Generate a slug from title and author
       const slug = slugify(data.title + "-" + data.author);
       
+      // Upload cover image if provided
       let coverUrl = data.cover_url;
       if (coverFile) {
         coverUrl = await uploadCoverImage(coverFile, slug);
       }
       
-      const bookId = generateUUID();
+      // Generate a UUID for the book
+      const id = crypto.randomUUID();
       
-      if (!isValidUUIDAny(bookId)) {
-        throw new Error("Erreur de génération d'UUID pour le livre");
-      }
-      
+      // Create book record
       const bookData = {
-        id: bookId,
+        id,
         title: data.title,
         author: data.author,
         total_pages: data.total_pages,
         description: data.description || null,
         cover_url: coverUrl || null,
         slug,
-        tags: [],
+        tags: [], // Default empty tags array
         is_published: data.is_published,
       };
       
@@ -157,6 +160,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       
       if (error) throw error;
       
+      // Generate empty segments for the book
       await generateEmptySegments(slug, data.total_pages);
       
       toast({
@@ -167,7 +171,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       setCoverFile(null);
       setCoverPreviewUrl(null);
       setIsDialogOpen(false);
-      onBookAdded();
+      onBookAdded(); // Refresh book list
     } catch (error: any) {
       console.error("Erreur lors de l'ajout du livre:", error);
       toast({
