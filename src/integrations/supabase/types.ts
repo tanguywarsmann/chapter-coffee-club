@@ -294,20 +294,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_reading_validations_progress"
-            columns: ["progress_id"]
-            isOneToOne: false
-            referencedRelation: "reading_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_reading_validations_question"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "reading_questions"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
@@ -348,24 +334,6 @@ export type Database = {
           question_id?: string | null
           segment?: number | null
           user_id?: string | null
-          validated_at?: string | null
-        }
-        Relationships: []
-      }
-      reading_validations_question_id_backup: {
-        Row: {
-          id: string | null
-          question_id: string | null
-          validated_at: string | null
-        }
-        Insert: {
-          id?: string | null
-          question_id?: string | null
-          validated_at?: string | null
-        }
-        Update: {
-          id?: string | null
-          question_id?: string | null
           validated_at?: string | null
         }
         Relationships: []

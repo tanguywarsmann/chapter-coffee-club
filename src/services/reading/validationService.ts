@@ -275,12 +275,11 @@ export const validateReading = async (
       throw new Error(segmentError);
     }
     
-    // CORRECTION: question_id est maintenant UUID, pas text
     const validationRecord: ReadingValidationRecord = {
       user_id: request.user_id,
       book_id: request.book_id,
       segment: request.segment,
-      question_id: question?.id ?? null, // UUID maintenant
+      question_id: question?.id ?? null,
       correct: true,
       validated_at: new Date().toISOString(),
       answer: question?.answer ?? undefined,
@@ -297,10 +296,11 @@ export const validateReading = async (
       console.error('❌ [validateReading] Erreur insertion reading_validations:', validationError);
       
       if (validationError.message.includes('violates foreign key constraint')) {
-        toast.error("Erreur de contrainte : le progress_id ou question_id n'est pas valide. Contacter le support.", { duration: 8000 });
+        toast.error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.", { duration: 8000 });
         toastDisplayed = true;
       } else if (validationError.message.includes('reading_validations_segment_check')) {
         toast.error("Erreur de validation : segment invalide", { duration: 5000 });
+        toastDisplayed = true;
       } else {
         toast.error("Échec d'enregistrement de la validation: " + validationError.message);
         toastDisplayed = true;

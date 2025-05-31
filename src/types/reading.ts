@@ -1,4 +1,5 @@
 
+
 /* ----------  Types de base  ---------- */
 
 export interface ReadingQuestion {
@@ -15,12 +16,11 @@ export interface ReadingValidation {
   user_id: string
   book_id: string
   segment: number
-  question_id: string | null // Maintenant aligné avec UUID
+  question_id: string | null
   answer: string | null
   correct: boolean
   validated_at: string
   date_validated?: string
-  progress_id?: string | null
 }
 
 /* Structure brute provenant de Supabase */
@@ -140,3 +140,4 @@ export interface ReadingStreak {
   longest_streak: number
   last_validation_date: string
 }
+

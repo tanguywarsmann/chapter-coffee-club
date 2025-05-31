@@ -2,146 +2,140 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// Service Worker simplifié et stable pour iOS
-const CACHE_VERSION = 'read-cache-v3';
+// Service Worker personnalisé pour READ
+// Version forcée pour invalidation du cache PWA
+const CACHE_VERSION = 'read-cache-v2-' + Date.now();
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
-// Ressources critiques à mettre en cache
-const CRITICAL_RESOURCES = [
-  '/',
-  '/offline.html',
-  '/manifest.json'
-];
-
 self.addEventListener("install", (event) => {
-  console.log('[SW] Installing service worker version:', CACHE_VERSION);
+  console.log('[SW] Installing new service worker version:', CACHE_VERSION);
+  // Force l'activation immédiate sans attendre
+  self.skipWaiting();
   
+  // Pré-cache les ressources critiques
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(CRITICAL_RESOURCES);
-    }).then(() => {
-      // Activer immédiatement sans attendre
-      return self.skipWaiting();
+      return cache.addAll([
+        '/',
+        '/offline.html',
+        '/manifest.json'
+      ]);
     })
   );
 });
 
 self.addEventListener("activate", (event) => {
-  console.log('[SW] Activating service worker version:', CACHE_VERSION);
+  console.log('[SW] Activating new service worker version:', CACHE_VERSION);
   
   event.waitUntil(
     Promise.all([
       // Prendre le contrôle immédiatement
       self.clients.claim(),
       
-      // Nettoyer seulement les anciens caches
+      // Nettoyer tous les anciens caches
       caches.keys().then((cacheNames) => {
         return Promise.all(
-          cacheNames
-            .filter(cacheName => !cacheName.startsWith(CACHE_VERSION))
-            .map(cacheName => {
+          cacheNames.map((cacheName) => {
+            if (!cacheName.startsWith(CACHE_VERSION)) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
-            })
+            }
+          })
         );
       })
     ])
   );
+  
+  // Notifier tous les clients de la mise à jour
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({
+        type: 'SW_UPDATED',
+        version: CACHE_VERSION
+      });
+    });
+  });
 });
 
-// Stratégie de cache simplifiée et stable
+// Handle fetch events for offline support
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-  
-  // Ignorer les requêtes non-GET
-  if (request.method !== 'GET') return;
-  
-  // Stratégie par type de ressource
-  if (request.mode === 'navigate') {
-    // Pages HTML - Network First avec fallback
+  // Stratégie Network First pour les pages HTML pour forcer le rechargement des styles
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then(response => {
+      fetch(event.request)
+        .then((response) => {
+          // Cache la nouvelle version
           if (response.ok) {
             const responseClone = response.clone();
-            caches.open(STATIC_CACHE).then(cache => {
-              cache.put(request, responseClone);
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseClone);
             });
           }
           return response;
         })
         .catch(() => {
-          return caches.match(request) || caches.match('/offline.html');
+          // Fallback vers le cache en cas d'échec réseau
+          return caches.match(event.request) || caches.match('/offline.html');
         })
     );
-  } 
-  else if (request.destination === 'script' || 
-           request.destination === 'style' ||
-           url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.css')) {
-    // JS/CSS - Cache First pour stabilité
+  }
+  
+  // Stratégie Network First pour les CSS et JS pour forcer le rechargement
+  else if (event.request.destination === 'script' || 
+           event.request.destination === 'style') {
     event.respondWith(
-      caches.match(request).then(response => {
-        if (response) {
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return response;
-        }
-        return fetch(request).then(fetchResponse => {
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+  }
+  
+  // Cache First pour les images et autres ressources statiques
+  else if (event.request.destination === 'image') {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
           if (fetchResponse.ok) {
             const responseClone = fetchResponse.clone();
-            caches.open(STATIC_CACHE).then(cache => {
-              cache.put(request, responseClone);
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseClone);
             });
           }
           return fetchResponse;
         });
-      })
-    );
-  }
-  else if (request.destination === 'image') {
-    // Images - Cache First
-    event.respondWith(
-      caches.match(request).then(response => {
-        return response || fetch(request).then(fetchResponse => {
-          if (fetchResponse.ok) {
-            const responseClone = fetchResponse.clone();
-            caches.open(STATIC_CACHE).then(cache => {
-              cache.put(request, responseClone);
-            });
-          }
-          return fetchResponse;
-        });
-      })
-    );
-  }
-  // API calls - Network First avec timeout
-  else if (url.hostname.includes('supabase.co')) {
-    event.respondWith(
-      Promise.race([
-        fetch(request),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Network timeout')), 10000)
-        )
-      ]).then(response => {
-        if (response.ok && request.method === 'GET') {
-          const responseClone = response.clone();
-          caches.open(API_CACHE).then(cache => {
-            cache.put(request, responseClone);
-          });
-        }
-        return response;
-      }).catch(() => {
-        return caches.match(request);
       })
     );
   }
 });
 
-// Messages simplifiés
+// Handle messages from the main app
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] Force update requested');
     self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'WARM_CACHE') {
+    // Warm cache for critical resources
+    const urlsToCache = [
+      '/',
+      '/offline.html',
+      '/manifest.json'
+    ];
+    
+    caches.open(STATIC_CACHE).then((cache) => {
+      cache.addAll(urlsToCache);
+    });
   }
 });

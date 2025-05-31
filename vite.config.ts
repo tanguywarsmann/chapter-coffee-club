@@ -1,4 +1,4 @@
-
+// vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
@@ -10,32 +10,45 @@ export default defineConfig(({ mode }) => ({
   server: { host: '::', port: 8080 },
 
   plugins: [
-    // PWA configuration optimisée pour iOS
+    // PWA avec stratégie de mise à jour proactive
     VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
-      devOptions: { 
-        enabled: true,
-        type: 'module'
-      },
-      
-      injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        maximumFileSizeToCacheInBytes: 5000000, // 5MB
-      },
-      
+      devOptions: { enabled: true },
+
       workbox: {
         cleanupOutdatedCaches: true,
-        skipWaiting: false, // Laisser le SW gérer cela
-        clientsClaim: false, // Laisser le SW gérer cela
+        navigateFallback: '/index.html',
+        skipWaiting: true,
+        clientsClaim: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:js|css|png|jpg|jpeg|svg|ico)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-resources',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/xjumsrjuyzvsixvfwoiz\.supabase\.co\/.*$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-calls',
+              networkTimeoutSeconds: 10
+            }
+          }
+        ]
       },
 
-      manifest: false // Utiliser le manifest.json du dossier public
+      manifest: false // Use the manifest.json from the public folder
     }),
 
+    // Other plugins
     react(),
     mode === 'development' && componentTagger(),
     compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
@@ -51,33 +64,22 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     target: 'esnext',
     minify: 'terser',
-    chunkSizeWarningLimit: 1500, // Augmenté pour éviter les warnings
+    chunkSizeWarningLimit: 1000,
     terserOptions: {
-      compress: { 
-        drop_console: mode !== 'development', 
-        drop_debugger: true,
-        pure_funcs: mode !== 'development' ? ['console.log', 'console.info'] : []
-      }
+      compress: { drop_console: mode !== 'development', drop_debugger: true }
     },
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks: {
-          'react-core': ['react', 'react-dom'],
-          'react-router': ['react-router-dom'],
-          'supabase': ['@supabase/supabase-js'],
-          'query': ['@tanstack/react-query'],
-          'ui-core': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
-          'icons': ['lucide-react'],
-          'charts': ['recharts']
+          supabase: ["@supabase/supabase-js"],
+          query: ["@tanstack/react-query"],
+          lucide: ["lucide-react"],
+          charts: ["recharts"],
+          'react-vendor': ['react','react-dom','react-router-dom'],
+          'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover']
         }
       }
     }
-  },
-
-  // Optimisations pour iOS
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: ['@vite/client', '@vite/env']
   }
 }))
