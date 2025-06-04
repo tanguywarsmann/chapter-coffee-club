@@ -32,15 +32,18 @@ export function BookCard({
   const [userId, setUserId] = useState<string | null>(null);
   const { addToReadingList } = useReadingList();
 
-  // Vérification importante : si livre undefined, retourner null
   if (!book) {
     return null;
   }
   
-  // S'assurer qu'on a un identifiant valide pour la navigation
+  // S'assurer qu'on a un identifiant valide
   const bookIdentifier = book.id || book.slug || '';
+  
+  if (!bookIdentifier) {
+    console.error('BookCard: Aucun identifiant valide pour le livre', book);
+    return null;
+  }
 
-  // Get the user ID from Supabase auth session
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -72,31 +75,6 @@ export function BookCard({
     return title.substring(0, maxLength) + "...";
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!userId) {
-      toast.error("Vous devez être connecté pour cette action");
-      return;
-    }
-
-    try {
-      if (typeof window !== "undefined") {
-        const storedList = localStorage.getItem("reading_list");
-        const readingList = storedList ? JSON.parse(storedList) : [];
-        const updatedList = readingList.filter(
-          (item: any) => !(item.user_id === userId && item.book_id === book.id)
-        );
-        localStorage.setItem("reading_list", JSON.stringify(updatedList));
-        toast.success(`${book.title} retiré de votre liste`);
-      }
-    } catch (error) {
-      toast.error("Erreur lors de la suppression du livre de la liste");
-      console.error("Error in handleDelete:", error);
-    }
-  };
-
   const handleAddToReadingList = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -106,15 +84,21 @@ export function BookCard({
       return;
     }
 
+    if (isAdding) {
+      return; // Éviter les clics multiples
+    }
+
     try {
       setIsAdding(true);
-      await addToReadingList(book);
+      console.log(`[DEBUG] Tentative d'ajout du livre:`, { id: book.id, title: book.title });
+      
+      const success = await addToReadingList(book);
+      if (success) {
+        console.log(`[DEBUG] Livre ajouté avec succès: ${book.title}`);
+      }
     } catch (error) {
       console.error("Erreur dans handleAddToReadingList:", error);
-      toast.error(
-        "Une erreur est survenue: " +
-          (error instanceof Error ? error.message : String(error))
-      );
+      toast.error("Une erreur est survenue lors de l'ajout du livre");
     } finally {
       setIsAdding(false);
     }
@@ -130,6 +114,13 @@ export function BookCard({
     }
 
     onAction?.();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Logique de suppression à implémenter si nécessaire
+    toast.info("Fonction de suppression à implémenter");
   };
   
   const getBookStatusIcon = () => {

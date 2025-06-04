@@ -1,4 +1,3 @@
-
 import { Book } from "@/types/book";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,27 +9,19 @@ type ReadingProgressInsert = Database['public']['Tables']['reading_progress']['I
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];
 
-const BATCH_SIZE = 3;
-
-// Type alias for the merged book and reading progress data
-export type ReadingListItem = ReadingProgress & Book;
-
 /**
- * Ajoute un livre à la liste de lecture d'un utilisateur
- * @param userId ID de l'utilisateur
- * @param book Livre à ajouter
- * @returns Progression de lecture ou null
+ * Ajoute un livre à la liste de lecture avec gestion d'erreur améliorée
  */
 export const addBookToReadingList = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
   if (!userId || !book?.id) {
-    console.error("[ERROR] addBookToReadingList: userId ou book.id manquant");
+    console.error("[ERROR] addBookToReadingList: Paramètres manquants", { userId: !!userId, bookId: book?.id });
     return null;
   }
 
   try {
-    console.log(`[DEBUG] Ajout du livre "${book.title}" (${book.id}) à la liste de lecture de l'utilisateur ${userId}`);
+    console.log(`[DEBUG] Ajout du livre "${book.title}" (${book.id}) pour l'utilisateur ${userId}`);
     
-    // Vérifier si une entrée existe déjà pour ce livre et cet utilisateur
+    // Vérifier si le livre existe déjà dans la liste
     const { data: existingProgress, error: checkError } = await supabase
       .from("reading_progress")
       .select("*")
@@ -39,21 +30,37 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
       .maybeSingle();
     
     if (checkError) {
-      console.error("[ERROR] Erreur lors de la vérification du livre dans la liste:", checkError);
+      console.error("[ERROR] Erreur lors de la vérification:", checkError);
       throw checkError;
     }
     
-    // Si une entrée existe déjà, retourner cette entrée sans rien faire
     if (existingProgress) {
-      console.log(`[DEBUG] Le livre est déjà dans la liste de lecture (status: ${existingProgress.status})`);
+      console.log(`[DEBUG] Le livre est déjà dans la liste (status: ${existingProgress.status})`);
       return existingProgress as ReadingProgress;
     }
     
-    // Créer une nouvelle entrée dans reading_progress
+    // Vérifier que le livre existe dans la base de données
+    const { data: bookExists, error: bookError } = await supabase
+      .from("books")
+      .select("id, title, total_pages")
+      .eq("id", book.id)
+      .maybeSingle();
+      
+    if (bookError) {
+      console.error("[ERROR] Erreur lors de la vérification du livre:", bookError);
+      throw bookError;
+    }
+    
+    if (!bookExists) {
+      console.error(`[ERROR] Le livre ${book.id} n'existe pas dans la base de données`);
+      throw new Error(`Le livre "${book.title}" n'existe pas dans la base de données`);
+    }
+    
+    // Créer l'entrée de progression
     const newProgress: ReadingProgressInsert = {
       user_id: userId,
       book_id: book.id,
-      total_pages: book.pages || 0,
+      total_pages: bookExists.total_pages || book.pages || 0,
       current_page: 0,
       status: "to_read",
       started_at: new Date().toISOString(),
@@ -62,6 +69,8 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
       streak_best: 0
     };
     
+    console.log(`[DEBUG] Insertion de la progression:`, newProgress);
+    
     const { data: insertedProgress, error: insertError } = await supabase
       .from("reading_progress")
       .insert(newProgress)
@@ -69,23 +78,19 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
       .single();
     
     if (insertError) {
-      console.error("[ERROR] Erreur lors de l'ajout du livre à la liste:", insertError);
+      console.error("[ERROR] Erreur lors de l'insertion:", insertError);
       throw insertError;
     }
     
-    console.log(`[DEBUG] Livre ajouté avec succès à la liste de lecture:`, insertedProgress);
+    console.log(`[DEBUG] Livre ajouté avec succès:`, insertedProgress);
     return insertedProgress as ReadingProgress;
+    
   } catch (error) {
     console.error("[ERROR] Exception dans addBookToReadingList:", error);
     throw error;
   }
 };
 
-/**
- * Récupère la progression de lecture pour un utilisateur
- * @param userId ID de l'utilisateur
- * @returns Liste des progressions de lecture
- */
 export const fetchReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
   if (!userId) {
     return [];
@@ -108,13 +113,6 @@ export const fetchReadingProgress = async (userId: string): Promise<ReadingProgr
   }
 };
 
-/**
- * Récupère les livres pour un statut spécifique
- * @param readingList Liste des progressions de lecture
- * @param status Statut à filtrer
- * @param userId ID de l'utilisateur
- * @returns Liste des livres correspondant au statut
- */
 export const fetchBooksForStatus = async (
   readingList: ReadingProgress[],
   status: string,
@@ -123,7 +121,7 @@ export const fetchBooksForStatus = async (
   console.log(`[DEBUG] getBooksByStatus démarré avec status=${status}, userId=${userId}`);
   
   if (!readingList?.length) {
-    console.log(`[DEBUG] readingList vide ou invalide pour status=${status}`);
+    console.log(`[DEBUG] readingList vide pour status=${status}`);
     return [];
   }
 
@@ -131,20 +129,18 @@ export const fetchBooksForStatus = async (
     item => item.user_id === userId && item.status === status
   );
 
-  console.log(`[DEBUG] filteredList pour status=${status}:`, JSON.stringify(filteredList));
-  
   if (filteredList.length === 0) {
-    console.log(`[DEBUG] Aucun livre trouvé avec status=${status} pour userId=${userId}`);
+    console.log(`[DEBUG] Aucun livre trouvé avec status=${status}`);
     return [];
   }
 
   const books: Book[] = [];
   
   try {
-    // 1. Récupérer les IDs de livres pour les requêtes suivantes
+    // Récupérer les IDs de livres
     const bookIds = [...new Set(filteredList.map(item => item.book_id))];
     
-    // 2. Récupérer tous les livres correspondants en une seule requête
+    // Récupérer tous les livres en une seule requête
     const { data: booksData, error: booksError } = await supabase
       .from("books")
       .select("id, title, author, slug, cover_url, expected_segments, total_chapters, total_pages, created_at, description, is_published, tags")
@@ -152,10 +148,9 @@ export const fetchBooksForStatus = async (
 
     if (booksError) {
       console.error("Error fetching books:", booksError);
-      // Continue with what we have
     }
 
-    // Créer une map pour un accès rapide aux données des livres
+    // Créer une map pour un accès rapide
     const booksMap: Record<string, BookRecord> = {};
     if (booksData) {
       booksData.forEach(book => {
@@ -163,7 +158,7 @@ export const fetchBooksForStatus = async (
       });
     }
 
-    // 3. Récupérer toutes les validations pour cet utilisateur et ces livres
+    // Récupérer les validations
     const { data: validationsData, error: validationsError } = await supabase
       .from("reading_validations")
       .select("*")
@@ -172,10 +167,9 @@ export const fetchBooksForStatus = async (
 
     if (validationsError) {
       console.error("Error fetching validations:", validationsError);
-      // Continue with what we have
     }
 
-    // Grouper les validations par book_id pour un accès facile
+    // Grouper les validations par book_id
     const validationsMap: Record<string, ReadingValidation[]> = {};
     if (validationsData) {
       validationsData.forEach(validation => {
@@ -186,30 +180,22 @@ export const fetchBooksForStatus = async (
       });
     }
 
-    // 4. Convertir les données enrichies en objets Book
+    // Convertir en objets Book
     for (const item of filteredList) {
       try {
         const bookData = booksMap[item.book_id];
         const validations = validationsMap[item.book_id] || [];
         
-        if (!bookData && bookFailureCache.has(item.book_id)) {
-          console.log(`[DEBUG] book_id=${item.book_id} dans le cache d'échec, création d'un fallback`);
-          books.push(createFallbackBook(item, "Livre précédemment indisponible"));
-          continue;
-        }
-
         if (!bookData) {
-          console.error(`[ERREUR] Livre id=${item.book_id} non trouvé dans la base de données`);
+          console.error(`[ERROR] Livre id=${item.book_id} non trouvé`);
           bookFailureCache.add(item.book_id);
           books.push(createFallbackBook(item, "Livre indisponible"));
           continue;
         }
 
-        // Calculer les segments/chapitres réellement lus basés sur les validations
         const chaptersRead = validations.length;
         const totalChapters = bookData.total_chapters || bookData.expected_segments || 1;
 
-        // Créer l'objet de métadonnées du livre
         const bookMeta = {
           id: item.book_id,
           title: bookData.title || "Titre inconnu",
@@ -219,10 +205,10 @@ export const fetchBooksForStatus = async (
           totalChapters: totalChapters,
           chaptersRead: chaptersRead,
           isCompleted: item.status === "completed",
-          language: "", // Not available in the current query
+          language: "",
           categories: bookData.tags || [],
           pages: bookData.total_pages || 0,
-          publicationYear: 0, // Not available in the current query
+          publicationYear: 0,
           slug: bookData.slug,
           book_title: bookData.title || "Titre inconnu",
           book_author: bookData.author || "Auteur inconnu",
@@ -234,39 +220,20 @@ export const fetchBooksForStatus = async (
           tags: bookData.tags || [],
         };
 
-        // CORRECTION: Inverser l'ordre du merge pour que progressItem ait la priorité
         const enriched = { ...bookMeta, ...item };
-        
-        // DEBUG: Vérifier que les champs critiques sont bien préservés
-        console.debug("[merge]", {
-          id: bookMeta.id,
-          title: bookMeta.title,
-          chaptersRead: enriched.chaptersRead,
-          progressPercent: enriched.progressPercent,
-          nextSegmentPage: enriched.nextSegmentPage
-        });
-
-        console.log(`[DEBUG] Livre récupéré avec succès: id=${item.book_id}, title=${bookData.title}, 
-                  chaptersRead=${chaptersRead}, totalChapters=${totalChapters}`);
-        
         books.push(enriched as Book);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-        console.error(`[ERREUR] Exception lors du traitement du livre id=${item.book_id}:`, error);
+        console.error(`[ERROR] Exception lors du traitement du livre id=${item.book_id}:`, error);
         bookFailureCache.add(item.book_id);
         books.push(createFallbackBook(item, errorMessage));
       }
     }
 
-    console.log(`[DEBUG] Résultat final pour status=${status}: ${books.length} livres enrichis récupérés`);
+    console.log(`[DEBUG] Résultat final pour status=${status}: ${books.length} livres`);
     return books;
   } catch (error) {
-    console.error(`[ERREUR] Exception générale dans fetchBooksForStatus:`, error);
-    // Return what we've got so far or fallbacks for remaining items
-    if (books.length === 0) {
-      // Create fallbacks for all filtered items if no books were successfully processed
-      return filteredList.map(item => createFallbackBook(item, "Erreur lors de la récupération des livres"));
-    }
-    return books;
+    console.error(`[ERROR] Exception générale dans fetchBooksForStatus:`, error);
+    return filteredList.map(item => createFallbackBook(item, "Erreur lors de la récupération"));
   }
 };

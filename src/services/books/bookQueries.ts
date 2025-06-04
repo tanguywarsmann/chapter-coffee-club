@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
@@ -7,57 +8,15 @@ type BookRecord = Database['public']['Tables']['books']['Row'];
 
 // Cache local pour les livres fréquemment consultés
 const bookCache = new Map<string, { data: Book, timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
-const BOOKS_CACHE_KEY = 'read_app_books_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Récupère les données du cache persistant
- * @returns Livres en cache ou null
- */
-const getPersistedBooksCache = (): Book[] | null => {
-  try {
-    const cache = localStorage.getItem(BOOKS_CACHE_KEY);
-    if (cache) {
-      return JSON.parse(cache) as Book[];
-    }
-  } catch (error) {
-    console.error('Error parsing persisted books cache:', error);
-  }
-  return null;
-};
-
-/**
- * Persiste les données du cache
- * @param books Liste de livres à mettre en cache
- */
-const persistBooksCache = (books: Book[]): void => {
-  try {
-    // Limiter à 20 livres pour éviter de surcharger le localStorage
-    const topBooks = books.slice(0, 20);
-    localStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(topBooks));
-  } catch (error) {
-    console.error('Error persisting books cache:', error);
-  }
-};
-
-/**
- * Récupère tous les livres
- * @param includeUnpublished Inclure les livres non publiés
- * @returns Liste de livres
+ * Récupère tous les livres avec cache amélioré
  */
 export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> => {
   try {
-    // Vérifier d'abord dans le cache persistent pour le chargement initial rapide
-    const persistedCache = getPersistedBooksCache();
-    if (persistedCache && !includeUnpublished) {
-      // Si on a un cache persistant, on l'utilise en attendant les données fraîches
-      setTimeout(() => getAllBooks(includeUnpublished), 1000); // Rafraîchir après 1 seconde
-      return persistedCache;
-    }
+    let query = supabase.from('books').select('*').order('title');
     
-    let query = supabase.from('books').select('*');
-    
-    // Filtrer les livres non publiés si demandé
     if (!includeUnpublished) {
       query = query.eq('is_published', true);
     }
@@ -69,14 +28,7 @@ export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> =
       return [];
     }
 
-    const books = data ? data.map(mapBookFromRecord) : [];
-    
-    // Persister le cache pour les prochains chargements
-    if (books.length > 0 && !includeUnpublished) {
-      persistBooksCache(books);
-    }
-    
-    return books;
+    return data ? data.map(mapBookFromRecord) : [];
   } catch (error) {
     console.error('Exception fetching books:', error);
     return [];
@@ -85,74 +37,116 @@ export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> =
 
 /**
  * Vérifie si une chaîne est un UUID valide
- * @param id Chaîne à vérifier
- * @returns true si la chaîne est un UUID valide
  */
 const isValidUuid = (id: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
 /**
- * Récupère un livre par son ID ou son slug
- * @param id ID ou slug du livre
- * @returns Livre ou null
+ * Récupère un livre par son ID ou son slug avec gestion d'erreur améliorée
  */
 export const getBookById = async (id: string): Promise<Book | null> => {
-  if (!id) {
-    console.error('Invalid book ID provided (empty)');
+  if (!id || typeof id !== 'string') {
+    console.error('[ERROR] getBookById: ID invalide:', id);
     return null;
   }
   
-  // Vérifier si le livre est dans le cache local et si le cache est encore valide
-  const cached = bookCache.get(id);
+  const cleanId = id.trim();
+  if (!cleanId) {
+    console.error('[ERROR] getBookById: ID vide après nettoyage');
+    return null;
+  }
+  
+  // Vérifier le cache local
+  const cached = bookCache.get(cleanId);
   if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    console.log(`[DEBUG] Cache hit pour livre: ${cleanId}`);
     return cached.data;
   }
   
   try {
-    console.log(`[DEBUG] getBookById: Construction requête pour id=${id}`);
+    console.log(`[DEBUG] Recherche livre avec identifiant: "${cleanId}"`);
     
-    // Déterminer si l'ID est un UUID ou un slug
-    const isUuid = isValidUuid(id);
-    const fieldToQuery = isUuid ? 'id' : 'slug';
+    // Déterminer le type d'identifiant et construire la requête appropriée
+    const isUuid = isValidUuid(cleanId);
     
-    const { data, error } = await supabase
-      .from('books')
-      .select('*')
-      .eq(fieldToQuery, id)
-      .maybeSingle();
+    let query = supabase.from('books').select('*');
+    
+    if (isUuid) {
+      console.log(`[DEBUG] Recherche par UUID: ${cleanId}`);
+      query = query.eq('id', cleanId);
+    } else {
+      console.log(`[DEBUG] Recherche par slug: ${cleanId}`);
+      query = query.eq('slug', cleanId);
+    }
+    
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
-      console.error(`[ERREUR] Error fetching book with ${fieldToQuery}=${id}:`, error);
+      console.error(`[ERROR] Erreur Supabase lors de la recherche:`, error);
       return null;
     }
 
     if (!data) {
-      console.log(`[DEBUG] getBookById: Aucune donnée trouvée pour ${fieldToQuery}=${id}`);
+      console.log(`[DEBUG] Aucun livre trouvé pour: ${cleanId}`);
+      
+      // Essayer l'autre méthode si la première a échoué
+      if (isUuid) {
+        console.log(`[DEBUG] Tentative de recherche par slug pour: ${cleanId}`);
+        const { data: slugData, error: slugError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('slug', cleanId)
+          .maybeSingle();
+          
+        if (!slugError && slugData) {
+          const book = mapBookFromRecord(slugData as BookRecord);
+          bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+          return book;
+        }
+      } else {
+        console.log(`[DEBUG] Tentative de recherche par ID pour: ${cleanId}`);
+        const { data: idData, error: idError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', cleanId)
+          .maybeSingle();
+          
+        if (!idError && idData) {
+          const book = mapBookFromRecord(idData as BookRecord);
+          bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+          return book;
+        }
+      }
+      
       return null;
     }
 
     const book = mapBookFromRecord(data as BookRecord);
+    console.log(`[DEBUG] Livre trouvé: ${book.title} (${book.id})`);
     
-    // Mettre en cache pour des accès futurs rapides
-    bookCache.set(id, { data: book, timestamp: Date.now() });
+    // Mettre en cache avec les deux clés possibles
+    bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+    if (book.id !== cleanId) {
+      bookCache.set(book.id, { data: book, timestamp: Date.now() });
+    }
+    if (book.slug && book.slug !== cleanId) {
+      bookCache.set(book.slug, { data: book, timestamp: Date.now() });
+    }
     
     return book;
   } catch (error) {
-    console.error(`[ERREUR] Exception fetching book with id=${id}:`, error);
+    console.error(`[ERROR] Exception lors de la recherche du livre:`, error);
     return null;
   }
 };
 
 /**
  * Récupère les livres par catégorie
- * @param category Catégorie de livre
- * @param includeUnpublished Inclure les livres non publiés
- * @returns Liste de livres
  */
 export const getBooksByCategory = async (category: string, includeUnpublished = false): Promise<Book[]> => {
   if (!category) {
-    console.error('Invalid category provided (empty)');
+    console.error('Catégorie invalide');
     return [];
   }
   
@@ -162,7 +156,6 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
       .select('*')
       .contains('tags', `{${category}}`);
     
-    // Filtrer les livres non publiés si demandé
     if (!includeUnpublished) {
       query = query.eq('is_published', true);
     }
@@ -183,12 +176,9 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
 
 /**
  * Récupère les catégories disponibles
- * @returns Liste de catégories
  */
 export const getAvailableCategories = async (): Promise<string[]> => {
   try {
-    // Au lieu de récupérer les tags de chaque livre puis de les déduplicer,
-    // on utilise une RPC (fonction dans la base de données) ou une requête optimisée
     const { data, error } = await supabase
       .from('books')
       .select('tags')
@@ -199,7 +189,6 @@ export const getAvailableCategories = async (): Promise<string[]> => {
       return [];
     }
 
-    // Optimiser l'extraction et la déduplication des tags
     const allTags = new Set<string>();
     data?.forEach(book => {
       if (book.tags && Array.isArray(book.tags)) {
@@ -215,18 +204,12 @@ export const getAvailableCategories = async (): Promise<string[]> => {
 };
 
 /**
- * Efface le cache d'un livre spécifique ou tous les livres
- * @param bookId ID du livre (optionnel)
+ * Efface le cache
  */
 export const clearBookCache = (bookId?: string): void => {
   if (bookId) {
     bookCache.delete(bookId);
   } else {
     bookCache.clear();
-  }
-  
-  // Supprimer également le cache persistant
-  if (!bookId) {
-    localStorage.removeItem(BOOKS_CACHE_KEY);
   }
 };

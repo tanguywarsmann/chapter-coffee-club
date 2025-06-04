@@ -294,6 +294,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_reading_validations_progress"
+            columns: ["progress_id"]
+            isOneToOne: false
+            referencedRelation: "reading_progress"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reading_validations_question"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "reading_questions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
