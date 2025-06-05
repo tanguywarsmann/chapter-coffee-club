@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -54,24 +53,31 @@ export default function BookPage() {
         
         console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
         
+        // Ensure categories are properly set to avoid undefined errors
+        const safeBook = {
+          ...fetchedBook,
+          categories: fetchedBook.categories || fetchedBook.tags || [],
+          tags: fetchedBook.tags || fetchedBook.categories || []
+        };
+        
         // Convertir en BookWithProgress pour compatibilité
         const bookAsWithProgress: BookWithProgress = {
-          ...fetchedBook,
+          ...safeBook,
           progressPercent: 0,
           currentSegment: 1,
-          totalSegments: fetchedBook.totalChapters || fetchedBook.expectedSegments || fetchedBook.total_chapters || 1,
+          totalSegments: safeBook.totalChapters || safeBook.expectedSegments || safeBook.total_chapters || 1,
           nextSegmentPage: 1,
           chaptersRead: 0,
-          expectedSegments: fetchedBook.expectedSegments || fetchedBook.total_chapters || 1,
+          expectedSegments: safeBook.expectedSegments || safeBook.total_chapters || 1,
           
           // Propriétés ProgressRow requises avec des valeurs par défaut
-          book_id: fetchedBook.id,
+          book_id: safeBook.id,
           current_page: 0,
           started_at: new Date().toISOString(),
           status: "to_read" as const,
           streak_best: 0,
           streak_current: 0,
-          total_pages: fetchedBook.total_pages || fetchedBook.pages || 0,
+          total_pages: safeBook.total_pages || safeBook.pages || 0,
           updated_at: new Date().toISOString(),
           user_id: user?.id || ""
         };
@@ -88,7 +94,13 @@ export default function BookPage() {
             
             if (bookWithProgress) {
               console.log(`[BookPage] Livre avec progression trouvé: ${bookWithProgress.title}`);
-              setBook(bookWithProgress);
+              // Ensure safe categories
+              const safeProgressBook = {
+                ...bookWithProgress,
+                categories: bookWithProgress.categories || bookWithProgress.tags || [],
+                tags: bookWithProgress.tags || bookWithProgress.categories || []
+              };
+              setBook(safeProgressBook);
             } else {
               // Synchroniser avec l'API
               console.log(`[BookPage] Synchronisation avec API pour user: ${user.id}`);
@@ -98,10 +110,13 @@ export default function BookPage() {
               
               if (syncedBook) {
                 console.log(`[BookPage] Livre synchronisé: ${syncedBook.title}`);
-                setBook({
+                const safeSyncedBook = {
                   ...syncedBook,
+                  categories: syncedBook.categories || syncedBook.tags || [],
+                  tags: syncedBook.tags || syncedBook.categories || [],
                   isCompleted: syncedBook.progressPercent >= 100
-                } as BookWithProgress);
+                } as BookWithProgress;
+                setBook(safeSyncedBook);
               }
             }
           } catch (syncError) {

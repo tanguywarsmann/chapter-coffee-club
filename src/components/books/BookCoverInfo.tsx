@@ -20,7 +20,7 @@ export const BookCoverInfo = ({ book }: BookCoverInfoProps) => (
       <h2 className="text-xl font-medium text-coffee-darker">{book.title}</h2>
       <p className="text-sm text-muted-foreground">{book.author}</p>
       <div className="mt-2 flex flex-wrap gap-1">
-        {book.categories.map((category, index) => (
+        {(book.categories || book.tags || []).map((category, index) => (
           <span
             key={index}
             className="px-2 py-1 bg-coffee-light/30 text-coffee-darker rounded-full text-xs"
