@@ -1,3 +1,4 @@
+
 import { Book } from "@/types/book";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,7 +159,7 @@ export const fetchBooksForStatus = async (
       });
     }
 
-    // Récupérer les validations
+    // Récupérer les validations pour calculer la progression réelle
     const { data: validationsData, error: validationsError } = await supabase
       .from("reading_validations")
       .select("*")
@@ -195,6 +196,11 @@ export const fetchBooksForStatus = async (
 
         const chaptersRead = validations.length;
         const totalChapters = bookData.total_chapters || bookData.expected_segments || 1;
+        
+        // Calculer si le livre est vraiment terminé
+        const isActuallyCompleted = item.status === "completed" || chaptersRead >= totalChapters;
+
+        console.log(`[DEBUG] Livre ${bookData.title}: status=${item.status}, chaptersRead=${chaptersRead}/${totalChapters}, isCompleted=${isActuallyCompleted}`);
 
         const bookMeta = {
           id: item.book_id,
@@ -204,7 +210,7 @@ export const fetchBooksForStatus = async (
           description: bookData.description || "",
           totalChapters: totalChapters,
           chaptersRead: chaptersRead,
-          isCompleted: item.status === "completed",
+          isCompleted: isActuallyCompleted,
           language: "",
           categories: bookData.tags || [],
           pages: bookData.total_pages || 0,
@@ -221,6 +227,13 @@ export const fetchBooksForStatus = async (
         };
 
         const enriched = { ...bookMeta, ...item };
+        
+        // Filtrer à nouveau selon le statut réel pour "completed"
+        if (status === "completed" && !isActuallyCompleted) {
+          console.log(`[DEBUG] Livre ${bookData.title} marqué comme terminé mais pas vraiment terminé, ignoré`);
+          continue;
+        }
+        
         books.push(enriched as Book);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";

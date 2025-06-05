@@ -90,6 +90,9 @@ async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
     totalSegments
   );
   
+  // Déterminer si le livre est complété basé sur le statut ET la progression
+  const isCompleted = p?.status === "completed" || clampedSegments >= totalSegments;
+  
   return {
     ...b,
     ...p,  // Include all reading progress fields (status, updated_at, etc.)
@@ -104,6 +107,7 @@ async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
       ? (clampedSegments + 1) * WORDS_PER_SEGMENT
       : (clampedSegments + 1) * PAGES_PER_SEGMENT,
     currentSegment: clampedSegments,
+    isCompleted,  // Ajout du flag de complétion
       
     // Legacy aliases for compatibility
     book_id: b.id,

@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -62,10 +61,28 @@ export const useReadingList = () => {
   const getBooksByStatus = useCallback(async (status: string): Promise<Book[]> => {
     if (!user?.id || !readingList) return [];
     
-    // Vérifier si les données sont déjà dans books
+    // Toujours refetch depuis la base pour les livres terminés pour éviter les incohérences
+    if (status === 'completed') {
+      console.log(`[DEBUG] Force refresh pour les livres terminés`);
+      try {
+        const results = await fetchBooksForStatus(readingList, status, user.id);
+        
+        // Mettre en cache
+        queryClient.setQueryData(
+          ["books_by_status", user.id, status], 
+          results
+        );
+        
+        return results;
+      } catch (error) {
+        console.error(`Error fetching books for status ${status}:`, error);
+        return [];
+      }
+    }
+    
+    // Pour les autres statuts, vérifier le cache d'abord
     if (status === 'to_read' && books.toRead.length > 0) return books.toRead;
     if (status === 'in_progress' && books.inProgress.length > 0) return books.inProgress;
-    if (status === 'completed' && books.completed.length > 0) return books.completed;
     
     // Utiliser le cache de React Query
     const cachedResult = queryClient.getQueryData<Book[]>([
@@ -200,6 +217,30 @@ export const useReadingList = () => {
     refetch();
   }, [queryClient, refetch]);
 
+  // Nouvelle fonction pour forcer la synchronisation des livres terminés
+  const syncCompletedBooks = useCallback(async () => {
+    if (!user?.id || !readingList) return;
+    
+    console.log(`[DEBUG] Synchronisation forcée des livres terminés`);
+    
+    try {
+      // Invalider le cache pour les livres terminés
+      queryClient.removeQueries({ queryKey: ["books_by_status", user.id, "completed"] });
+      
+      // Refetch depuis la base
+      const completedBooks = await fetchBooksForStatus(readingList, "completed", user.id);
+      
+      // Mettre à jour l'état local
+      if (isMounted.current) {
+        updateBooks(books.toRead, books.inProgress, completedBooks);
+      }
+      
+      console.log(`[DEBUG] Synchronisation terminée: ${completedBooks.length} livres terminés`);
+    } catch (error) {
+      console.error("[ERROR] Erreur lors de la synchronisation des livres terminés:", error);
+    }
+  }, [user?.id, readingList, books.toRead, books.inProgress, updateBooks, isMounted, queryClient]);
+
   return {
     ...books,
     isLoadingReadingList,
@@ -214,6 +255,7 @@ export const useReadingList = () => {
     hasFetchedInitialData: () => hasFetchedOnMount.current,
     getBooksByStatus,
     addToReadingList,
-    forceRefresh
+    forceRefresh,
+    syncCompletedBooks  // Nouvelle fonction exposée
   };
 };
