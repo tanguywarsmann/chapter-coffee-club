@@ -11,6 +11,7 @@ export interface Book {
   isBookmarked?: boolean;
   language?: string;
   categories?: string[];
+  tags?: string[]; // Add tags property to match database
   pages?: number;
   publicationYear?: number;
   isUnavailable?: boolean; // Explicitly marked flag to identify fallback books

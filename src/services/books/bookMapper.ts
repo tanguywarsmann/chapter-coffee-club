@@ -18,8 +18,8 @@ export const mapBookFromRecord = (record: BookRecord): Book => {
     chaptersRead: 0, // Valeur par défaut
     isCompleted: false, // Valeur par défaut
     language: "fr", // Langue par défaut
-    categories: record.tags || [], // Fix: ensure categories is always an array
-    tags: record.tags || [], // Keep tags for compatibility
+    categories: record.tags || [], // Ensure categories is always an array
+    tags: record.tags || [], // Add tags property from database
     pages: record.total_pages || 0,
     total_pages: record.total_pages || 0, // Add both formats
     publicationYear: new Date().getFullYear(), // Année par défaut

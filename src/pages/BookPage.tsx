@@ -53,7 +53,7 @@ export default function BookPage() {
         
         console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
         
-        // Ensure categories are properly set to avoid undefined errors
+        // Ensure categories and tags are properly set to avoid undefined errors
         const safeBook = {
           ...fetchedBook,
           categories: fetchedBook.categories || fetchedBook.tags || [],
