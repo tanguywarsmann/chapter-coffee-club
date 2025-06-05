@@ -71,13 +71,27 @@ export default function BookPage() {
         
         console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
         
-        // Convertir en BookWithProgress pour compatibilité
+        // Convertir en BookWithProgress pour compatibilité avec toutes les propriétés requises
         const bookAsWithProgress: BookWithProgress = {
+          // Propriétés du livre
           ...fetchedBook,
           progressPercent: 0,
           currentSegment: 1,
           totalSegments: fetchedBook.totalChapters || fetchedBook.expectedSegments || fetchedBook.total_chapters || 1,
-          nextSegmentPage: 1
+          nextSegmentPage: 1,
+          chaptersRead: 0,
+          expectedSegments: fetchedBook.expectedSegments || fetchedBook.total_chapters || 1,
+          
+          // Propriétés ProgressRow requises avec des valeurs par défaut
+          book_id: fetchedBook.id,
+          current_page: 0,
+          started_at: new Date().toISOString(),
+          status: "to_read" as const,
+          streak_best: 0,
+          streak_current: 0,
+          total_pages: fetchedBook.total_pages || fetchedBook.pages || 0,
+          updated_at: new Date().toISOString(),
+          user_id: user?.id || ""
         };
         
         setBook(bookAsWithProgress);
