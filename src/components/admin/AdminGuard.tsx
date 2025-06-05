@@ -8,36 +8,35 @@ interface AdminGuardProps {
   children: React.ReactNode;
 }
 
+const ADMIN_EMAIL = "tanguy.warsmann@gmail.com";
+
 export function AdminGuard({ children }: AdminGuardProps) {
-  const { isAdmin, isLoading, isInitialized, user } = useAuth();
+  const { user, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [bypassAuth, setBypassAuth] = useState(true); // Temporarily bypass admin check
+
+  // Check if current user is the specific admin
+  const isAuthorizedAdmin = user?.email === ADMIN_EMAIL;
 
   // Debug logs
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("AdminGuard: user=", user?.email, "isAdmin=", isAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized, "bypassAuth=", bypassAuth);
+      console.log("AdminGuard: user email=", user?.email, "isAuthorizedAdmin=", isAuthorizedAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
-  }, [isAdmin, isLoading, isInitialized, user, bypassAuth]);
+  }, [user?.email, isAuthorizedAdmin, isLoading, isInitialized]);
   
   // Handle admin state changes and navigate accordingly
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("AdminGuard: isAdmin=", isAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
+      console.log("AdminGuard: isAuthorizedAdmin=", isAuthorizedAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
     
-    // Bypass auth check during testing
-    if (bypassAuth) {
-      return;
-    }
-    
-    // Initialization is complete and user is not admin
-    if (isInitialized && !isLoading && !isAdmin && !isRedirecting) {
+    // Initialization is complete and user is not the authorized admin
+    if (isInitialized && !isLoading && !isAuthorizedAdmin && !isRedirecting) {
       setIsRedirecting(true);
       
       if (process.env.NODE_ENV === 'development') {
-        console.log("AdminGuard: redirecting to /home due to non-admin access");
+        console.log("AdminGuard: redirecting to /home due to unauthorized access");
       }
       
       // A short delay to prevent flash of content
@@ -47,7 +46,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       
       return () => clearTimeout(timer);
     }
-  }, [isAdmin, isLoading, isInitialized, navigate, isRedirecting, bypassAuth]);
+  }, [isAuthorizedAdmin, isLoading, isInitialized, navigate, isRedirecting]);
 
   // Show loading state while checking admin status
   if (isLoading || !isInitialized) {
@@ -63,25 +62,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // User is not admin, but we're bypassing for testing
-  if (!isAdmin && bypassAuth) {
-    return (
-      <>
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4">
-          <div className="flex items-center">
-            <ShieldAlert className="h-6 w-6 text-yellow-500 mr-2" />
-            <p className="text-sm text-yellow-700">
-              <span className="font-bold">Mode test :</span> Vérification admin désactivée temporairement
-            </p>
-          </div>
-        </div>
-        {children}
-      </>
-    );
-  }
-
-  // User is not admin, redirecting (this shouldn't happen with bypass on)
-  if (!isAdmin && !bypassAuth) {
+  // User is not the authorized admin
+  if (!isAuthorizedAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -101,6 +83,6 @@ export function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // User is admin or bypassed, render children
+  // User is the authorized admin, render children
   return <>{children}</>;
 }
