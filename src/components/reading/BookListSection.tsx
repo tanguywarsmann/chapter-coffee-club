@@ -1,3 +1,4 @@
+
 console.log("Import de BookListSection.tsx OK");
 
 import React, { useMemo } from 'react';
@@ -51,9 +52,9 @@ export function BookListSection({
   if (displayBooks.length === 0) {
     return (
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-serif font-medium text-coffee-darker">{title}</h2>
-          {description && <p className="text-muted-foreground">{description}</p>}
+        <div className="text-center sm:text-left">
+          <h2 className="text-xl sm:text-2xl font-serif font-medium text-coffee-darker">{title}</h2>
+          {description && <p className="text-muted-foreground text-sm sm:text-base">{description}</p>}
         </div>
         <div className="text-center p-6 border border-dashed rounded-lg">
           <p className="text-muted-foreground">Aucun livre dans cette catégorie</p>
@@ -64,12 +65,12 @@ export function BookListSection({
   
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-serif font-medium text-coffee-darker">{title}</h2>
-        {description && <p className="text-muted-foreground">{description}</p>}
+      <div className="text-center sm:text-left">
+        <h2 className="text-xl sm:text-2xl font-serif font-medium text-coffee-darker">{title}</h2>
+        {description && <p className="text-muted-foreground text-sm sm:text-base">{description}</p>}
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {displayBooks.map((book) => {
           // Calculate progress using the centralized function
           const chaptersRead = book.chaptersRead || 0;
@@ -80,9 +81,9 @@ export function BookListSection({
           const bookIdentifier = book.id || book.slug || '';
             
           return (
-            <div key={bookIdentifier} className="flex gap-6 p-4 bg-background rounded-lg border border-border">
+            <div key={bookIdentifier} className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 bg-background rounded-lg border border-border">
               {/* Book cover */}
-              <div className="book-cover w-20 h-28 overflow-hidden flex-shrink-0 relative">
+              <div className="book-cover w-20 h-28 sm:w-20 sm:h-28 mx-auto sm:mx-0 overflow-hidden flex-shrink-0 relative">
                 {book.coverImage ? (
                   <img 
                     src={book.coverImage} 
@@ -108,23 +109,23 @@ export function BookListSection({
               </div>
               
               {/* Book details */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className={`font-semibold ${book.isUnavailable ? "text-gray-500" : "text-coffee-darker"}`}>
+              <div className="flex-1 text-center sm:text-left space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <h3 className={`font-semibold text-base sm:text-lg ${book.isUnavailable ? "text-gray-500" : "text-coffee-darker"}`}>
                     {book.title || "Livre sans titre"}
                   </h3>
                   {book.isUnavailable && (
-                    <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                    <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 mx-auto sm:mx-0 w-fit">
                       Indisponible
                     </Badge>
                   )}
                 </div>
                 
-                <p className="text-sm text-muted-foreground mb-2">{book.author || "Auteur inconnu"}</p>
+                <p className="text-sm text-muted-foreground">{book.author || "Auteur inconnu"}</p>
                 
                 {/* Book progress */}
                 {showProgress && (
-                  <div className="mt-4 mb-2 space-y-1">
+                  <div className="mt-3 mb-2 space-y-1">
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full ${book.isUnavailable ? "bg-gray-400" : "bg-coffee-dark"}`}
@@ -151,7 +152,7 @@ export function BookListSection({
                     variant="outline" 
                     size="sm" 
                     onClick={() => onAction(bookIdentifier)}
-                    className="mt-2"
+                    className="mt-3 w-full sm:w-auto min-h-[44px]"
                     disabled={book.isUnavailable}
                   >
                     {actionLabel}

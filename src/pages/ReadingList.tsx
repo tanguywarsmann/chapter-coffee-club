@@ -22,9 +22,6 @@ export default function ReadingList() {
     fetchBooks
   } = useReadingListPage();
 
-  // Nous n'avons plus besoin d'appeler fetchBooks ici car c'est
-  // désormais géré par le nouveau useEffect dans useReadingListPage
-  
   // Log spécifique pour le débogage des listes de livres
   console.log("[DEBUG] État des listes dans ReadingList.tsx", {
     toReadCount: books.toRead?.length || 0,
@@ -67,7 +64,7 @@ export default function ReadingList() {
     });
     
     return (
-      <>
+      <div className="space-y-8">
         {(books.inProgress?.length > 0) && (
           <BookListSection
             title="En cours de lecture"
@@ -99,7 +96,7 @@ export default function ReadingList() {
             onAction={navigateToBook}
           />
         )}
-      </>
+      </div>
     );
   };
 
@@ -108,7 +105,7 @@ export default function ReadingList() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         
-        <main className="container py-6 space-y-8">
+        <main className="container px-4 sm:px-6 lg:px-8 py-6 space-y-8">
           <ReadingListHeader 
             sortBy={sortBy}
             onSortChange={setSortBy}

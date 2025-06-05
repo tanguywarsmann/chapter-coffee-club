@@ -13,13 +13,20 @@ export function ReadingListHeader({ sortBy, onSortChange }: ReadingListHeaderPro
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-between items-center">
-      <h1 className="text-3xl font-serif font-medium text-coffee-darker">Ma liste de lecture</h1>
+    <div className="space-y-4">
+      {/* Titre principal - optimisé pour mobile */}
+      <h1 className="text-2xl sm:text-3xl font-serif font-medium text-coffee-darker text-center sm:text-left">
+        Ma liste de lecture
+      </h1>
       
-      <div className="flex items-center gap-4">
-        <BookSortSelect value={sortBy} onValueChange={onSortChange} />
+      {/* Actions - layout responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="w-full sm:w-auto">
+          <BookSortSelect value={sortBy} onValueChange={onSortChange} />
+        </div>
+        
         <Button 
-          className="bg-coffee-dark hover:bg-coffee-darker" 
+          className="w-full sm:w-auto bg-coffee-dark hover:bg-coffee-darker min-h-[44px]" 
           onClick={() => navigate("/explore")}
         >
           <Plus className="mr-2 h-4 w-4" />
