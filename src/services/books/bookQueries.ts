@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
@@ -67,16 +66,15 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   try {
     console.log(`[DEBUG] Recherche livre avec identifiant: "${cleanId}"`);
     
-    // Recherche par slug d'abord (plus fiable pour les URLs)
+    // D'abord recherche par slug (plus fiable pour les URLs)
     console.log(`[DEBUG] Recherche par slug: ${cleanId}`);
     const { data: slugData, error: slugError } = await supabase
       .from('books')
       .select('*')
       .eq('slug', cleanId)
-      .eq('is_published', true)
       .maybeSingle();
     
-    if (slugError) {
+    if (slugError && slugError.code !== 'PGRST116') {
       console.error(`[ERROR] Erreur lors de la recherche par slug:`, slugError);
     }
     
@@ -99,10 +97,9 @@ export const getBookById = async (id: string): Promise<Book | null> => {
         .from('books')
         .select('*')
         .eq('id', cleanId)
-        .eq('is_published', true)
         .maybeSingle();
       
-      if (idError) {
+      if (idError && idError.code !== 'PGRST116') {
         console.error(`[ERROR] Erreur lors de la recherche par ID:`, idError);
       }
       
@@ -118,28 +115,28 @@ export const getBookById = async (id: string): Promise<Book | null> => {
         
         return book;
       }
-    }
-    
-    // Dernière tentative : recherche générale sans filtre is_published
-    console.log(`[DEBUG] Dernière tentative sans filtre is_published pour: ${cleanId}`);
-    const { data: anyData, error: anyError } = await supabase
-      .from('books')
-      .select('*')
-      .or(`slug.eq.${cleanId},id.eq.${cleanId}`)
-      .maybeSingle();
-    
-    if (anyError) {
-      console.error(`[ERROR] Erreur lors de la recherche générale:`, anyError);
-    }
-    
-    if (anyData) {
-      console.log(`[DEBUG] Livre trouvé (sans filtre published): ${anyData.title} (${anyData.id})`);
-      const book = mapBookFromRecord(anyData as BookRecord);
+    } else {
+      // Si ce n'est pas un UUID, essayer comme slug sans filtre published
+      console.log(`[DEBUG] Recherche par slug sans filtre published: ${cleanId}`);
+      const { data: anySlugData, error: anySlugError } = await supabase
+        .from('books')
+        .select('*')
+        .eq('slug', cleanId)
+        .maybeSingle();
       
-      // Mettre en cache
-      bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+      if (anySlugError && anySlugError.code !== 'PGRST116') {
+        console.error(`[ERROR] Erreur lors de la recherche par slug sans filtre:`, anySlugError);
+      }
       
-      return book;
+      if (anySlugData) {
+        console.log(`[DEBUG] Livre trouvé par slug sans filtre: ${anySlugData.title} (${anySlugData.id})`);
+        const book = mapBookFromRecord(anySlugData as BookRecord);
+        
+        // Mettre en cache
+        bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+        
+        return book;
+      }
     }
     
     console.log(`[DEBUG] Aucun livre trouvé pour: ${cleanId}`);

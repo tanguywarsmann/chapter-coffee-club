@@ -25,9 +25,12 @@ export default function BookPage() {
     isMounted.current = true;
     
     const fetchBook = async () => {
+      console.log("[BookPage] Début de fetchBook, ID:", id);
+      
       if (!id) {
         console.error("[BookPage] Aucun ID fourni dans les paramètres");
-        navigate("/home");
+        setError("Aucun identifiant de livre fourni");
+        setLoading(false);
         return;
       }
 
@@ -37,43 +40,22 @@ export default function BookPage() {
         
         console.log(`[BookPage] Récupération du livre avec ID: "${id}"`);
         
-        // Essayer d'abord de récupérer avec progression si utilisateur connecté
-        let bookWithProgress: BookWithProgress | null = null;
-        if (user?.id) {
-          console.log(`[BookPage] Tentative de récupération avec progression pour user: ${user.id}`);
-          bookWithProgress = await getBookReadingProgress(user.id, id);
-          
-          if (bookWithProgress) {
-            console.log(`[BookPage] Livre avec progression trouvé: ${bookWithProgress.title}`);
-            setBook(bookWithProgress);
-            return;
-          }
-        }
-        
-        // Sinon récupérer le livre basique
-        console.log(`[BookPage] Récupération du livre basique pour ID: ${id}`);
+        // Récupérer le livre basique d'abord
         const fetchedBook = await getBookById(id);
         
         if (!isMounted.current) return;
         
         if (!fetchedBook) {
           console.error(`[BookPage] Aucun livre trouvé pour ID: ${id}`);
-          setError(`Le livre avec l'identifiant "${id}" n'existe pas dans notre base de données`);
-          toast.error("Ce livre n'existe pas dans notre base de données");
-          
-          setTimeout(() => {
-            if (isMounted.current) {
-              navigate("/explore");
-            }
-          }, 3000);
+          setError(`Le livre avec l'identifiant "${id}" n'existe pas`);
+          setLoading(false);
           return;
         }
         
         console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
         
-        // Convertir en BookWithProgress pour compatibilité avec toutes les propriétés requises
+        // Convertir en BookWithProgress pour compatibilité
         const bookAsWithProgress: BookWithProgress = {
-          // Propriétés du livre
           ...fetchedBook,
           progressPercent: 0,
           currentSegment: 1,
@@ -96,20 +78,31 @@ export default function BookPage() {
         
         setBook(bookAsWithProgress);
         
-        // Synchroniser avec l'API si utilisateur connecté
+        // Essayer de récupérer avec progression si utilisateur connecté
         if (user?.id) {
           try {
-            console.log(`[BookPage] Synchronisation avec API pour user: ${user.id}`);
-            const syncedBook = await syncBookWithAPI(user.id, id);
+            console.log(`[BookPage] Tentative de récupération avec progression pour user: ${user.id}`);
+            const bookWithProgress = await getBookReadingProgress(user.id, id);
             
             if (!isMounted.current) return;
             
-            if (syncedBook) {
-              console.log(`[BookPage] Livre synchronisé: ${syncedBook.title}`);
-              setBook({
-                ...syncedBook,
-                isCompleted: syncedBook.progressPercent >= 100
-              } as BookWithProgress);
+            if (bookWithProgress) {
+              console.log(`[BookPage] Livre avec progression trouvé: ${bookWithProgress.title}`);
+              setBook(bookWithProgress);
+            } else {
+              // Synchroniser avec l'API
+              console.log(`[BookPage] Synchronisation avec API pour user: ${user.id}`);
+              const syncedBook = await syncBookWithAPI(user.id, id);
+              
+              if (!isMounted.current) return;
+              
+              if (syncedBook) {
+                console.log(`[BookPage] Livre synchronisé: ${syncedBook.title}`);
+                setBook({
+                  ...syncedBook,
+                  isCompleted: syncedBook.progressPercent >= 100
+                } as BookWithProgress);
+              }
             }
           } catch (syncError) {
             console.error("[BookPage] Erreur lors de la synchronisation:", syncError);
@@ -135,7 +128,7 @@ export default function BookPage() {
     return () => {
       isMounted.current = false;
     };
-  }, [id, navigate, user]);
+  }, [id, navigate, user?.id]);
 
   const handleChapterComplete = async (bookId: string) => {
     if (!book || !user?.id) {

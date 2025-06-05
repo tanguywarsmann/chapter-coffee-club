@@ -64,12 +64,16 @@ export function AppRouter() {
   // Central navigation logic
   useEffect(() => {
     if (!isLoading && isInitialized && isDocumentReady) {
-      const allowed = ["/", "/home", "/auth", "/discover", "/explore", "/reading-list"];
+      // Ne pas rediriger si on est sur une page de livre ou d'auth
+      if (location.pathname.startsWith("/books/") || location.pathname === "/auth" || location.pathname === "/") {
+        return;
+      }
+      
+      const allowed = ["/home", "/discover", "/explore", "/reading-list"];
       
       const isAllowedPath = allowed.some(path => 
         location.pathname === path || 
         location.pathname.startsWith(path + "/") ||
-        location.pathname.startsWith("/books/") ||
         location.pathname.startsWith("/profile/") ||
         location.pathname.startsWith("/u/") ||
         location.pathname.startsWith("/followers/") ||
@@ -83,7 +87,7 @@ export function AppRouter() {
         return;
       }
       
-      if (!user && location.pathname !== "/auth" && location.pathname !== "/") {
+      if (!user && !location.pathname.startsWith("/books/")) {
         const target = "/auth";
         navigate(target, { replace: true });
         return;
