@@ -67,74 +67,84 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   try {
     console.log(`[DEBUG] Recherche livre avec identifiant: "${cleanId}"`);
     
-    // Déterminer le type d'identifiant et construire la requête appropriée
+    // Recherche par slug d'abord (plus fiable pour les URLs)
+    console.log(`[DEBUG] Recherche par slug: ${cleanId}`);
+    const { data: slugData, error: slugError } = await supabase
+      .from('books')
+      .select('*')
+      .eq('slug', cleanId)
+      .eq('is_published', true)
+      .maybeSingle();
+    
+    if (slugError) {
+      console.error(`[ERROR] Erreur lors de la recherche par slug:`, slugError);
+    }
+    
+    if (slugData) {
+      console.log(`[DEBUG] Livre trouvé par slug: ${slugData.title} (${slugData.id})`);
+      const book = mapBookFromRecord(slugData as BookRecord);
+      
+      // Mettre en cache avec les deux clés possibles
+      bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+      bookCache.set(book.id, { data: book, timestamp: Date.now() });
+      
+      return book;
+    }
+    
+    // Si pas trouvé par slug, essayer par ID
     const isUuid = isValidUuid(cleanId);
-    
-    let query = supabase.from('books').select('*');
-    
     if (isUuid) {
       console.log(`[DEBUG] Recherche par UUID: ${cleanId}`);
-      query = query.eq('id', cleanId);
-    } else {
-      console.log(`[DEBUG] Recherche par slug: ${cleanId}`);
-      query = query.eq('slug', cleanId);
-    }
-    
-    const { data, error } = await query.maybeSingle();
-
-    if (error) {
-      console.error(`[ERROR] Erreur Supabase lors de la recherche:`, error);
-      return null;
-    }
-
-    if (!data) {
-      console.log(`[DEBUG] Aucun livre trouvé pour: ${cleanId}`);
+      const { data: idData, error: idError } = await supabase
+        .from('books')
+        .select('*')
+        .eq('id', cleanId)
+        .eq('is_published', true)
+        .maybeSingle();
       
-      // Essayer l'autre méthode si la première a échoué
-      if (isUuid) {
-        console.log(`[DEBUG] Tentative de recherche par slug pour: ${cleanId}`);
-        const { data: slugData, error: slugError } = await supabase
-          .from('books')
-          .select('*')
-          .eq('slug', cleanId)
-          .maybeSingle();
-          
-        if (!slugError && slugData) {
-          const book = mapBookFromRecord(slugData as BookRecord);
-          bookCache.set(cleanId, { data: book, timestamp: Date.now() });
-          return book;
-        }
-      } else {
-        console.log(`[DEBUG] Tentative de recherche par ID pour: ${cleanId}`);
-        const { data: idData, error: idError } = await supabase
-          .from('books')
-          .select('*')
-          .eq('id', cleanId)
-          .maybeSingle();
-          
-        if (!idError && idData) {
-          const book = mapBookFromRecord(idData as BookRecord);
-          bookCache.set(cleanId, { data: book, timestamp: Date.now() });
-          return book;
-        }
+      if (idError) {
+        console.error(`[ERROR] Erreur lors de la recherche par ID:`, idError);
       }
       
-      return null;
+      if (idData) {
+        console.log(`[DEBUG] Livre trouvé par ID: ${idData.title} (${idData.id})`);
+        const book = mapBookFromRecord(idData as BookRecord);
+        
+        // Mettre en cache
+        bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+        if (book.slug) {
+          bookCache.set(book.slug, { data: book, timestamp: Date.now() });
+        }
+        
+        return book;
+      }
     }
+    
+    // Dernière tentative : recherche générale sans filtre is_published
+    console.log(`[DEBUG] Dernière tentative sans filtre is_published pour: ${cleanId}`);
+    const { data: anyData, error: anyError } = await supabase
+      .from('books')
+      .select('*')
+      .or(`slug.eq.${cleanId},id.eq.${cleanId}`)
+      .maybeSingle();
+    
+    if (anyError) {
+      console.error(`[ERROR] Erreur lors de la recherche générale:`, anyError);
+    }
+    
+    if (anyData) {
+      console.log(`[DEBUG] Livre trouvé (sans filtre published): ${anyData.title} (${anyData.id})`);
+      const book = mapBookFromRecord(anyData as BookRecord);
+      
+      // Mettre en cache
+      bookCache.set(cleanId, { data: book, timestamp: Date.now() });
+      
+      return book;
+    }
+    
+    console.log(`[DEBUG] Aucun livre trouvé pour: ${cleanId}`);
+    return null;
 
-    const book = mapBookFromRecord(data as BookRecord);
-    console.log(`[DEBUG] Livre trouvé: ${book.title} (${book.id})`);
-    
-    // Mettre en cache avec les deux clés possibles
-    bookCache.set(cleanId, { data: book, timestamp: Date.now() });
-    if (book.id !== cleanId) {
-      bookCache.set(book.id, { data: book, timestamp: Date.now() });
-    }
-    if (book.slug && book.slug !== cleanId) {
-      bookCache.set(book.slug, { data: book, timestamp: Date.now() });
-    }
-    
-    return book;
   } catch (error) {
     console.error(`[ERROR] Exception lors de la recherche du livre:`, error);
     return null;

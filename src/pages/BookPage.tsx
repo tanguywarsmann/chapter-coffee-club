@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -22,55 +23,88 @@ export default function BookPage() {
 
   useEffect(() => {
     isMounted.current = true;
+    
     const fetchBook = async () => {
       if (!id) {
+        console.error("[BookPage] Aucun ID fourni dans les paramètres");
         navigate("/home");
         return;
       }
+
       try {
         setLoading(true);
         setError(null);
+        
+        console.log(`[BookPage] Récupération du livre avec ID: "${id}"`);
+        
+        // Essayer d'abord de récupérer avec progression si utilisateur connecté
         let bookWithProgress: BookWithProgress | null = null;
         if (user?.id) {
+          console.log(`[BookPage] Tentative de récupération avec progression pour user: ${user.id}`);
           bookWithProgress = await getBookReadingProgress(user.id, id);
-        }
-        if (!bookWithProgress) {
-          const fetchedBook = await getBookById(id);
-          if (!isMounted.current) return;
-          if (!fetchedBook) {
-            setError("Ce livre n'existe pas dans notre base de données");
-            toast.error("Ce livre n'existe pas dans notre base de données");
-            setTimeout(() => {
-              if (isMounted.current) {
-                navigate("/home");
-              }
-            }, 2000);
+          
+          if (bookWithProgress) {
+            console.log(`[BookPage] Livre avec progression trouvé: ${bookWithProgress.title}`);
+            setBook(bookWithProgress);
             return;
           }
         }
-        if (bookWithProgress) {
-          setBook(bookWithProgress);
+        
+        // Sinon récupérer le livre basique
+        console.log(`[BookPage] Récupération du livre basique pour ID: ${id}`);
+        const fetchedBook = await getBookById(id);
+        
+        if (!isMounted.current) return;
+        
+        if (!fetchedBook) {
+          console.error(`[BookPage] Aucun livre trouvé pour ID: ${id}`);
+          setError(`Le livre avec l'identifiant "${id}" n'existe pas dans notre base de données`);
+          toast.error("Ce livre n'existe pas dans notre base de données");
+          
+          setTimeout(() => {
+            if (isMounted.current) {
+              navigate("/explore");
+            }
+          }, 3000);
+          return;
         }
-        if (user?.id && bookWithProgress) {
+        
+        console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
+        
+        // Convertir en BookWithProgress pour compatibilité
+        const bookAsWithProgress: BookWithProgress = {
+          ...fetchedBook,
+          progressPercent: 0,
+          currentSegment: 1,
+          totalSegments: fetchedBook.totalChapters || fetchedBook.expectedSegments || fetchedBook.total_chapters || 1,
+          nextSegmentPage: 1
+        };
+        
+        setBook(bookAsWithProgress);
+        
+        // Synchroniser avec l'API si utilisateur connecté
+        if (user?.id) {
           try {
-            const bookIdentifier = bookWithProgress.id || bookWithProgress.slug || '';
-            const syncedBook = await syncBookWithAPI(user.id, bookIdentifier);
+            console.log(`[BookPage] Synchronisation avec API pour user: ${user.id}`);
+            const syncedBook = await syncBookWithAPI(user.id, id);
+            
             if (!isMounted.current) return;
-            if (syncedBook && bookWithProgress) {
+            
+            if (syncedBook) {
+              console.log(`[BookPage] Livre synchronisé: ${syncedBook.title}`);
               setBook({
                 ...syncedBook,
                 isCompleted: syncedBook.progressPercent >= 100
               } as BookWithProgress);
             }
           } catch (syncError) {
-            console.error("Error syncing book with API:", syncError);
-            if (isMounted.current) {
-              toast.error("Erreur lors de la synchronisation des données de lecture");
-            }
+            console.error("[BookPage] Erreur lors de la synchronisation:", syncError);
+            // Ne pas afficher d'erreur pour la sync, le livre de base fonctionne
           }
         }
+        
       } catch (fetchError) {
-        console.error("Error fetching book:", fetchError);
+        console.error("[BookPage] Erreur lors de la récupération:", fetchError);
         if (isMounted.current) {
           setError("Erreur lors du chargement du livre");
           toast.error("Erreur lors du chargement du livre");
@@ -81,7 +115,9 @@ export default function BookPage() {
         }
       }
     };
+
     fetchBook();
+    
     return () => {
       isMounted.current = false;
     };
