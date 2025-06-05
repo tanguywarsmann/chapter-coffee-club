@@ -45,27 +45,34 @@ export function StatsCards() {
     fetchData();
   }, [user?.id]);
 
-  // Ne pas afficher "0 badge" mais plutôt masquer le texte
-  const displayBadgesText = badgesCount > 0 ? (
-    <p className="text-sm font-medium text-coffee-darker">
-      Badge{badgesCount > 1 ? "s" : ""} obtenu{badgesCount > 1 ? "s" : ""}
-    </p>
-  ) : (
-    <p className="text-sm font-medium text-coffee-darker">Badges</p>
-  );
+  // Texte pour les badges avec accord correct
+  const getBadgesText = () => {
+    if (badgesCount === 0) return "Aucun badge";
+    if (badgesCount === 1) return "Badge obtenu";
+    return "Badges obtenus";
+  };
+
+  // Texte pour les livres avec accord correct
+  const getBooksText = () => {
+    if (booksRead === 0) return "Aucun livre terminé";
+    if (booksRead === 1) return "Livre terminé";
+    return "Livres terminés";
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
       <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between transition-all duration-300 hover:shadow-md">
         <div>
-          {displayBadgesText}
+          <p className="text-sm font-medium text-coffee-darker">
+            {getBadgesText()}
+          </p>
           <p className="text-3xl font-bold text-coffee-darker">{isLoading ? "—" : badgesCount}</p>
         </div>
         <Award className="h-8 w-8 text-coffee-darker" />
       </div>
       <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between transition-all duration-300 hover:shadow-md">
         <div>
-          <p className="text-sm font-medium text-coffee-darker">Livre{booksRead > 1 ? "s" : ""} terminé{booksRead > 1 ? "s" : ""}</p>
+          <p className="text-sm font-medium text-coffee-darker">{getBooksText()}</p>
           <p className="text-3xl font-bold text-coffee-darker">{isLoading ? "—" : booksRead}</p>
         </div>
         <Book className="h-8 w-8 text-coffee-darker" />

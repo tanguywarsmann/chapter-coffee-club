@@ -14,6 +14,25 @@ interface ProfileStatsProps {
 }
 
 export function ProfileStats({ stats }: ProfileStatsProps) {
+  // Fonctions pour obtenir les textes avec bons accords
+  const getBooksReadText = () => {
+    if (stats.booksRead === 0) return "Aucun livre terminé";
+    if (stats.booksRead === 1) return "Livre terminé";
+    return "Livres terminés";
+  };
+
+  const getBadgesText = () => {
+    if (stats.badgesEarned === 0) return "Aucun badge gagné";
+    if (stats.badgesEarned === 1) return "Badge gagné";
+    return "Badges gagnés";
+  };
+
+  const getStreakText = () => {
+    if (stats.streak === 0) return "Aucun jour";
+    if (stats.streak === 1) return "1 jour";
+    return `${stats.streak} jours`;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card className="border-coffee-light">
@@ -24,7 +43,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground">Livre{stats.booksRead > 1 ? "s" : ""} terminé{stats.booksRead > 1 ? "s" : ""}</span>
+              <span className="text-sm text-muted-foreground">{getBooksReadText()}</span>
               <div className="flex items-center">
                 <BookOpen className="h-4 w-4 mr-1 text-coffee-dark" />
                 <span className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</span>
@@ -42,7 +61,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
               <span className="text-2xl font-medium text-coffee-darker">{stats.totalPages}</span>
             </div>
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground">Badge{stats.badgesEarned > 1 ? "s" : ""} gagné{stats.badgesEarned > 1 ? "s" : ""}</span>
+              <span className="text-sm text-muted-foreground">{getBadgesText()}</span>
               <div className="flex items-center">
                 <Award className="h-4 w-4 mr-1 text-coffee-dark" />
                 <span className="text-2xl font-medium text-coffee-darker">{stats.badgesEarned}</span>
@@ -63,7 +82,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
               <span className="text-sm text-muted-foreground">Série actuelle</span>
               <div className="flex items-center">
                 <CalendarDays className="h-4 w-4 mr-1 text-coffee-dark" />
-                <span className="text-2xl font-medium text-coffee-darker">{stats.streak} jour{stats.streak > 1 ? "s" : ""}</span>
+                <span className="text-2xl font-medium text-coffee-darker">{getStreakText()}</span>
               </div>
             </div>
             <div className="flex flex-col space-y-1">

@@ -68,6 +68,13 @@ export function ReadingStats() {
     return `${hours} h ${mins} min`;
   };
 
+  // Fonction pour obtenir le texte des livres avec bon accord
+  const getBooksText = () => {
+    if (stats.booksRead === 0) return "Aucun livre terminé";
+    if (stats.booksRead === 1) return "Livre terminé";
+    return "Livres terminés";
+  };
+
   return (
     <Card className="border-coffee-light">
       <CardHeader className="pb-2">
@@ -87,7 +94,7 @@ export function ReadingStats() {
               <div className="space-y-1">
                 <div className="flex items-center text-muted-foreground">
                   <BookOpen className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Livre{stats.booksRead > 1 ? "s" : ""} terminé{stats.booksRead > 1 ? "s" : ""}</span>
+                  <span className="text-sm">{getBooksText()}</span>
                 </div>
                 <p className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</p>
               </div>
