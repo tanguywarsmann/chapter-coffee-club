@@ -81,27 +81,25 @@ export const useReadingListPage = () => {
     }
     
     try {
-      // On mobile, only fetch in-progress books to reduce load
-      if (isMobile) {
-        const inProgress = await getBooksByStatus('in_progress');
-        setInProgressBooks(sortBooks(inProgress || [], sortBy));
-        
-        // Set empty arrays for other categories on mobile to indicate they've been "loaded"
-        setToReadBooks([]);
-        setCompletedBooks([]);
-      } else {
-        // On desktop, fetch all categories
-        const [toRead, inProgress, completed] = await Promise.all([
-          getBooksByStatus('to_read'),
-          getBooksByStatus('in_progress'),
-          getBooksByStatus('completed')
-        ]);
-        
-        // Apply sorting
-        setToReadBooks(sortBooks(toRead || [], sortBy));
-        setInProgressBooks(sortBooks(inProgress || [], sortBy));
-        setCompletedBooks(sortBooks(completed || [], sortBy));
-      }
+      console.log("[DEBUG] Fetching books for mobile:", isMobile, "userId:", userId);
+      
+      // Fetch all categories regardless of device type
+      const [toRead, inProgress, completed] = await Promise.all([
+        getBooksByStatus('to_read'),
+        getBooksByStatus('in_progress'),
+        getBooksByStatus('completed')
+      ]);
+      
+      console.log("[DEBUG] Fetched books:", {
+        toRead: toRead?.length || 0,
+        inProgress: inProgress?.length || 0,
+        completed: completed?.length || 0
+      });
+      
+      // Apply sorting
+      setToReadBooks(sortBooks(toRead || [], sortBy));
+      setInProgressBooks(sortBooks(inProgress || [], sortBy));
+      setCompletedBooks(sortBooks(completed || [], sortBy));
     } catch (error) {
       console.error("Error fetching books:", error);
     }
