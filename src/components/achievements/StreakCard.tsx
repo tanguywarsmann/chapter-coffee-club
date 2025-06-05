@@ -27,6 +27,20 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
     return () => clearTimeout(timer);
   }, []);
 
+  // Fonction pour obtenir le texte avec bon accord pour la série actuelle
+  const getCurrentStreakText = () => {
+    if (currentStreak === 0) return "Pas de série en cours";
+    if (currentStreak === 1) return "1 jour consécutif";
+    return `${currentStreak} jours consécutifs`;
+  };
+
+  // Fonction pour obtenir le texte avec bon accord pour le record
+  const getRecordText = () => {
+    if (longestStreak === 0) return "Aucun record";
+    if (longestStreak === 1) return "Record de régularité : 1 jour";
+    return `Record de régularité : ${longestStreak} jours`;
+  };
+
   return (
     <Card 
       className={cn(
@@ -49,20 +63,14 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
       <CardContent className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="text-3xl font-bold text-coffee-darker">
-            {currentStreak > 0 ? (
-              <>
-                {currentStreak} jour{currentStreak > 1 ? "s" : ""} consécutif{currentStreak > 1 ? "s" : ""}
-              </>
-            ) : (
-              "Pas de série en cours"
-            )}
+            {getCurrentStreakText()}
           </div>
         </div>
         {hasRecord && (
           <div className="flex items-center gap-2 text-muted-foreground animate-fade-in">
             <Award className="h-5 w-5 text-amber-500" />
             <span className="font-medium">
-              Record de régularité : {longestStreak} jour{longestStreak > 1 ? "s" : ""}
+              {getRecordText()}
             </span>
           </div>
         )}

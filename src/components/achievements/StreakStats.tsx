@@ -30,16 +30,34 @@ export function StreakStats() {
       .then(({ count }) => setMonthlySegments(count ?? 0));
   }, []);
 
+  // Fonction pour obtenir le texte avec bon accord pour la série actuelle
+  const getCurrentStreakText = () => {
+    if (currentStreak === 0) return "Aucune série de lecture en cours";
+    if (currentStreak === 1) return <>🔥 Tu lis depuis <b>1</b> jour d'affilée !</>;
+    return <>🔥 Tu lis depuis <b>{currentStreak}</b> jours d'affilée !</>;
+  };
+
+  // Fonction pour obtenir le texte avec bon accord pour le record
+  const getBestStreakText = () => {
+    if (bestStreak === 0) return <>🏅 Aucun record établi</>;
+    if (bestStreak === 1) return <>🏅 Ton record : <b>1</b> jour consécutif</>;
+    return <>🏅 Ton record : <b>{bestStreak}</b> jours consécutifs</>;
+  };
+
+  // Fonction pour obtenir le texte avec bon accord pour les segments du mois
+  const getMonthlySegmentsText = () => {
+    if (monthlySegments === 0) return "Aucun segment validé ce mois-ci";
+    if (monthlySegments === 1) return "1 segment validé ce mois-ci";
+    return `${monthlySegments} segments validés ce mois-ci`;
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-6">
       <div className="flex-1 flex items-center bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg px-4 py-3 gap-3">
         <Flame className="h-8 w-8 text-orange-500" />
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
-            {currentStreak > 0
-              ? <>🔥 Tu lis depuis <b>{currentStreak}</b> jour{currentStreak > 1 ? "s" : ""} d'affilée !</>
-              : <>Aucune série de lecture en cours</>
-            }
+            {getCurrentStreakText()}
           </div>
         </div>
       </div>
@@ -47,7 +65,7 @@ export function StreakStats() {
         <Medal className="h-7 w-7 text-coffee-darker" />
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
-            🏅 Ton record : <b>{bestStreak}</b> jour{bestStreak > 1 ? "s" : ""} consécutifs
+            {getBestStreakText()}
           </div>
         </div>
       </div>
@@ -55,7 +73,7 @@ export function StreakStats() {
         <CalendarDays className="h-7 w-7 text-coffee-darker" />
         <div>
           <div className="font-serif text-coffee-darker font-medium text-lg">
-            {monthlySegments} segment{monthlySegments !== 1 ? "s" : ""} validé{monthlySegments !== 1 ? "s" : ""} ce mois-ci
+            {getMonthlySegmentsText()}
           </div>
         </div>
       </div>
