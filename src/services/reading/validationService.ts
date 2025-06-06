@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
@@ -25,8 +24,6 @@ type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['I
 export const validateReading = async (
   request: ValidateReadingRequest
 ): Promise<ValidateReadingResponse & { newBadges?: Badge[] }> => {
-  let toastDisplayed = false; // Pour éviter les toasts contradictoires
-
   try {
     console.log('🚀 [validateReading] Validation démarrée pour user_id:', request.user_id, 'livre:', request.book_id, 'segment:', request.segment);
     
@@ -34,16 +31,12 @@ export const validateReading = async (
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
       console.error('❌ [validateReading] Erreur session:', sessionError);
-      toast.error("Erreur de session: " + sessionError.message);
-      toastDisplayed = true;
       throw sessionError;
     }
     
     if (!sessionData?.session) {
       const errorMsg = "❌ Utilisateur non authentifié lors de la validation";
       console.error(errorMsg);
-      toast.error(errorMsg);
-      toastDisplayed = true;
       throw new Error(errorMsg);
     }
     console.log('✅ [validateReading] Session utilisateur valide');
@@ -58,16 +51,12 @@ export const validateReading = async (
     
     if (checkError) {
       console.error('❌ [validateReading] Erreur lors de la vérification défensive:', checkError);
-      toast.error("Erreur lors de la vérification des progressions existantes: " + checkError.message);
-      toastDisplayed = true;
       throw new Error("Erreur lors de la vérification des progressions");
     }
 
     // Alerte si plusieurs progressions sont détectées
     if (existingProgresses && existingProgresses.length > 1) {
       console.error('⚠️ [validateReading] ALERTE: Plusieurs progressions détectées pour le même livre et utilisateur:', existingProgresses);
-      toast.error("Anomalie détectée: plusieurs progressions pour le même livre. Contactez le support.", { duration: 10000 });
-      toastDisplayed = true;
       throw new Error("Anomalie: Plusieurs progressions détectées pour le même livre");
     }
     
@@ -90,15 +79,11 @@ export const validateReading = async (
     
     if (bookError) {
       console.error('❌ [validateReading] Erreur lors de la récupération du livre:', bookError);
-      toast.error("Impossible de récupérer les informations du livre: " + bookError.message);
-      toastDisplayed = true;
       throw new Error("❌ Impossible de récupérer les informations du livre");
     }
     
     if (!bookData) {
       console.error('❌ [validateReading] Livre non trouvé:', request.book_id);
-      toast.error("Livre non trouvé dans la base de données");
-      toastDisplayed = true;
       throw new Error("❌ Livre non trouvé dans la base de données");
     }
     
@@ -171,8 +156,6 @@ export const validateReading = async (
               
             if (conflictError || !conflictData) {
               console.error('❌ [validateReading] Échec de récupération après conflit:', conflictError);
-              toast.error("Échec de création de la progression de lecture");
-              toastDisplayed = true;
               throw new Error("Échec de création de la progression de lecture");
             }
             
@@ -181,15 +164,11 @@ export const validateReading = async (
             currentProgress = conflictData;
           } else {
             console.error('❌ [validateReading] Erreur création reading_progress:', insertError);
-            toast.error("Échec de création de la progression de lecture");
-            toastDisplayed = true;
             throw new Error("Échec de création de la progression de lecture");
           }
         } else if (!newProgress || !newProgress.id) {
           const errorMsg = "❌ ID de progression non récupéré après insertion";
           console.error(errorMsg);
-          toast.error(errorMsg);
-          toastDisplayed = true;
           throw new Error(errorMsg);
         } else {
           console.log('✅ [validateReading] reading_progress créé avec succès:', newProgress);
@@ -226,16 +205,12 @@ export const validateReading = async (
 
       if (progressError) {
         console.error('❌ [validateReading] Erreur mise à jour reading_progress:', progressError);
-        toast.error("Échec de mise à jour de la progression");
-        toastDisplayed = true;
         throw new Error("Échec de mise à jour de la progression");
       }
 
       if (!updatedProgress || !updatedProgress.id) {
         const errorMsg = "❌ ID de progression non récupéré après mise à jour";
         console.error(errorMsg);
-        toast.error(errorMsg);
-        toastDisplayed = true;
         throw new Error(errorMsg);
       }
       
@@ -248,8 +223,6 @@ export const validateReading = async (
     if (!progressId) {
       const errorMsg = "❌ Impossible d'obtenir un progress_id valide pour user_id: " + request.user_id + ", book_id: " + request.book_id;
       console.error(errorMsg);
-      toast.error("Erreur critique: ID de progression manquant");
-      toastDisplayed = true;
       throw new Error(errorMsg);
     }
 
@@ -270,8 +243,6 @@ export const validateReading = async (
     if (request.segment < 0) {
       const segmentError = `❌ [validateReading] Segment invalide (${request.segment}), doit être >= 0`;
       console.error(segmentError);
-      toast.error("Échec de validation: segment invalide");
-      toastDisplayed = true;
       throw new Error(segmentError);
     }
     
@@ -296,16 +267,12 @@ export const validateReading = async (
       console.error('❌ [validateReading] Erreur insertion reading_validations:', validationError);
       
       if (validationError.message.includes('violates foreign key constraint')) {
-        toast.error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.", { duration: 8000 });
-        toastDisplayed = true;
+        throw new Error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.");
       } else if (validationError.message.includes('reading_validations_segment_check')) {
-        toast.error("Erreur de validation : segment invalide", { duration: 5000 });
-        toastDisplayed = true;
+        throw new Error("Erreur de validation : segment invalide");
       } else {
-        toast.error("Échec d'enregistrement de la validation: " + validationError.message);
-        toastDisplayed = true;
+        throw new Error("Échec d'enregistrement de la validation: " + validationError.message);
       }
-      throw validationError;
     }
     
     console.log("✅ [validateReading] reading_validations inséré avec succès:", validationData);
@@ -361,11 +328,7 @@ export const validateReading = async (
     const updatedProgress = await getBookReadingProgress(request.user_id, request.book_id);
     console.log("📊 [validateReading] Progression mise à jour:", updatedProgress);
 
-    // Success toast only at the end when everything worked and only if no error toast has been shown
-    if (!toastDisplayed) {
-      toast.success("Segment validé avec succès!");
-    }
-    
+    // REMOVED: Success toast from here to avoid duplicates
     console.log("🏁 [validateReading] Processus de validation terminé avec succès");
     return {
       message: "Segment validé avec succès",
@@ -378,10 +341,8 @@ export const validateReading = async (
     const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
     console.error('❌ [validateReading] Erreur finale de validation:', error);
     
-    // N'afficher le toast d'erreur que si aucun toast n'a été affiché précédemment
-    if (!toastDisplayed) {
-      toast.error(`Échec de la validation: ${errorMessage}`);
-    }
+    // Only show error toast on actual failures
+    toast.error(`Échec de la validation: ${errorMessage}`);
     throw new Error(errorMessage);
   }
 };

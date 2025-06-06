@@ -86,12 +86,18 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   const [showValidationModal, setShowValidationModal] = useState(false);
 
-  // Function to refresh progress data immediately
+  // Function to refresh progress data immediately - Enhanced for mobile
   const refreshProgressData = async () => {
     if (!user?.id || !bookIdentifier) return;
     
     try {
-      console.log("🔄 Rafraîchissement immédiat des données de progression");
+      console.log("🔄 Rafraîchissement immédiat des données de progression (mobile optimized)");
+      
+      // Force clear any existing timeouts
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+      
       const progress = await getBookReadingProgress(user.id, bookIdentifier);
       
       if (progress) {
@@ -103,7 +109,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         
         setReadingProgress(progress);
 
-        // Update the book with validation data
+        // Update the book with validation data - IMMEDIATE state update
         const chaptersRead = progress.chaptersRead || 0;
         setCurrentBook(prevBook => ({
           ...prevBook,
@@ -112,8 +118,15 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           currentSegment: progress.currentSegment
         }));
         
-        // Update progress percentage immediately
+        // Update progress percentage immediately - FORCE re-render
         setProgressPercent(progress.progressPercent || 0);
+        
+        // Force DOM update for mobile browsers
+        setTimeout(() => {
+          if (progressRef.current) {
+            progressRef.current.style.transform = 'translateZ(0)'; // Force repaint
+          }
+        }, 0);
       }
     } catch (error) {
       console.error("⚠️ Erreur lors du rafraîchissement des données:", error);
@@ -180,19 +193,29 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (correct) {
         showConfetti();
 
-        // Immediate refresh after successful validation
-        console.log("🔄 Rafraîchissement immédiat après validation réussie");
-        await refreshProgressData();
+        // ENHANCED: Multiple immediate refresh attempts for mobile
+        console.log("🔄 Rafraîchissement immédiat après validation réussie (mobile enhanced)");
         
-        // Force refresh of reading progress hook
+        // 1. Immediate refresh
+        await refreshProgressData();
         forceRefresh();
         
-        // Additional refresh after a short delay to ensure all systems are updated
+        // 2. Additional refresh with short delay for mobile browsers
         setTimeout(async () => {
-          console.log("🔄 Refresh supplémentaire après délai");
+          console.log("🔄 Refresh mobile supplémentaire #1");
           await refreshProgressData();
           refreshReadingProgress(true);
-        }, 1000);
+        }, 100);
+        
+        // 3. Final refresh to ensure mobile state is updated
+        setTimeout(async () => {
+          console.log("🔄 Refresh mobile supplémentaire #2");
+          await refreshProgressData();
+          refreshReadingProgress(true);
+          
+          // Force re-render on mobile by updating state
+          setCurrentBook(prev => ({ ...prev }));
+        }, 500);
 
         if (user?.id) {
           // Check if we received new badges from the quiz completion
@@ -231,7 +254,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           }
         }
         
-        // Display success toast
+        // SINGLE success toast - removed duplicates
         toast.success("Segment validé avec succès !");
       } else {
         // Even if the quiz was failed, refresh the data

@@ -83,8 +83,8 @@ export const useBookValidation = (
       const result = await originalHandleQuizComplete(correct);
       
       if (correct && userId && book?.id) {
-        // Force immediate refresh of multiple data sources
-        console.log("🔄 Rafraîchissement immédiat après validation réussie");
+        // ENHANCED: Force immediate refresh of multiple data sources for mobile
+        console.log("🔄 Rafraîchissement immédiat après validation réussie (enhanced mobile)");
         
         // 1. Force refresh of reading progress hook
         forceRefresh();
@@ -94,17 +94,23 @@ export const useBookValidation = (
           onProgressUpdate(book.id);
         }
         
-        // 3. Get fresh book progress data immediately
-        try {
-          const updatedProgress = await getBookReadingProgress(userId, book.id);
-          if (updatedProgress) {
-            console.log("📚 Progression mise à jour immédiatement:", {
-              chaptersRead: updatedProgress.chaptersRead,
-              progressPercent: updatedProgress.progressPercent
-            });
-          }
-        } catch (error) {
-          console.error("Erreur lors de la récupération immédiate de la progression:", error);
+        // 3. Multiple attempts to get fresh book progress data for mobile compatibility
+        const refreshAttempts = [0, 100, 300]; // Immediate, then delayed attempts
+        
+        for (const delay of refreshAttempts) {
+          setTimeout(async () => {
+            try {
+              const updatedProgress = await getBookReadingProgress(userId, book.id);
+              if (updatedProgress) {
+                console.log(`📚 Progression mise à jour (attempt delay: ${delay}ms):`, {
+                  chaptersRead: updatedProgress.chaptersRead,
+                  progressPercent: updatedProgress.progressPercent
+                });
+              }
+            } catch (error) {
+              console.error(`Erreur lors de la récupération (attempt delay: ${delay}ms):`, error);
+            }
+          }, delay);
         }
       }
       
