@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -59,12 +60,18 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     remainingLockTime,
     handleLockExpire,
     forceRefresh
-  } = useBookValidation(currentBook, user?.id, (bookId) => {
+  } = useBookValidation(currentBook, user?.id, async (bookId) => {
+    console.log("🔄 Callback onProgressUpdate appelé pour:", bookId);
+    
     if (onChapterComplete) {
       onChapterComplete(bookId);
     }
+    
     if (user?.id) {
-      // Ensure we check badges when a chapter is completed
+      // Immediate data refresh after validation
+      await refreshProgressData();
+      
+      // Check badges and rewards
       checkBadgesForUser(user.id);
       
       // Check for monthly rewards
@@ -74,51 +81,50 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           setShowMonthlyReward(true);
         }
       });
-      
-      // Force refresh reading progress after a short delay to ensure data is up-to-date
-      console.log("🔄 Planification d'un refresh après validation");
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
-      
-      fetchTimeoutRef.current = setTimeout(() => {
-        console.log("🔄 Execution du refresh planifié");
-        refreshReadingProgress(true); // Force refresh
-        forceRefresh(); // Utiliser aussi le forceRefresh de useBookValidation
-      }, 1000);
     }
   });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
 
+  // Function to refresh progress data immediately
+  const refreshProgressData = async () => {
+    if (!user?.id || !bookIdentifier) return;
+    
+    try {
+      console.log("🔄 Rafraîchissement immédiat des données de progression");
+      const progress = await getBookReadingProgress(user.id, bookIdentifier);
+      
+      if (progress) {
+        console.log("📚 Nouvelles données de progression:", {
+          chaptersRead: progress.chaptersRead,
+          progressPercent: progress.progressPercent,
+          currentSegment: progress.currentSegment
+        });
+        
+        setReadingProgress(progress);
+
+        // Update the book with validation data
+        const chaptersRead = progress.chaptersRead || 0;
+        setCurrentBook(prevBook => ({
+          ...prevBook,
+          chaptersRead: chaptersRead,
+          progressPercent: progress.progressPercent,
+          currentSegment: progress.currentSegment
+        }));
+        
+        // Update progress percentage immediately
+        setProgressPercent(progress.progressPercent || 0);
+      }
+    } catch (error) {
+      console.error("⚠️ Erreur lors du rafraîchissement des données:", error);
+    }
+  };
+
   // Fetch reading progress whenever the book or user changes
   useEffect(() => {
     const fetchProgress = async () => {
       if (user?.id && bookIdentifier) {
-        try {
-          console.log("🔄 Récupération de la progression pour le livre:", bookIdentifier);
-          const progress = await getBookReadingProgress(user.id, bookIdentifier);
-          if (progress) {
-            console.log("📚 Progression récupérée:", {
-              id: progress.id,
-              chaptersRead: progress.chaptersRead,
-              totalSegments: progress.totalSegments
-            });
-            
-            setReadingProgress(progress);
-
-            // Update the book with validation data
-            const chaptersRead = progress.chaptersRead || 0;
-            if (chaptersRead !== currentBook.chaptersRead) {
-              setCurrentBook(prevBook => ({
-                ...prevBook,
-                chaptersRead: chaptersRead
-              }));
-            }
-          }
-        } catch (error) {
-          console.error("⚠️ Error fetching book reading progress:", error);
-        }
+        await refreshProgressData();
       }
     };
 
@@ -133,9 +139,10 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                            currentBook.expectedSegments || 
                            currentBook.total_chapters || 1;
 
-      console.log("📊 Calcul progression", { 
+      console.log("📊 Mise à jour progression UI", { 
         segmentsDone, 
-        totalSegments
+        totalSegments,
+        progressPercent: readingProgress.progressPercent
       });
 
       setProgressPercent(readingProgress.progressPercent || 0);
@@ -173,24 +180,26 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (correct) {
         showConfetti();
 
+        // Immediate refresh after successful validation
+        console.log("🔄 Rafraîchissement immédiat après validation réussie");
+        await refreshProgressData();
+        
+        // Force refresh of reading progress hook
+        forceRefresh();
+        
+        // Additional refresh after a short delay to ensure all systems are updated
+        setTimeout(async () => {
+          console.log("🔄 Refresh supplémentaire après délai");
+          await refreshProgressData();
+          refreshReadingProgress(true);
+        }, 1000);
+
         if (user?.id) {
           // Check if we received new badges from the quiz completion
           if (result?.newBadges && result.newBadges.length > 0) {
-            // Set the badges to show in the dialog
             setUnlockedBadges(result.newBadges);
-            // Show badge unlock dialog
             setShowBadgeDialog(true);
           }
-
-          // Force refresh reading progress
-          console.log("🔄 Forçage du rafraîchissement après quiz réussi");
-          forceRefresh();
-          
-          // Refresh after a short delay to ensure data is up-to-date
-          setTimeout(() => {
-            console.log("🔄 Refresh supplémentaire après délai");
-            refreshReadingProgress(true);
-          }, 1500);
 
           // Record completed book if applicable
           if (currentBook.isCompleted) {
@@ -216,7 +225,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           const monthlyBadge = await checkAndGrantMonthlyReward(user.id);
           if (monthlyBadge) {
             setMonthlyReward(monthlyBadge);
-            // On affiche la récompense mensuelle après la validation du segment
             setTimeout(() => {
               setShowMonthlyReward(true);
             }, 1000);
@@ -227,6 +235,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         toast.success("Segment validé avec succès !");
       } else {
         // Even if the quiz was failed, refresh the data
+        await refreshProgressData();
         forceRefresh();
       }
     } catch (error) {
@@ -234,6 +243,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       toast.error("Une erreur est survenue lors de la validation");
       
       // Try to refresh anyway
+      await refreshProgressData();
       forceRefresh();
     }
   };
@@ -256,6 +266,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         setShowValidationModal(false);
         
         // Force refresh to get updated progress
+        refreshProgressData();
         forceRefresh();
       }
     }

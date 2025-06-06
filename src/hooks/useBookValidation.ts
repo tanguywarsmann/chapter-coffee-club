@@ -8,6 +8,7 @@ import { useConfetti } from "./useConfetti";
 import { Badge } from "@/types/badge";
 import { addXP } from "@/services/user/levelService";
 import { useReadingProgress } from "./useReadingProgress";
+import { getBookReadingProgress } from "@/services/reading/progressService";
 
 export const useBookValidation = (
   book: Book | null,
@@ -81,12 +82,30 @@ export const useBookValidation = (
     try {
       const result = await originalHandleQuizComplete(correct);
       
-      // Force refresh of reading progress data
-      try {
-        console.log("🔄 Forçage du rafraîchissement après validation");
+      if (correct && userId && book?.id) {
+        // Force immediate refresh of multiple data sources
+        console.log("🔄 Rafraîchissement immédiat après validation réussie");
+        
+        // 1. Force refresh of reading progress hook
         forceRefresh();
-      } catch (refreshError) {
-        console.error("Erreur lors du rafraîchissement des données:", refreshError);
+        
+        // 2. Trigger parent component update
+        if (onProgressUpdate) {
+          onProgressUpdate(book.id);
+        }
+        
+        // 3. Get fresh book progress data immediately
+        try {
+          const updatedProgress = await getBookReadingProgress(userId, book.id);
+          if (updatedProgress) {
+            console.log("📚 Progression mise à jour immédiatement:", {
+              chaptersRead: updatedProgress.chaptersRead,
+              progressPercent: updatedProgress.progressPercent
+            });
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération immédiate de la progression:", error);
+        }
       }
       
       // Check if there are any newly unlocked badges

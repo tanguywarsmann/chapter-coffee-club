@@ -310,12 +310,14 @@ export const validateReading = async (
     
     console.log("✅ [validateReading] reading_validations inséré avec succès:", validationData);
 
+    // Invalidation aggressive des caches
+    console.log("🗑️ [validateReading] Invalidation des caches...");
     await clearProgressCache(request.user_id);
-    console.log(`✅ [validateReading] Cache vidé pour l'utilisateur ${request.user_id}`);
-
+    
     // Mutation SWR - force refresh des données pour SWR
-    mutate((key) => typeof key === 'string' && key.includes(`reading-progress-${request.user_id}`), undefined, true);
-    mutate(() => getBookReadingProgress(request.user_id, request.book_id));
+    mutate((key) => typeof key === 'string' && key.includes(`reading-progress-${request.user_id}`), undefined, { revalidate: true });
+    mutate((key) => typeof key === 'string' && key.includes(`book-progress-${request.book_id}`), undefined, { revalidate: true });
+    mutate(() => getBookReadingProgress(request.user_id, request.book_id), undefined, { revalidate: true });
     
     console.log("✅ [validateReading] SWR cache mutation triggered");
 
