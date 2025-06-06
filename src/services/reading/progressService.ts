@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 import { Database } from "@/integrations/supabase/types";
@@ -68,27 +67,24 @@ async function getValidatedSegmentCount(userId: string, bookId: string): Promise
 async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
   
-  // Détecter l'unité : mots si current_page > total_pages * 2
+  // FIXED: Utiliser le nombre réel de segments validés plutôt que current_page
+  const validatedSegments = await getValidatedSegmentCount(p?.user_id || b.user_id, b.id || b.book_id);
+  
+  // Détecter l'unité basée sur current_page mais utiliser les segments validés pour la progression réelle
   const isWordMode = current_page > total_pages * 2;
-
-  // Calculer les segments estimés à partir de la progression actuelle
-  const segmentsRead = isWordMode
+  
+  // Calculer les segments estimés à partir de current_page pour comparaison
+  const segmentsFromCurrentPage = isWordMode
     ? Math.floor(current_page / WORDS_PER_SEGMENT)
     : Math.floor(current_page / PAGES_PER_SEGMENT);
 
-  // Récupérer le nombre réel de segments validés depuis la base de données
-  const validatedSegments = await getValidatedSegmentCount(p?.user_id || b.user_id, b.id || b.book_id);
-  
-  console.log(`[progress] Segments validés: ${validatedSegments}, segments estimés: ${segmentsRead}`);
+  console.log(`[progress] FIXED: Segments validés: ${validatedSegments}, segments from current_page: ${segmentsFromCurrentPage}, current_page: ${current_page}`);
 
   const expectedSegments = b.expected_segments ?? total_chapters ?? 1;
   const totalSegments = expectedSegments;
 
-  // Utiliser le minimum entre les segments calculés et les segments réellement validés
-  const clampedSegments = Math.min(
-    Math.min(segmentsRead, validatedSegments), 
-    totalSegments
-  );
+  // Utiliser le nombre réel de segments validés pour la progression
+  const clampedSegments = Math.min(validatedSegments, totalSegments);
   
   // Déterminer si le livre est complété basé sur le statut ET la progression
   const isCompleted = p?.status === "completed" || clampedSegments >= totalSegments;
@@ -97,11 +93,11 @@ async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
     ...b,
     ...p,  // Include all reading progress fields (status, updated_at, etc.)
     
-    // Derived fields
+    // Derived fields - FIXED to use validated segments
     coverImage: b.cover_url,         // alias for cover_url
     expectedSegments,                // camelCase alias
     totalSegments,
-    chaptersRead: clampedSegments,
+    chaptersRead: clampedSegments,   // FIXED: Use validated segments
     progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100),
     nextSegmentPage: isWordMode
       ? (clampedSegments + 1) * WORDS_PER_SEGMENT
@@ -367,4 +363,3 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
     return [];
   }
 };
-

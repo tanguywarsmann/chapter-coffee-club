@@ -11,6 +11,7 @@ import { addXP } from "@/services/user/levelService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { Database } from "@/integrations/supabase/types";
 import { mutate } from 'swr';
+import { PAGES_PER_SEGMENT } from "@/utils/constants";
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
@@ -90,8 +91,8 @@ export const validateReading = async (
     console.log('📚 [validateReading] Infos du livre récupérées:', bookData);
     const totalPages = bookData.total_pages || 0;
     
-    // CORRECTION: Calcul avec bornes strictes selon les exigences
-    const calculatedPage = (request.segment + 1) * 8000;
+    // FIXED: Calcul correct basé sur les pages (30 pages par segment)
+    const calculatedPage = (request.segment + 1) * PAGES_PER_SEGMENT;
     const newCurrentPage = Math.min(calculatedPage, totalPages);
     const updatedCurrentPage = Math.max(newCurrentPage, currentProgress?.current_page || 0);
     const clampedPage = Math.min(updatedCurrentPage, totalPages);
@@ -100,7 +101,7 @@ export const validateReading = async (
     const newStatus: ReadingProgressStatus = clampedPage >= totalPages ? 'completed' : 'in_progress';
     
     // Log explicite du calcul final
-    console.info(`[VALIDATION] current_page = ${clampedPage}, total_pages = ${totalPages}, status = ${newStatus}`);
+    console.info(`[VALIDATION] FIXED: current_page = ${clampedPage} (segment ${request.segment + 1} * ${PAGES_PER_SEGMENT} pages), total_pages = ${totalPages}, status = ${newStatus}`);
     
     // Si pas de progression existante, en créer une nouvelle
     if (!progressId) {
@@ -188,14 +189,14 @@ export const validateReading = async (
         };
       }
       
-      // Mettre à jour la progression existante avec les nouvelles bornes
+      // Mettre à jour la progression existante avec le calcul corrigé
       const updateData = {
         current_page: clampedPage,
         status: newStatus,
         updated_at: new Date().toISOString()
       };
       
-      console.log('📝 [validateReading] Mise à jour reading_progress avec données:', updateData);
+      console.log('📝 [validateReading] Mise à jour reading_progress avec données corrigées:', updateData);
       const { data: updatedProgress, error: progressError } = await supabase
         .from('reading_progress')
         .update(updateData)
