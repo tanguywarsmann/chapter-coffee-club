@@ -58,7 +58,7 @@ export function QuizModal({
             Vérification de lecture: Chapitre {chapterNumber}
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-muted-foreground">
-            Répondez par un mot ou une courte phrase.
+            Répondez par un mot.
           </DialogDescription>
         </DialogHeader>
         
