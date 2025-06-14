@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
@@ -88,7 +87,7 @@ export function useBookValidationHandler({
         setTimeout(async () => {
           await refreshProgressData();
           refreshReadingProgress(true);
-          setCurrentBook(prev => ({ ...prev }));
+          setCurrentBook(currentBook);
         }, 500);
 
         if (user?.id) {

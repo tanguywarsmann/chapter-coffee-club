@@ -1,4 +1,4 @@
-
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
 import { BookDetailHeader } from "./BookDetailHeader";
