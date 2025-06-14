@@ -1,24 +1,28 @@
 
-import { useState } from "react";
-import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { useBookQuiz } from "./useBookQuiz";
-import { validateReading } from "@/services/reading/validationService";
 import { useConfetti } from "./useConfetti";
-import { Badge } from "@/types/badge";
-import { addXP } from "@/services/user/levelService";
 import { useReadingProgress } from "./useReadingProgress";
-import { getBookReadingProgress } from "@/services/reading/progressService";
+import { useValidationState } from "./useValidationState";
+import { useQuizCompletion } from "./useQuizCompletion";
+import { validateUserAndBook, checkBookCompletion, showValidationError } from "@/utils/validationUtils";
+import { toast } from "sonner";
 
 export const useBookValidation = (
   book: Book | null,
   userId: string | null,
   onProgressUpdate?: (bookId: string) => void
 ) => {
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationSegment, setValidationSegment] = useState<number | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const {
+    isValidating,
+    setIsValidating,
+    validationSegment,
+    setValidationSegment,
+    validationError,
+    setValidationError,
+    resetValidationState
+  } = useValidationState();
+
   const { showConfetti } = useConfetti();
   const { forceRefresh } = useReadingProgress();
 
@@ -36,124 +40,45 @@ export const useBookValidation = (
     handleLockExpire
   } = useBookQuiz(book, userId, onProgressUpdate);
 
+  const {
+    newBadges,
+    setNewBadges,
+    handleQuizComplete
+  } = useQuizCompletion({
+    book,
+    userId,
+    originalHandleQuizComplete,
+    onProgressUpdate
+  });
+
   const handleValidateReading = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setValidationError(null);
     
-    if (!userId) {
-      toast.error("Vous devez être connecté pour valider votre lecture : Connectez-vous pour enregistrer votre progression.", {
-        duration: 5000
-      });
+    if (!validateUserAndBook(userId, book)) {
       return;
     }
     
-    if (!book) {
-      toast.error("Information du livre manquante : Impossible de valider sans les informations du livre", {
-        duration: 3000
-      });
-      return;
-    }
-    
-    if (book.chaptersRead >= book.totalChapters) {
-      toast.success("Vous avez déjà terminé ce livre ! : Votre progression a été entièrement enregistrée.", {
-        duration: 3000
-      });
+    if (book && checkBookCompletion(book)) {
       return;
     }
     
     try {
       setIsValidating(true);
-      const nextSegment = book.chaptersRead + 1;
+      const nextSegment = book!.chaptersRead + 1;
       setValidationSegment(nextSegment);
     } catch (error) {
-      console.error("Error preparing validation:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       setValidationError(errorMessage);
-      toast.error(`Erreur lors de la préparation de la validation : ${errorMessage.substring(0, 100)}`, {
-        duration: 5000
-      });
+      showValidationError(error, "de la préparation de la validation");
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleQuizComplete = async (correct: boolean) => {
-    try {
-      const result = await originalHandleQuizComplete(correct);
-      
-      if (correct && userId && book?.id) {
-        // ENHANCED: Force immediate refresh of multiple data sources for mobile
-        console.log("🔄 Rafraîchissement immédiat après validation réussie (enhanced mobile)");
-        
-        // 1. Force refresh of reading progress hook
-        forceRefresh();
-        
-        // 2. Trigger parent component update
-        if (onProgressUpdate) {
-          onProgressUpdate(book.id);
-        }
-        
-        // 3. Multiple attempts to get fresh book progress data for mobile compatibility
-        const refreshAttempts = [0, 100, 300]; // Immediate, then delayed attempts
-        
-        for (const delay of refreshAttempts) {
-          setTimeout(async () => {
-            try {
-              const updatedProgress = await getBookReadingProgress(userId, book.id);
-              if (updatedProgress) {
-                console.log(`📚 Progression mise à jour (attempt delay: ${delay}ms):`, {
-                  chaptersRead: updatedProgress.chaptersRead,
-                  progressPercent: updatedProgress.progressPercent
-                });
-              }
-            } catch (error) {
-              console.error(`Erreur lors de la récupération (attempt delay: ${delay}ms):`, error);
-            }
-          }, delay);
-        }
-      }
-      
-      // Check if there are any newly unlocked badges
-      if (result?.newBadges && result.newBadges.length > 0) {
-        setNewBadges(result.newBadges);
-        
-        // Ajouter des XP supplémentaires pour un streak (30 XP)
-        if (userId && result.newBadges.some(badge => badge.id && badge.id.includes('streak'))) {
-          await addXP(userId, 30);
-        }
-      } else {
-        setNewBadges([]);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error("Error in quiz completion:", error);
-      
-      // Même en cas d'erreur, essayer de rafraîchir les données
-      try {
-        forceRefresh();
-      } catch (refreshError) {
-        console.error("Erreur lors du rafraîchissement des données:", refreshError);
-      }
-      
-      throw error;
-    }
-  };
-
   const handleValidationConfirm = async () => {
-    if (!userId) {
-      toast.error("Vous devez être connecté", {
-        description: "Session expirée ou déconnectée",
-        duration: 5000
-      });
-      return;
-    }
-    
-    if (!book) {
-      toast.error("Information du livre manquante", {
-        duration: 3000
-      });
+    if (!validateUserAndBook(userId, book)) {
       return;
     }
     
