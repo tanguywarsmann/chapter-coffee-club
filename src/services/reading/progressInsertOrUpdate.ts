@@ -43,7 +43,7 @@ export async function insertReadingProgress(user_id: string, book_id: string, cl
 export async function updateReadingProgress(progressId: string, clampedPage: number, newStatus: string) {
   const updateData = {
     current_page: clampedPage,
-    status: newStatus,
+    status: newStatus as "to_read" | "in_progress" | "completed",
     updated_at: new Date().toISOString()
   };
   const { data: updatedProgress, error: progressError } = await supabase
