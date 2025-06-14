@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = "v0.12"; // Version mise à jour suite à la correction du bug des pages livres
+const APP_VERSION = "v0.13"; // Version mise à jour suite refonte robustesse/perfs
 
 export const AppFooter = () => {
   return (
