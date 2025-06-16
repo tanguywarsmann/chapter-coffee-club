@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -12,6 +11,7 @@ import { BookBadgeDialog } from "./BookBadgeDialog";
 import { useBookDetailProgress } from "@/hooks/useBookDetailProgress";
 import { useBookValidationHandler } from "@/hooks/useBookValidationHandler";
 import { BookMonthlyRewardModal } from "./BookMonthlyRewardHandler";
+import { toast } from "sonner";
 
 interface BookDetailProps {
   book: Book;
