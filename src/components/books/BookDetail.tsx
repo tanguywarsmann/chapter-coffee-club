@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -77,7 +78,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   // --- Validation Modal Handler ---
   const handleOpenValidationModal = () => {
-    const segment = (readingProgress?.chaptersRead || 0) + 1;
+    const segment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
+    console.log(`[BookDetail] Opening validation modal for segment ${segment}, book:`, currentBook.title);
+    
     setValidationSegment(segment);
     setShowValidationModal(true);
 
@@ -86,12 +89,33 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     }
   };
 
+  // --- Enhanced validation confirm handler ---
+  const handleModalValidationConfirm = () => {
+    console.log(`[BookDetail] Modal validation confirm with segment:`, validationSegment);
+    
+    // Vérifier que le segment est bien défini avant de fermer la modal
+    if (!validationSegment) {
+      const recalculatedSegment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
+      console.log(`[BookDetail] Recalculating segment in modal: ${recalculatedSegment}`);
+      setValidationSegment(recalculatedSegment);
+      
+      if (!recalculatedSegment) {
+        toast.error("Impossible de déterminer le segment à valider");
+        return;
+      }
+    }
+    
+    setShowValidationModal(false);
+    handleValidationConfirm();
+  };
+
   // If validation segment is already done, close modal
   useEffect(() => {
     if (showValidationModal && validationSegment) {
       const isAlreadyValidated = readingProgress && validationSegment <= (readingProgress.chaptersRead || 0);
 
       if (isAlreadyValidated) {
+        console.log(`[BookDetail] Segment ${validationSegment} already validated, closing modal`);
         setShowValidationModal(false);
         refreshProgressData();
         forceRefresh();
@@ -143,10 +167,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           isLocked={isLocked}
           remainingLockTime={remainingLockTime}
           onValidationClose={() => setShowValidationModal(false)}
-          onValidationConfirm={() => {
-            setShowValidationModal(false);
-            handleValidationConfirm();
-          }}
+          onValidationConfirm={handleModalValidationConfirm}
           onQuizClose={() => setShowQuiz(false)}
           onQuizComplete={handleQuizComplete}
           onSuccessClose={() => setShowSuccessMessage(false)}

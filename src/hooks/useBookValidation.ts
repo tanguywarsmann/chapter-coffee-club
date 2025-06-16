@@ -66,7 +66,8 @@ export const useBookValidation = (
     
     try {
       setIsValidating(true);
-      const nextSegment = book!.chaptersRead + 1;
+      const nextSegment = (book!.chaptersRead || 0) + 1;
+      console.log(`[useBookValidation] Setting validation segment to ${nextSegment} for book:`, book!.title);
       setValidationSegment(nextSegment);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -78,12 +79,23 @@ export const useBookValidation = (
   };
 
   const handleValidationConfirm = async () => {
+    console.log(`[useBookValidation] handleValidationConfirm called with segment:`, validationSegment);
+    
     if (!validateUserAndBook(userId, book)) {
       return;
     }
     
-    if (!validationSegment) {
-      toast.error("Segment de validation non spécifié", {
+    // Sécurité : recalculer le segment si nécessaire
+    let segmentToValidate = validationSegment;
+    if (!segmentToValidate && book) {
+      segmentToValidate = (book.chaptersRead || 0) + 1;
+      console.log(`[useBookValidation] Recalculated segment: ${segmentToValidate}`);
+      setValidationSegment(segmentToValidate);
+    }
+    
+    if (!segmentToValidate) {
+      console.error(`[useBookValidation] No segment to validate for book:`, book?.title);
+      toast.error("Impossible de déterminer le segment à valider", {
         duration: 3000
       });
       return;
@@ -91,7 +103,8 @@ export const useBookValidation = (
 
     try {
       setIsValidating(true);
-      await prepareAndShowQuestion(validationSegment);
+      console.log(`[useBookValidation] Preparing question for segment ${segmentToValidate}`);
+      await prepareAndShowQuestion(segmentToValidate);
       
       // Refresh progress data after validation attempt
       forceRefresh();

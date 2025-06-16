@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
@@ -7,14 +8,6 @@ import { recordReadingSession } from "@/services/badgeService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { useMonthlyReward } from "@/components/books/BookMonthlyRewardHandler";
 
-/*
-  This hook encapsulates all validation/quiz logic, including
-  - Setting up and handling badge dialog
-  - Handling quiz completion, confetti, refreshing, and session logic
-  - Handling monthly reward trigger
-
-  Compose this inside BookDetail and pass the props into the correct places.
-*/
 export function useBookValidationHandler({
   currentBook,
   setCurrentBook,
@@ -47,13 +40,22 @@ export function useBookValidationHandler({
     setShowSuccessMessage,
     prepareAndShowQuestion,
     handleQuizComplete,
-    handleValidationConfirm,
+    handleValidationConfirm: originalHandleValidationConfirm,
     showConfetti,
     isLocked,
     remainingLockTime,
     handleLockExpire,
-    forceRefresh
+    forceRefresh,
+    setValidationSegment: setBookValidationSegment
   } = useBookValidation(currentBook, user?.id, onChapterComplete);
+
+  // Synchroniser les segments entre les deux hooks
+  useEffect(() => {
+    if (validationSegment !== null) {
+      console.log(`[useBookValidationHandler] Syncing validation segment: ${validationSegment}`);
+      setBookValidationSegment(validationSegment);
+    }
+  }, [validationSegment, setBookValidationSegment]);
 
   // Handler for main validation button
   const handleMainButtonClick = useCallback((readingProgress: any) => {
@@ -62,13 +64,34 @@ export function useBookValidationHandler({
       return;
     }
 
-    const segment = (readingProgress?.chaptersRead || 0) + 1;
+    const segment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
+    console.log(`[useBookValidationHandler] Setting validation segment to ${segment} for book:`, currentBook?.title);
     setValidationSegment(segment);
 
     if (!sessionStartTimeRef.current) {
       sessionStartTimeRef.current = new Date();
     }
-  }, [user?.id]);
+  }, [user?.id, currentBook]);
+
+  // Wrapper pour handleValidationConfirm avec vérifications supplémentaires
+  const handleValidationConfirm = useCallback(async () => {
+    console.log(`[useBookValidationHandler] handleValidationConfirm called with segment:`, validationSegment);
+    
+    if (!validationSegment) {
+      // Essayer de recalculer le segment
+      const recalculatedSegment = (currentBook?.chaptersRead || 0) + 1;
+      console.log(`[useBookValidationHandler] Recalculating segment: ${recalculatedSegment}`);
+      setValidationSegment(recalculatedSegment);
+      setBookValidationSegment(recalculatedSegment);
+      
+      if (!recalculatedSegment) {
+        toast.error("Impossible de déterminer le segment à valider");
+        return;
+      }
+    }
+    
+    await originalHandleValidationConfirm();
+  }, [validationSegment, currentBook, originalHandleValidationConfirm, setBookValidationSegment]);
 
   // Handler for quiz completion (correct or not)
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean) => {
