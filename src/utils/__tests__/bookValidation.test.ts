@@ -18,7 +18,6 @@ const validBook: Book = {
   categories: ['Fiction'],
   pages: 200,
   publicationYear: 2023,
-  book_title: 'Valid Book',
   book_author: 'Valid Author',
   book_slug: 'valid-book',
   book_cover: null,

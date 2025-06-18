@@ -42,7 +42,6 @@ const mockBook: Book = {
   categories: ['Fiction'],
   pages: 200,
   publicationYear: 2023,
-  book_title: 'Test Book',
   book_author: 'Test Author',
   book_slug: 'test-book',
   book_cover: null,

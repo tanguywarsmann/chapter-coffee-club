@@ -47,7 +47,7 @@ export function BookCard({
   
   // Validation avec notre système centralisé
   try {
-    assertValidBook(book);
+    assertValidBook(book as unknown);
   } catch (error) {
     console.error('BookCard: Livre invalide', book, error);
     return null;

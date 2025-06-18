@@ -28,7 +28,7 @@ const BookValidationSchema = z.object({
  * Fonction d'assertion pour valider un livre avant ajout
  * Lève une InvalidBookError si le livre n'est pas valide
  */
-export const assertValidBook = (book: Book | null | undefined): asserts book is Book => {
+export function assertValidBook(book: unknown): asserts book is Book {
   if (!book) {
     throw new InvalidBookError("Le livre ne peut pas être null ou undefined");
   }
@@ -42,7 +42,7 @@ export const assertValidBook = (book: Book | null | undefined): asserts book is 
     }
     throw new InvalidBookError("Validation du livre échouée");
   }
-};
+}
 
 /**
  * Fonction utilitaire pour vérifier si un livre est valide sans lever d'erreur
