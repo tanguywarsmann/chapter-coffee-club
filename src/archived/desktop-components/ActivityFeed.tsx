@@ -1,4 +1,5 @@
 
+
 console.log("Import de ActivityFeed.tsx OK");
 
 import { useState } from "react";
@@ -178,3 +179,4 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
     </Card>
   );
 }
+

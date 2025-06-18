@@ -1,3 +1,4 @@
+
 console.log("Import de RecommendedUsers.tsx OK");
 
 import { useState, useEffect } from "react";
@@ -69,3 +70,4 @@ export function RecommendedUsers() {
     </Card>
   );
 }
+

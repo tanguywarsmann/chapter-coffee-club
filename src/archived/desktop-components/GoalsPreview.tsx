@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Target } from "lucide-react";
@@ -77,3 +78,4 @@ export function GoalsPreview() {
     </Card>
   );
 }
+
