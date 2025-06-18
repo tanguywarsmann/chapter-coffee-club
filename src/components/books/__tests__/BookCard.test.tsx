@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -43,7 +42,6 @@ const mockBook: Book = {
   pages: 200,
   publicationYear: 2023,
   total_chapters: 10,
-  created_at: '2023-01-01T00:00:00.000Z',
   is_published: true,
   tags: ['Fiction'],
 };
