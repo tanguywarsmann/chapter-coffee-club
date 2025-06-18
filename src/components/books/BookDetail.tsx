@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
 import { BookDetailHeader } from "./BookDetailHeader";
@@ -12,6 +13,10 @@ import { useBookDetailProgress } from "@/hooks/useBookDetailProgress";
 import { useBookValidationHandler } from "@/hooks/useBookValidationHandler";
 import { BookMonthlyRewardModal } from "./BookMonthlyRewardHandler";
 import { toast } from "sonner";
+import { usePerformanceTracker } from "@/utils/performanceAudit";
+import { withErrorHandling } from "@/utils/errorBoundaryUtils";
+import { useStableCallback } from "@/hooks/useStableCallback";
+import { MemoizedComponent } from "@/components/common/MemoizedComponent";
 
 interface BookDetailProps {
   book: Book;
@@ -19,6 +24,8 @@ interface BookDetailProps {
 }
 
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
+  const { trackRender, trackApiCall, trackError } = usePerformanceTracker('BookDetail');
+  
   const {
     currentBook,
     setCurrentBook,
@@ -66,50 +73,78 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   const [showValidationModal, setShowValidationModal] = useState(false);
 
-  // --- Progress & validation UI state ---
-  const chaptersRead = readingProgress?.chaptersRead || currentBook.chaptersRead || 0;
-  const totalChapters = readingProgress?.totalSegments ||
-    currentBook.totalChapters ||
-    currentBook.expectedSegments ||
-    currentBook.total_chapters ||
-    1;
-  const isBookCompleted = chaptersRead >= totalChapters;
-  const showValidationButton = !isBookCompleted;
+  // Mémoriser les calculs de progression pour éviter les re-calculs
+  const progressData = useMemo(() => {
+    const chaptersRead = readingProgress?.chaptersRead || currentBook.chaptersRead || 0;
+    const totalChapters = readingProgress?.totalSegments ||
+      currentBook.totalChapters ||
+      currentBook.expectedSegments ||
+      currentBook.total_chapters ||
+      1;
+    const isBookCompleted = chaptersRead >= totalChapters;
+    const showValidationButton = !isBookCompleted;
 
-  // --- Validation Modal Handler ---
-  const handleOpenValidationModal = () => {
-    const segment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
-    console.log(`[BookDetail] Opening validation modal for segment ${segment}, book:`, currentBook.title);
-    
-    setValidationSegment(segment);
-    setShowValidationModal(true);
+    return {
+      chaptersRead,
+      totalChapters,
+      isBookCompleted,
+      showValidationButton
+    };
+  }, [
+    readingProgress?.chaptersRead,
+    readingProgress?.totalSegments,
+    currentBook.chaptersRead,
+    currentBook.totalChapters,
+    currentBook.expectedSegments,
+    currentBook.total_chapters
+  ]);
 
-    if (!sessionStartTimeRef.current) {
-      sessionStartTimeRef.current = new Date();
-    }
-  };
-
-  // --- Enhanced validation confirm handler ---
-  const handleModalValidationConfirm = () => {
-    console.log(`[BookDetail] Modal validation confirm with segment:`, validationSegment);
-    
-    // Vérifier que le segment est bien défini avant de fermer la modal
-    if (!validationSegment) {
-      const recalculatedSegment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
-      console.log(`[BookDetail] Recalculating segment in modal: ${recalculatedSegment}`);
-      setValidationSegment(recalculatedSegment);
+  // Gestionnaire d'ouverture de modal stabilisé
+  const handleOpenValidationModal = useStableCallback(
+    withErrorHandling(() => {
+      const segment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
+      console.log(`[BookDetail] Opening validation modal for segment ${segment}, book:`, currentBook.title);
       
-      if (!recalculatedSegment) {
+      if (segment <= 0) {
+        trackError(new Error('Invalid segment calculated'));
         toast.error("Impossible de déterminer le segment à valider");
         return;
       }
-    }
-    
-    setShowValidationModal(false);
-    handleValidationConfirm();
-  };
+      
+      setValidationSegment(segment);
+      setShowValidationModal(true);
 
-  // If validation segment is already done, close modal
+      if (!sessionStartTimeRef.current) {
+        sessionStartTimeRef.current = new Date();
+      }
+    }, 'BookDetail.handleOpenValidationModal')
+  );
+
+  // Gestionnaire de confirmation de modal amélioré
+  const handleModalValidationConfirm = useStableCallback(
+    withErrorHandling(() => {
+      console.log(`[BookDetail] Modal validation confirm with segment:`, validationSegment);
+      
+      // Validation renforcée du segment
+      if (!validationSegment) {
+        const recalculatedSegment = (readingProgress?.chaptersRead || currentBook?.chaptersRead || 0) + 1;
+        console.log(`[BookDetail] Recalculating segment in modal: ${recalculatedSegment}`);
+        
+        if (!recalculatedSegment || recalculatedSegment <= 0) {
+          trackError(new Error('Unable to calculate valid segment'));
+          toast.error("Impossible de déterminer le segment à valider");
+          return;
+        }
+        
+        setValidationSegment(recalculatedSegment);
+      }
+      
+      setShowValidationModal(false);
+      handleValidationConfirm();
+    }, 'BookDetail.handleModalValidationConfirm')
+  );
+
+  // Effect optimisé pour fermer la modal si segment déjà validé
   useEffect(() => {
     if (showValidationModal && validationSegment) {
       const isAlreadyValidated = readingProgress && validationSegment <= (readingProgress.chaptersRead || 0);
@@ -117,76 +152,96 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       if (isAlreadyValidated) {
         console.log(`[BookDetail] Segment ${validationSegment} already validated, closing modal`);
         setShowValidationModal(false);
-        refreshProgressData();
-        forceRefresh();
+        // Batch les refreshs pour éviter les appels redondants
+        Promise.all([refreshProgressData(), forceRefresh()]).catch(error => {
+          trackError(error);
+        });
       }
     }
-  }, [showValidationModal, validationSegment, readingProgress, refreshProgressData, forceRefresh]);
+  }, [showValidationModal, validationSegment, readingProgress?.chaptersRead, refreshProgressData, forceRefresh, trackError]);
+
+  trackRender();
 
   return (
     <Card className="border-coffee-light">
       <BookDetailHeader title={currentBook.title} />
       <CardContent className="space-y-4">
-        <BookCoverInfo book={currentBook} />
-        <BookDescription description={currentBook.description} />
+        <MemoizedComponent deps={[currentBook.id, currentBook.title]}>
+          <BookCoverInfo book={currentBook} />
+          <BookDescription description={currentBook.description} />
+        </MemoizedComponent>
 
-        {isBookCompleted ? (
-          <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
-            <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
-            <p className="text-sm text-green-600 mt-1">Ce livre contient {currentBook.totalSegments} segments de lecture.</p>
-          </div>
-        ) : showValidationButton && (
-          <>
-            <Button
-              disabled={isValidating}
-              onClick={handleOpenValidationModal}
-              className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
-            >
-              {chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">
-              Ce livre contient {currentBook.totalSegments} segments de lecture.
-            </p>
-          </>
+        {progressData.isBookCompleted ? (
+          <MemoizedComponent deps={[progressData.isBookCompleted]}>
+            <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
+              <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
+              <p className="text-sm text-green-600 mt-1">Ce livre contient {currentBook.totalSegments} segments de lecture.</p>
+            </div>
+          </MemoizedComponent>
+        ) : progressData.showValidationButton && (
+          <MemoizedComponent deps={[progressData.chaptersRead, isValidating]}>
+            <>
+              <Button
+                disabled={isValidating}
+                onClick={handleOpenValidationModal}
+                className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
+              >
+                {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+              </Button>
+              <p className="text-sm text-muted-foreground text-center">
+                Ce livre contient {currentBook.totalSegments} segments de lecture.
+              </p>
+            </>
+          </MemoizedComponent>
         )}
 
-        <p className="text-muted-foreground text-center">
-          Progression : {chaptersRead} / {totalChapters} segments validés.
-        </p>
-        <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
+        <MemoizedComponent deps={[progressData.chaptersRead, progressData.totalChapters, progressPercent]}>
+          <>
+            <p className="text-muted-foreground text-center">
+              Progression : {progressData.chaptersRead} / {progressData.totalChapters} segments validés.
+            </p>
+            <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
+          </>
+        </MemoizedComponent>
 
-        {/* Validation/Quiz Modals */}
-        <BookValidationModals
-          book={currentBook}
-          showValidationModal={showValidationModal}
-          showQuizModal={showQuiz}
-          showSuccessMessage={showSuccessMessage}
-          validationSegment={validationSegment}
-          currentQuestion={currentQuestion}
-          isValidating={isValidating}
-          isLocked={isLocked}
-          remainingLockTime={remainingLockTime}
-          onValidationClose={() => setShowValidationModal(false)}
-          onValidationConfirm={handleModalValidationConfirm}
-          onQuizClose={() => setShowQuiz(false)}
-          onQuizComplete={handleQuizComplete}
-          onSuccessClose={() => setShowSuccessMessage(false)}
-          onLockExpire={handleLockExpire}
-        />
+        {/* Modals - Only render when needed */}
+        {(showValidationModal || showQuiz || showSuccessMessage) && (
+          <BookValidationModals
+            book={currentBook}
+            showValidationModal={showValidationModal}
+            showQuizModal={showQuiz}
+            showSuccessMessage={showSuccessMessage}
+            validationSegment={validationSegment}
+            currentQuestion={currentQuestion}
+            isValidating={isValidating}
+            isLocked={isLocked}
+            remainingLockTime={remainingLockTime}
+            onValidationClose={() => setShowValidationModal(false)}
+            onValidationConfirm={handleModalValidationConfirm}
+            onQuizClose={() => setShowQuiz(false)}
+            onQuizComplete={handleQuizComplete}
+            onSuccessClose={() => setShowSuccessMessage(false)}
+            onLockExpire={handleLockExpire}
+          />
+        )}
 
-        {/* Badge Dialog */}
-        <BookBadgeDialog
-          open={showBadgeDialog}
-          badges={unlockedBadges}
-          setOpen={setShowBadgeDialog}
-        />
+        {/* Badge Dialog - Only render when needed */}
+        {showBadgeDialog && (
+          <BookBadgeDialog
+            open={showBadgeDialog}
+            badges={unlockedBadges}
+            setOpen={setShowBadgeDialog}
+          />
+        )}
 
-        {/* Monthly Reward Badge Modal */}
-        <BookMonthlyRewardModal
-          monthlyReward={monthlyReward}
-          showMonthlyReward={showMonthlyReward}
-          onClose={() => setShowMonthlyReward(false)}
-        />
+        {/* Monthly Reward Modal - Only render when needed */}
+        {showMonthlyReward && (
+          <BookMonthlyRewardModal
+            monthlyReward={monthlyReward}
+            showMonthlyReward={showMonthlyReward}
+            onClose={() => setShowMonthlyReward(false)}
+          />
+        )}
       </CardContent>
     </Card>
   );
