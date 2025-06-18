@@ -1,22 +1,45 @@
-
 import { Book } from "@/types/book";
 import { ReadingProgress, ReadingValidation } from "@/types/reading";
 import { supabase } from "@/integrations/supabase/client";
 import { bookFailureCache } from "@/utils/bookFailureCache";
 import { createFallbackBook } from "@/utils/createFallbackBook";
 import { Database } from "@/integrations/supabase/types";
+import { assertValidBook } from "@/utils/bookValidation";
+import { 
+  AlreadyInListError, 
+  BookNotFoundError, 
+  AuthenticationRequiredError,
+  ReadingListError 
+} from "@/utils/readingListErrors";
+import { trackReadingListAdd } from "@/services/analytics/readingListAnalytics";
 
 type ReadingProgressInsert = Database['public']['Tables']['reading_progress']['Insert'];
 type ReadingProgressRecord = Database['public']['Tables']['reading_progress']['Row'];
 type BookRecord = Database['public']['Tables']['books']['Row'];
 
 /**
- * Ajoute un livre à la liste de lecture avec gestion d'erreur améliorée
+ * Ajoute un livre à la liste de lecture avec gestion d'erreur améliorée et typée
  */
 export const addBookToReadingList = async (userId: string, book: Book): Promise<ReadingProgress | null> => {
-  if (!userId || !book?.id) {
-    console.error("[ERROR] addBookToReadingList: Paramètres manquants", { userId: !!userId, bookId: book?.id });
-    return null;
+  // Validation stricte des paramètres
+  if (!userId || !userId.trim()) {
+    const error = new AuthenticationRequiredError();
+    trackReadingListAdd(book?.id || 'unknown', 'auth_required', {
+      bookTitle: book?.title,
+      errorCode: error.code
+    });
+    throw error;
+  }
+
+  // Validation du livre avec Zod
+  try {
+    assertValidBook(book);
+  } catch (validationError) {
+    trackReadingListAdd(book?.id || 'unknown', 'invalid_book', {
+      bookTitle: book?.title,
+      errorCode: 'INVALID_BOOK'
+    });
+    throw validationError;
   }
 
   try {
@@ -32,12 +55,26 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
     
     if (checkError) {
       console.error("[ERROR] Erreur lors de la vérification:", checkError);
-      throw checkError;
+      trackReadingListAdd(book.id, 'error', {
+        bookTitle: book.title,
+        userId,
+        errorCode: 'DB_CHECK_ERROR'
+      });
+      throw new ReadingListError(
+        "Erreur lors de la vérification de la liste de lecture",
+        'DB_CHECK_ERROR'
+      );
     }
     
     if (existingProgress) {
       console.log(`[DEBUG] Le livre est déjà dans la liste (status: ${existingProgress.status})`);
-      return existingProgress as ReadingProgress;
+      const error = new AlreadyInListError(book.title);
+      trackReadingListAdd(book.id, 'already_exists', {
+        bookTitle: book.title,
+        userId,
+        errorCode: error.code
+      });
+      throw error;
     }
     
     // Vérifier que le livre existe dans la base de données
@@ -49,12 +86,26 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
       
     if (bookError) {
       console.error("[ERROR] Erreur lors de la vérification du livre:", bookError);
-      throw bookError;
+      trackReadingListAdd(book.id, 'error', {
+        bookTitle: book.title,
+        userId,
+        errorCode: 'DB_BOOK_ERROR'
+      });
+      throw new ReadingListError(
+        "Erreur lors de la vérification du livre",
+        'DB_BOOK_ERROR'
+      );
     }
     
     if (!bookExists) {
       console.error(`[ERROR] Le livre ${book.id} n'existe pas dans la base de données`);
-      throw new Error(`Le livre "${book.title}" n'existe pas dans la base de données`);
+      const error = new BookNotFoundError(book.id);
+      trackReadingListAdd(book.id, 'error', {
+        bookTitle: book.title,
+        userId,
+        errorCode: error.code
+      });
+      throw error;
     }
     
     // Créer l'entrée de progression
@@ -80,15 +131,44 @@ export const addBookToReadingList = async (userId: string, book: Book): Promise<
     
     if (insertError) {
       console.error("[ERROR] Erreur lors de l'insertion:", insertError);
-      throw insertError;
+      trackReadingListAdd(book.id, 'error', {
+        bookTitle: book.title,
+        userId,
+        errorCode: 'DB_INSERT_ERROR'
+      });
+      throw new ReadingListError(
+        "Erreur lors de l'ajout à la liste de lecture",
+        'DB_INSERT_ERROR'
+      );
     }
     
     console.log(`[DEBUG] Livre ajouté avec succès:`, insertedProgress);
+    
+    // Track succès
+    trackReadingListAdd(book.id, 'success', {
+      bookTitle: book.title,
+      userId
+    });
+    
     return insertedProgress as ReadingProgress;
     
   } catch (error) {
+    // Si c'est déjà une erreur typée, la re-lancer
+    if (error instanceof ReadingListError) {
+      throw error;
+    }
+    
+    // Sinon, wrapper dans une erreur générique
     console.error("[ERROR] Exception dans addBookToReadingList:", error);
-    throw error;
+    trackReadingListAdd(book.id, 'error', {
+      bookTitle: book.title,
+      userId,
+      errorCode: 'UNKNOWN_ERROR'
+    });
+    throw new ReadingListError(
+      "Une erreur inattendue est survenue lors de l'ajout du livre",
+      'UNKNOWN_ERROR'
+    );
   }
 };
 

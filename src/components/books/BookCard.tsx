@@ -1,13 +1,21 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { useReadingList } from "@/hooks/useReadingList";
 import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
 import { BookOpen, BookMarked, CheckCircle } from "lucide-react";
+import { assertValidBook } from "@/utils/bookValidation";
+import { 
+  getErrorMessage, 
+  getErrorToastType, 
+  AlreadyInListError,
+  AuthenticationRequiredError 
+} from "@/utils/readingListErrors";
 
 interface BookCardProps {
   book: Book;
@@ -29,39 +37,23 @@ export function BookCard({
   onAction,
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth(); // Utilisation de useAuth au lieu de la logique locale
   const { addToReadingList } = useReadingList();
 
+  // Validation précoce du livre
   if (!book) {
     return null;
   }
   
-  // S'assurer qu'on a un identifiant valide
-  const bookIdentifier = book.id || book.slug || '';
-  
-  if (!bookIdentifier) {
-    console.error('BookCard: Aucun identifiant valide pour le livre', book);
+  // Validation avec notre système centralisé
+  try {
+    assertValidBook(book);
+  } catch (error) {
+    console.error('BookCard: Livre invalide', book, error);
     return null;
   }
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        if (typeof window === "undefined") return;
-        
-        const { supabase } = await import("@/integrations/supabase/client");
-        const { data } = await supabase.auth.getUser();
-        
-        if (data?.user?.id) {
-          setUserId(data.user.id);
-        }
-      } catch (error) {
-        console.error("Error getting authenticated user:", error);
-      }
-    };
-
-    getUser();
-  }, []);
+  
+  const bookIdentifier = book.id || book.slug || '';
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -79,8 +71,10 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!userId) {
-      toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
+    // Vérification d'authentification avec les nouvelles erreurs typées
+    if (!user?.id) {
+      const error = new AuthenticationRequiredError();
+      toast.error(error.message);
       return;
     }
 
@@ -98,9 +92,18 @@ export function BookCard({
       }
     } catch (error) {
       console.error("Erreur dans handleAddToReadingList:", error);
-      toast.error("Une erreur est survenue lors de l'ajout du livre");
+      
+      // Gestion d'erreur typée avec toast adapté
+      const toastType = getErrorToastType(error);
+      const message = getErrorMessage(error);
+      
+      if (toastType === 'info') {
+        toast.info(message);
+      } else {
+        toast.error(message);
+      }
     } finally {
-      setIsAdding(false);
+      setIsAdding(false); // Protection contre les double-clics assurée
     }
   };
 
@@ -108,7 +111,7 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!userId) {
+    if (!user?.id) {
       toast.error("Vous devez être connecté pour effectuer cette action");
       return;
     }
@@ -119,7 +122,6 @@ export function BookCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Logique de suppression à implémenter si nécessaire
     toast.info("Fonction de suppression à implémenter");
   };
   
