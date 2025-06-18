@@ -1,3 +1,4 @@
+
 import { describe, it, expect } from 'vitest';
 import { assertValidBook, isValidBook } from '../bookValidation';
 import { InvalidBookError } from '../readingListErrors';
@@ -18,7 +19,7 @@ const validBook: Book = {
   pages: 200,
   publicationYear: 2023,
   total_chapters: 10,
-  is_published: true,
+  isPublished: true,
   tags: ['Fiction'],
 };
 
