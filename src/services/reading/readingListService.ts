@@ -1,5 +1,6 @@
+
 import { Book } from '@/types/book';
-import { supabase } from '../supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { trackReadingListAdd } from '../analytics/readingListAnalytics';
 import {
   AlreadyInListError,
@@ -18,7 +19,7 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
   assertValidBook(book as unknown);
 
   try {
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       console.error("Utilisateur non authentifié");
@@ -28,14 +29,16 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 
     // Vérifier si le livre existe déjà dans la liste de lecture de l'utilisateur
     const { data: existingBook, error: selectError } = await supabase
-      .from('reading_list')
+      .from('reading_progress')
       .select('*')
       .eq('user_id', user.id)
       .eq('book_id', book.id)
-      .single();
+      .maybeSingle();
 
-    if (selectError && selectError.message.includes('single row')) {
-      console.warn("Aucun livre existant trouvé, mais ce n'est pas une erreur.");
+    if (selectError) {
+      console.error("Erreur lors de la vérification:", selectError);
+      trackReadingListAdd(book.id, 'error', { bookTitle: book.title, errorCode: selectError.code });
+      return false;
     }
 
     if (existingBook) {
@@ -46,8 +49,14 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 
     // Ajouter le livre à la reading list
     const { data, error } = await supabase
-      .from('reading_list')
-      .insert([{ user_id: user.id, book_id: book.id, book_title: book.title }])
+      .from('reading_progress')
+      .insert([{ 
+        user_id: user.id, 
+        book_id: book.id, 
+        status: 'to_read',
+        current_page: 0,
+        total_pages: book.pages || 0
+      }])
       .select()
       .single();
 
@@ -71,4 +80,66 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 
     return false;
   }
+};
+
+/**
+ * Récupère les progrès de lecture de l'utilisateur
+ */
+export const fetchReadingProgress = async (userId: string) => {
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from('reading_progress')
+    .select(`
+      *,
+      books (
+        id,
+        title,
+        author,
+        description,
+        cover_url,
+        total_pages,
+        tags
+      )
+    `)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Erreur lors de la récupération des progrès:', error);
+    return null;
+  }
+
+  return data;
+};
+
+/**
+ * Récupère les livres selon leur statut
+ */
+export const fetchBooksForStatus = async (readingList: any, status: string, userId: string): Promise<Book[]> => {
+  if (!readingList || !userId) return [];
+
+  const filteredProgress = readingList.filter((item: any) => item.status === status);
+  
+  return filteredProgress.map((progress: any) => ({
+    id: progress.books?.id || progress.book_id,
+    title: progress.books?.title || 'Titre inconnu',
+    author: progress.books?.author || 'Auteur inconnu',
+    description: progress.books?.description || '',
+    coverImage: progress.books?.cover_url || '',
+    pages: progress.books?.total_pages || 0,
+    categories: progress.books?.tags || [],
+    tags: progress.books?.tags || [],
+    totalChapters: 0,
+    chaptersRead: 0,
+    isCompleted: status === 'completed',
+    language: 'fr',
+    publicationYear: new Date().getFullYear(),
+    slug: progress.books?.id || progress.book_id,
+    book_author: progress.books?.author || 'Auteur inconnu',
+    book_slug: progress.books?.id || progress.book_id,
+    book_cover: progress.books?.cover_url || null,
+    total_chapters: 0,
+    created_at: progress.started_at || new Date().toISOString(),
+    is_published: true,
+  }));
 };

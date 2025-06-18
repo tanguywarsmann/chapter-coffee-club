@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
-import { fetchReadingProgress, addBookToReadingList } from "@/services/reading/readingListService";
+import { fetchReadingProgress, addBookToReadingList, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
 import { Book } from "@/types/book";
 import { cacheBooksByStatus, getCachedBooksByStatus, clearBooksByStatusCache } from "./useReadingListCache";
@@ -139,7 +139,7 @@ export const useReadingListOptimized = () => {
       trackApiCall();
       
       try {
-        const result = await addBookToReadingList(debouncedUserId, book);
+        const result = await addBookToReadingList(book);
         if (result) {
           // Invalidation sélective pour de meilleures performances
           await Promise.all([

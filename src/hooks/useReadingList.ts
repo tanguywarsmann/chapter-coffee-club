@@ -4,13 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
-import { fetchReadingProgress, addBookToReadingList } from "@/services/reading/readingListService";
+import { fetchReadingProgress, addBookToReadingList, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
 import { Book } from "@/types/book";
 import { cacheBooksByStatus, getCachedBooksByStatus, clearBooksByStatusCache } from "./useReadingListCache";
 import { safeFetchBooksForStatus } from "./useReadingListHelpers";
 
-// version 0.13 refactored
+// version 0.14 refactored
 
 export const useReadingList = () => {
   const queryClient = useQueryClient();
@@ -104,7 +104,7 @@ export const useReadingList = () => {
       return false;
     }
     try {
-      const result = await addBookToReadingList(user.id, book);
+      const result = await addBookToReadingList(book);
       if (result) {
         await queryClient.invalidateQueries({ queryKey: ["reading_list"] });
         await queryClient.invalidateQueries({ queryKey: ["books_by_status"] });
