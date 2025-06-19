@@ -13,7 +13,7 @@ self.addEventListener("install", (event) => {
   // Force l'activation immédiate sans attendre
   self.skipWaiting();
   
-  // Pré-cache les ressources critiques
+  // Pré-cache les ressources critiques (exclut admin)
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll([
@@ -60,6 +60,11 @@ self.addEventListener("activate", (event) => {
 
 // Handle fetch events for offline support
 self.addEventListener("fetch", (event) => {
+  // Ne pas cacher les routes d'administration
+  if (event.request.url.includes('/admin/')) {
+    return; // Laisser passer sans mise en cache
+  }
+
   // Stratégie Network First pour les pages HTML pour forcer le rechargement des styles
   if (event.request.mode === 'navigate') {
     event.respondWith(

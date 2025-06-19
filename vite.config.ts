@@ -1,3 +1,4 @@
+
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -7,7 +8,14 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { compression } from 'vite-plugin-compression2'
 
 export default defineConfig(({ mode }) => ({
-  server: { host: '::', port: 8080 },
+  server: { 
+    host: '::', 
+    port: 8080,
+    // Configuration pour désindexer l'admin en développement
+    headers: {
+      'X-Robots-Tag': 'noindex'
+    }
+  },
 
   plugins: [
     // PWA avec stratégie de mise à jour proactive
@@ -21,7 +29,9 @@ export default defineConfig(({ mode }) => ({
         navigateFallback: '/index.html',
         skipWaiting: true,
         clientsClaim: true,
+        // Exclure les fichiers d'administration du cache
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: ['**/admin/**'],
         runtimeCaching: [
           {
             urlPattern: /\.(?:js|css|png|jpg|jpeg|svg|ico)$/,
