@@ -1,9 +1,8 @@
-
 export const texts = {
   // Navigation et layout
   home: "Accueil",
   explore: "Explorer", 
-  discover: "Découvrir",
+  discover: "Lecteurs",
   readingList: "Ma liste",
   achievements: "Récompenses",
   admin: "Administration",

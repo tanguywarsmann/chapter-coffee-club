@@ -15,11 +15,6 @@ export const DesktopNav = ({ isAdmin }: DesktopNavProps) => {
           {texts.home}
         </Button>
       </Link>
-      <Link to="/discover">
-        <Button variant="ghost" className="hover:text-logo-accent">
-          {texts.discover}
-        </Button>
-      </Link>
       <Link to="/explore">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.explore}
@@ -33,6 +28,11 @@ export const DesktopNav = ({ isAdmin }: DesktopNavProps) => {
       <Link to="/reading-list">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.readingList}
+        </Button>
+      </Link>
+      <Link to="/discover">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          {texts.discover}
         </Button>
       </Link>
     </nav>

@@ -77,20 +77,6 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
               <Button 
                 variant="ghost" 
                 className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/discover")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/discover"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.discover}`}
-              >
-                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.discover}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
                 onClick={() => handleNavigation("/explore")}
                 onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/explore"))}
                 tabIndex={0}
@@ -127,6 +113,20 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
               >
                 <BookCheck className="h-5 w-5 mr-3" aria-hidden="true" />
                 {texts.readingList}
+              </Button>
+            </li>
+            <li role="listitem">
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                onClick={() => handleNavigation("/discover")}
+                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/discover"))}
+                tabIndex={0}
+                role="button"
+                aria-label={`Aller à ${texts.discover}`}
+              >
+                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
+                {texts.discover}
               </Button>
             </li>
           </ul>
