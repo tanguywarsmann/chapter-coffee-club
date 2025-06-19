@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { BadgeRarityProgress } from "./BadgeRarityProgress";
 import { getFavoriteBadges, toggleFavoriteBadge } from "@/services/user";
-import { Award, Target } from "lucide-react";
+import { Award, Target, Sparkles, Crown } from "lucide-react";
 
 // Classement des raretés du plus rare au plus commun
 const rarityOrder = ["legendary", "epic", "rare", "common"];
@@ -92,64 +91,75 @@ export function BadgesSection() {
   if (loading) return <LoadingCard />;
 
   return (
-    <Tabs defaultValue="unlocked" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/80 backdrop-blur-sm border border-coffee-light/30">
-        <TabsTrigger 
-          value="unlocked" 
-          className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker font-medium"
-        >
-          <Award className="h-4 w-4 mr-2" />
-          Collection
-        </TabsTrigger>
-        <TabsTrigger 
-          value="locked"
-          className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker font-medium"
-        >
-          <Target className="h-4 w-4 mr-2" />
-          Objectifs
-        </TabsTrigger>
-      </TabsList>
+    <div className="relative">
+      {/* Effet d'arrière-plan décoratif */}
+      <div className="absolute inset-0 bg-gradient-to-br from-coffee-light/10 to-chocolate-light/10 rounded-3xl blur-2xl" />
       
-      <TabsContent value="unlocked">
-        <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
-          <CardHeader>
-            <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
-              <Award className="h-5 w-5 text-coffee-dark" />
-              Badges Débloqués
-            </CardTitle>
-            <CardDescription className="text-coffee-medium">
-              Vos accomplissements par ordre de rareté
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
-            <BadgeGrid 
-              badges={badges} 
-              isLocked={false} 
-              favoriteBadgeIds={favoriteBadgeIds}
-              onFavoriteToggle={handleFavoriteToggle}
-              showFavoriteToggle={true}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="locked">
-        <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
-          <CardHeader>
-            <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
-              <Target className="h-5 w-5 text-coffee-dark" />
-              Objectifs à Atteindre
-            </CardTitle>
-            <CardDescription className="text-coffee-medium">
-              Découvrez les prochains défis à relever
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BadgeGrid badges={lockedBadges} isLocked={true} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+      <Tabs defaultValue="unlocked" className="relative w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-1 shadow-lg">
+          <TabsTrigger 
+            value="unlocked" 
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coffee-light data-[state=active]:to-chocolate-light data-[state=active]:text-coffee-darker font-serif font-medium text-coffee-medium rounded-xl transition-all duration-300"
+          >
+            <Crown className="h-5 w-5 mr-2" />
+            Collection
+          </TabsTrigger>
+          <TabsTrigger 
+            value="locked"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coffee-light data-[state=active]:to-chocolate-light data-[state=active]:text-coffee-darker font-serif font-medium text-coffee-medium rounded-xl transition-all duration-300"
+          >
+            <Target className="h-5 w-5 mr-2" />
+            Objectifs
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="unlocked">
+          <Card className="border-0 bg-white/60 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-coffee-lightest/50 to-chocolate-lightest/50 border-b border-white/20">
+              <CardTitle className="font-serif text-coffee-darker flex items-center gap-3 text-xl">
+                <div className="p-2 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl">
+                  <Crown className="h-6 w-6 text-amber-600" />
+                </div>
+                Badges Débloqués
+                <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+              </CardTitle>
+              <CardDescription className="text-coffee-medium font-light">
+                Vos accomplissements par ordre de rareté
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-8">
+              <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
+              <BadgeGrid 
+                badges={badges} 
+                isLocked={false} 
+                favoriteBadgeIds={favoriteBadgeIds}
+                onFavoriteToggle={handleFavoriteToggle}
+                showFavoriteToggle={true}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="locked">
+          <Card className="border-0 bg-white/60 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-coffee-lightest/50 to-chocolate-lightest/50 border-b border-white/20">
+              <CardTitle className="font-serif text-coffee-darker flex items-center gap-3 text-xl">
+                <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
+                  <Target className="h-6 w-6 text-blue-600" />
+                </div>
+                Objectifs à Atteindre
+                <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+              </CardTitle>
+              <CardDescription className="text-coffee-medium font-light">
+                Découvrez les prochains défis à relever
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8">
+              <BadgeGrid badges={lockedBadges} isLocked={true} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

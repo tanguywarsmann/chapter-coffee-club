@@ -1,5 +1,5 @@
 
-import { Award, Book, FileText } from "lucide-react";
+import { Award, Book, FileText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUserBadges } from "@/services/badgeService";
 import { getTotalPagesRead, getBooksReadCount } from "@/services/reading/statsService";
@@ -50,43 +50,79 @@ export function StatsCards() {
       icon: Award,
       value: badgesCount,
       label: badgesCount === 0 ? "Aucun badge" : badgesCount === 1 ? "Badge obtenu" : "Badges obtenus",
-      gradient: "from-amber-100 to-yellow-100",
-      iconColor: "text-amber-600"
+      gradient: "from-amber-400 to-yellow-500",
+      bgGradient: "from-amber-100 to-yellow-100",
+      iconColor: "text-amber-600",
+      glowColor: "from-amber-200/30 to-yellow-200/30"
     },
     {
       icon: Book,
       value: booksRead,
       label: booksRead === 0 ? "Aucun livre terminé" : booksRead === 1 ? "Livre terminé" : "Livres terminés",
-      gradient: "from-blue-100 to-indigo-100",
-      iconColor: "text-blue-600"
+      gradient: "from-blue-400 to-indigo-500",
+      bgGradient: "from-blue-100 to-indigo-100",
+      iconColor: "text-blue-600",
+      glowColor: "from-blue-200/30 to-indigo-200/30"
     },
     {
       icon: FileText,
       value: pagesRead,
       label: "Pages lues",
-      gradient: "from-green-100 to-emerald-100",
-      iconColor: "text-green-600"
+      gradient: "from-emerald-400 to-green-500",
+      bgGradient: "from-emerald-100 to-green-100",
+      iconColor: "text-emerald-600",
+      glowColor: "from-emerald-200/30 to-green-200/30"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       {stats.map((stat, index) => (
-        <div 
-          key={index}
-          className="bg-white/80 backdrop-blur-sm border border-coffee-light/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-coffee-medium uppercase tracking-wide mb-2">
-                {stat.label}
-              </h3>
-              <p className="text-3xl font-serif font-bold text-coffee-darker">
-                {isLoading ? "—" : stat.value.toLocaleString()}
-              </p>
+        <div key={index} className="group relative">
+          {/* Effet de lueur d'arrière-plan */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${stat.glowColor} rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500`} />
+          
+          <div className="relative bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-sm font-serif font-medium text-coffee-medium uppercase tracking-wider mb-3">
+                  {stat.label}
+                </h3>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-serif font-bold text-coffee-darker leading-none">
+                    {isLoading ? "—" : stat.value.toLocaleString()}
+                  </p>
+                  {!isLoading && stat.value > 0 && (
+                    <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+                  )}
+                </div>
+              </div>
+              
+              {/* Icône avec effet premium */}
+              <div className="relative">
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} rounded-2xl blur-sm opacity-30 scale-110`} />
+                <div className={`relative p-4 bg-gradient-to-br ${stat.bgGradient} rounded-2xl border border-white/50 group-hover:scale-110 transition-transform duration-300`}>
+                  <stat.icon className={`h-8 w-8 ${stat.iconColor}`} />
+                </div>
+                {/* Badge décoratif pour les valeurs positives */}
+                {!isLoading && stat.value > 0 && (
+                  <div className="absolute -top-2 -right-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-coffee-dark to-chocolate-dark rounded-full flex items-center justify-center">
+                      <Sparkles className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
-              <stat.icon className={`h-7 w-7 ${stat.iconColor}`} />
+            
+            {/* Barre de progression décorative */}
+            <div className="mt-6 h-1 bg-coffee-lightest/50 rounded-full overflow-hidden">
+              <div 
+                className={`h-full bg-gradient-to-r ${stat.gradient} transition-all duration-1000 ease-out`}
+                style={{ 
+                  width: isLoading ? '0%' : `${Math.min(100, Math.max(10, (stat.value / Math.max(stat.value, 10)) * 100))}%` 
+                }}
+              />
             </div>
           </div>
         </div>

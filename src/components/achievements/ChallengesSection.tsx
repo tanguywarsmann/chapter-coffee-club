@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, TrendingUp, Zap } from "lucide-react";
+import { Target, TrendingUp, Zap, Sparkles, Trophy } from "lucide-react";
 
 export function ChallengesSection() {
   const challenges = [
@@ -11,8 +11,10 @@ export function ChallengesSection() {
       progress: 5,
       total: 7,
       icon: Zap,
-      gradient: "from-orange-100 to-red-100",
-      iconColor: "text-orange-600"
+      gradient: "from-orange-400 to-red-500",
+      bgGradient: "from-orange-100 to-red-100",
+      iconColor: "text-orange-600",
+      glowColor: "from-orange-200/30 to-red-200/30"
     },
     {
       id: 2,
@@ -21,8 +23,10 @@ export function ChallengesSection() {
       progress: 2,
       total: 3,
       icon: Target,
-      gradient: "from-blue-100 to-indigo-100",
-      iconColor: "text-blue-600"
+      gradient: "from-blue-400 to-indigo-500",
+      bgGradient: "from-blue-100 to-indigo-100",
+      iconColor: "text-blue-600",
+      glowColor: "from-blue-200/30 to-indigo-200/30"
     },
     {
       id: 3,
@@ -31,69 +35,105 @@ export function ChallengesSection() {
       progress: 385,
       total: 500,
       icon: TrendingUp,
-      gradient: "from-green-100 to-emerald-100",
-      iconColor: "text-green-600"
+      gradient: "from-emerald-400 to-green-500",
+      bgGradient: "from-emerald-100 to-green-100",
+      iconColor: "text-emerald-600",
+      glowColor: "from-emerald-200/30 to-green-200/30"
     }
   ];
 
   return (
-    <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
-      <CardHeader>
-        <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
-          <Target className="h-5 w-5 text-coffee-dark" />
-          Défis en Cours
-        </CardTitle>
-        <CardDescription className="text-coffee-medium">
-          Relevez ces défis pour progresser encore plus vite
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {challenges.map((challenge) => (
-            <div key={challenge.id} className="group">
-              <div className="bg-white/60 border border-coffee-light/30 rounded-xl p-6 hover:shadow-md transition-all duration-300">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`p-3 bg-gradient-to-br ${challenge.gradient} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
-                    <challenge.icon className={`h-6 w-6 ${challenge.iconColor}`} />
+    <div className="relative">
+      {/* Effet d'arrière-plan décoratif */}
+      <div className="absolute inset-0 bg-gradient-to-br from-coffee-light/10 to-chocolate-light/10 rounded-3xl blur-2xl" />
+      
+      <Card className="relative border-0 bg-white/60 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-coffee-lightest/50 to-chocolate-lightest/50 border-b border-white/20">
+          <CardTitle className="font-serif text-coffee-darker flex items-center gap-3 text-xl">
+            <div className="p-2 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl">
+              <Trophy className="h-6 w-6 text-emerald-600" />
+            </div>
+            Défis en Cours
+            <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+          </CardTitle>
+          <CardDescription className="text-coffee-medium font-light">
+            Relevez ces défis pour progresser encore plus vite
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8">
+          <div className="space-y-8">
+            {challenges.map((challenge) => (
+              <div key={challenge.id} className="group relative">
+                {/* Effet de lueur pour chaque défi */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${challenge.glowColor} rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500`} />
+                
+                <div className="relative bg-white/70 backdrop-blur-sm border border-white/50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1">
+                  <div className="flex items-start gap-6 mb-6">
+                    {/* Icône premium */}
+                    <div className="relative">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${challenge.gradient} rounded-2xl blur-sm opacity-30 scale-110`} />
+                      <div className={`relative p-4 bg-gradient-to-br ${challenge.bgGradient} rounded-2xl border border-white/50 group-hover:scale-110 transition-transform duration-300`}>
+                        <challenge.icon className={`h-7 w-7 ${challenge.iconColor}`} />
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-serif font-semibold text-coffee-darker text-xl mb-2">
+                        {challenge.title}
+                      </h3>
+                      <p className="text-coffee-medium font-light leading-relaxed">
+                        {challenge.description}
+                      </p>
+                    </div>
+                    
+                    {/* Badge de statut premium */}
+                    <div className="text-right">
+                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-coffee-light/50 to-chocolate-light/50 rounded-full border border-white/30 backdrop-blur-sm">
+                        <span className="text-sm font-serif font-medium text-coffee-darker">En cours</span>
+                        <Sparkles className="h-4 w-4 ml-2 text-coffee-medium" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-serif font-semibold text-coffee-darker text-lg mb-1">
-                      {challenge.title}
-                    </h3>
-                    <p className="text-coffee-medium font-light">
-                      {challenge.description}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-flex items-center px-3 py-1 bg-coffee-light/50 rounded-full">
-                      <span className="text-sm font-medium text-coffee-darker">En cours</span>
+                  
+                  {/* Section progression élégante */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-serif font-medium text-coffee-medium">Progression</span>
+                      <span className="text-sm font-serif font-semibold text-coffee-darker">
+                        {challenge.progress}/{challenge.total}
+                        {challenge.id === 3 ? ' pages' : challenge.id === 2 ? ' catégories' : ' jours'}
+                      </span>
+                    </div>
+                    
+                    {/* Barre de progression premium */}
+                    <div className="relative h-4 bg-gradient-to-r from-coffee-lightest to-chocolate-lightest rounded-full overflow-hidden border border-white/30">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${challenge.gradient} transition-all duration-1000 ease-out relative`}
+                        style={{ width: `${Math.round((challenge.progress / challenge.total) * 100)}%` }}
+                      >
+                        {/* Effet brillant sur la barre */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-coffee-medium font-light">
+                        {Math.round((challenge.progress / challenge.total) * 100)}% accompli
+                      </div>
+                      {challenge.progress / challenge.total > 0.8 && (
+                        <div className="flex items-center gap-1 text-xs text-coffee-dark font-medium">
+                          <Sparkles className="h-3 w-3" />
+                          Presque fini !
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-coffee-medium">Progression</span>
-                    <span className="text-sm font-semibold text-coffee-darker">
-                      {challenge.progress}/{challenge.total}
-                      {challenge.id === 3 ? ' pages' : challenge.id === 2 ? ' catégories' : ' jours'}
-                    </span>
-                  </div>
-                  <div className="h-3 bg-coffee-lightest rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-coffee-dark to-coffee-medium transition-all duration-500 ease-out"
-                      style={{ width: `${Math.round((challenge.progress / challenge.total) * 100)}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-coffee-medium font-light">
-                    {Math.round((challenge.progress / challenge.total) * 100)}% accompli
-                  </div>
-                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
