@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Trophy, BookCheck, Menu, Users } from "lucide-react";
+import { Home, Trophy, BookCheck, Menu, Users, BookOpen } from "lucide-react";
 import { texts } from "@/i18n/texts";
 
 interface MobileMenuProps {
@@ -113,6 +113,20 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
               >
                 <BookCheck className="h-5 w-5 mr-3" aria-hidden="true" />
                 {texts.readingList}
+              </Button>
+            </li>
+            <li role="listitem">
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                onClick={() => handleNavigation("/blog")}
+                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/blog"))}
+                tabIndex={0}
+                role="button"
+                aria-label="Aller au Blog"
+              >
+                <BookOpen className="h-5 w-5 mr-3" aria-hidden="true" />
+                Blog
               </Button>
             </li>
             <li role="listitem">
