@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { BadgeRarityProgress } from "./BadgeRarityProgress";
 import { getFavoriteBadges, toggleFavoriteBadge } from "@/services/user";
+import { Award, Target } from "lucide-react";
 
 // Classement des raretés du plus rare au plus commun
 const rarityOrder = ["legendary", "epic", "rare", "common"];
@@ -22,15 +23,15 @@ function sortBadgesByRarity(badges: Badge[]) {
 
 function LoadingCard() {
   return (
-    <Card>
+    <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle>Mes badges</CardTitle>
-        <CardDescription>Chargement en cours...</CardDescription>
+        <CardTitle className="font-serif text-coffee-darker">Collection de Badges</CardTitle>
+        <CardDescription className="text-coffee-medium">Chargement en cours...</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-6 w-full" />
-        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-6 w-3/4 bg-coffee-light/30" />
+        <Skeleton className="h-6 w-full bg-coffee-light/30" />
+        <Skeleton className="h-6 w-1/2 bg-coffee-light/30" />
       </CardContent>
     </Card>
   );
@@ -92,15 +93,33 @@ export function BadgesSection() {
 
   return (
     <Tabs defaultValue="unlocked" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-2">
-        <TabsTrigger value="unlocked">🎉 Gagnés</TabsTrigger>
-        <TabsTrigger value="locked">🔒 À débloquer</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/80 backdrop-blur-sm border border-coffee-light/30">
+        <TabsTrigger 
+          value="unlocked" 
+          className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker font-medium"
+        >
+          <Award className="h-4 w-4 mr-2" />
+          Collection
+        </TabsTrigger>
+        <TabsTrigger 
+          value="locked"
+          className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker font-medium"
+        >
+          <Target className="h-4 w-4 mr-2" />
+          Objectifs
+        </TabsTrigger>
       </TabsList>
+      
       <TabsContent value="unlocked">
-        <Card className="shadow-md border border-green-100">
+        <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
           <CardHeader>
-            <CardTitle>Badges débloqués</CardTitle>
-            <CardDescription>Triés par rareté décroissante</CardDescription>
+            <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
+              <Award className="h-5 w-5 text-coffee-dark" />
+              Badges Débloqués
+            </CardTitle>
+            <CardDescription className="text-coffee-medium">
+              Vos accomplissements par ordre de rareté
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
@@ -114,11 +133,17 @@ export function BadgesSection() {
           </CardContent>
         </Card>
       </TabsContent>
+      
       <TabsContent value="locked">
-        <Card className="shadow-sm border border-gray-200">
+        <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
           <CardHeader>
-            <CardTitle>Objectifs à venir</CardTitle>
-            <CardDescription>Voici ceux que tu peux encore débloquer</CardDescription>
+            <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
+              <Target className="h-5 w-5 text-coffee-dark" />
+              Objectifs à Atteindre
+            </CardTitle>
+            <CardDescription className="text-coffee-medium">
+              Découvrez les prochains défis à relever
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <BadgeGrid badges={lockedBadges} isLocked={true} />

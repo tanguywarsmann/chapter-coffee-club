@@ -5,6 +5,7 @@ import { UserQuest } from "@/types/quest";
 import { QuestCard } from "./QuestCard";
 import { getUserQuests } from "@/services/questService";
 import { supabase } from "@/integrations/supabase/client";
+import { Compass, Sparkles } from "lucide-react";
 
 export function QuestsSection() {
   const [quests, setQuests] = useState<UserQuest[]>([]);
@@ -36,18 +37,21 @@ export function QuestsSection() {
   }, []);
 
   return (
-    <Card className="border-coffee-light">
+    <Card className="border-coffee-light/30 bg-white/80 backdrop-blur-sm shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl font-serif text-coffee-darker">Quêtes débloquées</CardTitle>
-        <CardDescription>
-          Accomplissez des actions spéciales pour débloquer des quêtes
+        <CardTitle className="font-serif text-coffee-darker flex items-center gap-2">
+          <Compass className="h-5 w-5 text-coffee-dark" />
+          Quêtes Accomplies
+        </CardTitle>
+        <CardDescription className="text-coffee-medium">
+          Exploits spéciaux déverrouillés par vos actions
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-100 animate-pulse rounded-lg" />
+              <div key={i} className="h-20 bg-coffee-light/30 animate-pulse rounded-xl" />
             ))}
           </div>
         ) : quests.length > 0 ? (
@@ -57,9 +61,16 @@ export function QuestsSection() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Aucune quête débloquée pour le moment</p>
-            <p className="text-sm mt-2">Continuez à lire pour en découvrir !</p>
+          <div className="text-center py-12">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-gradient-to-br from-coffee-light to-chocolate-light rounded-2xl">
+                <Sparkles className="h-8 w-8 text-coffee-dark" />
+              </div>
+            </div>
+            <p className="font-serif text-coffee-darker mb-2">Aucune quête accomplie</p>
+            <p className="text-sm text-coffee-medium font-light">
+              Continuez à lire pour débloquer vos premières quêtes
+            </p>
           </div>
         )}
       </CardContent>

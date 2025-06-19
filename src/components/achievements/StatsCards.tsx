@@ -45,45 +45,52 @@ export function StatsCards() {
     fetchData();
   }, [user?.id]);
 
-  // Texte pour les badges avec accord correct
-  const getBadgesText = () => {
-    if (badgesCount === 0) return "Aucun badge";
-    if (badgesCount === 1) return "Badge obtenu";
-    return "Badges obtenus";
-  };
-
-  // Texte pour les livres avec accord correct
-  const getBooksText = () => {
-    if (booksRead === 0) return "Aucun livre terminé";
-    if (booksRead === 1) return "Livre terminé";
-    return "Livres terminés";
-  };
+  const stats = [
+    {
+      icon: Award,
+      value: badgesCount,
+      label: badgesCount === 0 ? "Aucun badge" : badgesCount === 1 ? "Badge obtenu" : "Badges obtenus",
+      gradient: "from-amber-100 to-yellow-100",
+      iconColor: "text-amber-600"
+    },
+    {
+      icon: Book,
+      value: booksRead,
+      label: booksRead === 0 ? "Aucun livre terminé" : booksRead === 1 ? "Livre terminé" : "Livres terminés",
+      gradient: "from-blue-100 to-indigo-100",
+      iconColor: "text-blue-600"
+    },
+    {
+      icon: FileText,
+      value: pagesRead,
+      label: "Pages lues",
+      gradient: "from-green-100 to-emerald-100",
+      iconColor: "text-green-600"
+    }
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-      <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between transition-all duration-300 hover:shadow-md">
-        <div>
-          <p className="text-sm font-medium text-coffee-darker">
-            {getBadgesText()}
-          </p>
-          <p className="text-3xl font-bold text-coffee-darker">{isLoading ? "—" : badgesCount}</p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {stats.map((stat, index) => (
+        <div 
+          key={index}
+          className="bg-white/80 backdrop-blur-sm border border-coffee-light/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-coffee-medium uppercase tracking-wide mb-2">
+                {stat.label}
+              </h3>
+              <p className="text-3xl font-serif font-bold text-coffee-darker">
+                {isLoading ? "—" : stat.value.toLocaleString()}
+              </p>
+            </div>
+            <div className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+              <stat.icon className={`h-7 w-7 ${stat.iconColor}`} />
+            </div>
+          </div>
         </div>
-        <Award className="h-8 w-8 text-coffee-darker" />
-      </div>
-      <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between transition-all duration-300 hover:shadow-md">
-        <div>
-          <p className="text-sm font-medium text-coffee-darker">{getBooksText()}</p>
-          <p className="text-3xl font-bold text-coffee-darker">{isLoading ? "—" : booksRead}</p>
-        </div>
-        <Book className="h-8 w-8 text-coffee-darker" />
-      </div>
-      <div className="bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg p-4 flex items-center justify-between transition-all duration-300 hover:shadow-md">
-        <div>
-          <p className="text-sm font-medium text-coffee-darker">Pages lues</p>
-          <p className="text-3xl font-bold text-coffee-darker">{isLoading ? "—" : pagesRead}</p>
-        </div>
-        <FileText className="h-8 w-8 text-coffee-darker" />
-      </div>
+      ))}
     </div>
   );
 }

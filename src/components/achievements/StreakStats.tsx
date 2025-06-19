@@ -30,50 +30,67 @@ export function StreakStats() {
       .then(({ count }) => setMonthlySegments(count ?? 0));
   }, []);
 
-  // Fonction pour obtenir le texte avec bon accord pour la série actuelle
-  const getCurrentStreakText = () => {
-    if (currentStreak === 0) return "Aucune série de lecture en cours";
-    if (currentStreak === 1) return <>🔥 Tu lis depuis <b>1</b> jour d'affilée !</>;
-    return <>🔥 Tu lis depuis <b>{currentStreak}</b> jours d'affilée !</>;
+  const formatStreakText = (streak: number, label: string) => {
+    if (streak === 0) return `Aucune ${label.toLowerCase()}`;
+    if (streak === 1) return `${streak} jour`;
+    return `${streak} jours`;
   };
 
-  // Fonction pour obtenir le texte avec bon accord pour le record
-  const getBestStreakText = () => {
-    if (bestStreak === 0) return <>🏅 Aucun record établi</>;
-    if (bestStreak === 1) return <>🏅 Ton record : <b>1</b> jour consécutif</>;
-    return <>🏅 Ton record : <b>{bestStreak}</b> jours consécutifs</>;
-  };
-
-  // Fonction pour obtenir le texte avec bon accord pour les segments du mois
-  const getMonthlySegmentsText = () => {
-    if (monthlySegments === 0) return "Aucun segment validé ce mois-ci";
-    if (monthlySegments === 1) return "1 segment validé ce mois-ci";
-    return `${monthlySegments} segments validés ce mois-ci`;
+  const formatMonthlyText = (count: number) => {
+    if (count === 0) return "Aucune validation ce mois";
+    if (count === 1) return "1 validation ce mois";
+    return `${count} validations ce mois`;
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
-      <div className="flex-1 flex items-center bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg px-4 py-3 gap-3">
-        <Flame className="h-8 w-8 text-orange-500" />
-        <div>
-          <div className="font-serif text-coffee-darker font-medium text-lg">
-            {getCurrentStreakText()}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Série actuelle */}
+      <div className="bg-white/80 backdrop-blur-sm border border-coffee-light/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl">
+            <Flame className="h-7 w-7 text-orange-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-coffee-medium uppercase tracking-wide mb-1">
+              Série Actuelle
+            </h3>
+            <p className="text-2xl font-serif font-semibold text-coffee-darker">
+              {formatStreakText(currentStreak, "série")}
+            </p>
           </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg px-4 py-3 gap-3">
-        <Medal className="h-7 w-7 text-coffee-darker" />
-        <div>
-          <div className="font-serif text-coffee-darker font-medium text-lg">
-            {getBestStreakText()}
+
+      {/* Record personnel */}
+      <div className="bg-white/80 backdrop-blur-sm border border-coffee-light/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl">
+            <Medal className="h-7 w-7 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-coffee-medium uppercase tracking-wide mb-1">
+              Record Personnel
+            </h3>
+            <p className="text-2xl font-serif font-semibold text-coffee-darker">
+              {formatStreakText(bestStreak, "record")}
+            </p>
           </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center bg-gradient-to-br from-coffee-light to-chocolate-light rounded-lg px-4 py-3 gap-3">
-        <CalendarDays className="h-7 w-7 text-coffee-darker" />
-        <div>
-          <div className="font-serif text-coffee-darker font-medium text-lg">
-            {getMonthlySegmentsText()}
+
+      {/* Activité mensuelle */}
+      <div className="bg-white/80 backdrop-blur-sm border border-coffee-light/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
+            <CalendarDays className="h-7 w-7 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-coffee-medium uppercase tracking-wide mb-1">
+              Ce Mois-ci
+            </h3>
+            <p className="text-2xl font-serif font-semibold text-coffee-darker">
+              {formatMonthlyText(monthlySegments)}
+            </p>
           </div>
         </div>
       </div>
