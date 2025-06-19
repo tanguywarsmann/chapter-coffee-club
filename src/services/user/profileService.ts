@@ -27,6 +27,25 @@ export async function followUser(targetUserId: string): Promise<void> {
       });
 
     if (error) throw error;
+
+    // Envoyer la notification email en arrière-plan (ne pas bloquer si ça échoue)
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-follow-notification', {
+        body: {
+          followerId: currentUserId,
+          followingId: targetUserId
+        }
+      });
+      
+      if (emailError) {
+        console.warn('Failed to send follow notification email:', emailError);
+      } else {
+        console.log('Follow notification email sent successfully');
+      }
+    } catch (emailError) {
+      console.warn('Error sending follow notification email:', emailError);
+      // Ne pas faire échouer l'abonnement si l'email échoue
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Could not follow user";
     console.error("Error following user:", error);
