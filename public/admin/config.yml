@@ -1,10 +1,12 @@
 
 backend:
   name: github
-  repo: <ORG>/<REPO>
+  repo: YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME  # ⚠️ REMPLACEZ par votre repo GitHub (ex: moncompte/mon-blog)
   branch: main
+  
 media_folder: "public/images/blog"
 public_folder: "/images/blog"
+
 collections:
   - name: posts
     label: Articles
@@ -19,4 +21,4 @@ collections:
       - {label: Date, name: date, widget: datetime}
       - {label: Description, name: description, widget: text}
       - {label: Image, name: image, widget: image}
-      - {label: Corps,  name: body, widget: markdown}
+      - {label: Corps, name: body, widget: markdown}
