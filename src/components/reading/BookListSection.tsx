@@ -6,7 +6,6 @@ import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { calculateReadingProgress } from '@/lib/progress';
 
 interface BookListSectionProps {
   title: string;
@@ -30,7 +29,6 @@ export function BookListSection({
   hideUnavailableBooks = false
 }: BookListSectionProps) {
   // Filtrer les livres à afficher selon le paramètre hideUnavailableBooks
-  // en utilisant useMemo pour éviter des recalculs inutiles
   const displayBooks = useMemo(() => {
     const validBooks = Array.isArray(books) ? books : [];
     console.log(`[DIAGNOSTIQUE] BookListSection "${title}" - Books reçus:`, validBooks.length, 'livres, valides:', validBooks !== null && Array.isArray(validBooks));
@@ -44,7 +42,6 @@ export function BookListSection({
       : validBooks;
   }, [books, hideUnavailableBooks, title]);
 
-  // Ne logguer qu'une seule fois par rendu, pas en boucle
   React.useEffect(() => {
     console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${displayBooks.length} books`);
   }, [title, displayBooks.length]);
@@ -72,10 +69,10 @@ export function BookListSection({
       
       <div className="space-y-4 sm:space-y-6">
         {displayBooks.map((book) => {
-          // Calculate progress using the centralized function
+          // Utiliser les données correctes du livre calculées côté service
           const chaptersRead = book.chaptersRead || 0;
-          const totalChapters = book.totalChapters || 1;
-          const progressPercentage = calculateReadingProgress(chaptersRead, totalChapters);
+          const totalChapters = book.totalChapters || book.expectedSegments || 1;
+          const progressPercentage = book.progressPercent || Math.round((chaptersRead / totalChapters) * 100);
             
           // S'assurer qu'on a un identifiant valide
           const bookIdentifier = book.id || book.slug || '';
@@ -123,18 +120,18 @@ export function BookListSection({
                 
                 <p className="text-sm text-muted-foreground">{book.author || "Auteur inconnu"}</p>
                 
-                {/* Book progress */}
+                {/* Book progress - utiliser les vraies données calculées */}
                 {showProgress && (
                   <div className="mt-3 mb-2 space-y-1">
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full ${book.isUnavailable ? "bg-gray-400" : "bg-coffee-dark"}`}
-                        style={{ width: `${progressPercentage}%` }}
+                        style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                       />
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{progressPercentage}% terminé</span>
-                      <span>{chaptersRead}/{totalChapters} chapitre{totalChapters > 1 ? "s" : ""}</span>
+                      <span>{chaptersRead}/{totalChapters} segment{totalChapters > 1 ? "s" : ""}</span>
                     </div>
                   </div>
                 )}

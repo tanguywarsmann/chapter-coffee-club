@@ -1,10 +1,13 @@
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { ReadingProgress } from "./ReadingProgress";
 import { ReadingProgress as ReadingProgressType } from "@/types/reading";
 import { texts } from "@/i18n/texts";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { fixInconsistentReadingStatus } from "@/services/reading/dataConsistencyService";
+import { toast } from "sonner";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -19,6 +22,27 @@ export const HomeContent = memo(function HomeContent({
   onProgressUpdate,
 }: HomeContentProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Correction automatique des données incohérentes au chargement
+  useEffect(() => {
+    if (user?.id && readingProgress && readingProgress.length > 0) {
+      const fixData = async () => {
+        try {
+          const result = await fixInconsistentReadingStatus(user.id);
+          if (result.success && result.corrected > 0) {
+            console.log(`[HomeContent] ${result.corrected} données corrigées`);
+            // Pas de toast pour éviter de perturber l'UX
+          }
+        } catch (error) {
+          console.error('[HomeContent] Erreur correction données:', error);
+        }
+      };
+      
+      // Délai pour éviter de ralentir le chargement initial
+      setTimeout(fixData, 2000);
+    }
+  }, [user?.id, readingProgress]);
 
   if (!readingProgress || !Array.isArray(readingProgress)) {
     return <div>{texts.loading}...</div>;
@@ -43,4 +67,3 @@ export const HomeContent = memo(function HomeContent({
 });
 
 export default HomeContent;
-
