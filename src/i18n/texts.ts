@@ -3,6 +3,7 @@ export const texts = {
   // Navigation et layout
   home: "Accueil",
   explore: "Explorer", 
+  discover: "Découvrir",
   readingList: "Ma liste",
   achievements: "Récompenses",
   admin: "Administration",
@@ -45,6 +46,7 @@ export const texts = {
   checkValidationStatus: "Vérifier le statut des validations",
   sectionUnderDevelopment: "Section en cours de développement",
   adminSettingsAvailableSoon: "Les paramètres d'administration seront bientôt disponibles",
+  exportData: "Exporter les données",
   
   // Quêtes et récompenses
   unlockQuests: "Quêtes à débloquer",

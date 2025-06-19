@@ -8,12 +8,14 @@ import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText } from "lucide-react";
+import { AlertTriangle, FileText, Database } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 import { texts } from "@/i18n/texts";
+import { supabase } from "@/integrations/supabase/client";
+import { saveAs } from "file-saver";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -29,6 +31,49 @@ export default function Admin() {
       console.error("Erreur lors de l'export CSV:", error);
       toast({
         title: "Erreur d'export : impossible de générer le fichier CSV",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportFullData = async () => {
+    try {
+      const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const;
+      let fullSQL = "-- Export SQL pour READ\n\n";
+
+      for (const table of tables) {
+        const { data, error } = await supabase.from(table as any).select("*");
+        if (error || !data) {
+          console.error(`Erreur sur ${table}`, error);
+          continue;
+        }
+
+        fullSQL += `-- Table: ${table}\n`;
+        for (const row of data) {
+          const columns = Object.keys(row);
+          const values = columns.map((key) => {
+            const val = row[key];
+            if (val === null) return "NULL";
+            if (typeof val === "string") return `'${val.replace(/'/g, "''")}'`;
+            if (typeof val === "boolean") return val ? "TRUE" : "FALSE";
+            if (Array.isArray(val)) return `'${JSON.stringify(val)}'`;
+            return val;
+          });
+          fullSQL += `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${values.join(", ")});\n`;
+        }
+        fullSQL += `\n`;
+      }
+
+      const blob = new Blob([fullSQL], { type: "text/sql;charset=utf-8" });
+      saveAs(blob, "read_export.sql");
+      
+      toast({
+        title: "Export complet réussi : le fichier SQL a été téléchargé",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'export complet:", error);
+      toast({
+        title: "Erreur d'export : impossible de générer le fichier SQL complet",
         variant: "destructive",
       });
     }
@@ -50,15 +95,22 @@ export default function Admin() {
                     <FileText className="h-4 w-4" />
                     Exporter les segments manquants
                   </Button>
+                  <Button onClick={handleExportFullData} variant="outline" className="gap-2">
+                    <Database className="h-4 w-4" />
+                    {texts.exportData}
+                  </Button>
                   <ExportSQLButtonFinal />
                 </div>
               )}
               
               {/* Mobile simplified actions */}
               {isMobile && (
-                <div className="flex">
-                  <Button onClick={handleExportCsv} variant="outline" size="sm" className="w-full">
-                    Exporter CSV
+                <div className="flex gap-2">
+                  <Button onClick={handleExportCsv} variant="outline" size="sm">
+                    CSV
+                  </Button>
+                  <Button onClick={handleExportFullData} variant="outline" size="sm">
+                    SQL
                   </Button>
                 </div>
               )}
