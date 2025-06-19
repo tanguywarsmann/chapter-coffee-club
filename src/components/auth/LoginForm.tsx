@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Image from "@/components/ui/image";
 import { SignUpForm } from "./SignUpForm";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,6 +18,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,66 +90,76 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto border-coffee-medium">
-      <CardHeader className="space-y-1 flex flex-col items-center">
-        <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
-          <Image 
-            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
-            alt="READ Logo" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
-        <CardDescription className="text-center">
-          Connectez-vous à votre compte pour continuer votre voyage littéraire
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="exemple@mail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="border-coffee-medium"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border-coffee-medium"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-coffee-dark hover:bg-coffee-darker" disabled={isLoading}>
-              {isLoading ? "Connexion..." : "Se connecter"}
-            </Button>
+    <>
+      <Card className="w-full max-w-md mx-auto border-coffee-medium">
+        <CardHeader className="space-y-1 flex flex-col items-center">
+          <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
+            <Image 
+              src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+              alt="READ Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
-        <div className="text-sm text-center text-muted-foreground">
-          <a href="#" className="underline text-coffee-dark hover:text-coffee-darker">
-            Mot de passe oublié?
-          </a>
-        </div>
-        <div className="text-sm text-center">
-          Pas encore de compte?{" "}
-          <button 
-            onClick={() => setShowSignUp(true)}
-            className="text-coffee-dark hover:text-coffee-darker font-semibold"
-          >
-            Créer un compte
-          </button>
-        </div>
-      </CardFooter>
-    </Card>
+          <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
+          <CardDescription className="text-center">
+            Connectez-vous à votre compte pour continuer votre voyage littéraire
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="exemple@mail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="border-coffee-medium"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="border-coffee-medium"
+                />
+              </div>
+              <Button type="submit" className="w-full bg-coffee-dark hover:bg-coffee-darker" disabled={isLoading}>
+                {isLoading ? "Connexion..." : "Se connecter"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <div className="text-sm text-center text-muted-foreground">
+            <button 
+              onClick={() => setShowForgotPassword(true)}
+              className="underline text-coffee-dark hover:text-coffee-darker"
+            >
+              Mot de passe oublié?
+            </button>
+          </div>
+          <div className="text-sm text-center">
+            Pas encore de compte?{" "}
+            <button 
+              onClick={() => setShowSignUp(true)}
+              className="text-coffee-dark hover:text-coffee-darker font-semibold"
+            >
+              Créer un compte
+            </button>
+          </div>
+        </CardFooter>
+      </Card>
+
+      <ForgotPasswordModal 
+        open={showForgotPassword} 
+        onOpenChange={setShowForgotPassword} 
+      />
+    </>
   );
 }

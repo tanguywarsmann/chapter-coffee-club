@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +9,7 @@ import { usePrefetch } from "@/hooks/usePrefetch";
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
+import ResetPassword from "@/pages/ResetPassword";
 
 // Non-critical components loaded with React.lazy
 const BookPage = lazy(() => import("@/pages/BookPage"));
@@ -64,8 +64,11 @@ export function AppRouter() {
   // Central navigation logic
   useEffect(() => {
     if (!isLoading && isInitialized && isDocumentReady) {
-      // Ne pas rediriger si on est sur une page de livre ou d'auth
-      if (location.pathname.startsWith("/books/") || location.pathname === "/auth" || location.pathname === "/") {
+      // Ne pas rediriger si on est sur une page de livre, d'auth ou de reset password
+      if (location.pathname.startsWith("/books/") || 
+          location.pathname === "/auth" || 
+          location.pathname === "/" ||
+          location.pathname === "/reset-password") {
         return;
       }
       
@@ -109,6 +112,11 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={
+          <Suspense fallback={<GenericFallback />}>
+            <ResetPassword />
+          </Suspense>
+        } />
         
         <Route path="/home" element={
           <AuthGuard>
