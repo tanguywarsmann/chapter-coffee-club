@@ -15,7 +15,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 import { texts } from "@/i18n/texts";
 import { supabase } from "@/integrations/supabase/client";
-import { saveAs } from "file-saver";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -64,8 +63,16 @@ export default function Admin() {
         fullSQL += `\n`;
       }
 
+      // Using native download method instead of file-saver
       const blob = new Blob([fullSQL], { type: "text/sql;charset=utf-8" });
-      saveAs(blob, "read_export.sql");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "read_export.sql";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
       
       toast({
         title: "Export complet réussi : le fichier SQL a été téléchargé",
