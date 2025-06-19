@@ -43,31 +43,31 @@ export function StreakStats() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {/* Série actuelle avec design premium */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+      {/* Série actuelle avec design premium Reed */}
       <div className="group relative">
-        {/* Effet de lueur d'arrière-plan */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-200/20 to-red-200/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
+        {/* Effet de lueur d'arrière-plan avec les couleurs Reed */}
+        <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/20 to-reed-secondary/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
         
-        <div className="relative bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
-          {/* Icône avec effet brillant */}
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl blur-sm opacity-30 scale-110" />
-              <div className="relative p-4 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl border border-orange-200/50">
-                <Flame className="h-8 w-8 text-orange-600" />
+        <div className="relative bg-white/70 backdrop-blur-md border border-white/40 rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
+          {/* Icône avec effet brillant Reed */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-reed-primary to-reed-dark rounded-2xl blur-sm opacity-30 scale-110" />
+              <div className="relative p-3 sm:p-4 bg-gradient-to-br from-reed-secondary to-reed-light rounded-2xl border border-reed-primary/30">
+                <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-reed-primary" />
               </div>
               {/* Particules décoratives */}
               <div className="absolute -top-1 -right-1">
-                <Sparkles className="h-4 w-4 text-orange-400 animate-pulse" />
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-reed-primary animate-pulse" />
               </div>
             </div>
             
-            <div className="flex-1">
-              <h3 className="text-sm font-serif font-medium text-coffee-medium uppercase tracking-wider mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
                 Série Actuelle
               </h3>
-              <p className="text-2xl font-serif font-semibold text-coffee-darker leading-tight">
+              <p className="text-xl sm:text-2xl font-serif font-semibold text-reed-darker leading-tight break-words">
                 {formatStreakText(currentStreak, "série")}
               </p>
             </div>
@@ -77,25 +77,25 @@ export function StreakStats() {
 
       {/* Record personnel */}
       <div className="group relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-200/20 to-yellow-200/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-reed-dark/20 to-reed-primary/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
         
-        <div className="relative bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl blur-sm opacity-30 scale-110" />
-              <div className="relative p-4 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl border border-amber-200/50">
-                <Medal className="h-8 w-8 text-amber-600" />
+        <div className="relative bg-white/70 backdrop-blur-md border border-white/40 rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-reed-dark to-reed-darker rounded-2xl blur-sm opacity-30 scale-110" />
+              <div className="relative p-3 sm:p-4 bg-gradient-to-br from-reed-light to-reed-secondary rounded-2xl border border-reed-primary/30">
+                <Medal className="h-6 w-6 sm:h-8 sm:w-8 text-reed-dark" />
               </div>
               <div className="absolute -top-1 -right-1">
-                <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-reed-primary animate-pulse" />
               </div>
             </div>
             
-            <div className="flex-1">
-              <h3 className="text-sm font-serif font-medium text-coffee-medium uppercase tracking-wider mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
                 Record Personnel
               </h3>
-              <p className="text-2xl font-serif font-semibold text-coffee-darker leading-tight">
+              <p className="text-xl sm:text-2xl font-serif font-semibold text-reed-darker leading-tight break-words">
                 {formatStreakText(bestStreak, "record")}
               </p>
             </div>
@@ -105,25 +105,25 @@ export function StreakStats() {
 
       {/* Activité mensuelle */}
       <div className="group relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-200/20 to-indigo-200/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-reed-secondary/20 to-reed-light/20 rounded-3xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
         
-        <div className="relative bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl blur-sm opacity-30 scale-110" />
-              <div className="relative p-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl border border-blue-200/50">
-                <CalendarDays className="h-8 w-8 text-blue-600" />
+        <div className="relative bg-white/70 backdrop-blur-md border border-white/40 rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="relative flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-reed-primary to-reed-secondary rounded-2xl blur-sm opacity-30 scale-110" />
+              <div className="relative p-3 sm:p-4 bg-gradient-to-br from-reed-light to-white rounded-2xl border border-reed-primary/30">
+                <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8 text-reed-primary" />
               </div>
               <div className="absolute -top-1 -right-1">
-                <Sparkles className="h-4 w-4 text-blue-400 animate-pulse" />
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-reed-primary animate-pulse" />
               </div>
             </div>
             
-            <div className="flex-1">
-              <h3 className="text-sm font-serif font-medium text-coffee-medium uppercase tracking-wider mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
                 Ce Mois-ci
               </h3>
-              <p className="text-2xl font-serif font-semibold text-coffee-darker leading-tight">
+              <p className="text-xl sm:text-2xl font-serif font-semibold text-reed-darker leading-tight break-words">
                 {formatMonthlyText(monthlySegments)}
               </p>
             </div>

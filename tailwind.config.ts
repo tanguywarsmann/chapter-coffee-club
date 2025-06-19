@@ -63,6 +63,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				// Reed brand colors - Sienne Brûlée palette
+				reed: {
+					primary: '#AE6841', // Sienne Brûlée principale
+					secondary: '#DFC5A6', // Couleur complémentaire
+					light: '#F0E6D8', // Version très claire
+					dark: '#8B4A2E', // Version plus foncée
+					darker: '#6B3A23' // Version très foncée
+				},
 				coffee: {
 					light: '#E6D7C3',
 					medium: '#C8B6A6',

@@ -92,42 +92,44 @@ export function BadgesSection() {
 
   return (
     <div className="relative">
-      {/* Effet d'arrière-plan décoratif */}
-      <div className="absolute inset-0 bg-gradient-to-br from-coffee-light/10 to-chocolate-light/10 rounded-3xl blur-2xl" />
+      {/* Effet d'arrière-plan décoratif avec les couleurs Reed */}
+      <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/10 to-reed-secondary/10 rounded-3xl blur-2xl" />
       
       <Tabs defaultValue="unlocked" className="relative w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-1 shadow-lg">
+        <TabsList className="grid w-full grid-cols-2 mb-6 sm:mb-8 bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl p-1 shadow-lg">
           <TabsTrigger 
             value="unlocked" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coffee-light data-[state=active]:to-chocolate-light data-[state=active]:text-coffee-darker font-serif font-medium text-coffee-medium rounded-xl transition-all duration-300"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-reed-secondary data-[state=active]:to-reed-light data-[state=active]:text-reed-darker font-serif font-medium text-reed-dark rounded-xl transition-all duration-300"
           >
-            <Crown className="h-5 w-5 mr-2" />
-            Collection
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span className="hidden sm:inline">Collection</span>
+            <span className="sm:hidden">Mes badges</span>
           </TabsTrigger>
           <TabsTrigger 
             value="locked"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coffee-light data-[state=active]:to-chocolate-light data-[state=active]:text-coffee-darker font-serif font-medium text-coffee-medium rounded-xl transition-all duration-300"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-reed-secondary data-[state=active]:to-reed-light data-[state=active]:text-reed-darker font-serif font-medium text-reed-dark rounded-xl transition-all duration-300"
           >
-            <Target className="h-5 w-5 mr-2" />
-            Objectifs
+            <Target className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span className="hidden sm:inline">Objectifs</span>
+            <span className="sm:hidden">À obtenir</span>
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="unlocked">
-          <Card className="border-0 bg-white/60 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-coffee-lightest/50 to-chocolate-lightest/50 border-b border-white/20">
-              <CardTitle className="font-serif text-coffee-darker flex items-center gap-3 text-xl">
-                <div className="p-2 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl">
-                  <Crown className="h-6 w-6 text-amber-600" />
+          <Card className="border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
+              <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-lg sm:text-xl">
+                <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
+                  <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
                 </div>
-                Badges Débloqués
-                <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+                <span className="flex-1 min-w-0">Badges Débloqués</span>
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
               </CardTitle>
-              <CardDescription className="text-coffee-medium font-light">
+              <CardDescription className="text-reed-dark font-light">
                 Vos accomplissements par ordre de rareté
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-6 sm:p-8 space-y-6 sm:space-y-8">
               <BadgeRarityProgress earnedBadges={badges} allBadges={[...badges, ...lockedBadges]} />
               <BadgeGrid 
                 badges={badges} 
@@ -141,20 +143,20 @@ export function BadgesSection() {
         </TabsContent>
         
         <TabsContent value="locked">
-          <Card className="border-0 bg-white/60 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-coffee-lightest/50 to-chocolate-lightest/50 border-b border-white/20">
-              <CardTitle className="font-serif text-coffee-darker flex items-center gap-3 text-xl">
-                <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
-                  <Target className="h-6 w-6 text-blue-600" />
+          <Card className="border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
+              <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-lg sm:text-xl">
+                <div className="p-2 bg-gradient-to-br from-reed-light to-white rounded-xl flex-shrink-0">
+                  <Target className="h-5 w-5 sm:h-6 sm:w-6 text-reed-dark" />
                 </div>
-                Objectifs à Atteindre
-                <Sparkles className="h-5 w-5 text-coffee-medium animate-pulse" />
+                <span className="flex-1 min-w-0">Objectifs à Atteindre</span>
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
               </CardTitle>
-              <CardDescription className="text-coffee-medium font-light">
+              <CardDescription className="text-reed-dark font-light">
                 Découvrez les prochains défis à relever
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-6 sm:p-8">
               <BadgeGrid badges={lockedBadges} isLocked={true} />
             </CardContent>
           </Card>
