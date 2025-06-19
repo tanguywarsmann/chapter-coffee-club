@@ -69,12 +69,11 @@ export function AppRouter() {
         return;
       }
       
-      const allowed = ["/home", "/discover", "/explore", "/reading-list"];
+      const allowed = ["/home", "/discover", "/explore", "/reading-list", "/profile"];
       
       const isAllowedPath = allowed.some(path => 
         location.pathname === path || 
         location.pathname.startsWith(path + "/") ||
-        location.pathname.startsWith("/profile/") ||
         location.pathname.startsWith("/u/") ||
         location.pathname.startsWith("/followers/") ||
         location.pathname.startsWith("/achievements") ||

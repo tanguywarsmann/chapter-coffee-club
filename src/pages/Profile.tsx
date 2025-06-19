@@ -17,18 +17,11 @@ import { UserLevelProgress } from "@/components/profile/UserLevelProgress";
 
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [username, setUsername] = useState<string | null>(null);
   
   const profileUserId = params.userId || user?.id;
   const isOwnProfile = !params.userId || (user && user.id === params.userId);
-
-  useEffect(() => {
-    if (user && params.userId === user.id) {
-      navigate('/profile');
-    }
-  }, [user, params.userId, navigate]);
 
   return (
     <AuthGuard>
