@@ -35,6 +35,11 @@ export const DesktopNav = ({ isAdmin }: DesktopNavProps) => {
           {texts.discover}
         </Button>
       </Link>
+      <Link to="/blog">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          Blog
+        </Button>
+      </Link>
     </nav>
   );
 };
