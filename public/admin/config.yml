@@ -1,7 +1,7 @@
 
 backend:
   name: github
-  repo: YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME  # ⚠️ REMPLACEZ par votre repo GitHub (ex: moncompte/mon-blog)
+  repo:  tanguywarsmann/chapter-coffee-club  # ⚠️ REMPLACEZ par votre repo GitHub (ex: moncompte/mon-blog)
   branch: main
   
 media_folder: "public/images/blog"
