@@ -1,0 +1,24 @@
+
+backend:
+  name: github
+  repo: tanguywarsmann/chapter-coffee-club
+  branch: main
+
+media_folder: "public/images/blog"
+public_folder: "/images/blog"
+
+collections:
+  - name: "blog"
+    label: "Articles de Blog"
+    folder: "content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Date de publication", name: "date", widget: "datetime"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "Image de couverture", name: "image", widget: "image", required: false}
+      - {label: "Auteur", name: "author", widget: "string", default: "READ"}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Publié", name: "published", widget: "boolean", default: true}
+      - {label: "Contenu", name: "body", widget: "markdown"}
