@@ -3,7 +3,7 @@ backend:
   name: github
   repo: tanguywarsmann/chapter-coffee-club
   branch: main
-  client_id: # AJOUTEZ VOTRE CLIENT_ID GITHUB ICI
+  client_id: Iv23liVjLsbYaPRxqTPf
 
 media_folder: "public/images/blog"
 public_folder: "/images/blog"
