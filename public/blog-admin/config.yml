@@ -4,6 +4,8 @@ backend:
   repo: tanguywarsmann/chapter-coffee-club
   branch: main
   client_id: Iv23liVjLsbYaPRxqTPf
+  base_url: https://chapter-coffee-club.vercel.app
+  auth_endpoint: api/auth
 
 media_folder: "public/images/blog"
 public_folder: "/images/blog"
