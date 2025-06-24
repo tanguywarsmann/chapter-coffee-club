@@ -1,0 +1,9 @@
+export default function handler(req, res) {
+  const id = process.env.CMS_GITHUB_CLIENT_ID;
+  const redirect = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`;
+  const url =
+    `https://github.com/login/oauth/authorize?client_id=${id}` +
+    `&redirect_uri=${encodeURIComponent(redirect)}&scope=repo`;
+  res.writeHead(302, { Location: url });
+  res.end();
+}
