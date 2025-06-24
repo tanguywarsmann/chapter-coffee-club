@@ -2,10 +2,10 @@
 {
   "functions": {
     "api/auth/index.js": {
-      "runtime": "vercel"
+      "runtime": "nodejs18.x"
     },
     "api/auth/callback.js": {
-      "runtime": "vercel"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
