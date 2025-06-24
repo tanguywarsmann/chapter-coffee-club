@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -20,7 +21,10 @@
     fetch('/blog-admin/config.yml')
       .then(response => response.text())
       .then(config => {
-        CMS.init({ config: config });
+        CMS.init({
+          config: config,
+          configType: 'yaml'
+        });
       })
       .catch(err => console.error('Erreur lors du chargement de config.yml:', err));
   </script>
