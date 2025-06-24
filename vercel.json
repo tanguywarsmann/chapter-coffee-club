@@ -1,6 +1,9 @@
-
 {
   "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "/api/:match*"
+    },
     {
       "source": "/blog-admin/(.*)",
       "destination": "/blog-admin/$1"
