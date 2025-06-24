@@ -10,8 +10,12 @@
   },
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "/api/:match*"
+      "source": "/api/auth",
+      "destination": "/api/auth"
+    },
+    {
+      "source": "/api/auth/callback",
+      "destination": "/api/auth/callback"
     },
     {
       "source": "/blog-admin/(.*)",
