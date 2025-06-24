@@ -1,7 +1,0 @@
-
-{
-  "version": 2,
-  "rewrites": [
-    { "source": "/blog-admin/(.*)", "destination": "/blog-admin/$1" }
-  ]
-}
