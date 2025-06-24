@@ -1,5 +1,13 @@
 
 {
+  "functions": {
+    "pages/api/auth/index.js": {
+      "runtime": "nodejs18.x"
+    },
+    "pages/api/auth/callback.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/:match*",

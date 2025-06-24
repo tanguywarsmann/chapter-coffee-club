@@ -2,7 +2,10 @@
 export default async function handler(req, res) {
   const { code } = req.query;
   
+  console.log('Route /api/auth/callback appelée avec code:', code ? 'présent' : 'absent');
+  
   if (!code) {
+    console.error('Code manquant dans callback');
     return res.status(400).json({ error: 'Code manquant' });
   }
 
@@ -12,6 +15,8 @@ export default async function handler(req, res) {
       client_secret: process.env.CMS_GITHUB_CLIENT_SECRET,
       code,
     });
+
+    console.log('Callback - Échange de token avec GitHub...');
 
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -23,9 +28,11 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    
+    console.log('Callback - Réponse GitHub OAuth:', data.error ? 'Erreur' : 'Succès');
 
     if (data.error) {
-      console.error('Erreur GitHub OAuth:', data);
+      console.error('Erreur GitHub OAuth dans callback:', data);
       return res.status(400).json(data);
     }
 

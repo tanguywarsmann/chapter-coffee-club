@@ -3,7 +3,7 @@ backend:
   name: github
   repo: tanguywarsmann/chapter-coffee-club
   branch: main
-  client_id: Iv23liVjLsbYaPRxqTPf
+  client_id: Ov23li9LyDzFWSxwzUXH
   base_url: /api
   auth_endpoint: auth
   token_endpoint: auth/callback
