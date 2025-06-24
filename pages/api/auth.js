@@ -1,4 +1,5 @@
 
+
 export default async function handler(req, res) {
   const { code } = req.query;
   
@@ -29,11 +30,12 @@ export default async function handler(req, res) {
       return res.status(400).json(data);
     }
 
-    // Redirection vers l'admin avec le token
-    const redirectUrl = `/blog-admin/index.html#access_token=${data.access_token}&token_type=bearer`;
+    // Redirection vers la page de gestion des articles avec le token
+    const redirectUrl = `/blog-admin/index.html#access_token=${data.access_token}&token_type=bearer&expires_in=${data.expires_in || 3600}`;
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Erreur dans le proxy auth:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 }
+
