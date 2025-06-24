@@ -1,25 +1,7 @@
 
 {
-  "functions": {
-    "api/auth/index.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/auth/callback.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "version": 2,
   "rewrites": [
-    {
-      "source": "/api/auth",
-      "destination": "/api/auth"
-    },
-    {
-      "source": "/api/auth/callback",
-      "destination": "/api/auth/callback"
-    },
-    {
-      "source": "/blog-admin/(.*)",
-      "destination": "/blog-admin/$1"
-    }
+    { "source": "/blog-admin/(.*)", "destination": "/blog-admin/$1" }
   ]
 }
