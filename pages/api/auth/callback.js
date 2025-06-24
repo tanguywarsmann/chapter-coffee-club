@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     const params = new URLSearchParams({
-      client_id: process.env.NEXT_PUBLIC_CMS_GITHUB_CLIENT_ID || 'Iv23liVjLsbYaPRxqTPf',
+      client_id: process.env.NEXT_PUBLIC_CMS_GITHUB_CLIENT_ID || 'Ov23li9LyDzFWSxwzUXH',
       client_secret: process.env.CMS_GITHUB_CLIENT_SECRET,
       code,
     });
