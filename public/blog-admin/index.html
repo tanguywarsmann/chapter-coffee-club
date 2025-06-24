@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,7 +7,22 @@
   <link rel="icon" href="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" type="image/png">
 </head>
 <body>
-  <!-- Decap CMS -->
+  <!-- Initialisation manuelle de Decap CMS -->
+  <script>
+    window.CMS_MANUAL_INIT = true;
+  </script>
+
+  <!-- Import du CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
+  <!-- Chargement de la configuration -->
+  <script>
+    fetch('/blog-admin/config.yml')
+      .then(response => response.text())
+      .then(config => {
+        CMS.init({ config: config });
+      })
+      .catch(err => console.error('Erreur lors du chargement de config.yml:', err));
+  </script>
 </body>
 </html>
