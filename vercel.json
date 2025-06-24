@@ -1,10 +1,10 @@
 
 {
   "functions": {
-    "pages/api/auth/index.js": {
+    "api/auth/index.js": {
       "runtime": "@vercel/node@3.0.0"
     },
-    "pages/api/auth/callback.js": {
+    "api/auth/callback.js": {
       "runtime": "@vercel/node@3.0.0"
     }
   },
