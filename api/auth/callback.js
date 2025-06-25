@@ -60,32 +60,27 @@ export default async function handler(req, res) {
 
 <script>
 (function () {
-  /* Jeton GitHub reçu du callback */
-  const token = "${tokenData.access_token}";
-
-  /* Structure minimale que Décap comprend */
+  /* Objet complet attendu par Decap CMS */
   const payload = {
-    token: token,
+    token: "${tokenData.access_token}",
     provider: "github"
   };
 
-  /* ① — Tentative normale via postMessage  */
+  /* 1 — postMessage normal */
   if (window.opener) {
     window.opener.postMessage(
       "authorization:github:success:" + JSON.stringify(payload),
-      "*"
+      "*"          // accepte prod + previews
     );
   }
 
-  /* ② — Fallback : on écrit la même info dans localStorage  */
-try {
-  // clé utilisée par Decap CMS 3
-  localStorage.setItem('decap-cms-user', JSON.stringify(payload));
-  // compatibilité avec très anciennes versions (Netlify CMS 2)
-  localStorage.setItem('netlify-cms-user', JSON.stringify(payload));
-} catch (_) { /* ignore quota errors */ }
+  /* 2 — Fallback : on écrit la même valeur dans localStorage */
+  try {
+    localStorage.setItem("decap-cms-user",  JSON.stringify(payload));   // clé Décap ≥ 3
+    localStorage.setItem("netlify-cms-user", JSON.stringify(payload));  // rétro-compat
+  } catch (_) { /* quota errors ignorés */ }
 
-  /* ③ — Ferme la popup ou redirige vers l’admin */
+  /* 3 — Fin du flux */
   if (window.opener) {
     window.close();
   } else {
