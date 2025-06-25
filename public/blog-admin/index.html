@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,22 +9,101 @@
 </head>
 <body>
 
-  <!-- 1. ON GARDE le flag : Décap n’auto-initialisera pas -->
-  <script>window.CMS_MANUAL_INIT = true;</script>
+  <!-- 1. ON GARDE le flag : Décap n'auto-initialisera pas -->
+  <script>
+    window.CMS_MANUAL_INIT = true;
+    console.log('[DECAP] Manual init flag set');
+  </script>
 
   <!-- 2. On charge Décap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.6.4/dist/decap-cms.js"></script>
 
-  <!-- 3. On charge le YAML PUIS on appelle CMS.init() **une seule fois** -->
+  <!-- 3. Configuration et initialisation améliorée -->
   <script>
-    fetch('/blog-admin/config.yml')
-      .then(r => r.text())
-      .then(cfg => {
-        CMS.init({ config: cfg, configType: 'yaml' });   // ← unique appel
-      })
-      .catch(err => console.error('[Decap] config.yml error :', err));
+    console.log('[DECAP] Starting configuration load');
+    
+    // Vérifier si on a déjà un token en localStorage
+    function checkExistingAuth() {
+      try {
+        const stored = localStorage.getItem('decap-cms-user') || localStorage.getItem('netlify-cms-user');
+        if (stored) {
+          const data = JSON.parse(stored);
+          console.log('[DECAP] Found existing auth token');
+          return data;
+        }
+      } catch (err) {
+        console.warn('[DECAP] Error checking existing auth:', err);
+      }
+      return null;
+    }
+
+    // Écouter les messages d'authentification
+    function setupAuthListener() {
+      console.log('[DECAP] Setting up auth message listener');
+      
+      window.addEventListener('message', function(event) {
+        console.log('[DECAP] Received message:', event.data);
+        
+        if (typeof event.data === 'string' && event.data.startsWith('authorization:github:')) {
+          try {
+            const payload = JSON.parse(event.data.replace('authorization:github:', ''));
+            console.log('[DECAP] Processing auth payload');
+            
+            // Stocker le token
+            localStorage.setItem('decap-cms-user', JSON.stringify(payload));
+            localStorage.setItem('netlify-cms-user', JSON.stringify(payload));
+            
+            // Recharger la page pour que Decap détecte l'auth
+            setTimeout(() => {
+              console.log('[DECAP] Reloading to apply authentication');
+              window.location.reload();
+            }, 500);
+            
+          } catch (err) {
+            console.error('[DECAP] Error processing auth message:', err);
+          }
+        }
+      });
+    }
+
+    // Initialiser Decap CMS
+    function initializeCMS() {
+      console.log('[DECAP] Initializing CMS');
+      
+      fetch('/blog-admin/config.yml')
+        .then(r => r.text())
+        .then(cfg => {
+          console.log('[DECAP] Config loaded, calling CMS.init()');
+          CMS.init({ config: cfg, configType: 'yaml' });
+          
+          // Vérifier le statut d'auth après l'init
+          setTimeout(() => {
+            const authStatus = checkExistingAuth();
+            console.log('[DECAP] Post-init auth status:', !!authStatus);
+          }, 1000);
+        })
+        .catch(err => {
+          console.error('[DECAP] Config.yml error:', err);
+        });
+    }
+
+    // Démarrage
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('[DECAP] DOM loaded, starting setup');
+      
+      // Configurer l'écoute des messages d'auth
+      setupAuthListener();
+      
+      // Vérifier l'auth existante
+      const existingAuth = checkExistingAuth();
+      if (existingAuth) {
+        console.log('[DECAP] Using existing authentication');
+      }
+      
+      // Initialiser le CMS avec un léger délai
+      setTimeout(initializeCMS, 300);
+    });
   </script>
 
-  <!-- 4. AUCUN autre CMS.init, AUCUN script fallback, AUCUN reload forcé -->
 </body>
 </html>

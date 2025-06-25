@@ -1,3 +1,4 @@
+
 export default async function handler(req, res) {
   const { code } = req.query;
 
@@ -24,6 +25,7 @@ export default async function handler(req, res) {
         client_id:     clientId,
         client_secret: clientSecret,
         code,
+        scope: 'public_repo read:user', // Ajout du scope read:user
       }),
     });
 
@@ -58,33 +60,78 @@ export default async function handler(req, res) {
 
   <script>
   (function () {
+    console.log('[DECAP AUTH] Starting authentication callback process');
+    
     /* Payload exact que Decap attend */
     const payload = {
       token: "${tokenData.access_token}",
       provider: "github",
-      expires_at: Math.floor(Date.now() / 1000) + 3600  // +1 h
+      expires_at: Math.floor(Date.now() / 1000) + (${tokenData.expires_in || 3600})
     };
 
-    /* Envoi du message à la fenêtre parente */
-    if (window.opener) {
-      window.opener.postMessage(
-        "authorization:github:" + JSON.stringify(payload),
-        "*"
-      );
+    console.log('[DECAP AUTH] Payload prepared:', { ...payload, token: 'HIDDEN' });
+
+    /* Fonction pour envoyer le message avec retry */
+    let messageAttempts = 0;
+    const maxAttempts = 10;
+    
+    function sendAuthMessage() {
+      messageAttempts++;
+      console.log('[DECAP AUTH] Attempt', messageAttempts, 'sending postMessage');
+      
+      if (window.opener) {
+        try {
+          // Format exact attendu par Decap CMS
+          const message = "authorization:github:" + JSON.stringify(payload);
+          window.opener.postMessage(message, "*");
+          console.log('[DECAP AUTH] PostMessage sent successfully');
+        } catch (error) {
+          console.error('[DECAP AUTH] Error sending postMessage:', error);
+        }
+      } else {
+        console.warn('[DECAP AUTH] No window.opener available');
+      }
+      
+      // Retry jusqu'à ce que le parent confirme ou timeout
+      if (messageAttempts < maxAttempts) {
+        setTimeout(sendAuthMessage, 200);
+      }
     }
 
-    /* Stockage local (fallback) */
+    /* Stockage local immédiat (fallback principal) */
     try {
-      localStorage.setItem("decap-cms-user",  JSON.stringify(payload));
+      localStorage.setItem("decap-cms-user", JSON.stringify(payload));
       localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
-    } catch (_) {}
+      console.log('[DECAP AUTH] Token stored in localStorage');
+    } catch (err) {
+      console.error('[DECAP AUTH] Error storing in localStorage:', err);
+    }
 
-    /* Recharge la page admin pour que Decap démarre avec le token présent */
-    try { window.opener && window.opener.location.reload(); } catch (_) {}
+    /* Démarrer l'envoi de messages */
+    setTimeout(sendAuthMessage, 100);
 
-    /* Ferme la popup ou redirige si pas d'opener */
-    if (window.opener) window.close();
-    else window.location.href = "/blog-admin/";
+    /* Forcer le reload de la page parent après un délai */
+    setTimeout(() => {
+      console.log('[DECAP AUTH] Attempting to reload parent window');
+      try {
+        if (window.opener) {
+          window.opener.location.reload();
+        }
+      } catch (err) {
+        console.warn('[DECAP AUTH] Could not reload parent:', err);
+      }
+    }, 1000);
+
+    /* Fermer la popup après un délai */
+    setTimeout(() => {
+      console.log('[DECAP AUTH] Closing popup window');
+      if (window.opener) {
+        window.close();
+      } else {
+        // Si pas d'opener, rediriger vers l'admin
+        window.location.href = "/blog-admin/";
+      }
+    }, 1500);
   })();
   </script>
 </body>
