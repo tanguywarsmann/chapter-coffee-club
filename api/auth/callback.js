@@ -60,22 +60,32 @@ export default async function handler(req, res) {
 
 <script>
 (function () {
-  /* ---------- payload EXACT demandé par Decap CMS ---------- */
+  /* Jeton GitHub reçu du callback */
+  const token = "${tokenData.access_token}";
+
+  /* Structure minimale que Décap comprend */
   const payload = {
-    token: "${tokenData.access_token}",
-    provider: "github"                  // <-- clé obligatoire
-    // expires_at est facultatif ; on peut l’omettre
+    token: token,
+    provider: "github"
   };
 
-  /* ---------- envoi à la fenêtre parente ---------- */
+  /* ① — Tentative normale via postMessage  */
   if (window.opener) {
     window.opener.postMessage(
       "authorization:github:success:" + JSON.stringify(payload),
-      "*"                                // accepte toutes les origines (prod + previews)
+      "*"
     );
+  }
+
+  /* ② — Fallback : on écrit la même info dans localStorage  */
+  try {
+    localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
+  } catch (_) { /* ignore quota errors */ }
+
+  /* ③ — Ferme la popup ou redirige vers l’admin */
+  if (window.opener) {
     window.close();
   } else {
-    // Fallback si la fenêtre parente n’existe pas
     window.location.href = "/blog-admin/";
   }
 })();
