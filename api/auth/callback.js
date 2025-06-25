@@ -58,18 +58,24 @@ export default async function handler(req, res) {
     <p>Retour vers Decap CMS…</p>
   </div>
 
- <script>
+<script>
 (function () {
-  // payload exact que Decap CMS attend
-  const payload = { token: "${tokenData.access_token}" };
+  /* ---------- payload EXACT demandé par Decap CMS ---------- */
+  const payload = {
+    token: "${tokenData.access_token}",
+    provider: "github"                  // <-- clé obligatoire
+    // expires_at est facultatif ; on peut l’omettre
+  };
 
+  /* ---------- envoi à la fenêtre parente ---------- */
   if (window.opener) {
     window.opener.postMessage(
       "authorization:github:success:" + JSON.stringify(payload),
-      "*"               // accepte toutes les origines (préviews incluses)
+      "*"                                // accepte toutes les origines (prod + previews)
     );
     window.close();
   } else {
+    // Fallback si la fenêtre parente n’existe pas
     window.location.href = "/blog-admin/";
   }
 })();
