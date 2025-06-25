@@ -70,7 +70,7 @@ export default async function handler(req, res) {
   /* Envoi normal à la fenêtre parente */
   if (window.opener) {
     window.opener.postMessage(
-      "authorization:github:success:" + JSON.stringify(payload),
+      "authorization:github:" + JSON.stringify(payload),
       "*"
     );
   }
