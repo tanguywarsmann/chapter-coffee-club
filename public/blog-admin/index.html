@@ -28,7 +28,7 @@
         const stored = localStorage.getItem('decap-cms-user') || localStorage.getItem('netlify-cms-user');
         if (stored) {
           const data = JSON.parse(stored);
-          console.log('[DECAP] Found existing auth token');
+          console.log('[DECAP] Found existing auth token:', { ...data, token: 'HIDDEN' });
           return data;
         }
       } catch (err) {
@@ -37,23 +37,24 @@
       return null;
     }
 
-    // Écouter les messages d'authentification
+    // Écouter les messages d'authentification avec logs étendus
     function setupAuthListener() {
       console.log('[DECAP] Setting up auth message listener');
       
       window.addEventListener('message', function(event) {
-        console.log('[DECAP] Received message:', event.data);
+        console.log('[DECAP] PARENT-MSG received:', event.data);
         
         if (typeof event.data === 'string' && event.data.startsWith('authorization:github:')) {
           try {
             const payload = JSON.parse(event.data.replace('authorization:github:', ''));
-            console.log('[DECAP] Processing auth payload');
+            console.log('[DECAP] Processing auth payload:', { ...payload, token: 'HIDDEN' });
             
             // Stocker le token
             localStorage.setItem('decap-cms-user', JSON.stringify(payload));
             localStorage.setItem('netlify-cms-user', JSON.stringify(payload));
+            console.log('[DECAP] ✅ Token stored successfully');
             
-            // Recharger la page pour que Decap détecte l'auth
+            // Vérifier que Decap CMS est prêt avant de recharger
             setTimeout(() => {
               console.log('[DECAP] Reloading to apply authentication');
               window.location.reload();
@@ -64,6 +65,9 @@
           }
         }
       });
+      
+      // Log pour vérifier que l'événement est bien attaché
+      console.log('[DECAP] Message listener attached to window');
     }
 
     // Initialiser Decap CMS
@@ -80,6 +84,12 @@
           setTimeout(() => {
             const authStatus = checkExistingAuth();
             console.log('[DECAP] Post-init auth status:', !!authStatus);
+            
+            if (authStatus) {
+              console.log('[DECAP] ✅ User should be authenticated');
+            } else {
+              console.log('[DECAP] ❌ No authentication found');
+            }
           }, 1000);
         })
         .catch(err => {
@@ -87,11 +97,24 @@
         });
     }
 
+    // Fonction de diagnostic pour vérifier l'état
+    function diagnoseState() {
+      console.log('[DECAP] === DIAGNOSTIC ===');
+      console.log('[DECAP] Current URL:', window.location.href);
+      console.log('[DECAP] LocalStorage decap-cms-user:', localStorage.getItem('decap-cms-user'));
+      console.log('[DECAP] LocalStorage netlify-cms-user:', localStorage.getItem('netlify-cms-user'));
+      console.log('[DECAP] CMS object available:', typeof window.CMS !== 'undefined');
+      console.log('[DECAP] === END DIAGNOSTIC ===');
+    }
+
     // Démarrage
     document.addEventListener('DOMContentLoaded', function() {
       console.log('[DECAP] DOM loaded, starting setup');
       
-      // Configurer l'écoute des messages d'auth
+      // Diagnostic initial
+      diagnoseState();
+      
+      // Configurer l'écoute des messages d'auth AVANT l'init
       setupAuthListener();
       
       // Vérifier l'auth existante
@@ -100,8 +123,11 @@
         console.log('[DECAP] Using existing authentication');
       }
       
-      // Initialiser le CMS avec un léger délai
+      // Initialiser le CMS avec un léger délai pour s'assurer que les listeners sont prêts
       setTimeout(initializeCMS, 300);
+      
+      // Diagnostic périodique (utile pour le debug)
+      setInterval(diagnoseState, 10000);
     });
   </script>
 

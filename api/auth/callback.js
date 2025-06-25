@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         client_id:     clientId,
         client_secret: clientSecret,
         code,
-        scope: 'public_repo read:user', // Ajout du scope read:user
+        scope: 'public_repo read:user', // Scope read:user ajouté
       }),
     });
 
@@ -49,18 +49,26 @@ export default async function handler(req, res) {
     .spinner{border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;width:40px;height:40px;
              animation:spin 1s linear infinite;margin:0 auto 20px}
     @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .debug{margin-top:20px;font-size:12px;color:#666;text-align:left;background:#f9f9f9;padding:10px;border-radius:4px}
   </style>
 </head>
 <body>
   <div class="box">
     <div class="spinner"></div>
     <h2>Authentification réussie !</h2>
-    <p>Retour vers Decap CMS…</p>
+    <p>Communication avec Decap CMS en cours...</p>
+    <div class="debug" id="debug-log"></div>
   </div>
 
   <script>
   (function () {
-    console.log('[DECAP AUTH] Starting authentication callback process');
+    const debugLog = document.getElementById('debug-log');
+    const log = (msg) => {
+      console.log('[DECAP AUTH]', msg);
+      debugLog.innerHTML += msg + '<br>';
+    };
+    
+    log('Starting authentication callback process');
     
     /* Payload exact que Decap attend */
     const payload = {
@@ -69,32 +77,52 @@ export default async function handler(req, res) {
       expires_at: Math.floor(Date.now() / 1000) + (${tokenData.expires_in || 3600})
     };
 
-    console.log('[DECAP AUTH] Payload prepared:', { ...payload, token: 'HIDDEN' });
+    log('Payload prepared: ' + JSON.stringify({ ...payload, token: 'HIDDEN' }));
 
-    /* Fonction pour envoyer le message avec retry */
+    /* Système de retry robuste */
     let messageAttempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 20;
+    let retryInterval;
+    let parentConfirmed = false;
     
     function sendAuthMessage() {
       messageAttempts++;
-      console.log('[DECAP AUTH] Attempt', messageAttempts, 'sending postMessage');
+      log('Attempt ' + messageAttempts + ' sending postMessage');
       
-      if (window.opener) {
+      if (window.opener && !parentConfirmed) {
         try {
           // Format exact attendu par Decap CMS
           const message = "authorization:github:" + JSON.stringify(payload);
           window.opener.postMessage(message, "*");
-          console.log('[DECAP AUTH] PostMessage sent successfully');
+          log('PostMessage sent successfully');
+          
+          // Vérifier si le parent a reçu le message
+          setTimeout(() => {
+            try {
+              const stored = window.opener.localStorage.getItem('decap-cms-user');
+              if (stored) {
+                const data = JSON.parse(stored);
+                if (data.token === payload.token) {
+                  log('✅ Parent confirmed token reception');
+                  parentConfirmed = true;
+                  clearInterval(retryInterval);
+                  
+                  // Fermer la popup après confirmation
+                  setTimeout(() => {
+                    log('Closing popup after confirmation');
+                    window.close();
+                  }, 1000);
+                }
+              }
+            } catch (e) {
+              log('Could not verify parent storage: ' + e.message);
+            }
+          }, 100);
         } catch (error) {
-          console.error('[DECAP AUTH] Error sending postMessage:', error);
+          log('Error sending postMessage: ' + error.message);
         }
-      } else {
-        console.warn('[DECAP AUTH] No window.opener available');
-      }
-      
-      // Retry jusqu'à ce que le parent confirme ou timeout
-      if (messageAttempts < maxAttempts) {
-        setTimeout(sendAuthMessage, 200);
+      } else if (!window.opener) {
+        log('No window.opener available');
       }
     }
 
@@ -102,36 +130,61 @@ export default async function handler(req, res) {
     try {
       localStorage.setItem("decap-cms-user", JSON.stringify(payload));
       localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
-      console.log('[DECAP AUTH] Token stored in localStorage');
+      log('Token stored in popup localStorage');
     } catch (err) {
-      console.error('[DECAP AUTH] Error storing in localStorage:', err);
+      log('Error storing in popup localStorage: ' + err.message);
     }
 
-    /* Démarrer l'envoi de messages */
-    setTimeout(sendAuthMessage, 100);
+    /* Démarrer l'envoi de messages avec retry */
+    log('Starting message retry system');
+    sendAuthMessage(); // Premier envoi immédiat
+    
+    retryInterval = setInterval(() => {
+      if (messageAttempts >= maxAttempts || parentConfirmed) {
+        clearInterval(retryInterval);
+        if (!parentConfirmed) {
+          log('❌ Max attempts reached without confirmation');
+          // Forcer le reload du parent en dernier recours
+          try {
+            if (window.opener) {
+              window.opener.location.reload();
+              log('Forced parent reload');
+            }
+          } catch (err) {
+            log('Could not force parent reload: ' + err.message);
+          }
+        }
+        return;
+      }
+      sendAuthMessage();
+    }, 300);
 
     /* Forcer le reload de la page parent après un délai */
     setTimeout(() => {
-      console.log('[DECAP AUTH] Attempting to reload parent window');
-      try {
-        if (window.opener) {
-          window.opener.location.reload();
+      if (!parentConfirmed) {
+        log('Attempting to reload parent window (fallback)');
+        try {
+          if (window.opener) {
+            window.opener.location.reload();
+          }
+        } catch (err) {
+          log('Could not reload parent: ' + err.message);
         }
-      } catch (err) {
-        console.warn('[DECAP AUTH] Could not reload parent:', err);
       }
-    }, 1000);
+    }, 2000);
 
-    /* Fermer la popup après un délai */
+    /* Fermer la popup après 5 secondes (temps de diagnostic) */
     setTimeout(() => {
-      console.log('[DECAP AUTH] Closing popup window');
-      if (window.opener) {
-        window.close();
-      } else {
-        // Si pas d'opener, rediriger vers l'admin
-        window.location.href = "/blog-admin/";
+      if (!parentConfirmed) {
+        log('Closing popup after timeout');
+        if (window.opener) {
+          window.close();
+        } else {
+          // Si pas d'opener, rediriger vers l'admin
+          window.location.href = "/blog-admin/";
+        }
       }
-    }, 1500);
+    }, 5000);
   })();
   </script>
 </body>
