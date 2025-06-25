@@ -1,4 +1,4 @@
-export default async function handler(req) {
+export default async function handler(req: Request): Promise<Response> {
   const body = JSON.stringify({
     id: process.env.CMS_GITHUB_CLIENT_ID || 'MISSING',
     secret: process.env.CMS_GITHUB_CLIENT_SECRET
@@ -11,7 +11,6 @@ export default async function handler(req) {
   });
 
   return new Response(body, {
-    status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
 }
