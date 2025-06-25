@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -71,30 +72,67 @@
       console.log('[DECAP] Message listener attached to window');
     }
 
-    // Initialiser Decap CMS
+    // Initialiser Decap CMS avec gestion d'erreur
     function initializeCMS() {
       console.log('[DECAP] Initializing CMS');
       
       fetch('/blog-admin/config.yml')
         .then(r => r.text())
         .then(cfg => {
-          console.log('[DECAP] Config loaded, calling CMS.init()');
-          CMS.init({ config: cfg, configType: 'yaml' });
+          console.log('[DECAP] Config loaded:', cfg);
+          console.log('[DECAP] Calling CMS.init()');
           
-          // Vérifier le statut d'auth après l'init
-          setTimeout(() => {
-            const authStatus = checkExistingAuth();
-            console.log('[DECAP] Post-init auth status:', !!authStatus);
+          try {
+            CMS.init({ config: cfg, configType: 'yaml' });
             
-            if (authStatus) {
-              console.log('[DECAP] ✅ User should be authenticated');
-            } else {
-              console.log('[DECAP] ❌ No authentication found');
+            // Brancher l'écoute d'erreur APRÈS l'init
+            if (window.CMS && typeof CMS.on === 'function') {
+              CMS.on('error', ({ error }) => {
+                console.error('[DECAP-CORE ERROR]', error);
+                alert('Decap config error: ' + error.message);
+              });
+              console.log('[DECAP] Error listener attached');
             }
-          }, 1000);
+            
+            // Diagnostic post-init
+            setTimeout(() => {
+              const authStatus = checkExistingAuth();
+              console.log('[DECAP] Post-init auth status:', !!authStatus);
+              
+              if (authStatus) {
+                console.log('[DECAP] ✅ User should be authenticated');
+                
+                // Diagnostiquer l'état Decap
+                if (typeof CMS.getState === 'function') {
+                  try {
+                    const state = CMS.getState();
+                    console.log('[DECAP] CMS State:', state);
+                    if (state && typeof state.get === 'function') {
+                      const collections = state.get('collections');
+                      console.log('[DECAP] Collections state:', collections ? collections.toJS() : 'undefined');
+                    }
+                  } catch (stateErr) {
+                    console.warn('[DECAP] Could not get CMS state:', stateErr);
+                  }
+                }
+                
+                // Vérifier si l'UI est montée
+                const ncRoot = document.getElementById('nc-root');
+                console.log('[DECAP] #nc-root content:', ncRoot ? ncRoot.innerHTML.length + ' chars' : 'not found');
+                
+              } else {
+                console.log('[DECAP] ❌ No authentication found');
+              }
+            }, 2000);
+            
+          } catch (initErr) {
+            console.error('[DECAP] CMS.init() error:', initErr);
+            alert('Erreur lors de l\'initialisation de Decap CMS: ' + initErr.message);
+          }
         })
         .catch(err => {
-          console.error('[DECAP] Config.yml error:', err);
+          console.error('[DECAP] Config.yml fetch error:', err);
+          alert('Erreur lors du chargement de config.yml: ' + err.message);
         });
     }
 
