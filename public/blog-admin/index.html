@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,6 +7,8 @@
   <link rel="icon" href="/lovable-uploads/aad9910b-4e2b-46cf-933a-002fa4205756.png" />
 </head>
 <body>
+  <!-- Conteneur pour l'interface Decap CMS -->
+  <div id="nc-root"></div>
 
   <!-- 1. ON GARDE le flag : Décap n'auto-initialisera pas -->
   <script>
@@ -104,6 +105,7 @@
       console.log('[DECAP] LocalStorage decap-cms-user:', localStorage.getItem('decap-cms-user'));
       console.log('[DECAP] LocalStorage netlify-cms-user:', localStorage.getItem('netlify-cms-user'));
       console.log('[DECAP] CMS object available:', typeof window.CMS !== 'undefined');
+      console.log('[DECAP] #nc-root element present:', !!document.getElementById('nc-root'));
       console.log('[DECAP] === END DIAGNOSTIC ===');
     }
 
