@@ -15,13 +15,13 @@ export default function handler(req, res) {
   // URL de callback
   const redirectUri = `${siteUrl}/api/auth/callback`;
   
-  // Construire l'URL d'autorisation GitHub avec scope étendu
+  // Construire l'URL d'autorisation GitHub avec scopes pour Decap CMS
   const authUrl = new URL('https://github.com/login/oauth/authorize');
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
-  authUrl.searchParams.set('scope', 'public_repo read:user'); // Ajout du scope read:user
+  authUrl.searchParams.set('scope', 'repo read:user'); // Scopes requis pour Decap CMS
   
-  console.log('[OAUTH] Redirecting to GitHub with scopes: public_repo read:user');
+  console.log('[OAUTH] Redirecting to GitHub with scopes: repo read:user');
   
   // Redirection vers GitHub
   res.redirect(302, authUrl.toString());
