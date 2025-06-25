@@ -60,34 +60,33 @@ export default async function handler(req, res) {
 
 <script>
 (function () {
-  /* Objet complet attendu par Decap CMS */
+  /* Jeton + infos complètes que Decap attend */
   const payload = {
     token: "${tokenData.access_token}",
-    provider: "github"
+    provider: "github",
+    expires_at: Math.floor(Date.now() / 1000) + 3600   // +1 h en secondes
   };
 
-  /* 1 — postMessage normal */
+  /* Envoi normal à la fenêtre parente */
   if (window.opener) {
     window.opener.postMessage(
       "authorization:github:success:" + JSON.stringify(payload),
-      "*"          // accepte prod + previews
+      "*"
     );
   }
 
-  /* 2 — Fallback : on écrit la même valeur dans localStorage */
+  /* Fallback : on stocke la même chose localement */
   try {
-    localStorage.setItem("decap-cms-user",  JSON.stringify(payload));   // clé Décap ≥ 3
-    localStorage.setItem("netlify-cms-user", JSON.stringify(payload));  // rétro-compat
-  } catch (_) { /* quota errors ignorés */ }
+    localStorage.setItem("decap-cms-user",  JSON.stringify(payload));
+    localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
+  } catch (_) {}
 
-  /* 3 — Fin du flux */
-  if (window.opener) {
-    window.close();
-  } else {
-    window.location.href = "/blog-admin/";
-  }
+  /* Fin de la popup */
+  if (window.opener) window.close();
+  else window.location.href = "/blog-admin/";
 })();
 </script>
+
 
 </body>
 </html>`;
