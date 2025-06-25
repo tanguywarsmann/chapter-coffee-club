@@ -8,14 +8,16 @@
 </head>
 <body>
   <!-- Décap CMS -->
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script src="https://unpkg.com/decap-cms@^3.6.4/dist/decap-cms.js"></script>
 
-  <!-- Charge config.yml puis lance Décap -->
+  <!-- UNE seule init, après chargement du YAML -->
   <script>
     fetch('/blog-admin/config.yml')
       .then(r => r.text())
-      .then(cfg => CMS.init({ config: cfg, configType: 'yaml' }))
-      .catch(err => console.error('[Decap] erreur chargement config.yml :', err));
+      .then(cfg => {
+        CMS.init({ config: cfg, configType: 'yaml' });
+      })
+      .catch(err => console.error('[Decap] config.yml error :', err));
   </script>
 </body>
 </html>
