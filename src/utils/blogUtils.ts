@@ -23,7 +23,11 @@ function parseFrontmatter(content: string): { frontmatter: BlogPostFrontmatter; 
   }
 
   const [, frontmatterStr, body] = match;
-  const frontmatter: BlogPostFrontmatter = {};
+  const frontmatter: BlogPostFrontmatter = {
+    title: 'Sans titre',
+    date: new Date().toISOString().split('T')[0],
+    published: true
+  };
   
   // Parse YAML-like frontmatter
   frontmatterStr.split('\n').forEach(line => {
