@@ -78,9 +78,12 @@ export default async function handler(req, res) {
   }
 
   /* ② — Fallback : on écrit la même info dans localStorage  */
-  try {
-    localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
-  } catch (_) { /* ignore quota errors */ }
+try {
+  // clé utilisée par Decap CMS 3
+  localStorage.setItem('decap-cms-user', JSON.stringify(payload));
+  // compatibilité avec très anciennes versions (Netlify CMS 2)
+  localStorage.setItem('netlify-cms-user', JSON.stringify(payload));
+} catch (_) { /* ignore quota errors */ }
 
   /* ③ — Ferme la popup ou redirige vers l’admin */
   if (window.opener) {
