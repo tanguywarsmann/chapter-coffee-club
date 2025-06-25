@@ -8,22 +8,18 @@
 </head>
 <body>
 
-  <!-- 1) ON GARDE le flag  -->
-  <script>window.CMS_MANUAL_INIT = true;</script>
-
-  <!-- 2) On charge Décap CMS -->
+  <!-- Charge Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.6.4/dist/decap-cms.js"></script>
 
-  <!-- 3) On charge le YAML PUIS on appelle CMS.init() UNE SEULE FOIS -->
+  <!-- Charge le YAML puis lance Decap (une seule initialisation) -->
   <script>
     fetch('/blog-admin/config.yml')
       .then(r => r.text())
       .then(cfg => {
-        CMS.init({ config: cfg, configType: 'yaml' });   // ← unique appel
+        CMS.init({ config: cfg, configType: 'yaml' });   // ← unique init
       })
       .catch(err => console.error('[Decap] config.yml error :', err));
   </script>
 
-  <!-- 4) AUCUN autre CMS.init, AUCUN script fallback -->
 </body>
 </html>
