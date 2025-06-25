@@ -8,18 +8,22 @@
 </head>
 <body>
 
-  <!-- Charge Decap CMS -->
+  <!-- 1. ON GARDE le flag : Décap n’auto-initialisera pas -->
+  <script>window.CMS_MANUAL_INIT = true;</script>
+
+  <!-- 2. On charge Décap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.6.4/dist/decap-cms.js"></script>
 
-  <!-- Charge le YAML puis lance Decap (une seule initialisation) -->
+  <!-- 3. On charge le YAML PUIS on appelle CMS.init() **une seule fois** -->
   <script>
     fetch('/blog-admin/config.yml')
       .then(r => r.text())
       .then(cfg => {
-        CMS.init({ config: cfg, configType: 'yaml' });   // ← unique init
+        CMS.init({ config: cfg, configType: 'yaml' });   // ← unique appel
       })
       .catch(err => console.error('[Decap] config.yml error :', err));
   </script>
 
+  <!-- 4. AUCUN autre CMS.init, AUCUN script fallback, AUCUN reload forcé -->
 </body>
 </html>
