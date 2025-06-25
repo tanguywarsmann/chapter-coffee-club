@@ -3,8 +3,6 @@ backend:
   name: github
   repo: tanguywarsmann/chapter-coffee-club
   branch: main
-  base_url: /api
-  auth_endpoint: auth
 
 media_folder: "public/images/blog"
 public_folder: "/images/blog"
