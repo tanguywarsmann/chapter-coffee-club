@@ -6,6 +6,7 @@ import path from 'path'
 import { componentTagger } from 'lovable-tagger'
 import { VitePWA } from 'vite-plugin-pwa'
 import { compression } from 'vite-plugin-compression2'
+import Markdown from 'vite-plugin-md'
 
 export default defineConfig(({ mode }) => ({
   server: { 
@@ -18,6 +19,16 @@ export default defineConfig(({ mode }) => ({
   },
 
   plugins: [
+    // Plugin Markdown pour parser les fichiers .md
+    Markdown({
+      headEnabled: true,
+      markdownItOptions: {
+        html: true,
+        linkify: true,
+        typographer: true,
+      },
+    }),
+
     // PWA avec stratégie de mise à jour proactive
     VitePWA({
       registerType: 'prompt',

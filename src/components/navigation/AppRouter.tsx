@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +11,8 @@ import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
 
 // Non-critical components loaded with React.lazy
 const BookPage = lazy(() => import("@/pages/BookPage"));
@@ -64,8 +67,9 @@ export function AppRouter() {
   // Central navigation logic
   useEffect(() => {
     if (!isLoading && isInitialized && isDocumentReady) {
-      // Ne pas rediriger si on est sur une page de livre, d'auth ou de reset password
+      // Ne pas rediriger si on est sur une page publique (blog, livre, auth, reset password)
       if (location.pathname.startsWith("/books/") || 
+          location.pathname.startsWith("/blog") || 
           location.pathname === "/auth" || 
           location.pathname === "/" ||
           location.pathname === "/reset-password") {
@@ -117,6 +121,10 @@ export function AppRouter() {
             <ResetPassword />
           </Suspense>
         } />
+        
+        {/* Routes publiques du blog */}
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         
         <Route path="/home" element={
           <AuthGuard>
