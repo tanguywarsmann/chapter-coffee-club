@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { blogService, BlogPost } from "@/services/blogService";
+import { blogService } from "@/services/blogService";
+import type { BlogPost } from "@/services/blogService";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
