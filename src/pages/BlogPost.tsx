@@ -1,3 +1,4 @@
+
 import { useParams, Link } from "react-router-dom";
 import { getBlogPost } from "@/utils/blogUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +48,7 @@ export default function BlogPost() {
     );
   }
 
-  const description = post.description || post.content.substring(0, 160) + "...";
+  const description = post.description || post.content.replace(/<[^>]*>/g, '').substring(0, 160) + "...";
   const publishDate = new Date(post.date).toISOString();
 
   const jsonLd = {
@@ -57,7 +58,7 @@ export default function BlogPost() {
     "description": description,
     "author": {
       "@type": "Organization",
-      "name": "READ"
+      "name": post.author || "READ"
     },
     "publisher": {
       "@type": "Organization",
@@ -101,7 +102,7 @@ export default function BlogPost() {
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
               <Link to="/blog">
-                <Button variant="ghost" className="text-coffee-dark hover:text-coffee-darker">
+                <Button variant="ghost" className="text-white hover:text-logo-accent">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Retour au blog
                 </Button>
@@ -147,17 +148,19 @@ export default function BlogPost() {
                 </CardHeader>
                 
                 <CardContent>
-                  <div className="prose prose-lg prose-coffee max-w-none prose-headings:text-coffee-darker prose-p:text-coffee-darker prose-strong:text-coffee-darker prose-a:text-coffee-dark hover:prose-a:text-coffee-darker">
-                    {post.content.split('\n').map((paragraph, index) => (
-                      paragraph.trim() ? (
-                        <p key={index} className="mb-4">
-                          {paragraph}
-                        </p>
-                      ) : (
-                        <br key={index} />
-                      )
-                    ))}
-                  </div>
+                  <div 
+                    className="prose prose-lg prose-coffee max-w-none 
+                               prose-headings:text-coffee-darker prose-headings:font-serif
+                               prose-p:text-coffee-darker prose-p:leading-relaxed
+                               prose-strong:text-coffee-darker prose-strong:font-semibold
+                               prose-a:text-coffee-dark hover:prose-a:text-coffee-darker prose-a:underline
+                               prose-blockquote:border-l-coffee-light prose-blockquote:text-coffee-dark
+                               prose-code:text-coffee-darker prose-code:bg-coffee-light prose-code:px-1 prose-code:rounded
+                               prose-pre:bg-coffee-light prose-pre:text-coffee-darker
+                               prose-ul:text-coffee-darker prose-ol:text-coffee-darker
+                               prose-li:text-coffee-darker"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  />
                 </CardContent>
               </Card>
             </article>

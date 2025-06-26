@@ -1,4 +1,3 @@
-
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -6,7 +5,7 @@ import path from 'path'
 import { componentTagger } from 'lovable-tagger'
 import { VitePWA } from 'vite-plugin-pwa'
 import { compression } from 'vite-plugin-compression2'
-import Markdown from 'vite-plugin-md'
+import markdown from 'vite-plugin-markdown'
 
 export default defineConfig(({ mode }) => ({
   server: { 
@@ -20,14 +19,7 @@ export default defineConfig(({ mode }) => ({
 
   plugins: [
     // Plugin Markdown pour parser les fichiers .md
-    Markdown({
-      headEnabled: true,
-      markdownItOptions: {
-        html: true,
-        linkify: true,
-        typographer: true,
-      },
-    }),
+    markdown({ mode: ['html', 'toc', 'react'] }),
 
     // PWA avec stratégie de mise à jour proactive
     VitePWA({

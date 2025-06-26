@@ -2,14 +2,13 @@
 /// <reference types="vite/client" />
 
 declare module '*.md' {
-  const attributes: { [key: string]: any };
-  const metadata: {
-    title: string;
-    date: string;
-    [key: string]: any;
-  };
+  import { ComponentType } from 'react';
+  
+  // Pour vite-plugin-markdown
+  const attributes: Record<string, any>;
   const html: string;
-  const default: string;
-  export { attributes, metadata, html };
-  export default default;
+  const toc: Array<{ anchor: string; level: number; text: string }>;
+  const ReactComponent: ComponentType;
+  
+  export { attributes, html, toc, ReactComponent };
 }
