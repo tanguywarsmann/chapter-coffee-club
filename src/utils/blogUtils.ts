@@ -3,7 +3,8 @@ import { BlogPost, BlogPostFrontmatter } from '@/types/blog';
 
 // Import all markdown files from content/blog using vite-plugin-markdown
 const blogModules = import.meta.glob('/content/blog/*.md', { 
-  eager: true
+  eager: true,
+  import: 'default'
 });
 
 function getSlugFromPath(path: string): string {
@@ -14,22 +15,35 @@ function getSlugFromPath(path: string): string {
 export function getBlogPosts(): BlogPost[] {
   const posts: BlogPost[] = [];
   
-  Object.entries(blogModules).forEach(([path, module]) => {
-    const { attributes, html } = module as { 
+  console.log('Blog modules loaded:', Object.keys(blogModules));
+  
+  Object.entries(blogModules).forEach(([path, moduleData]) => {
+    console.log('Processing file:', path);
+    console.log('Module data:', moduleData);
+    
+    // Avec vite-plugin-markdown, le module contient { attributes, html }
+    const module = moduleData as { 
       attributes: Record<string, any>; 
       html: string; 
     };
     
+    if (!module || !module.attributes) {
+      console.warn(`No attributes found for ${path}`);
+      return;
+    }
+    
     // Parse frontmatter attributes
     const frontmatter: BlogPostFrontmatter = {
-      title: attributes.title || 'Sans titre',
-      date: attributes.date || new Date().toISOString().split('T')[0],
-      published: attributes.published !== false,
-      description: attributes.description,
-      author: attributes.author,
-      tags: attributes.tags,
-      slug: attributes.slug
+      title: module.attributes.title || 'Sans titre',
+      date: module.attributes.date || new Date().toISOString().split('T')[0],
+      published: module.attributes.published !== false,
+      description: module.attributes.description,
+      author: module.attributes.author,
+      tags: module.attributes.tags,
+      slug: module.attributes.slug
     };
+    
+    console.log('Parsed frontmatter:', frontmatter);
     
     const slug = frontmatter.slug || getSlugFromPath(path);
     
@@ -38,10 +52,12 @@ export function getBlogPosts(): BlogPost[] {
       posts.push({
         ...frontmatter,
         slug,
-        content: html, // Use the parsed HTML directly
+        content: module.html || '', // Use the parsed HTML directly
       });
     }
   });
+
+  console.log('Final posts:', posts);
 
   // Sort by date (newest first)
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

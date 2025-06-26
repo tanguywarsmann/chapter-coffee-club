@@ -30,6 +30,9 @@ export default function BlogPost() {
 
   const post = getBlogPost(slug);
 
+  console.log('BlogPost - slug:', slug);
+  console.log('BlogPost - post found:', post);
+
   if (!post) {
     return (
       <div className="min-h-screen bg-logo-background flex items-center justify-center">
