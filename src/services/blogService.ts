@@ -11,6 +11,7 @@ export interface BlogPost {
   tags?: string[];
   published: boolean;
   image_url?: string;
+  image_alt?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +25,7 @@ export interface CreateBlogPostData {
   tags?: string[];
   published?: boolean;
   image_url?: string;
+  image_alt?: string;
 }
 
 export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {
@@ -132,6 +134,46 @@ export const blogService = {
 
     if (error) {
       console.error('Error deleting post:', error);
+      throw error;
+    }
+  },
+
+  // Upload d'image pour le blog
+  async uploadImage(file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Error uploading image:', uploadError);
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  },
+
+  // Supprimer une image du blog
+  async deleteImage(imageUrl: string): Promise<void> {
+    if (!imageUrl) return;
+
+    // Extraire le nom du fichier de l'URL
+    const urlParts = imageUrl.split('/');
+    const fileName = urlParts[urlParts.length - 1];
+
+    const { error } = await supabase.storage
+      .from('blog-images')
+      .remove([fileName]);
+
+    if (error) {
+      console.error('Error deleting image:', error);
       throw error;
     }
   }

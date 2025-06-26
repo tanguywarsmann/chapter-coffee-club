@@ -92,7 +92,8 @@ export default function BlogPost() {
     );
   }
 
-  const description = post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 160) + "...";
+  // Utiliser image_alt comme description de fallback si excerpt est absent
+  const description = post.excerpt || (post.image_alt && post.image_url ? post.image_alt : post.content.replace(/<[^>]*>/g, '').substring(0, 160) + "...");
   const publishDate = new Date(post.created_at).toISOString();
 
   const jsonLd = {
@@ -119,7 +120,8 @@ export default function BlogPost() {
     ...(post.image_url && {
       "image": {
         "@type": "ImageObject",
-        "url": post.image_url
+        "url": post.image_url,
+        ...(post.image_alt && { "description": post.image_alt })
       }
     })
   };
@@ -134,6 +136,7 @@ export default function BlogPost() {
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
         {post.image_url && <meta property="og:image" content={post.image_url} />}
+        {post.image_url && post.image_alt && <meta property="og:image:alt" content={post.image_alt} />}
         {post.image_url && <meta property="og:image:width" content="1200" />}
         {post.image_url && <meta property="og:image:height" content="630" />}
         <meta property="article:published_time" content={publishDate} />
@@ -145,6 +148,7 @@ export default function BlogPost() {
         <meta name="twitter:title" content={`${post.title} — READ Blog`} />
         <meta name="twitter:description" content={description} />
         {post.image_url && <meta name="twitter:image" content={post.image_url} />}
+        {post.image_url && post.image_alt && <meta name="twitter:image:alt" content={post.image_alt} />}
         <link rel="canonical" href={`https://vread.fr/blog/${post.slug}`} />
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
@@ -170,7 +174,7 @@ export default function BlogPost() {
                     <div className="mb-6 -mx-6 -mt-6">
                       <img 
                         src={post.image_url} 
-                        alt={post.title}
+                        alt={post.image_alt || post.title}
                         className="w-full h-64 object-cover rounded-t-lg"
                       />
                     </div>

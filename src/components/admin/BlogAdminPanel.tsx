@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { Edit, Plus, Save, Trash2, Eye } from 'lucide-react';
 import { blogService, BlogPost, CreateBlogPostData } from '@/services/blogService';
+import { ImageUpload } from './ImageUpload';
 
 export function BlogAdminPanel() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -29,7 +31,8 @@ export function BlogAdminPanel() {
     author: 'READ',
     tags: [],
     published: true,
-    image_url: ''
+    image_url: '',
+    image_alt: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -80,7 +83,8 @@ export function BlogAdminPanel() {
       author: 'READ',
       tags: [],
       published: true,
-      image_url: ''
+      image_url: '',
+      image_alt: ''
     });
     setIsEditing(true);
   };
@@ -95,9 +99,26 @@ export function BlogAdminPanel() {
       author: post.author || 'READ',
       tags: post.tags || [],
       published: post.published,
-      image_url: post.image_url || ''
+      image_url: post.image_url || '',
+      image_alt: post.image_alt || ''
     });
     setIsEditing(true);
+  };
+
+  const handleImageChange = (imageUrl: string, imageAlt: string) => {
+    setFormData(prev => ({
+      ...prev,
+      image_url: imageUrl,
+      image_alt: imageAlt
+    }));
+  };
+
+  const handleImageRemove = () => {
+    setFormData(prev => ({
+      ...prev,
+      image_url: '',
+      image_alt: ''
+    }));
   };
 
   const handleSave = async () => {
@@ -175,18 +196,12 @@ export function BlogAdminPanel() {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="image_url">URL de l'image principale</Label>
-            <Input
-              id="image_url"
-              value={formData.image_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-              placeholder="https://example.com/image.jpg"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Image utilisée pour le SEO et les réseaux sociaux (recommandé : 1200x630px)
-            </p>
-          </div>
+          <ImageUpload
+            currentImageUrl={formData.image_url}
+            currentImageAlt={formData.image_alt}
+            onImageChange={handleImageChange}
+            onImageRemove={handleImageRemove}
+          />
 
           <div>
             <Label htmlFor="excerpt">Extrait</Label>
