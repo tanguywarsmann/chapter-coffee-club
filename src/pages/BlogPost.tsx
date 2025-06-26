@@ -115,7 +115,13 @@ export default function BlogPost() {
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": `https://vread.fr/blog/${post.slug}`
-    }
+    },
+    ...(post.image_url && {
+      "image": {
+        "@type": "ImageObject",
+        "url": post.image_url
+      }
+    })
   };
 
   return (
@@ -127,14 +133,18 @@ export default function BlogPost() {
         <meta property="og:description" content={description} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
+        {post.image_url && <meta property="og:image" content={post.image_url} />}
+        {post.image_url && <meta property="og:image:width" content="1200" />}
+        {post.image_url && <meta property="og:image:height" content="630" />}
         <meta property="article:published_time" content={publishDate} />
         {post.author && <meta property="article:author" content={post.author} />}
         {post.tags && post.tags.map(tag => (
           <meta key={tag} property="article:tag" content={tag} />
         ))}
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content={post.image_url ? "summary_large_image" : "summary"} />
         <meta name="twitter:title" content={`${post.title} — READ Blog`} />
         <meta name="twitter:description" content={description} />
+        {post.image_url && <meta name="twitter:image" content={post.image_url} />}
         <link rel="canonical" href={`https://vread.fr/blog/${post.slug}`} />
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
@@ -156,6 +166,16 @@ export default function BlogPost() {
             <article>
               <Card className="border-coffee-light">
                 <CardHeader className="pb-6">
+                  {post.image_url && (
+                    <div className="mb-6 -mx-6 -mt-6">
+                      <img 
+                        src={post.image_url} 
+                        alt={post.title}
+                        className="w-full h-64 object-cover rounded-t-lg"
+                      />
+                    </div>
+                  )}
+                  
                   <CardTitle className="text-3xl font-serif font-bold text-coffee-darker mb-4">
                     {post.title}
                   </CardTitle>

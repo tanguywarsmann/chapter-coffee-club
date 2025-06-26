@@ -10,6 +10,7 @@ export interface BlogPost {
   author?: string;
   tags?: string[];
   published: boolean;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +23,7 @@ export interface CreateBlogPostData {
   author?: string;
   tags?: string[];
   published?: boolean;
+  image_url?: string;
 }
 
 export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {

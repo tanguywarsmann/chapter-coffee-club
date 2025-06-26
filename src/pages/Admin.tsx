@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -16,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 import { texts } from "@/i18n/texts";
 import { supabase } from "@/integrations/supabase/client";
+import { VercelWebhook } from "@/components/admin/VercelWebhook";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -126,6 +126,9 @@ export default function Admin() {
 
             {/* Only render debug panel on desktop */}
             {!isMobile && <AdminDebugPanel />}
+            
+            {/* Add Vercel webhook configuration */}
+            <VercelWebhook />
 
             <Card className="border-coffee-light">
               <CardHeader className="pb-3">
