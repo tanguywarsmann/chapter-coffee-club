@@ -1,14 +1,41 @@
 
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getBlogPosts } from "@/utils/blogUtils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { blogService, BlogPost } from "@/services/blogService";
 
 export default function Blog() {
-  const posts = getBlogPosts();
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const data = await blogService.getPublishedPosts();
+        setPosts(data);
+      } catch (error) {
+        console.error('Error loading blog posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-logo-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-white">Chargement des articles...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -54,7 +81,7 @@ export default function Blog() {
             ) : (
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <Card key={post.slug} className="border-coffee-light hover:shadow-lg transition-shadow">
+                  <Card key={post.id} className="border-coffee-light hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex-1">
@@ -66,9 +93,9 @@ export default function Blog() {
                               {post.title}
                             </Link>
                           </CardTitle>
-                          {post.description && (
+                          {post.excerpt && (
                             <CardDescription className="text-base">
-                              {post.description}
+                              {post.excerpt}
                             </CardDescription>
                           )}
                         </div>
@@ -77,8 +104,8 @@ export default function Blog() {
                       <div className="flex flex-wrap items-center gap-4 text-sm text-coffee-dark">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <time dateTime={post.date}>
-                            {new Date(post.date).toLocaleDateString('fr-FR', {
+                          <time dateTime={post.created_at}>
+                            {new Date(post.created_at).toLocaleDateString('fr-FR', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric'

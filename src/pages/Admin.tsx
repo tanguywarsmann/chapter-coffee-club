@@ -5,6 +5,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminBookList } from "@/components/admin/AdminBookList";
 import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
+import { BlogAdminPanel } from "@/components/admin/BlogAdminPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -130,7 +131,7 @@ export default function Admin() {
               <CardHeader className="pb-3">
                 <CardTitle>{texts.adminDashboard}</CardTitle>
                 <CardDescription>
-                  Gérer les livres et vérifier le statut des questions de validation
+                  Gérer les livres, articles de blog et vérifier le statut des questions de validation
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -140,6 +141,10 @@ export default function Admin() {
                       <span className="w-4 h-4 mr-2">📚</span>
                       {texts.bookValidation}
                     </TabsTrigger>
+                    <TabsTrigger value="blog" className="flex items-center">
+                      <span className="w-4 h-4 mr-2">📝</span>
+                      Blog
+                    </TabsTrigger>
                     <TabsTrigger value="settings" className="flex items-center">
                       <span className="w-4 h-4 mr-2">⚙️</span>
                       {texts.settings}
@@ -148,6 +153,10 @@ export default function Admin() {
 
                   <TabsContent value="books">
                     <AdminBookList />
+                  </TabsContent>
+
+                  <TabsContent value="blog">
+                    <BlogAdminPanel />
                   </TabsContent>
 
                   <TabsContent value="settings">

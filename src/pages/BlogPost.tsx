@@ -1,16 +1,54 @@
 
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getBlogPost } from "@/utils/blogUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { blogService, BlogPost } from "@/services/blogService";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  
-  if (!slug) {
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    const loadPost = async () => {
+      if (!slug) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await blogService.getPostBySlug(slug);
+        if (data) {
+          setPost(data);
+        } else {
+          setNotFound(true);
+        }
+      } catch (error) {
+        console.error('Error loading blog post:', error);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPost();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-logo-background flex items-center justify-center">
+        <div className="text-white">Chargement de l'article...</div>
+      </div>
+    );
+  }
+
+  if (notFound || !post) {
     return (
       <div className="min-h-screen bg-logo-background flex items-center justify-center">
         <Card className="border-coffee-light">
@@ -28,31 +66,8 @@ export default function BlogPost() {
     );
   }
 
-  const post = getBlogPost(slug);
-
-  console.log('BlogPost - slug:', slug);
-  console.log('BlogPost - post found:', post);
-
-  if (!post) {
-    return (
-      <div className="min-h-screen bg-logo-background flex items-center justify-center">
-        <Card className="border-coffee-light">
-          <CardContent className="text-center py-12">
-            <p className="text-coffee-dark">Article non trouvé.</p>
-            <Link to="/blog">
-              <Button className="mt-4" variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour au blog
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const description = post.description || post.content.replace(/<[^>]*>/g, '').substring(0, 160) + "...";
-  const publishDate = new Date(post.date).toISOString();
+  const description = post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 160) + "...";
+  const publishDate = new Date(post.created_at).toISOString();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -69,7 +84,7 @@ export default function BlogPost() {
       "url": "https://vread.fr"
     },
     "datePublished": publishDate,
-    "dateModified": publishDate,
+    "dateModified": new Date(post.updated_at).toISOString(),
     "url": `https://vread.fr/blog/${post.slug}`,
     "mainEntityOfPage": {
       "@type": "WebPage",
@@ -122,8 +137,8 @@ export default function BlogPost() {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-coffee-dark">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      <time dateTime={post.date}>
-                        {new Date(post.date).toLocaleDateString('fr-FR', {
+                      <time dateTime={post.created_at}>
+                        {new Date(post.created_at).toLocaleDateString('fr-FR', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
@@ -146,6 +161,14 @@ export default function BlogPost() {
                           {tag}
                         </Badge>
                       ))}
+                    </div>
+                  )}
+                  
+                  {post.excerpt && (
+                    <div className="mt-4 p-4 bg-coffee-light/50 rounded-lg">
+                      <p className="text-coffee-darker font-medium italic">
+                        {post.excerpt}
+                      </p>
                     </div>
                   )}
                 </CardHeader>
