@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { getBlogPosts } from "@/utils/blogUtils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, User, Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 
 export default function Blog() {
@@ -26,9 +27,19 @@ export default function Blog() {
       
       <div className="min-h-screen bg-logo-background">
         <div className="container mx-auto px-4 py-8">
+          {/* Bouton retour à l'accueil */}
+          <div className="mb-6">
+            <Link to="/">
+              <Button variant="ghost" className="text-white hover:text-logo-accent">
+                <Home className="h-4 w-4 mr-2" />
+                Retour à l'accueil
+              </Button>
+            </Link>
+          </div>
+
           <header className="text-center mb-12">
             <h1 className="text-4xl font-serif font-bold text-white mb-4">Blog READ</h1>
-            <p className="text-lg text-logo-text max-w-2xl mx-auto">
+            <p className="text-lg text-white/90 max-w-2xl mx-auto">
               Découvrez nos articles sur la lecture, les livres et la culture littéraire
             </p>
           </header>

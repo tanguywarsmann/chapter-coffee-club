@@ -21,16 +21,6 @@ export function AppHeader() {
         
         <DesktopNav isAdmin={isAdmin} />
         
-        {/* Ajout du lien Blog */}
-        <nav className="hidden md:flex items-center space-x-4">
-          <Link 
-            to="/blog" 
-            className="text-sm font-medium text-logo-text hover:text-logo-accent transition-colors"
-          >
-            Blog
-          </Link>
-        </nav>
-        
         {user ? (
           <AvatarDropdown />
         ) : (

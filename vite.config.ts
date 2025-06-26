@@ -1,4 +1,5 @@
 
+
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
@@ -23,7 +24,7 @@ export default defineConfig(({ mode }) => ({
 
   plugins: [
     // Plugin Markdown pour parser les fichiers .md
-    markdown({ mode: 'html' }),
+    markdown({ mode: ['html'] }),
 
     // PWA avec stratégie de mise à jour proactive
     VitePWA({
@@ -107,3 +108,4 @@ export default defineConfig(({ mode }) => ({
     }
   }
 }))
+
