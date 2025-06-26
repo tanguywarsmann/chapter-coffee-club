@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { getBlogPosts } from "@/utils/blogUtils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +27,8 @@ export default function Blog() {
       <div className="min-h-screen bg-logo-background">
         <div className="container mx-auto px-4 py-8">
           <header className="text-center mb-12">
-            <h1 className="text-4xl font-serif font-bold text-coffee-darker mb-4">Blog READ</h1>
-            <p className="text-lg text-coffee-dark max-w-2xl mx-auto">
+            <h1 className="text-4xl font-serif font-bold text-white mb-4">Blog READ</h1>
+            <p className="text-lg text-logo-text max-w-2xl mx-auto">
               Découvrez nos articles sur la lecture, les livres et la culture littéraire
             </p>
           </header>

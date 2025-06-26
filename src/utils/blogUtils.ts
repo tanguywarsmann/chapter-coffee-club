@@ -52,7 +52,7 @@ function parseFrontmatter(content: string): { frontmatter: BlogPostFrontmatter; 
     }
   });
 
-  return { frontmatter, body };
+  return { frontmatter, body: body.trim() };
 }
 
 function getSlugFromPath(path: string): string {
