@@ -31,6 +31,7 @@ export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {
 export const blogService = {
   // Récupérer tous les articles publiés
   async getPublishedPosts(): Promise<BlogPost[]> {
+    console.log('Fetching published posts...');
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -42,11 +43,13 @@ export const blogService = {
       throw error;
     }
 
+    console.log('Published posts fetched:', data);
     return data || [];
   },
 
   // Récupérer tous les articles (pour l'admin)
   async getAllPosts(): Promise<BlogPost[]> {
+    console.log('Fetching all posts...');
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -57,11 +60,13 @@ export const blogService = {
       throw error;
     }
 
+    console.log('All posts fetched:', data);
     return data || [];
   },
 
   // Récupérer un article par slug
   async getPostBySlug(slug: string): Promise<BlogPost | null> {
+    console.log('Fetching post by slug:', slug);
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -74,6 +79,7 @@ export const blogService = {
       throw error;
     }
 
+    console.log('Post fetched by slug:', data);
     return data;
   },
 

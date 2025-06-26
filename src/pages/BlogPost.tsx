@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ export default function BlogPost() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -23,14 +25,20 @@ export default function BlogPost() {
       }
 
       try {
+        console.log('Loading blog post with slug:', slug);
         const data = await blogService.getPostBySlug(slug);
+        console.log('Blog post loaded:', data);
+        
         if (data) {
           setPost(data);
+          setNotFound(false);
         } else {
           setNotFound(true);
         }
+        setError(null);
       } catch (error) {
         console.error('Error loading blog post:', error);
+        setError('Erreur lors du chargement de l\'article');
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -44,6 +52,24 @@ export default function BlogPost() {
     return (
       <div className="min-h-screen bg-logo-background flex items-center justify-center">
         <div className="text-white">Chargement de l'article...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-logo-background flex items-center justify-center">
+        <Card className="border-coffee-light">
+          <CardContent className="text-center py-12">
+            <p className="text-coffee-dark">{error}</p>
+            <Link to="/blog">
+              <Button className="mt-4" variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour au blog
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -181,10 +207,11 @@ export default function BlogPost() {
                                prose-strong:text-coffee-darker prose-strong:font-semibold
                                prose-a:text-coffee-dark hover:prose-a:text-coffee-darker prose-a:underline
                                prose-blockquote:border-l-coffee-light prose-blockquote:text-coffee-dark
+                               prose-blockquote:bg-coffee-light/20 prose-blockquote:p-4 prose-blockquote:rounded-r-lg
                                prose-code:text-coffee-darker prose-code:bg-coffee-light prose-code:px-1 prose-code:rounded
                                prose-pre:bg-coffee-light prose-pre:text-coffee-darker
                                prose-ul:text-coffee-darker prose-ol:text-coffee-darker
-                               prose-li:text-coffee-darker"
+                               prose-li:text-coffee-darker prose-hr:border-coffee-light"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
                 </CardContent>

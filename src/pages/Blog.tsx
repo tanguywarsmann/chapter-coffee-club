@@ -6,19 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { blogService, BlogPost } from "@/services/blogService";
+import { blogService } from "@/services/blogService";
+import type { BlogPost } from "@/services/blogService";
 
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPosts = async () => {
       try {
+        console.log('Loading blog posts...');
         const data = await blogService.getPublishedPosts();
+        console.log('Blog posts loaded:', data);
         setPosts(data);
+        setError(null);
       } catch (error) {
         console.error('Error loading blog posts:', error);
+        setError('Erreur lors du chargement des articles');
       } finally {
         setLoading(false);
       }
@@ -32,6 +38,16 @@ export default function Blog() {
       <div className="min-h-screen bg-logo-background">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-white">Chargement des articles...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-logo-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-white">{error}</div>
         </div>
       </div>
     );
@@ -94,14 +110,14 @@ export default function Blog() {
                             </Link>
                           </CardTitle>
                           {post.excerpt && (
-                            <CardDescription className="text-base">
+                            <CardDescription className="text-base text-coffee-dark">
                               {post.excerpt}
                             </CardDescription>
                           )}
                         </div>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-coffee-dark">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-coffee-dark mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           <time dateTime={post.created_at}>
