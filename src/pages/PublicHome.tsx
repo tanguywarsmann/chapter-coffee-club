@@ -32,14 +32,14 @@ export default function PublicHome() {
   return (
     <>
       <Helmet>
-        <title>READ — Reprends goût à la lecture, page après page</title>
+        <title>READ — L'appli qui t'accompagne dans ta lecture, page après page</title>
         <meta name="description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
-        <meta property="og:title" content="READ — Reprends goût à la lecture, page après page" />
+        <meta property="og:title" content="READ — L'appli qui t'accompagne dans ta lecture, page après page" />
         <meta property="og:description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://vread.fr/" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="READ — Reprends goût à la lecture, page après page" />
+        <meta name="twitter:title" content="READ — L'appli qui t'accompagne dans ta lecture, page après page" />
         <meta name="twitter:description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive." />
         <link rel="canonical" href="https://vread.fr/" />
         
@@ -61,23 +61,46 @@ export default function PublicHome() {
         </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-logo-background via-logo-background to-coffee-light">
-        {/* Hero Section */}
-        <section className="relative py-20 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
+        {/* Hero Section avec Logo */}
+        <section className="relative py-16 px-4">
           <div className="container mx-auto text-center max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">
-              Reprends goût à la lecture,<br />
-              <span className="text-logo-accent">page après page</span>
+            {/* Logo READ mis en avant */}
+            <div className="mb-8 flex justify-center">
+              <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
+                <img 
+                  src="/READ-logo.png" 
+                  alt="READ Logo" 
+                  className="h-20 w-20 mx-auto"
+                />
+              </div>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight">
+              L'appli qui t'accompagne<br />
+              dans ta lecture,<br />
+              <span className="text-reed-light">page après page</span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
-              READ transforme la lecture en une expérience progressive et gratifiante. 
-              Redécouvrez les classiques littéraires avec une approche moderne.
+            
+            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Relevez des défis, suivez vos progrès, lisez à votre rythme. 
+              Redécouvrez le plaisir de la lecture avec une approche moderne et bienveillante.
             </p>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background font-semibold" asChild>
+              <Button 
+                size="lg" 
+                className="bg-reed-light hover:bg-reed-secondary text-reed-darker font-semibold text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" 
+                asChild
+              >
                 <Link to="/auth">Commencer à lire</Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-logo-background" asChild>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white hover:text-reed-primary font-semibold text-lg px-8 py-4 rounded-full transition-all duration-300" 
+                asChild
+              >
                 <Link to="/blog">Découvrir le blog</Link>
               </Button>
             </div>
@@ -85,20 +108,20 @@ export default function PublicHome() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 px-4 bg-white/5 backdrop-blur">
+        <section className="py-16 px-4 bg-white/10 backdrop-blur-sm">
           <div className="container mx-auto max-w-6xl">
-            <h2 className="text-3xl font-serif font-bold text-center text-white mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-center text-white mb-12">
               Une nouvelle façon de lire
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {features.map((feature, index) => (
-                <Card key={index} className="bg-white/10 border-white/20 backdrop-blur">
-                  <CardHeader className="text-center">
-                    <feature.icon className="h-12 w-12 text-logo-accent mx-auto mb-4" />
-                    <CardTitle className="text-white">{feature.title}</CardTitle>
+                <Card key={index} className="bg-white/15 border-white/30 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                  <CardHeader className="text-center pb-4">
+                    <feature.icon className="h-12 w-12 text-reed-light mx-auto mb-4" />
+                    <CardTitle className="text-white text-lg">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-white/80 text-center">
+                    <CardDescription className="text-white/90 text-center leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -111,13 +134,17 @@ export default function PublicHome() {
         {/* CTA Section */}
         <section className="py-16 px-4">
           <div className="container mx-auto text-center max-w-3xl">
-            <h2 className="text-3xl font-serif font-bold text-white mb-6">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">
               Prêt à recommencer à lire ?
             </h2>
-            <p className="text-lg text-white/90 mb-8">
+            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
               Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec READ.
             </p>
-            <Button size="lg" className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background font-semibold" asChild>
+            <Button 
+              size="lg" 
+              className="bg-reed-light hover:bg-reed-secondary text-reed-darker font-semibold text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" 
+              asChild
+            >
               <Link to="/auth">Créer mon compte gratuit</Link>
             </Button>
           </div>
