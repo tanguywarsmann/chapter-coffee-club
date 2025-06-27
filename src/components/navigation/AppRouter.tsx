@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { AppFooter } from "@/components/layout/AppFooter";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { isPublicRoute, requiresAuth } from "@/utils/publicRoutes";
 import Home from "@/pages/Home";
@@ -92,9 +93,7 @@ export function AppRouter() {
   }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
 
   // Pour les routes publiques, ne pas afficher le loading si pas d'auth requise
-  if (isPublicRoute(location.pathname)) {
-    const isPublic = true;
-    
+  if (isPublicRoute(location.pathname)) {    
     return (
       <PageTransition key={location.pathname}>
         <Routes>          
@@ -242,6 +241,7 @@ export function AppRouter() {
           </Routes>
         </PageTransition>
       </main>
+      <AppFooter />
     </div>
   );
 }
