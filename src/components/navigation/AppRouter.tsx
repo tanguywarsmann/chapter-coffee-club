@@ -92,8 +92,11 @@ export function AppRouter() {
     }
   }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
 
-  // Pour les routes publiques, ne pas afficher le loading si pas d'auth requise
-  if (isPublicRoute(location.pathname)) {    
+  // Détermine si on affiche la version publique ou privée
+  const isPublic = isPublicRoute(location.pathname);
+  
+  // Pour les routes publiques
+  if (isPublic) {
     return (
       <PageTransition key={location.pathname}>
         <Routes>          
@@ -157,6 +160,7 @@ export function AppRouter() {
     return <LoadingFallback />;
   }
 
+  // Layout privé avec AppHeader et AppFooter
   return (
     <div className="min-h-screen flex flex-col">
       <AppHeader />
