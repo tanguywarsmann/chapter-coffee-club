@@ -6,7 +6,10 @@ import { Suspense, lazy } from "react";
 import { AuthGuard } from "../auth/AuthGuard";
 import { PageTransition } from "@/components/ui/page-transition";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { usePrefetch } from "@/hooks/usePrefetch";
+import { isPublicRoute, requiresAuth } from "@/utils/publicRoutes";
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Login from "@/pages/Login";
@@ -64,153 +67,182 @@ export function AppRouter() {
     }
   }, []);
 
-  // Central navigation logic
+  // Navigation logic - improved with public/private route handling
   useEffect(() => {
     if (!isLoading && isInitialized && isDocumentReady) {
-      // Ne pas rediriger si on est sur une page publique (blog, livre, auth, reset password)
-      if (location.pathname.startsWith("/books/") || 
-          location.pathname.startsWith("/blog") || 
-          location.pathname === "/auth" || 
-          location.pathname === "/" ||
-          location.pathname === "/reset-password") {
+      const currentPath = location.pathname;
+      
+      // Ne pas rediriger si on est sur une route publique
+      if (isPublicRoute(currentPath)) {
         return;
       }
       
-      const allowed = ["/home", "/discover", "/explore", "/reading-list", "/profile"];
-      
-      const isAllowedPath = allowed.some(path => 
-        location.pathname === path || 
-        location.pathname.startsWith(path + "/") ||
-        location.pathname.startsWith("/u/") ||
-        location.pathname.startsWith("/followers/") ||
-        location.pathname.startsWith("/achievements") ||
-        location.pathname.startsWith("/admin")
-      );
-      
-      if (!isAllowedPath) {
-        const target = "/";
-        navigate(target, { replace: true });
+      // Si l'utilisateur n'est pas connecté et tente d'accéder à une route privée
+      if (!user && requiresAuth(currentPath)) {
+        navigate("/auth", { replace: true });
         return;
       }
       
-      if (!user && !location.pathname.startsWith("/books/")) {
-        const target = "/auth";
-        navigate(target, { replace: true });
-        return;
-      }
-      
-      if (user && location.pathname === "/") {
-        const target = "/home";
-        navigate(target, { replace: true });
+      // Si l'utilisateur est connecté et sur la page d'accueil, rediriger vers /home
+      if (user && currentPath === "/") {
+        navigate("/home", { replace: true });
         return;
       }
     }
   }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
 
+  // Pour les routes publiques, ne pas afficher le loading si pas d'auth requise
+  if (isPublicRoute(location.pathname)) {
+    const isPublic = true;
+    
+    return (
+      <PageTransition key={location.pathname}>
+        <Routes>          
+          {/* Routes publiques avec layout public */}
+          <Route path="/" element={
+            <PublicLayout>
+              <Login />
+            </PublicLayout>
+          } />
+          
+          <Route path="/auth" element={
+            <PublicLayout>
+              <Auth />
+            </PublicLayout>
+          } />
+          
+          <Route path="/reset-password" element={
+            <PublicLayout>
+              <Suspense fallback={<GenericFallback />}>
+                <ResetPassword />
+              </Suspense>
+            </PublicLayout>
+          } />
+          
+          <Route path="/blog" element={
+            <PublicLayout>
+              <Blog />
+            </PublicLayout>
+          } />
+          
+          <Route path="/blog/:slug" element={
+            <PublicLayout>
+              <BlogPost />
+            </PublicLayout>
+          } />
+          
+          {/* Routes publiques pour les livres */}
+          <Route path="/books/:id" element={
+            <PublicLayout>
+              <Suspense fallback={<BookFallback />}>
+                <BookPage />
+              </Suspense>
+            </PublicLayout>
+          } />
+          
+          {/* Fallback pour routes non trouvées */}
+          <Route path="*" element={
+            <PublicLayout>
+              <Suspense fallback={<GenericFallback />}>
+                <NotFound />
+              </Suspense>
+            </PublicLayout>
+          } />
+        </Routes>
+      </PageTransition>
+    );
+  }
+
+  // Pour les routes privées, vérifier l'authentification
   if (isLoading || !isInitialized || !isDocumentReady) {
     return <LoadingFallback />;
   }
 
   return (
-    <PageTransition key={location.pathname}>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={
-          <Suspense fallback={<GenericFallback />}>
-            <ResetPassword />
-          </Suspense>
-        } />
-        
-        {/* Routes publiques du blog - SANS AuthGuard */}
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-        
-        <Route path="/home" element={
-          <AuthGuard>
-            <Home />
-          </AuthGuard>
-        } />
-        
-        <Route path="/books/:id" element={
-          <AuthGuard>
-            <Suspense fallback={<BookFallback />}>
-              <BookPage />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/profile/:userId?" element={
-          <AuthGuard>
-            <Suspense fallback={<ProfileFallback />}>
-              <Profile />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/u/:userId" element={
-          <AuthGuard>
-            <Suspense fallback={<ProfileFallback />}>
-              <PublicProfilePage />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/discover" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Discover />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/reading-list" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <ReadingList />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/explore" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Explore />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/achievements" element={
-          <AuthGuard>
-            <Suspense fallback={<GenericFallback />}>
-              <Achievements />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/followers/:type/:userId?" element={
-          <AuthGuard>
-            <Suspense fallback={<ListFallback />}>
-              <Followers />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="/admin" element={
-          <AuthGuard>
-            <Suspense fallback={<GenericFallback />}>
-              <Admin />
-            </Suspense>
-          </AuthGuard>
-        } />
-        
-        <Route path="*" element={
-          <Suspense fallback={<GenericFallback />}>
-            <NotFound />
-          </Suspense>
-        } />
-      </Routes>
-    </PageTransition>
+    <div className="min-h-screen flex flex-col">
+      <AppHeader />
+      <main className="flex-1">
+        <PageTransition key={location.pathname}>
+          <Routes>
+            <Route path="/home" element={
+              <AuthGuard>
+                <Home />
+              </AuthGuard>
+            } />
+            
+            <Route path="/profile/:userId?" element={
+              <AuthGuard>
+                <Suspense fallback={<ProfileFallback />}>
+                  <Profile />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/u/:userId" element={
+              <AuthGuard>
+                <Suspense fallback={<ProfileFallback />}>
+                  <PublicProfilePage />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/discover" element={
+              <AuthGuard>
+                <Suspense fallback={<ListFallback />}>
+                  <Discover />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/reading-list" element={
+              <AuthGuard>
+                <Suspense fallback={<ListFallback />}>
+                  <ReadingList />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/explore" element={
+              <AuthGuard>
+                <Suspense fallback={<ListFallback />}>
+                  <Explore />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/achievements" element={
+              <AuthGuard>
+                <Suspense fallback={<GenericFallback />}>
+                  <Achievements />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/followers/:type/:userId?" element={
+              <AuthGuard>
+                <Suspense fallback={<ListFallback />}>
+                  <Followers />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="/admin" element={
+              <AuthGuard>
+                <Suspense fallback={<GenericFallback />}>
+                  <Admin />
+                </Suspense>
+              </AuthGuard>
+            } />
+            
+            <Route path="*" element={
+              <Suspense fallback={<GenericFallback />}>
+                <NotFound />
+              </Suspense>
+            } />
+          </Routes>
+        </PageTransition>
+      </main>
+    </div>
   );
 }
 
