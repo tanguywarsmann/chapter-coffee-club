@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,10 +12,10 @@ import { usePrefetch } from "@/hooks/usePrefetch";
 import { isPublicRoute, requiresAuth } from "@/utils/publicRoutes";
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
-import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
+import PublicHome from "@/pages/PublicHome";
 
 // Non-critical components loaded with React.lazy
 const BookPage = lazy(() => import("@/pages/BookPage"));
@@ -103,7 +102,7 @@ export function AppRouter() {
           {/* Routes publiques avec layout public */}
           <Route path="/" element={
             <PublicLayout>
-              <Login />
+              <PublicHome />
             </PublicLayout>
           } />
           
