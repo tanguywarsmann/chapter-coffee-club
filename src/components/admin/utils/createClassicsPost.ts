@@ -1,5 +1,5 @@
 
-import { createClassicsArticle } from '../../scripts/addBlogPost';
+import { createClassicsArticle } from '../../../scripts/addBlogPost';
 
 export const addClassicsPostToDB = async () => {
   try {

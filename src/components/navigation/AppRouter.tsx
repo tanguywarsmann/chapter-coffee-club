@@ -122,7 +122,7 @@ export function AppRouter() {
           </Suspense>
         } />
         
-        {/* Routes publiques du blog */}
+        {/* Routes publiques du blog - SANS AuthGuard */}
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         
