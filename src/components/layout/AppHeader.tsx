@@ -13,7 +13,7 @@ export function AppHeader() {
   const { user, isAdmin } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60">
       <div className="container flex h-16 sm:h-14 items-center gap-4">
         {isMobile && <MobileMenu isAdmin={isAdmin} />}
         
