@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,7 @@ const Achievements = lazy(() => import("@/pages/Achievements"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Followers = lazy(() => import("@/pages/Followers"));
+const Landing = lazy(() => import("@/pages/Landing"));
 
 const HomeFallback = () => <PageSkeleton variant="home" />;
 const ListFallback = () => <PageSkeleton variant="list" />;
@@ -106,6 +108,14 @@ export function AppRouter() {
             </PublicLayout>
           } />
           
+          <Route path="/landing" element={
+            <PublicLayout>
+              <Suspense fallback={<GenericFallback />}>
+                <Landing />
+              </Suspense>
+            </PublicLayout>
+          } />
+          
           <Route path="/auth" element={
             <PublicLayout>
               <Auth />
@@ -159,11 +169,11 @@ export function AppRouter() {
     return <LoadingFallback />;
   }
 
-  // Layout privé avec AppHeader et AppFooter
+  // Layout privé avec AppHeader et AppFooter - structure simplifiée pour éviter la duplication
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <AppHeader />
-      <main className="flex-1">
+      <main className="flex-1 min-h-screen">
         <PageTransition key={location.pathname}>
           <Routes>
             <Route path="/home" element={
@@ -245,7 +255,7 @@ export function AppRouter() {
         </PageTransition>
       </main>
       <AppFooter />
-    </div>
+    </>
   );
 }
 

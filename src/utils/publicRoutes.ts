@@ -8,6 +8,7 @@
 
 export const PUBLIC_ROUTES = [
   '/',
+  '/landing',
   '/blog',
   '/auth',
   '/reset-password'
