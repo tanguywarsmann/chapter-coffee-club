@@ -13,7 +13,7 @@ export function PublicHeader() {
           aria-label="READ - Retour à l'accueil"
         >
           <Image 
-            src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+            src="/READ-logo.png" 
             alt="READ Logo" 
             className="h-8 w-8"
           />
