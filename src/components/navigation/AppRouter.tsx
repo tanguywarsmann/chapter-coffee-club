@@ -96,11 +96,12 @@ export function AppRouter() {
   // Détermine si on affiche la version publique ou privée
   const isPublic = isPublicRoute(location.pathname);
   
-  // Pour les routes publiques - avec PublicLayout qui gère son propre header
+  // Pour les routes publiques
   if (isPublic) {
     return (
       <PageTransition key={location.pathname}>
         <Routes>          
+          {/* Routes publiques avec layout public */}
           <Route path="/" element={
             <PublicLayout>
               <PublicHome />
@@ -141,6 +142,7 @@ export function AppRouter() {
             </PublicLayout>
           } />
           
+          {/* Routes publiques pour les livres */}
           <Route path="/books/:id" element={
             <PublicLayout>
               <Suspense fallback={<BookFallback />}>
@@ -149,6 +151,7 @@ export function AppRouter() {
             </PublicLayout>
           } />
           
+          {/* Fallback pour routes non trouvées */}
           <Route path="*" element={
             <PublicLayout>
               <Suspense fallback={<GenericFallback />}>
@@ -166,12 +169,12 @@ export function AppRouter() {
     return <LoadingFallback />;
   }
 
-  // Layout privé - structure simplifiée avec UN SEUL AppHeader
+  // Layout privé avec AppHeader et AppFooter - structure simplifiée pour éviter la duplication
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <AppHeader />
-      <PageTransition key={location.pathname}>
-        <main className="flex-1">
+      <main className="flex-1 min-h-screen">
+        <PageTransition key={location.pathname}>
           <Routes>
             <Route path="/home" element={
               <AuthGuard>
@@ -249,10 +252,10 @@ export function AppRouter() {
               </Suspense>
             } />
           </Routes>
-        </main>
-      </PageTransition>
+        </PageTransition>
+      </main>
       <AppFooter />
-    </div>
+    </>
   );
 }
 

@@ -10,9 +10,10 @@ export const HeaderLogo = () => {
       aria-label="READ - Retour à l'accueil"
     >
       <Image 
-        src="/READ-logo.png" 
-        alt="READ Logo" 
+        src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+        alt="" 
         className="h-8 w-8"
+        aria-hidden="true"
       />
       <span className="text-xl font-medium text-logo-text">READ</span>
     </Link>
