@@ -13,20 +13,20 @@ import { useCurrentReading } from "@/hooks/useCurrentReading";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { texts } from "@/i18n/texts";
+import { useLogger } from "@/utils/logger";
 
 export default function Home() {
-  // Cache render count instead of logging to optimize performance
-  const renderCount = useRef(0);
+  const logger = useLogger('Home');
   const isMobile = useIsMobile();
   const initialRender = useRef(true);
   
   // Log mount for debugging
   useEffect(() => {
-    console.info("[HOME] Component mounted, pathname:", window.location.pathname);
+    logger.info("Component mounted", { pathname: window.location.pathname });
     return () => {
-      console.info("[HOME] Component unmounting");
+      logger.info("Component unmounting");
     };
-  }, []);
+  }, [logger]);
   
   // Memoized state for welcome message - only show if not seen before
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -60,7 +60,7 @@ export default function Home() {
   useEffect(() => {
     if (initialRender.current) {
       initialRender.current = false;
-      console.info("[HOME] Initial render completed:", {
+      logger.info("Initial render completed", {
         pathname: window.location.pathname,
         hasSearchResults: !!searchResults,
         isRedirecting
@@ -68,11 +68,11 @@ export default function Home() {
       
       // Clear any search results on first mount to prevent automatic redirects
       if (searchResults) {
-        console.info("[HOME] Clearing search results on initial render to prevent auto-redirect");
+        logger.info("Clearing search results on initial render to prevent auto-redirect");
         setSearchResults(null);
       }
     }
-  }, [searchResults, setSearchResults, isRedirecting]);
+  }, [searchResults, setSearchResults, isRedirecting, logger]);
 
   // Warm the service worker cache if available
   useEffect(() => {

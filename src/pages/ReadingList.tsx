@@ -8,9 +8,14 @@ import { BookEmptyState } from "@/components/reading/BookEmptyState";
 import { ReadingListHeader } from "@/components/reading/ReadingListHeader";
 import { FetchingStatus } from "@/components/reading/FetchingStatus";
 import { useReadingListPage } from "@/hooks/useReadingListPage";
+import { useLogger } from "@/utils/logger";
 
 export default function ReadingList() {
-  console.log("[DEBUG] Montage du composant ReadingList");
+  const logger = useLogger('ReadingList');
+  
+  useEffect(() => {
+    logger.info("ReadingList component mounted");
+  }, [logger]);
   
   const {
     books,
@@ -23,7 +28,7 @@ export default function ReadingList() {
   } = useReadingListPage();
 
   // Log spécifique pour le débogage des listes de livres
-  console.log("[DEBUG] État des listes dans ReadingList.tsx", {
+  logger.debug("Reading list state", {
     toReadCount: books.toRead?.length || 0,
     inProgressCount: books.inProgress?.length || 0,
     completedCount: books.completed?.length || 0,
@@ -35,19 +40,21 @@ export default function ReadingList() {
   const renderContent = () => {
     // Afficher toujours le loader si les données ne sont pas prêtes
     if (loading.isLoading || loading.isLoadingReadingList || !loading.isDataReady) {
-      console.log("[DEBUG] Affichage de LoadingBookList - isLoading:", loading.isLoading, 
-                 "isLoadingReadingList:", loading.isLoadingReadingList,
-                 "isDataReady:", loading.isDataReady);
+      logger.debug("Showing loading state", {
+        isLoading: loading.isLoading, 
+        isLoadingReadingList: loading.isLoadingReadingList,
+        isDataReady: loading.isDataReady
+      });
       return <LoadingBookList />;
     }
     
     if (error) {
-      console.log("[DEBUG] Affichage de BookEmptyState - erreur détectée");
+      logger.warn("Showing error state");
       return <BookEmptyState hasError={true} />;
     }
     
     if (!books.toRead?.length && !books.inProgress?.length && !books.completed?.length) {
-      console.log("[DEBUG] Toutes les listes sont vides, affichage de l'état vide");
+      logger.info("All lists are empty, showing empty state");
       return (
         <BookEmptyState 
           hasError={false} 
@@ -57,7 +64,7 @@ export default function ReadingList() {
       );
     }
     
-    console.log("[DEBUG] Rendu des sections de livre avec:", {
+    logger.debug("Rendering book sections", {
       inProgress: books.inProgress?.length || 0,
       toRead: books.toRead?.length || 0,
       completed: books.completed?.length || 0

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { fixInconsistentReadingStatus } from "@/services/reading/dataConsistencyService";
-import { toast } from "sonner";
+import { useLogger } from "@/utils/logger";
 
 interface HomeContentProps {
   readingProgress: ReadingProgressType[];
@@ -23,6 +23,7 @@ export const HomeContent = memo(function HomeContent({
 }: HomeContentProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const logger = useLogger('HomeContent');
 
   // Correction automatique des données incohérentes au chargement
   useEffect(() => {
@@ -31,18 +32,17 @@ export const HomeContent = memo(function HomeContent({
         try {
           const result = await fixInconsistentReadingStatus(user.id);
           if (result.success && result.corrected > 0) {
-            console.log(`[HomeContent] ${result.corrected} données corrigées`);
-            // Pas de toast pour éviter de perturber l'UX
+            logger.info("Data consistency fixed", { corrected: result.corrected });
           }
         } catch (error) {
-          console.error('[HomeContent] Erreur correction données:', error);
+          logger.error("Failed to fix data consistency", error as Error);
         }
       };
       
       // Délai pour éviter de ralentir le chargement initial
       setTimeout(fixData, 2000);
     }
-  }, [user?.id, readingProgress]);
+  }, [user?.id, readingProgress, logger]);
 
   if (!readingProgress || !Array.isArray(readingProgress)) {
     return <div>{texts.loading}...</div>;
