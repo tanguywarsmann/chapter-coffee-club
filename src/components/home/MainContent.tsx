@@ -1,12 +1,13 @@
 
 import { Book } from "@/types/book";
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, memo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { StatsCards } from "@/components/home/StatsCards";
 import { HomeContent } from "@/components/home/HomeContent";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { texts } from "@/i18n/texts";
+import { useRenderTracker } from "@/utils/performanceTracker";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -21,7 +22,13 @@ interface MainContentProps {
   onContinueReading: () => void;
 }
 
-export function MainContent({
+// Composant mémorisé pour les résultats de recherche
+const MemoizedSearchResults = memo(SearchResults);
+
+// Composant mémorisé pour le contenu principal
+const MemoizedHomeContent = memo(HomeContent);
+
+export const MainContent = memo(function MainContent({
   searchResults,
   onResetSearch,
   readingProgress,
@@ -33,74 +40,53 @@ export function MainContent({
   isLoadingCurrentBook,
   onContinueReading
 }: MainContentProps) {
-  const renderCount = useRef(0);
-
-  const stableIds = useMemo(() => ({
-    inProgressCount: readingProgress?.length || 0
-  }), [readingProgress?.length]);
-
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      renderCount.current++;
-      console.log(`[MAIN CONTENT DIAGNOSTIQUE] Render #${renderCount.current}`, {
-        hasSearchResults: !!searchResults,
-        inProgressCount: stableIds.inProgressCount,
-        isLoading,
-        isSearching,
-        isRedirecting
-      });
-    }
+  // Track des re-rendus pour optimisation
+  useRenderTracker('MainContent', {
+    hasSearchResults: !!searchResults,
+    searchResultsLength: searchResults?.length || 0,
+    readingProgressLength: readingProgress?.length || 0,
+    isLoading,
+    isSearching,
+    isRedirecting
   });
 
+  // Mémoriser les IDs stables pour éviter les re-rendus
+  const stableIds = useMemo(() => ({
+    searchResultsKey: searchResults?.map(book => book.id).join('-') || 'no-search',
+    readingProgressKey: readingProgress?.map(p => `${p.book_id}-${p.chaptersRead}`).join('-') || 'no-progress',
+    inProgressCount: readingProgress?.length || 0
+  }), [searchResults, readingProgress]);
+
+  // Composant de chargement mémorisé
+  const loadingComponent = useMemo(() => (
+    <div className="flex items-center justify-center p-8">
+      <div className="text-center space-y-2">
+        <div className="animate-pulse flex justify-center">
+          <Search className="h-8 w-8 text-coffee-dark" />
+        </div>
+        <p className="text-coffee-dark">{texts.searching}</p>
+      </div>
+    </div>
+  ), []);
+
+  // Contenu principal mémorisé
   const homeContent = useMemo(() => (
-    <>
-      <HomeContent
-        key={`home-content-${stableIds.inProgressCount}`}
-        readingProgress={readingProgress}
-        isLoading={isLoading}
-        onProgressUpdate={onProgressUpdate}
-      />
-    </>
-  ), [
-    readingProgress, 
-    isLoading, 
-    onProgressUpdate,
-    stableIds
-  ]);
+    <MemoizedHomeContent
+      key={`home-content-${stableIds.readingProgressKey}`}
+      readingProgress={readingProgress}
+      isLoading={isLoading}
+      onProgressUpdate={onProgressUpdate}
+    />
+  ), [readingProgress, isLoading, onProgressUpdate, stableIds.readingProgressKey]);
 
   if (isSearching) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center space-y-2">
-          <div className="animate-pulse flex justify-center">
-            <Search className="h-8 w-8 text-coffee-dark" />
-          </div>
-          <p className="text-coffee-dark">{texts.searching}</p>
-        </div>
-      </div>
-    );
+    return loadingComponent;
   }
-
-  // TEMPORARILY DISABLED redirection logic per user request
-  // Original code:
-  // if (isRedirecting && searchResults && searchResults.length === 1) {
-  //   return (
-  //     <div className="animate-fade-out transition-all duration-300 ease-in-out">
-  //       <SearchResults 
-  //         searchResults={searchResults} 
-  //         onReset={onResetSearch}
-  //         redirecting={true}
-  //       />
-  //       <div className="mt-6 text-center text-coffee-dark animate-pulse">
-  //         <p>Redirection vers {searchResults[0].title}...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   if (searchResults) {
     return (
-      <SearchResults 
+      <MemoizedSearchResults 
+        key={stableIds.searchResultsKey}
         searchResults={searchResults} 
         onReset={onResetSearch} 
       />
@@ -108,4 +94,6 @@ export function MainContent({
   }
 
   return homeContent;
-}
+});
+
+export default MainContent;

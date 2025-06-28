@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = "v0.14"; // Version mise à jour après corrections TypeScript et robustesse
+const APP_VERSION = "v0.15"; // Phase 2 : Optimisations Performance
 
 export const AppFooter = () => {
   return (
