@@ -1,3 +1,4 @@
+import React from 'react';
 
 /**
  * TRACKER DE PERFORMANCE - READ APP v0.15
