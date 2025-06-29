@@ -15,23 +15,25 @@ export function StatsCards() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user?.id) {
+        console.log("No user ID available");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
-        // Récupérer le nombre réel de badges débloqués depuis Supabase
-        if (user?.id) {
-          const userBadges = await getUserBadges(user.id);
-          setBadgesCount(userBadges.length);
-        }
-
-        const userData = localStorage.getItem("user");
-        const parsed = userData ? JSON.parse(userData) : null;
-        if (!parsed?.id) return;
+        console.log(`Fetching stats for user: ${user.id}`);
         
-        const [booksCount, pagesCount] = await Promise.all([
-          getBooksReadCount(parsed.id),
-          getTotalPagesRead(parsed.id)
+        const [userBadges, booksCount, pagesCount] = await Promise.all([
+          getUserBadges(user.id),
+          getBooksReadCount(user.id),
+          getTotalPagesRead(user.id)
         ]);
         
+        console.log(`Stats fetched: badges=${userBadges.length}, books=${booksCount}, pages=${pagesCount}`);
+        
+        setBadgesCount(userBadges.length);
         setBooksRead(booksCount);
         setPagesRead(pagesCount);
       } catch (error) {

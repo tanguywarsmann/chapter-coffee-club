@@ -3,32 +3,56 @@ import { useEffect, useState } from "react";
 import { Flame, Medal, CalendarDays, Sparkles } from "lucide-react";
 import { getCurrentStreak, getBestStreak } from "@/services/reading/statsService";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function StreakStats() {
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [bestStreak, setBestStreak] = useState<number>(0);
   const [monthlySegments, setMonthlySegments] = useState<number>(0);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    const parsed = user ? JSON.parse(user) : null;
-    if (!parsed?.id) return;
+    if (!user?.id) {
+      console.log("No user ID for streak stats");
+      return;
+    }
 
-    getCurrentStreak(parsed.id).then(setCurrentStreak);
-    getBestStreak(parsed.id).then(setBestStreak);
+    const fetchStreakStats = async () => {
+      console.log(`Fetching streak stats for user: ${user.id}`);
+      
+      try {
+        // Récupérer les séries de lecture
+        const [currentStreakValue, bestStreakValue] = await Promise.all([
+          getCurrentStreak(user.id),
+          getBestStreak(user.id)
+        ]);
 
-    // Compter les validations du mois en cours
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const startOfMonth = new Date(year, month, 1);
-    supabase
-      .from("reading_validations")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", parsed.id)
-      .gte("validated_at", startOfMonth.toISOString())
-      .then(({ count }) => setMonthlySegments(count ?? 0));
-  }, []);
+        console.log(`Streak values: current=${currentStreakValue}, best=${bestStreakValue}`);
+        
+        setCurrentStreak(currentStreakValue);
+        setBestStreak(bestStreakValue);
+
+        // Compter les validations du mois en cours
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const startOfMonth = new Date(year, month, 1);
+        
+        const { count } = await supabase
+          .from("reading_validations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("validated_at", startOfMonth.toISOString());
+
+        console.log(`Monthly validations: ${count}`);
+        setMonthlySegments(count ?? 0);
+      } catch (error) {
+        console.error("Error fetching streak stats:", error);
+      }
+    };
+
+    fetchStreakStats();
+  }, [user?.id]);
 
   const formatStreakText = (streak: number, label: string) => {
     if (streak === 0) return `Aucune ${label.toLowerCase()}`;
