@@ -2,7 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { StreakStats } from "@/components/achievements/StreakStats";
-import { StreakCard } from "@/components/achievements/StreakCard";
 import { StatsCards } from "@/components/achievements/StatsCards";
 import { BadgesSection } from "@/components/achievements/BadgesSection";
 import { ChallengesSection } from "@/components/achievements/ChallengesSection";
@@ -121,14 +120,6 @@ export default function Achievements() {
           {/* Statistiques principales avec style premium mobile-first */}
           <div className="mb-12 sm:mb-16">
             <StreakStats />
-          </div>
-
-          {/* Section centrale avec la carte de série */}
-          <div className="mb-12 sm:mb-16">
-            <StreakCard 
-              currentStreak={streak.current_streak} 
-              longestStreak={streak.longest_streak} 
-            />
           </div>
           
           {/* Grille principale avec sections élégantes */}
