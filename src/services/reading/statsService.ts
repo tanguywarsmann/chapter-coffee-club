@@ -158,16 +158,74 @@ export function getReaderProfileMessage(totalBooks: number, totalSegments: numbe
 }
 
 /**
- * Récupère la série de lecture actuelle de l'utilisateur
+ * Calcule la série de lecture actuelle de l'utilisateur
  * @param userId ID de l'utilisateur
  * @returns Série actuelle
  */
 export async function getCurrentStreak(userId: string): Promise<number> {
   try {
-    // Pour l'instant, retournons une valeur fictive
-    // Dans une implémentation réelle, nous calculerions le nombre de jours consécutifs
-    // avec des validations jusqu'à aujourd'hui
-    return 5;
+    console.log(`Calculating current streak for user: ${userId}`);
+    
+    // Récupérer toutes les validations ordonnées par date
+    const { data: validations, error } = await supabase
+      .from('reading_validations')
+      .select('validated_at')
+      .eq('user_id', userId)
+      .order('validated_at', { ascending: true });
+
+    if (error) {
+      console.error('Erreur lors de la récupération des validations:', error);
+      return 0;
+    }
+
+    if (!validations || validations.length === 0) {
+      console.log('Aucune validation trouvée');
+      return 0;
+    }
+
+    // Extraire les dates uniques (format YYYY-MM-DD)
+    const uniqueDates = new Set<string>();
+    validations.forEach(validation => {
+      if (validation.validated_at) {
+        const date = new Date(validation.validated_at).toISOString().split('T')[0];
+        uniqueDates.add(date);
+      }
+    });
+
+    const sortedDates = Array.from(uniqueDates).sort();
+    console.log(`Dates uniques trouvées: ${sortedDates.length}`, sortedDates);
+
+    if (sortedDates.length === 0) return 0;
+
+    // Calculer la série actuelle en partant de la fin
+    let currentStreak = 1;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterdayStr = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // Vérifier si la série est encore active (validation aujourd'hui ou hier)
+    const lastDate = sortedDates[sortedDates.length - 1];
+    if (lastDate !== todayStr && lastDate !== yesterdayStr) {
+      console.log(`Série interrompue. Dernière validation: ${lastDate}, aujourd'hui: ${todayStr}`);
+      return 0;
+    }
+
+    // Calculer la série en remontant
+    for (let i = sortedDates.length - 2; i >= 0; i--) {
+      const currentDate = new Date(sortedDates[i + 1]);
+      const prevDate = new Date(sortedDates[i]);
+      
+      const diffDays = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    console.log(`Série actuelle calculée: ${currentStreak}`);
+    return currentStreak;
   } catch (error) {
     console.error('Exception lors de la récupération de la série actuelle:', error);
     return 0;
@@ -175,16 +233,66 @@ export async function getCurrentStreak(userId: string): Promise<number> {
 }
 
 /**
- * Récupère la meilleure série de lecture de l'utilisateur
+ * Calcule la meilleure série de lecture de l'utilisateur
  * @param userId ID de l'utilisateur
  * @returns Meilleure série
  */
 export async function getBestStreak(userId: string): Promise<number> {
   try {
-    // Pour l'instant, retournons une valeur fictive
-    // Dans une implémentation réelle, nous regarderions la plus longue séquence
-    // de jours consécutifs avec des validations
-    return 12;
+    console.log(`Calculating best streak for user: ${userId}`);
+    
+    // Récupérer toutes les validations ordonnées par date
+    const { data: validations, error } = await supabase
+      .from('reading_validations')
+      .select('validated_at')
+      .eq('user_id', userId)
+      .order('validated_at', { ascending: true });
+
+    if (error) {
+      console.error('Erreur lors de la récupération des validations:', error);
+      return 0;
+    }
+
+    if (!validations || validations.length === 0) {
+      console.log('Aucune validation trouvée pour le meilleur streak');
+      return 0;
+    }
+
+    // Extraire les dates uniques (format YYYY-MM-DD)
+    const uniqueDates = new Set<string>();
+    validations.forEach(validation => {
+      if (validation.validated_at) {
+        const date = new Date(validation.validated_at).toISOString().split('T')[0];
+        uniqueDates.add(date);
+      }
+    });
+
+    const sortedDates = Array.from(uniqueDates).sort();
+    console.log(`Dates uniques pour best streak: ${sortedDates.length}`);
+
+    if (sortedDates.length === 0) return 0;
+    if (sortedDates.length === 1) return 1;
+
+    // Calculer toutes les séries et retourner la meilleure
+    let maxStreak = 1;
+    let currentStreak = 1;
+
+    for (let i = 1; i < sortedDates.length; i++) {
+      const currentDate = new Date(sortedDates[i]);
+      const prevDate = new Date(sortedDates[i - 1]);
+      
+      const diffDays = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
+
+    console.log(`Meilleure série calculée: ${maxStreak}`);
+    return maxStreak;
   } catch (error) {
     console.error('Exception lors de la récupération de la meilleure série:', error);
     return 0;
