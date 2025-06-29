@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 
 type UserLevelRecord = Database['public']['Tables']['user_levels']['Row'];
@@ -18,8 +18,6 @@ export interface UserLevel {
 
 /**
  * Calcule le niveau en fonction des points d'expérience
- * @param xp Points d'expérience
- * @returns Niveau correspondant
  */
 export function getLevelFromXP(xp: number): number {
   if (xp >= 1000) return 5;
@@ -31,8 +29,6 @@ export function getLevelFromXP(xp: number): number {
 
 /**
  * Calcule l'XP nécessaire pour le niveau suivant
- * @param level Niveau actuel
- * @returns Points d'XP requis pour le niveau suivant
  */
 export function getXPForNextLevel(level: number): number {
   switch (level) {
@@ -46,18 +42,24 @@ export function getXPForNextLevel(level: number): number {
 
 /**
  * Récupère les informations de niveau d'un utilisateur
- * @param userId ID de l'utilisateur
- * @returns Informations de niveau et d'XP
  */
 export async function getUserLevel(userId: string): Promise<UserLevel | null> {
   try {
+    if (!userId) {
+      console.error("getUserLevel: userId is required");
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('user_levels')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur lors de la récupération du niveau utilisateur:", error);
+      return null;
+    }
     
     if (!data) {
       // Si l'utilisateur n'a pas encore d'entrée, on la crée
@@ -73,8 +75,6 @@ export async function getUserLevel(userId: string): Promise<UserLevel | null> {
 
 /**
  * Initialise une nouvelle entrée de niveau pour un utilisateur
- * @param userId ID de l'utilisateur
- * @returns Nouvelle entrée de niveau
  */
 async function initializeUserLevel(userId: string): Promise<UserLevel | null> {
   try {
@@ -90,7 +90,12 @@ async function initializeUserLevel(userId: string): Promise<UserLevel | null> {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur lors de l'initialisation du niveau utilisateur:", error);
+      return null;
+    }
+    
+    console.log(`✅ Niveau utilisateur initialisé pour ${userId}`);
     return data as UserLevel;
   } catch (error) {
     console.error("Erreur lors de l'initialisation du niveau utilisateur:", error);
@@ -100,17 +105,25 @@ async function initializeUserLevel(userId: string): Promise<UserLevel | null> {
 
 /**
  * Ajoute des points d'XP à un utilisateur
- * @param userId ID de l'utilisateur
- * @param amount Quantité d'XP à ajouter
  */
-export async function addXP(userId: string, amount: number): Promise<void> {
+export async function addXP(userId: string, amount: number): Promise<boolean> {
   try {
-    if (!userId) throw new Error("ID utilisateur non spécifié");
-    if (amount <= 0) return; // Ne rien faire si le montant est négatif ou nul
+    if (!userId) {
+      console.error("addXP: userId is required");
+      return false;
+    }
+    
+    if (amount <= 0) {
+      console.log("addXP: amount must be positive");
+      return false;
+    }
     
     // Récupérer les données de niveau actuelles
     const currentLevel = await getUserLevel(userId);
-    if (!currentLevel) return;
+    if (!currentLevel) {
+      console.error("addXP: Could not get or create user level");
+      return false;
+    }
     
     // Calculer les nouvelles valeurs
     const newXP = currentLevel.xp + amount;
@@ -127,16 +140,54 @@ export async function addXP(userId: string, amount: number): Promise<void> {
       })
       .eq('user_id', userId);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur lors de la mise à jour du niveau:", error);
+      return false;
+    }
+    
+    console.log(`✅ XP ajouté: +${amount} XP pour ${userId} (Total: ${newXP} XP, Niveau: ${newLevel})`);
     
     // Notifier si l'utilisateur a gagné un niveau
     if (newLevel > oldLevel) {
-      toast({
-        title: `Niveau supérieur ! Félicitations, vous êtes maintenant niveau ${newLevel}`,
-        variant: "success"
+      toast.success(`Niveau supérieur ! Vous êtes maintenant niveau ${newLevel}`, {
+        duration: 5000,
       });
+      console.log(`🎉 Niveau supérieur ! Utilisateur ${userId} est maintenant niveau ${newLevel}`);
     }
+    
+    return true;
   } catch (error) {
     console.error("Erreur lors de l'ajout d'XP:", error);
+    return false;
+  }
+}
+
+/**
+ * Récupère les statistiques de niveau pour l'affichage
+ */
+export async function getUserLevelStats(userId: string): Promise<{
+  level: number;
+  xp: number;
+  xpForNextLevel: number;
+  progressToNextLevel: number;
+} | null> {
+  try {
+    const userLevel = await getUserLevel(userId);
+    if (!userLevel) return null;
+
+    const xpForNextLevel = getXPForNextLevel(userLevel.level);
+    const currentLevelXP = userLevel.level > 1 ? getXPForNextLevel(userLevel.level - 1) : 0;
+    const progressToNextLevel = xpForNextLevel > 0 ? 
+      Math.min(100, ((userLevel.xp - currentLevelXP) / (xpForNextLevel - currentLevelXP)) * 100) : 100;
+
+    return {
+      level: userLevel.level,
+      xp: userLevel.xp,
+      xpForNextLevel,
+      progressToNextLevel
+    };
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stats de niveau:", error);
+    return null;
   }
 }
