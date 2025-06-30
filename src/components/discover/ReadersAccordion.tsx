@@ -37,7 +37,7 @@ export function ReadersAccordion() {
 
   if (loading) {
     return (
-      <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
+      <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
             <Users className="h-5 w-5 text-coffee-dark" />
@@ -47,7 +47,7 @@ export function ReadersAccordion() {
         <CardContent>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-coffee-light/20 rounded-lg animate-pulse" />
+              <div key={i} className="h-16 bg-coffee-light/10 rounded-lg animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -56,7 +56,7 @@ export function ReadersAccordion() {
   }
 
   return (
-    <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
+    <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
           <Users className="h-5 w-5 text-coffee-dark" />
@@ -65,7 +65,7 @@ export function ReadersAccordion() {
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible defaultValue="readers-list">
-          <AccordionItem value="readers-list" className="border-coffee-light/30">
+          <AccordionItem value="readers-list" className="border-coffee-light/20">
             <AccordionTrigger className="text-coffee-dark hover:text-coffee-darker font-medium">
               Voir les lecteurs ({users.length})
             </AccordionTrigger>
@@ -76,12 +76,12 @@ export function ReadersAccordion() {
                 ))}
                 
                 {hasMore && (
-                  <div className="flex justify-center pt-4">
+                  <div className="flex justify-center pt-6">
                     <Button
                       onClick={handleShowMore}
                       variant="ghost"
                       size="sm"
-                      className="text-coffee-dark hover:text-coffee-darker hover:bg-coffee-light/20 transition-colors"
+                      className="text-coffee-dark hover:text-coffee-darker hover:bg-coffee-light/10 transition-colors border border-coffee-light/30 bg-white/50"
                     >
                       <ChevronDown className="h-4 w-4 mr-2" />
                       Afficher plus ({users.length - visibleCount} restants)

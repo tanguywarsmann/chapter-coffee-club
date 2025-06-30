@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Book, Award, Clock } from "lucide-react";
+import { Book, Award, Clock, Flame, PlayCircle, BookOpen } from "lucide-react";
 
 interface ActivityFeedItemProps {
   user: {
@@ -11,7 +11,7 @@ interface ActivityFeedItemProps {
     avatar?: string;
   };
   activity: {
-    type: 'book_completed' | 'badge_earned' | 'reading_session' | 'streak_milestone';
+    type: string;
     content: string;
     details?: string;
     timestamp: string;
@@ -28,12 +28,16 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
     switch (activity.type) {
       case 'book_completed':
         return <Book className="h-4 w-4 text-coffee-dark" />;
+      case 'segment_validated':
+        return <BookOpen className="h-4 w-4 text-coffee-medium" />;
+      case 'reading_resumed':
+        return <PlayCircle className="h-4 w-4 text-coffee-dark" />;
       case 'badge_earned':
         return <Award className="h-4 w-4 text-coffee-darker" />;
-      case 'reading_session':
-        return <Clock className="h-4 w-4 text-coffee-medium" />;
-      case 'streak_milestone':
-        return <span className="text-sm">🔥</span>;
+      case 'reading_streak':
+        return <Flame className="h-4 w-4 text-coffee-medium" />;
+      case 'book_started':
+        return <BookOpen className="h-4 w-4 text-coffee-dark" />;
       default:
         return <Book className="h-4 w-4 text-coffee-medium" />;
     }
@@ -60,19 +64,38 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
     if (diffInMinutes < 60) {
       return `il y a ${diffInMinutes}min`;
     } else if (diffInMinutes < 1440) {
-      return `il y a ${Math.floor(diffInMinutes / 60)}h`;
+      const hours = Math.floor(diffInMinutes / 60);
+      const isYesterday = activityTime.toDateString() !== now.toDateString() && 
+                         Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60 * 60 * 24)) === 1;
+      
+      if (isYesterday) {
+        return `hier à ${activityTime.getHours()}h${activityTime.getMinutes().toString().padStart(2, '0')}`;
+      }
+      return `il y a ${hours}h`;
     } else {
       return `il y a ${Math.floor(diffInMinutes / 1440)}j`;
     }
   };
 
+  // Génération d'avatar avec initiale
+  const getAvatarColor = (name: string) => {
+    const firstLetter = name.charAt(0).toUpperCase();
+    const colors = [
+      'bg-coffee-light/60 text-coffee-darker',
+      'bg-coffee-medium/40 text-coffee-darker',
+      'bg-coffee-light/80 text-coffee-dark',
+      'bg-coffee-medium/20 text-coffee-darker'
+    ];
+    return colors[firstLetter.charCodeAt(0) % colors.length];
+  };
+
   return (
-    <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm hover:shadow-md transition-shadow">
+    <Card className="border-coffee-light/40 bg-white/90 backdrop-blur-sm hover:shadow-sm transition-all duration-200">
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
-          <Avatar className="h-10 w-10 border border-coffee-light">
+          <Avatar className="h-10 w-10 border border-coffee-light/50">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-coffee-medium text-white text-sm">
+            <AvatarFallback className={`text-sm font-medium ${getAvatarColor(user.name)}`}>
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -81,7 +104,7 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
             <div className="flex items-center space-x-2 mb-1">
               {getActivityIcon()}
               <span className="font-medium text-coffee-darker text-sm">{user.name}</span>
-              <span className="text-coffee-medium text-xs">{getRelativeTime(activity.timestamp)}</span>
+              <span className="text-coffee-medium/70 text-xs">{getRelativeTime(activity.timestamp)}</span>
             </div>
             
             <p className="text-coffee-dark text-sm mb-2 leading-relaxed">
@@ -89,7 +112,7 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
             </p>
             
             {activity.details && (
-              <p className="text-coffee-medium text-xs mb-2 italic">
+              <p className="text-coffee-medium/80 text-xs mb-2 italic">
                 {activity.details}
               </p>
             )}

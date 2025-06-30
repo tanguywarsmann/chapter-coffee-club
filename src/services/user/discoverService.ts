@@ -22,7 +22,7 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
       .from('profiles')
       .select('id, username, email')
       .not('username', 'is', null)
-      .limit(26);
+      .limit(55);
 
     if (error) throw error;
 
@@ -32,11 +32,11 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
       username: profile.username!,
       email: profile.email,
       stats: {
-        booksReading: Math.floor(Math.random() * 4) + 1, // 1-4 livres
-        badges: Math.floor(Math.random() * 20) + 5, // 5-24 badges
-        streak: Math.floor(Math.random() * 20) + 1, // 1-20 jours
+        booksReading: Math.floor(Math.random() * 4) + 1,
+        badges: Math.floor(Math.random() * 20) + 5,
+        streak: Math.floor(Math.random() * 20) + 1,
       },
-      isFollowing: Math.random() > 0.7 // 30% de chance d'être suivi
+      isFollowing: Math.random() > 0.7
     }));
 
     return users;
@@ -47,62 +47,74 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
 }
 
 /**
- * Récupère des activités simulées basées sur les vrais utilisateurs
+ * Récupère des activités simulées avec des métriques plus naturelles
  */
 export async function getDiscoverActivities() {
   try {
     const users = await getDiscoverUsers();
     
-    const activityTypes = [
-      'book_completed',
-      'badge_earned', 
-      'reading_session',
-      'streak_milestone'
-    ] as const;
-
     const bookTitles = [
-      "Candide de Voltaire",
-      "Les Fleurs du Mal de Baudelaire", 
-      "Un amour de Swann de Proust",
-      "L'Étranger de Camus",
-      "Madame Bovary de Flaubert",
-      "Le Rouge et le Noir de Stendhal"
+      "Gatsby le Magnifique",
+      "Un amour de Swann", 
+      "La Chatte",
+      "L'Étranger",
+      "Madame Bovary",
+      "Le Rouge et le Noir",
+      "Les Fleurs du Mal",
+      "Candide",
+      "À la recherche du temps perdu"
     ];
 
     const badges = [
-      { name: "Lecteur assidu", icon: "📚", rarity: 'epic' as const },
+      { name: "Focus 7 jours", icon: "🔥", rarity: 'rare' as const },
       { name: "Premier livre terminé", icon: "🎉", rarity: 'common' as const },
-      { name: "Série de 7 jours", icon: "🔥", rarity: 'rare' as const },
-      { name: "Marathon de lecture", icon: "🏃", rarity: 'legendary' as const }
+      { name: "Lecteur assidu", icon: "📚", rarity: 'epic' as const },
+      { name: "Marathon de lecture", icon: "🏃", rarity: 'legendary' as const },
+      { name: "Retour en force", icon: "💪", rarity: 'rare' as const }
     ];
 
-    // Créer des activités simulées
-    const activities = users.slice(0, 8).map((user, index) => {
-      const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
-      const timeAgo = new Date(Date.now() - (index + 1) * 30 * 60 * 1000); // Espacées de 30 min
+    // Activités plus naturelles
+    const activityTemplates = [
+      { type: 'book_completed', template: 'a terminé la lecture de {book}' },
+      { type: 'segment_validated', template: 'a validé un segment de {book}' },
+      { type: 'reading_resumed', template: 'a repris {book} après {days} jours sans lecture' },
+      { type: 'badge_earned', template: 'a débloqué le badge "{badge}"' },
+      { type: 'reading_streak', template: 'maintient une série de {streak} jours de lecture' },
+      { type: 'book_started', template: 'a commencé la lecture de {book}' }
+    ];
 
-      let content = "";
+    // Créer des activités avec timestamps réalistes
+    const activities = users.slice(0, 10).map((user, index) => {
+      const template = activityTemplates[Math.floor(Math.random() * activityTemplates.length)];
+      const book = bookTitles[Math.floor(Math.random() * bookTitles.length)];
+      const badge = badges[Math.floor(Math.random() * badges.length)];
+      
+      // Répartition temporelle : moitié aujourd'hui, moitié hier
+      const isToday = index % 2 === 0;
+      const baseTime = isToday ? new Date() : new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const hoursAgo = Math.floor(Math.random() * 12) + 1;
+      const timeAgo = new Date(baseTime.getTime() - hoursAgo * 60 * 60 * 1000);
+
+      let content = template.template;
+      let activityBadge = undefined;
       let details = "";
-      let badge = undefined;
 
-      switch (activityType) {
-        case 'book_completed':
-          const book = bookTitles[Math.floor(Math.random() * bookTitles.length)];
-          content = `a terminé la lecture de ${book}`;
-          details = "Une lecture enrichissante et captivante !";
-          break;
-        case 'badge_earned':
-          badge = badges[Math.floor(Math.random() * badges.length)];
-          content = "a débloqué un nouveau badge";
-          break;
-        case 'reading_session':
-          content = `a lu pendant ${Math.floor(Math.random() * 60) + 15} minutes`;
-          details = "Une belle session de lecture concentrée";
-          break;
-        case 'streak_milestone':
-          content = `atteint une série de ${Math.floor(Math.random() * 15) + 5} jours de lecture !`;
-          details = "Félicitations pour cette constance dans la lecture quotidienne";
-          break;
+      // Remplacer les placeholders
+      content = content.replace('{book}', book);
+      content = content.replace('{days}', String(Math.floor(Math.random() * 5) + 2));
+      content = content.replace('{streak}', String(Math.floor(Math.random() * 15) + 5));
+      content = content.replace('{badge}', badge.name);
+
+      if (template.type === 'badge_earned') {
+        activityBadge = badge;
+      }
+
+      if (template.type === 'book_completed') {
+        details = "Une lecture enrichissante et captivante !";
+      } else if (template.type === 'reading_resumed') {
+        details = "Retour avec motivation après une pause";
+      } else if (template.type === 'segment_validated') {
+        details = "Progression constante dans sa lecture";
       }
 
       return {
@@ -112,11 +124,11 @@ export async function getDiscoverActivities() {
           avatar: "/placeholder.svg"
         },
         activity: {
-          type: activityType,
+          type: template.type,
           content,
           details: details || undefined,
           timestamp: timeAgo.toISOString(),
-          badge
+          badge: activityBadge
         }
       };
     });

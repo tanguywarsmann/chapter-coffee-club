@@ -27,33 +27,45 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
 
   const shouldShowFollowButton = currentUser && currentUser.id !== user.id;
 
+  // Générer la couleur de l'avatar basée sur la première lettre
+  const getAvatarColor = (username: string) => {
+    const firstLetter = username.charAt(0).toUpperCase();
+    const colors = [
+      'bg-coffee-light/60 text-coffee-darker',
+      'bg-coffee-medium/40 text-coffee-darker',
+      'bg-coffee-light/80 text-coffee-dark',
+      'bg-coffee-medium/20 text-coffee-darker'
+    ];
+    return colors[firstLetter.charCodeAt(0) % colors.length];
+  };
+
   return (
-    <div className="p-4 border border-coffee-light/40 rounded-lg bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all duration-200">
+    <div className="p-4 border border-coffee-light/30 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all duration-200 shadow-sm">
       <div className="flex items-start justify-between">
         <Link 
           to={`/profile/${user.id}`} 
           className="flex items-start space-x-3 hover:opacity-80 transition-opacity flex-1"
         >
-          <Avatar className="h-10 w-10 border border-coffee-light">
+          <Avatar className="h-10 w-10 border border-coffee-light/50">
             <AvatarImage src="/placeholder.svg" alt={user.username} />
-            <AvatarFallback className="bg-coffee-medium text-white text-sm">
+            <AvatarFallback className={`text-sm font-medium ${getAvatarColor(user.username)}`}>
               {user.username.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-coffee-darker text-base mb-2">
+            <h3 className="font-medium text-coffee-darker text-base mb-2 break-words">
               {user.username}
             </h3>
             
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-xs border-coffee-light/60 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 📚 {user.stats.booksReading} en cours
               </Badge>
-              <Badge variant="outline" className="text-xs border-coffee-light/60 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 🏆 {user.stats.badges} badges
               </Badge>
-              <Badge variant="outline" className="text-xs border-coffee-light/60 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 🔥 {user.stats.streak}j
               </Badge>
             </div>
@@ -61,16 +73,16 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
         </Link>
         
         {shouldShowFollowButton && (
-          <div className="flex flex-col items-end gap-1 ml-2">
+          <div className="flex flex-col items-end gap-1 ml-2 mt-8">
             <Button
               onClick={handleFollowToggle}
               disabled={isLoading}
               variant="ghost"
               size="sm"
-              className={`h-6 w-6 p-0 hover:bg-coffee-light/20 ${
+              className={`h-5 w-5 p-0 hover:bg-coffee-light/10 transition-colors ${
                 isFollowing 
-                  ? 'text-coffee-medium hover:text-coffee-dark' 
-                  : 'text-coffee-dark hover:text-coffee-darker'
+                  ? 'text-coffee-medium/70 hover:text-coffee-dark' 
+                  : 'text-coffee-dark/70 hover:text-coffee-darker'
               }`}
             >
               {isFollowing ? (
@@ -80,7 +92,7 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
               )}
             </Button>
             {isFollowing && (
-              <span className="text-xs text-coffee-medium">Suivi</span>
+              <span className="text-xs text-coffee-medium/60">Suivi</span>
             )}
           </div>
         )}
