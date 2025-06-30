@@ -27,19 +27,42 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
     if (error) throw error;
 
     // Transformer les profils en utilisateurs avec des stats simulées
-    const users: DiscoverUser[] = profiles.map(profile => ({
-      id: profile.id,
-      username: profile.username!,
-      email: profile.email,
-      stats: {
-        booksReading: Math.floor(Math.random() * 4) + 1,
-        badges: Math.floor(Math.random() * 20) + 5,
-        streak: Math.floor(Math.random() * 20) + 1,
-      },
-      isFollowing: Math.random() > 0.7
-    }));
+    const users: DiscoverUser[] = profiles.map(profile => {
+      // Remplacer "Tanguy Warsmann" par "Astrid Lefebvre"
+      let username = profile.username!;
+      if (username === 'Tanguy Warsmann') {
+        username = 'Astrid Lefebvre';
+      }
 
-    return users;
+      return {
+        id: profile.id,
+        username: username,
+        email: profile.email,
+        stats: {
+          booksReading: Math.floor(Math.random() * 4) + 1,
+          badges: Math.floor(Math.random() * 20) + 5,
+          streak: Math.floor(Math.random() * 20) + 1,
+        },
+        isFollowing: Math.random() > 0.7
+      };
+    });
+
+    // S'assurer qu'on a exactement 55 utilisateurs pour la cohérence
+    while (users.length < 55) {
+      const additionalUser: DiscoverUser = {
+        id: `fictional-${users.length + 1}`,
+        username: `Lecteur${users.length + 1}`,
+        stats: {
+          booksReading: Math.floor(Math.random() * 4) + 1,
+          badges: Math.floor(Math.random() * 20) + 5,
+          streak: Math.floor(Math.random() * 20) + 1,
+        },
+        isFollowing: Math.random() > 0.7
+      };
+      users.push(additionalUser);
+    }
+
+    return users.slice(0, 55);
   } catch (error) {
     console.error("Error fetching discover users:", error);
     return [];
@@ -99,6 +122,12 @@ export async function getDiscoverActivities() {
       let activityBadge = undefined;
       let details = "";
 
+      // Remplacer "Tanguy Warsmann" par "Astrid Lefebvre" dans les activités
+      let username = user.username;
+      if (username === 'Tanguy Warsmann') {
+        username = 'Astrid Lefebvre';
+      }
+
       // Remplacer les placeholders
       content = content.replace('{book}', book);
       content = content.replace('{days}', String(Math.floor(Math.random() * 5) + 2));
@@ -120,7 +149,7 @@ export async function getDiscoverActivities() {
       return {
         user: {
           id: user.id,
-          name: user.username,
+          name: username,
           avatar: "/placeholder.svg"
         },
         activity: {
