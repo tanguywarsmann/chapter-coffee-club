@@ -27,28 +27,28 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
   const getActivityIcon = () => {
     switch (activity.type) {
       case 'book_completed':
-        return <Book className="h-4 w-4 text-green-600" />;
+        return <Book className="h-4 w-4 text-coffee-dark" />;
       case 'badge_earned':
-        return <Award className="h-4 w-4 text-amber-600" />;
+        return <Award className="h-4 w-4 text-coffee-darker" />;
       case 'reading_session':
-        return <Clock className="h-4 w-4 text-blue-600" />;
+        return <Clock className="h-4 w-4 text-coffee-medium" />;
       case 'streak_milestone':
         return <span className="text-sm">🔥</span>;
       default:
-        return <Book className="h-4 w-4 text-gray-600" />;
+        return <Book className="h-4 w-4 text-coffee-medium" />;
     }
   };
 
   const getBadgeColor = (rarity: string) => {
     switch (rarity) {
       case 'legendary':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
+        return 'bg-coffee-darker/10 text-coffee-darker border-coffee-darker/30';
       case 'epic':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-coffee-dark/10 text-coffee-dark border-coffee-dark/30';
       case 'rare':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-coffee-medium/10 text-coffee-medium border-coffee-medium/30';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-coffee-light/20 text-coffee-darker border-coffee-light/40';
     }
   };
 
@@ -72,7 +72,7 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
         <div className="flex items-start space-x-3">
           <Avatar className="h-10 w-10 border border-coffee-light">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-coffee-medium text-primary-foreground text-sm">
+            <AvatarFallback className="bg-coffee-medium text-white text-sm">
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>

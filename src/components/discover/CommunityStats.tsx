@@ -8,22 +8,22 @@ export function CommunityStats() {
       icon: Users,
       label: "Lecteurs",
       value: "55",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      color: "text-coffee-dark",
+      bgColor: "bg-coffee-light/20"
     },
     {
       icon: UserCheck,
       label: "Abonné·e·s",
       value: "55",
-      color: "text-green-600", 
-      bgColor: "bg-green-50"
+      color: "text-coffee-darker", 
+      bgColor: "bg-coffee-medium/20"
     },
     {
       icon: UserPlus,
       label: "Abonnements",
       value: "55",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
+      color: "text-coffee-dark",
+      bgColor: "bg-coffee-light/30"
     }
   ];
 
