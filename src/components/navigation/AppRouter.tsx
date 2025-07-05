@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Landing from '@/pages/Landing';
 import Home from '@/pages/Home';
 import Auth from '@/pages/Auth';
@@ -17,37 +17,37 @@ import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 
 const AppRouter = () => {
+  console.log("[ROUTER] AppRouter component mounted");
+  
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile/:userId" element={<Profile />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/u/:userId" element={<Profile />} />
-        <Route path="/book/:id" element={<BookPage />} />
-        <Route path="/books/:id" element={<BookPage />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/reading-list" element={<ReadingList />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/explore" element={<Explore />} />
-        <Route path="/achievements" element={<Achievements />} />
-        <Route path="/followers/:type/:userId" element={<Followers />} />
-        
-        {/* Admin Panel */}
-        <Route path="/admin" element={<Admin />} />
-        
-        {/* Route pour le sitemap dynamique */}
-        <Route 
-          path="/sitemap.xml" 
-          element={<SitemapRoute />} 
-        />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/profile/:userId" element={<Profile />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/u/:userId" element={<Profile />} />
+      <Route path="/book/:id" element={<BookPage />} />
+      <Route path="/books/:id" element={<BookPage />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/reading-list" element={<ReadingList />} />
+      <Route path="/discover" element={<Discover />} />
+      <Route path="/explore" element={<Explore />} />
+      <Route path="/achievements" element={<Achievements />} />
+      <Route path="/followers/:type/:userId" element={<Followers />} />
+      
+      {/* Admin Panel */}
+      <Route path="/admin" element={<Admin />} />
+      
+      {/* Route pour le sitemap dynamique */}
+      <Route 
+        path="/sitemap.xml" 
+        element={<SitemapRoute />} 
+      />
+    </Routes>
   );
 };
 
