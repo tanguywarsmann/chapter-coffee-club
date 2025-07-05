@@ -52,7 +52,6 @@ ${allUrls.map(url => `  <url>
 
     return sitemap;
   } catch (error) {
-    console.error('Error generating dynamic sitemap:', error);
     // Fallback vers un sitemap statique en cas d'erreur
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

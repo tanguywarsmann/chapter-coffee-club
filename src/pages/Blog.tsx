@@ -17,13 +17,10 @@ export default function Blog() {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        console.log('Loading blog posts...');
         const data = await blogService.getPublishedPosts();
-        console.log('Blog posts loaded:', data);
         setPosts(data);
         setError(null);
       } catch (error) {
-        console.error('Error loading blog posts:', error);
         setError('Erreur lors du chargement des articles');
       } finally {
         setLoading(false);
@@ -66,6 +63,34 @@ export default function Blog() {
         <meta name="twitter:title" content="Blog READ — Découvrez nos articles sur la lecture" />
         <meta name="twitter:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application READ." />
         <link rel="canonical" href="https://vread.fr/blog" />
+        
+        {/* Schema.org structured data for blog */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "name": "Blog READ",
+            "description": "Découvrez nos articles sur la lecture, les livres et la culture littéraire",
+            "url": "https://vread.fr/blog",
+            "publisher": {
+              "@type": "Organization",
+              "name": "READ",
+              "url": "https://vread.fr"
+            },
+            "mainEntity": posts.map(post => ({
+              "@type": "BlogPosting",
+              "headline": post.title,
+              "description": post.excerpt || "",
+              "datePublished": post.created_at,
+              "dateModified": post.updated_at,
+              "author": {
+                "@type": "Organization",
+                "name": post.author || "READ"
+              },
+              "url": `https://vread.fr/blog/${post.slug}`
+            }))
+          })}
+        </script>
       </Helmet>
       
       <div className="min-h-screen bg-logo-background">

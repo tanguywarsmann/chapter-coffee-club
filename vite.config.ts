@@ -1,4 +1,5 @@
-// vite.config.ts
+
+// vite.config.ts - Version 0.16
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
@@ -33,7 +34,7 @@ export default defineConfig(({ mode }) => ({
         globIgnores: ['**/admin/**'],
         runtimeCaching: [
           {
-            urlPattern: /\.(?:js|css|png|jpg|jpeg|svg|ico)$/,
+            urlPattern: /\.(?:js|css|png|jpg|jpeg|svg|ico|woff|woff2)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'static-resources',
@@ -82,7 +83,10 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     chunkSizeWarningLimit: 1000,
     terserOptions: {
-      compress: { drop_console: mode !== 'development', drop_debugger: true }
+      compress: { 
+        drop_console: mode !== 'development', 
+        drop_debugger: true 
+      }
     },
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),

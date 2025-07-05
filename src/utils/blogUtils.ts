@@ -14,12 +14,7 @@ function getSlugFromPath(path: string): string {
 export function getBlogPosts(): BlogPost[] {
   const posts: BlogPost[] = [];
   
-  console.log('Blog modules loaded:', Object.keys(blogModules));
-  
   Object.entries(blogModules).forEach(([path, moduleData]) => {
-    console.log('Processing file:', path);
-    console.log('Module data:', moduleData);
-    
     // Avec vite-plugin-markdown mode ['html', 'meta'], le module contient { html, metadata }
     const module = moduleData as { 
       html: string;
@@ -27,7 +22,6 @@ export function getBlogPosts(): BlogPost[] {
     };
     
     if (!module || !module.metadata) {
-      console.warn(`No metadata found for ${path}`);
       return;
     }
     
@@ -42,8 +36,6 @@ export function getBlogPosts(): BlogPost[] {
       slug: module.metadata.slug
     };
     
-    console.log('Parsed frontmatter:', frontmatter);
-    
     const slug = frontmatter.slug || getSlugFromPath(path);
     
     // Only include published posts
@@ -55,8 +47,6 @@ export function getBlogPosts(): BlogPost[] {
       });
     }
   });
-
-  console.log('Final posts:', posts);
 
   // Sort by date (newest first)
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

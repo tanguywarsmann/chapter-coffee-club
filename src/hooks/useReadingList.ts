@@ -1,23 +1,32 @@
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
-import { fetchReadingProgress, addBookToReadingList, fetchBooksForStatus } from "@/services/reading/readingListService";
+import { fetchReadingProgress, addBookToReadingList } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
 import { Book } from "@/types/book";
 import { cacheBooksByStatus, getCachedBooksByStatus, clearBooksByStatusCache } from "./useReadingListCache";
 import { safeFetchBooksForStatus } from "./useReadingListHelpers";
+import { useStableCallback } from "./useStableCallback";
+import { withErrorHandling } from "@/utils/errorBoundaryUtils";
+import { useDebounce } from "./useDebounce";
+import { persistentCache } from "@/utils/persistentCache";
 
-// version 0.14 refactored
-
+/**
+ * Hook consolidé pour la gestion des listes de lecture - version 0.16
+ * Fusion de useReadingListOptimized, useReadingListRefactored et useReadingListCore
+ */
 export const useReadingList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const hasFetchedOnMount = useRef(false);
   const errorCount = useRef(0);
   const isFetchingRef = useRef(false);
+
+  // Debounce user id pour éviter les requêtes excessives
+  const debouncedUserId = useDebounce(user?.id, 300);
 
   const {
     books,
@@ -28,120 +37,166 @@ export const useReadingList = () => {
     isMounted
   } = useReadingListState();
 
-  // Query pour la liste de lecture de l'utilisateur
+  // Query optimisée avec cache persistant et mémorisation
+  const queryConfig = useMemo(() => ({
+    queryKey: ["reading_list", debouncedUserId],
+    queryFn: async () => {
+      const cacheKey = `reading_list_${debouncedUserId}`;
+      const startTime = performance.now();
+      
+      // Essayer le cache persistant d'abord
+      try {
+        const cached = await persistentCache.get(cacheKey);
+        if (cached) {
+          return cached;
+        }
+      } catch (error) {
+        // Silent fallback
+      }
+      
+      // Fallback API
+      const data = await fetchReadingProgress(debouncedUserId || "");
+      
+      // Sauver en cache
+      try {
+        await persistentCache.set(cacheKey, data, 300000); // 5 minutes
+      } catch (error) {
+        // Silent fallback
+      }
+      
+      return data;
+    },
+    enabled: !!debouncedUserId,
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: !hasFetchedOnMount.current,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    retry: 2,
+    gcTime: 600000, // 10 minutes
+  }), [debouncedUserId]);
+
   const { 
     data: readingList, 
     isLoading: isLoadingReadingList, 
     error: readingListError, 
     isSuccess, 
     refetch 
-  } = useQuery({
-    queryKey: ["reading_list", user?.id],
-    queryFn: () => fetchReadingProgress(user?.id || ""),
-    enabled: !!user?.id,
-    staleTime: 300000,
-    refetchOnMount: !hasFetchedOnMount.current,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-    retry: 2,
-    gcTime: 600000,
-  });
+  } = useQuery(queryConfig);
 
+  // Effet optimisé pour le montage
   useEffect(() => {
     if (isSuccess && !hasFetchedOnMount.current) {
       hasFetchedOnMount.current = true;
     }
   }, [isSuccess]);
 
+  // Effet optimisé pour le changement d'utilisateur
   useEffect(() => {
-    if (user?.id) {
-      clearBooksByStatusCache(); // Clear cache when user changes
+    if (debouncedUserId) {
+      clearBooksByStatusCache();
       queryClient.invalidateQueries({ queryKey: ["reading_list"] });
     } else {
       queryClient.resetQueries({ queryKey: ["reading_list"] });
       errorCount.current = 0;
       hasFetchedOnMount.current = false;
       clearBooksByStatusCache();
+      persistentCache.clear();
     }
-  }, [user?.id, queryClient]);
+  }, [debouncedUserId, queryClient]);
 
-  // Fetch books by status optimisé avec cache
-  const getBooksByStatus = useCallback(async (status: string): Promise<Book[]> => {
-    if (!user?.id || !readingList) return [];
-    // Completed = always fetch from server (potentially most volatile)
-    if (status === "completed") {
-      const booksFetched = await safeFetchBooksForStatus(readingList, status, user.id);
+  // Fonction optimisée pour récupérer les livres par statut
+  const getBooksByStatus = useStableCallback(
+    withErrorHandling(async (status: string): Promise<Book[]> => {
+      if (!debouncedUserId || !readingList) return [];
+      
+      // Completed = always fetch from server (potentially most volatile)
+      if (status === "completed") {
+        const booksFetched = await safeFetchBooksForStatus(readingList, status, debouncedUserId);
+        cacheBooksByStatus(status, booksFetched);
+        queryClient.setQueryData(["books_by_status", debouncedUserId, status], booksFetched);
+        return booksFetched;
+      }
+      
+      // Try in-memory cache first
+      const cached = getCachedBooksByStatus(status);
+      if (cached && cached.length > 0) return cached;
+      
+      // Fallback to React Query cache
+      const rqCached = queryClient.getQueryData<Book[]>([
+        "books_by_status", debouncedUserId, status
+      ]);
+      if (rqCached && rqCached.length > 0) {
+        cacheBooksByStatus(status, rqCached);
+        return rqCached;
+      }
+      
+      // Else, fetch and cache
+      const booksFetched = await safeFetchBooksForStatus(readingList, status, debouncedUserId);
       cacheBooksByStatus(status, booksFetched);
-      queryClient.setQueryData(["books_by_status", user.id, status], booksFetched);
+      queryClient.setQueryData(["books_by_status", debouncedUserId, status], booksFetched);
       return booksFetched;
-    }
-    // Try in-memory cache first
-    const cached = getCachedBooksByStatus(status);
-    if (cached && cached.length > 0) return cached;
-    // Fallback to React Query cache
-    const rqCached = queryClient.getQueryData<Book[]>([
-      "books_by_status", user.id, status
-    ]);
-    if (rqCached && rqCached.length > 0) {
-      cacheBooksByStatus(status, rqCached);
-      return rqCached;
-    }
-    // Else, fetch and cache
-    const booksFetched = await safeFetchBooksForStatus(readingList, status, user.id);
-    cacheBooksByStatus(status, booksFetched);
-    queryClient.setQueryData(["books_by_status", user.id, status], booksFetched);
-    return booksFetched;
-  }, [user?.id, readingList, queryClient]);
+    }, 'useReadingList.getBooksByStatus')
+  );
 
-  // Fonction d'ajout à la liste
-  const addToReadingList = async (book: Book): Promise<boolean> => {
-    if (!user?.id) {
-      toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
-      return false;
-    }
-    if (!book?.id) {
-      toast.error("Erreur: livre invalide");
-      return false;
-    }
-    try {
-      const result = await addBookToReadingList(book);
-      if (result) {
-        await queryClient.invalidateQueries({ queryKey: ["reading_list"] });
-        await queryClient.invalidateQueries({ queryKey: ["books_by_status"] });
-        refetch();
-        toast.success(`"${book.title}" ajouté à votre liste de lecture`);
-        return true;
-      } else {
-        toast.error(`Impossible d'ajouter "${book.title}" à votre liste`);
+  // Fonction d'ajout optimisée
+  const addToReadingList = useStableCallback(
+    withErrorHandling(async (book: Book): Promise<boolean> => {
+      if (!debouncedUserId) {
+        toast.error("Vous devez être connecté pour ajouter un livre à votre liste");
         return false;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
-      toast.error(`Erreur: ${errorMessage}`);
-      return false;
-    }
-  };
+      if (!book?.id) {
+        toast.error("Erreur: livre invalide");
+        return false;
+      }
+      
+      try {
+        const result = await addBookToReadingList(book);
+        if (result) {
+          // Invalidation sélective pour de meilleures performances
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["reading_list"] }),
+            queryClient.invalidateQueries({ queryKey: ["books_by_status"] })
+          ]);
+          refetch();
+          toast.success(`"${book.title}" ajouté à votre liste de lecture`);
+          return true;
+        } else {
+          toast.error(`Impossible d'ajouter "${book.title}" à votre liste`);
+          return false;
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
+        toast.error(`Erreur: ${errorMessage}`);
+        return false;
+      }
+    }, 'useReadingList.addToReadingList')
+  );
 
-  // Effect principal pour charger les catégories de livres
+  // Effet principal optimisé pour charger les catégories de livres
   useEffect(() => {
-    if (!user?.id || !readingList || isFetchingRef.current || isFetching) return;
+    if (!debouncedUserId || !readingList || isFetchingRef.current || isFetching) return;
     if (books.inProgress.length > 0 && hasFetchedOnMount.current && isSuccess) {
       return;
     }
+    
     const fetchBooks = async () => {
       try {
         isFetchingRef.current = true;
         setIsFetching(true);
         setIsLoading(true);
         setError(null);
-        // Fetch each category in parallele
+        
+        // Fetch en parallèle avec limitation
         const [toRead, inProgress, completed] = await Promise.all([
           getBooksByStatus("to_read"),
           getBooksByStatus("in_progress"),
           getBooksByStatus("completed"),
         ]);
+        
         if (isMounted.current) {
           updateBooks(toRead, inProgress, completed);
+          // Cache batch update
           cacheBooksByStatus("to_read", toRead);
           cacheBooksByStatus("in_progress", inProgress);
           cacheBooksByStatus("completed", completed);
@@ -162,10 +217,23 @@ export const useReadingList = () => {
         isFetchingRef.current = false;
       }
     };
+    
     fetchBooks();
-  }, [user?.id, readingList, isSuccess, getBooksByStatus, books.inProgress.length, isFetching, setIsFetching, setIsLoading, setError, updateBooks, isMounted]);
+  }, [
+    debouncedUserId, 
+    readingList, 
+    isSuccess, 
+    getBooksByStatus, 
+    books.inProgress.length, 
+    isFetching, 
+    setIsFetching, 
+    setIsLoading, 
+    setError, 
+    updateBooks, 
+    isMounted
+  ]);
 
-  // Gestion d'erreur sur la query initiale
+  // Gestion d'erreur optimisée
   if (readingListError && errorCount.current === 0) {
     toast.error("Impossible de récupérer votre liste de lecture", {
       id: "reading-list-error"
@@ -173,30 +241,35 @@ export const useReadingList = () => {
     errorCount.current++;
   }
 
-  // Forcer refresh (remise à zéro des caches)
-  const forceRefresh = useCallback(() => {
+  // Refresh optimisé
+  const forceRefresh = useStableCallback(() => {
     clearBooksByStatusCache();
     queryClient.invalidateQueries({ queryKey: ["reading_list"] });
     queryClient.invalidateQueries({ queryKey: ["books_by_status"] });
     refetch();
-  }, [queryClient, refetch]);
+  });
 
-  // Sync completed books (rare)
-  const syncCompletedBooks = useCallback(async () => {
-    if (!user?.id || !readingList) return;
-    clearBooksByStatusCache();
-    try {
-      queryClient.removeQueries({ queryKey: ["books_by_status", user.id, "completed"] });
-      const completedBooks = await safeFetchBooksForStatus(readingList, "completed", user.id);
-      if (isMounted.current) {
-        updateBooks(books.toRead, books.inProgress, completedBooks);
+  // Sync optimisé des livres complétés
+  const syncCompletedBooks = useStableCallback(
+    withErrorHandling(async () => {
+      if (!debouncedUserId || !readingList) return;
+      
+      clearBooksByStatusCache();
+      
+      try {
+        queryClient.removeQueries({ queryKey: ["books_by_status", debouncedUserId, "completed"] });
+        const completedBooks = await safeFetchBooksForStatus(readingList, "completed", debouncedUserId);
+        if (isMounted.current) {
+          updateBooks(books.toRead, books.inProgress, completedBooks);
+        }
+      } catch (error) {
+        // Silent error handling for sync
       }
-    } catch (error) {
-      // soft
-    }
-  }, [user?.id, readingList, books.toRead, books.inProgress, updateBooks, isMounted, queryClient]);
+    }, 'useReadingList.syncCompletedBooks')
+  );
 
-  return {
+  // Mémoriser la valeur de retour
+  return useMemo(() => ({
     ...books,
     isLoadingReadingList,
     readingListError,
@@ -205,12 +278,26 @@ export const useReadingList = () => {
     isLoading,
     error,
     readingList,
-    userId: user?.id,
+    userId: debouncedUserId,
     getFailedBookIds: () => bookFailureCache.getAll(),
     hasFetchedInitialData: () => hasFetchedOnMount.current,
     getBooksByStatus,
     addToReadingList,
     forceRefresh,
     syncCompletedBooks,
-  };
+  }), [
+    books,
+    isLoadingReadingList,
+    readingListError,
+    sortState.sortBy,
+    sortState.setSortBy,
+    isLoading,
+    error,
+    readingList,
+    debouncedUserId,
+    getBooksByStatus,
+    addToReadingList,
+    forceRefresh,
+    syncCompletedBooks,
+  ]);
 };

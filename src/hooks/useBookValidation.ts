@@ -1,5 +1,7 @@
 
+import { useState, useRef, useCallback, useMemo } from "react";
 import { Book } from "@/types/book";
+import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
 import { useConfetti } from "./useConfetti";
 import { useReadingProgress } from "./useReadingProgress";
@@ -8,22 +10,48 @@ import { useQuizCompletion } from "./useQuizCompletion";
 import { validateUserAndBook, checkBookCompletion, showValidationError } from "@/utils/validationUtils";
 import { toast } from "sonner";
 import { useStableCallback } from "./useStableCallback";
-import { usePerformanceTracker } from "@/utils/performanceAudit";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
-import { useCallback, useMemo } from "react";
+import { recordReadingSession } from "@/services/badgeService";
+import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
+import { useMonthlyReward } from "@/components/books/BookMonthlyRewardHandler";
 
-export const useBookValidation = (
-  book: Book | null,
-  userId: string | null,
-  onProgressUpdate?: (bookId: string) => void
-) => {
-  const { trackRender, trackApiCall, trackError } = usePerformanceTracker('useBookValidation');
-  
+interface UseBookValidationProps {
+  book: Book | null;
+  userId: string | null;
+  onProgressUpdate?: (bookId: string) => void;
+  currentBook?: Book;
+  setCurrentBook?: (b: Book) => void;
+  refreshProgressData?: () => Promise<void>;
+  refreshReadingProgress?: (force?: boolean) => void;
+  user?: any;
+  onChapterComplete?: (bookId: string) => void;
+}
+
+/**
+ * Hook consolidé pour la validation des livres - version 0.16
+ * Fusion de useBookValidation et useBookValidationHandler
+ */
+export const useBookValidation = ({
+  book,
+  userId,
+  onProgressUpdate,
+  currentBook,
+  setCurrentBook,
+  refreshProgressData,
+  refreshReadingProgress,
+  user,
+  onChapterComplete
+}: UseBookValidationProps) => {
+  const sessionStartTimeRef = useRef<Date | null>(null);
+  const [showBadgeDialog, setShowBadgeDialog] = useState(false);
+  const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
+  const [validationSegment, setValidationSegment] = useState<number | null>(null);
+
   const {
     isValidating,
     setIsValidating,
-    validationSegment,
-    setValidationSegment,
+    validationSegment: stateValidationSegment,
+    setValidationSegment: setStateValidationSegment,
     validationError,
     setValidationError,
     resetValidationState
@@ -31,6 +59,9 @@ export const useBookValidation = (
 
   const { showConfetti } = useConfetti();
   const { forceRefresh } = useReadingProgress();
+
+  // Monthly reward
+  const { monthlyReward, showMonthlyReward, setShowMonthlyReward } = useMonthlyReward(userId);
 
   const {
     showQuiz,
@@ -57,18 +88,35 @@ export const useBookValidation = (
     onProgressUpdate
   });
 
-  // Stabiliser la fonction de validation avec gestion d'erreur robuste
+  // Synchroniser les segments entre les états
+  const effectiveValidationSegment = validationSegment || stateValidationSegment;
+
+  // Handler for main validation button
+  const handleMainButtonClick = useCallback((readingProgress: any) => {
+    if (!userId) {
+      toast.error("Vous devez être connecté pour commencer ou valider votre lecture");
+      return;
+    }
+
+    const segment = (readingProgress?.chaptersRead || (currentBook || book)?.chaptersRead || 0) + 1;
+    setValidationSegment(segment);
+    setStateValidationSegment(segment);
+
+    if (!sessionStartTimeRef.current) {
+      sessionStartTimeRef.current = new Date();
+    }
+  }, [userId, currentBook, book, setStateValidationSegment]);
+
+  // Validation principale optimisée
   const handleValidateReading = useStableCallback(
     withErrorHandling(async (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       
-      trackApiCall();
       setValidationError(null);
       
       // Validation préliminaire consolidée
       if (!validateUserAndBook(userId, book)) {
-        trackError(new Error('User or book validation failed'));
         return;
       }
       
@@ -80,57 +128,46 @@ export const useBookValidation = (
         setIsValidating(true);
         const nextSegment = (book!.chaptersRead || 0) + 1;
         
-        console.log(`[useBookValidation] Setting validation segment to ${nextSegment} for book:`, book!.title);
         setValidationSegment(nextSegment);
+        setStateValidationSegment(nextSegment);
         
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         setValidationError(errorMessage);
         showValidationError(error, "de la préparation de la validation");
-        trackError(error as Error);
       } finally {
         setIsValidating(false);
       }
     }, 'useBookValidation.handleValidateReading')
   );
 
-  // Optimiser la confirmation de validation
+  // Confirmation de validation optimisée
   const handleValidationConfirm = useStableCallback(
     withErrorHandling(async () => {
-      console.log(`[useBookValidation] handleValidationConfirm called with segment:`, validationSegment);
-      
-      trackApiCall();
-      
       if (!validateUserAndBook(userId, book)) {
-        trackError(new Error('User or book validation failed in confirm'));
         return;
       }
       
       // Calcul sécurisé du segment avec fallback
-      let segmentToValidate = validationSegment;
+      let segmentToValidate = effectiveValidationSegment;
       if (!segmentToValidate && book) {
         segmentToValidate = (book.chaptersRead || 0) + 1;
-        console.log(`[useBookValidation] Recalculated segment: ${segmentToValidate}`);
         setValidationSegment(segmentToValidate);
+        setStateValidationSegment(segmentToValidate);
       }
       
       if (!segmentToValidate) {
-        const error = new Error(`No segment to validate for book: ${book?.title}`);
-        trackError(error);
         toast.error("Impossible de déterminer le segment à valider", { duration: 3000 });
         return;
       }
 
       try {
         setIsValidating(true);
-        console.log(`[useBookValidation] Preparing question for segment ${segmentToValidate}`);
         await prepareAndShowQuestion(segmentToValidate);
         
         // Refresh immédiat pour éviter les états incohérents
         forceRefresh();
       } catch (error: any) {
-        console.error("Erreur lors de la préparation de la validation:", error);
-        trackError(error);
         toast.error("Erreur de validation", {
           description: error.message || "Impossible de préparer la validation",
           duration: 5000
@@ -144,20 +181,114 @@ export const useBookValidation = (
     }, 'useBookValidation.handleValidationConfirm')
   );
 
+  // Handler consolidé pour la complétion du quiz
+  const handleQuizCompleteWrapper = useCallback(async (correct: boolean) => {
+    try {
+      const result = await handleQuizComplete(correct);
+
+      if (correct) {
+        showConfetti();
+        
+        if (refreshProgressData) {
+          await refreshProgressData();
+        }
+        forceRefresh();
+
+        // Refreshs en cascade pour assurer la cohérence
+        setTimeout(async () => {
+          if (refreshProgressData) {
+            await refreshProgressData();
+          }
+          if (refreshReadingProgress) {
+            refreshReadingProgress(true);
+          }
+        }, 100);
+        
+        setTimeout(async () => {
+          if (refreshProgressData) {
+            await refreshProgressData();
+          }
+          if (refreshReadingProgress) {
+            refreshReadingProgress(true);
+          }
+          if (setCurrentBook && currentBook) {
+            setCurrentBook(currentBook);
+          }
+        }, 500);
+
+        if (userId) {
+          if (result?.newBadges && result.newBadges.length > 0) {
+            setUnlockedBadges(result.newBadges);
+            setShowBadgeDialog(true);
+          }
+          
+          if ((currentBook || book)?.isCompleted) {
+            const completedBooks = localStorage.getItem(`completed_books_${userId}`)
+              ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
+              : [];
+            if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
+              completedBooks.push(currentBook || book);
+              localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
+            }
+          }
+          
+          if (sessionStartTimeRef.current) {
+            const endTime = new Date();
+            recordReadingSession(userId, sessionStartTimeRef.current, endTime);
+            sessionStartTimeRef.current = null;
+          }
+          
+          // Monthly reward dialog
+          const monthlyBadge = await checkAndGrantMonthlyReward(userId);
+          if (monthlyBadge) {
+            setTimeout(() => {
+              setShowMonthlyReward(true);
+            }, 1000);
+          }
+        }
+        toast.success("Segment validé avec succès !");
+      } else {
+        if (refreshProgressData) {
+          await refreshProgressData();
+        }
+        forceRefresh();
+      }
+    } catch (error) {
+      toast.error("Une erreur est survenue lors de la validation");
+      if (refreshProgressData) {
+        await refreshProgressData();
+      }
+      forceRefresh();
+    }
+  }, [
+    handleQuizComplete,
+    showConfetti,
+    refreshProgressData,
+    forceRefresh,
+    refreshReadingProgress,
+    userId,
+    setCurrentBook,
+    currentBook,
+    book,
+    setShowBadgeDialog,
+    setUnlockedBadges,
+    setShowMonthlyReward,
+  ]);
+
   // Mémoriser les valeurs de retour pour éviter les re-rendus
   const returnValue = useMemo(() => ({
     isValidating,
     showQuiz,
     setShowQuiz,
     quizChapter,
-    validationSegment,
+    validationSegment: effectiveValidationSegment,
     setValidationSegment,
     currentQuestion,
     showSuccessMessage,
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizComplete,
+    handleQuizComplete: handleQuizCompleteWrapper,
     handleValidationConfirm,
     showConfetti,
     validationError,
@@ -165,20 +296,28 @@ export const useBookValidation = (
     remainingLockTime,
     handleLockExpire,
     newBadges,
-    forceRefresh
+    forceRefresh,
+    showBadgeDialog,
+    setShowBadgeDialog,
+    unlockedBadges,
+    monthlyReward,
+    showMonthlyReward,
+    setShowMonthlyReward,
+    handleMainButtonClick,
+    sessionStartTimeRef,
   }), [
     isValidating,
     showQuiz,
     setShowQuiz,
     quizChapter,
-    validationSegment,
+    effectiveValidationSegment,
     setValidationSegment,
     currentQuestion,
     showSuccessMessage,
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizComplete,
+    handleQuizCompleteWrapper,
     handleValidationConfirm,
     showConfetti,
     validationError,
@@ -186,10 +325,13 @@ export const useBookValidation = (
     remainingLockTime,
     handleLockExpire,
     newBadges,
-    forceRefresh
+    forceRefresh,
+    showBadgeDialog,
+    unlockedBadges,
+    monthlyReward,
+    showMonthlyReward,
+    handleMainButtonClick
   ]);
-
-  trackRender();
   
   return returnValue;
 };
