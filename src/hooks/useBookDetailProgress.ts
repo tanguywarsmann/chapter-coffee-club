@@ -48,7 +48,6 @@ export function useBookDetailProgress(initialBook: Book) {
         }, 0);
       }
     } catch (error) {
-      console.error("⚠️ Erreur lors du rafraîchissement des données:", error);
       toast.error("Erreur lors du chargement de la progression du livre");
     }
   }, [user?.id, bookIdentifier]);

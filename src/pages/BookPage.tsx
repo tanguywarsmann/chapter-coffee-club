@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -24,10 +25,7 @@ export default function BookPage() {
     isMounted.current = true;
     
     const fetchBook = async () => {
-      console.log("[BookPage] Début de fetchBook, ID:", id);
-      
       if (!id) {
-        console.error("[BookPage] Aucun ID fourni dans les paramètres");
         setError("Aucun identifiant de livre fourni");
         setLoading(false);
         return;
@@ -37,21 +35,16 @@ export default function BookPage() {
         setLoading(true);
         setError(null);
         
-        console.log(`[BookPage] Récupération du livre avec ID: "${id}"`);
-        
         // Récupérer le livre basique d'abord
         const fetchedBook = await getBookById(id);
         
         if (!isMounted.current) return;
         
         if (!fetchedBook) {
-          console.error(`[BookPage] Aucun livre trouvé pour ID: ${id}`);
           setError(`Le livre avec l'identifiant "${id}" n'existe pas`);
           setLoading(false);
           return;
         }
-        
-        console.log(`[BookPage] Livre trouvé: ${fetchedBook.title} (${fetchedBook.id})`);
         
         // Ensure categories and tags are properly set to avoid undefined errors
         const safeBook = {
@@ -87,13 +80,11 @@ export default function BookPage() {
         // Essayer de récupérer avec progression si utilisateur connecté
         if (user?.id) {
           try {
-            console.log(`[BookPage] Tentative de récupération avec progression pour user: ${user.id}`);
             const bookWithProgress = await getBookReadingProgress(user.id, id);
             
             if (!isMounted.current) return;
             
             if (bookWithProgress) {
-              console.log(`[BookPage] Livre avec progression trouvé: ${bookWithProgress.title}`);
               // Ensure safe categories
               const safeProgressBook = {
                 ...bookWithProgress,
@@ -103,13 +94,11 @@ export default function BookPage() {
               setBook(safeProgressBook);
             } else {
               // Synchroniser avec l'API
-              console.log(`[BookPage] Synchronisation avec API pour user: ${user.id}`);
               const syncedBook = await syncBookWithAPI(user.id, id);
               
               if (!isMounted.current) return;
               
               if (syncedBook) {
-                console.log(`[BookPage] Livre synchronisé: ${syncedBook.title}`);
                 const safeSyncedBook = {
                   ...syncedBook,
                   categories: syncedBook.categories || syncedBook.tags || [],
@@ -120,13 +109,11 @@ export default function BookPage() {
               }
             }
           } catch (syncError) {
-            console.error("[BookPage] Erreur lors de la synchronisation:", syncError);
             // Ne pas afficher d'erreur pour la sync, le livre de base fonctionne
           }
         }
         
       } catch (fetchError) {
-        console.error("[BookPage] Erreur lors de la récupération:", fetchError);
         if (isMounted.current) {
           setError("Erreur lors du chargement du livre");
           toast.error("Erreur lors du chargement du livre");
@@ -158,8 +145,6 @@ export default function BookPage() {
         segment: book.currentSegment ?? 0
       });
 
-      console.log("[BookPage] Résultat validateReading:", result);
-
       const updatedProgress = await getBookReadingProgress(user.id, bookId);
       if (!isMounted.current) return;
 
@@ -177,7 +162,6 @@ export default function BookPage() {
         }
       }
     } catch (error) {
-      console.error("[BookPage] Erreur validateReading:", error);
       toast.error("Erreur lors de la validation : " + (error as Error).message);
     }
   };
