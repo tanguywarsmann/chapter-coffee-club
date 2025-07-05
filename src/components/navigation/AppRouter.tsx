@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LandingPage from '@/pages/LandingPage';
-import HomePage from '@/pages/HomePage';
-import AuthPage from '@/pages/AuthPage';
-import ResetPasswordPage from '@/pages/ResetPasswordPage';
-import ProfilePage from '@/pages/ProfilePage';
+import Landing from '@/pages/Landing';
+import Home from '@/pages/Home';
+import Auth from '@/pages/Auth';
+import ResetPassword from '@/pages/ResetPassword';
+import Profile from '@/pages/Profile';
 import BookPage from '@/pages/BookPage';
 import Blog from '@/pages/Blog';
 import BlogPost from '@/pages/BlogPost';
@@ -12,21 +13,21 @@ import ReadingList from '@/pages/ReadingList';
 import Discover from '@/pages/Discover';
 import Explore from '@/pages/Explore';
 import Achievements from '@/pages/Achievements';
-import FollowersPage from '@/pages/FollowersPage';
-import AdminPanel from '@/pages/AdminPanel';
+import Followers from '@/pages/Followers';
+import Admin from '@/pages/Admin';
 
 const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/profile/:userId" element={<ProfilePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/u/:userId" element={<ProfilePage />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/u/:userId" element={<Profile />} />
         <Route path="/book/:id" element={<BookPage />} />
         <Route path="/books/:id" element={<BookPage />} />
         <Route path="/blog" element={<Blog />} />
@@ -35,10 +36,10 @@ const AppRouter = () => {
         <Route path="/discover" element={<Discover />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/achievements" element={<Achievements />} />
-        <Route path="/followers/:type/:userId" element={<FollowersPage />} />
+        <Route path="/followers/:type/:userId" element={<Followers />} />
         
         {/* Admin Panel */}
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin" element={<Admin />} />
         
         {/* Route pour le sitemap dynamique */}
         <Route 
