@@ -1,262 +1,99 @@
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from '@/pages/LandingPage';
+import HomePage from '@/pages/HomePage';
+import AuthPage from '@/pages/AuthPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
+import ProfilePage from '@/pages/ProfilePage';
+import BookPage from '@/pages/BookPage';
+import Blog from '@/pages/Blog';
+import BlogPost from '@/pages/BlogPost';
+import ReadingList from '@/pages/ReadingList';
+import Discover from '@/pages/Discover';
+import Explore from '@/pages/Explore';
+import Achievements from '@/pages/Achievements';
+import FollowersPage from '@/pages/FollowersPage';
+import AdminPanel from '@/pages/AdminPanel';
 
-import { useEffect, useState } from "react";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Suspense, lazy } from "react";
-import { AuthGuard } from "../auth/AuthGuard";
-import { PageTransition } from "@/components/ui/page-transition";
-import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AppFooter } from "@/components/layout/AppFooter";
-import { usePrefetch } from "@/hooks/usePrefetch";
-import { isPublicRoute, requiresAuth } from "@/utils/publicRoutes";
-import Home from "@/pages/Home";
-import Auth from "@/pages/Auth";
-import ResetPassword from "@/pages/ResetPassword";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
-import PublicHome from "@/pages/PublicHome";
+const AppRouter = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/profile/:userId" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/u/:userId" element={<ProfilePage />} />
+        <Route path="/book/:id" element={<BookPage />} />
+        <Route path="/books/:id" element={<BookPage />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/reading-list" element={<ReadingList />} />
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/followers/:type/:userId" element={<FollowersPage />} />
+        
+        {/* Admin Panel */}
+        <Route path="/admin" element={<AdminPanel />} />
+        
+        {/* Route pour le sitemap dynamique */}
+        <Route 
+          path="/sitemap.xml" 
+          element={<SitemapRoute />} 
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-// Non-critical components loaded with React.lazy
-const BookPage = lazy(() => import("@/pages/BookPage"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const PublicProfilePage = lazy(() => import("@/pages/PublicProfilePage"));
-const Discover = lazy(() => import("@/pages/Discover"));
-const ReadingList = lazy(() => import("@/pages/ReadingList"));
-const Explore = lazy(() => import("@/pages/Explore"));
-const Achievements = lazy(() => import("@/pages/Achievements"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
-const Followers = lazy(() => import("@/pages/Followers"));
-const Landing = lazy(() => import("@/pages/Landing"));
+// Composant pour servir le sitemap
+const SitemapRoute = () => {
+  const [sitemap, setSitemap] = useState<string>('');
 
-const HomeFallback = () => <PageSkeleton variant="home" />;
-const ListFallback = () => <PageSkeleton variant="list" />;
-const ProfileFallback = () => <PageSkeleton variant="profile" />;
-const BookFallback = () => <PageSkeleton variant="book" />;
-const GenericFallback = () => <PageSkeleton />;
-
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-logo-background transition-opacity duration-300">
-    <div className="text-center space-y-4">
-      <div className="relative">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
-        <div className="absolute inset-0 rounded-full h-12 w-12 border-2 border-coffee-light/30 mx-auto"></div>
-      </div>
-      <p className="text-coffee-dark font-medium">Chargement...</p>
-    </div>
-  </div>
-);
-
-export function AppRouter() {
-  const { user, isLoading, isInitialized } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isDocumentReady, setIsDocumentReady] = useState(document.readyState === "complete");
-
-  // Active le prefetch intelligent
-  usePrefetch();
-
-  // Check for document ready state
   useEffect(() => {
-    if (document.readyState !== "complete") {
-      const handleDocumentReady = () => {
-        setIsDocumentReady(true);
-      };
-      window.addEventListener("load", handleDocumentReady);
-      return () => window.removeEventListener("load", handleDocumentReady);
-    }
+    const generateSitemap = async () => {
+      try {
+        const { generateCompleteSitemap } = await import('@/utils/sitemapServer');
+        const sitemapContent = await generateCompleteSitemap();
+        setSitemap(sitemapContent);
+        
+        // Définir les headers appropriés
+        document.querySelector('meta[name="content-type"]')?.setAttribute('content', 'application/xml');
+      } catch (error) {
+        console.error('Erreur génération sitemap:', error);
+        setSitemap(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://vread.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+      }
+    };
+
+    generateSitemap();
   }, []);
 
-  // Navigation logic - improved with public/private route handling
-  useEffect(() => {
-    if (!isLoading && isInitialized && isDocumentReady) {
-      const currentPath = location.pathname;
-      
-      // Ne pas rediriger si on est sur une route publique
-      if (isPublicRoute(currentPath)) {
-        return;
-      }
-      
-      // Si l'utilisateur n'est pas connecté et tente d'accéder à une route privée
-      if (!user && requiresAuth(currentPath)) {
-        navigate("/auth", { replace: true });
-        return;
-      }
-      
-      // Si l'utilisateur est connecté et sur la page d'accueil, rediriger vers /home
-      if (user && currentPath === "/") {
-        navigate("/home", { replace: true });
-        return;
-      }
-    }
-  }, [user, isLoading, isInitialized, isDocumentReady, location.pathname, navigate]);
-
-  // Détermine si on affiche la version publique ou privée
-  const isPublic = isPublicRoute(location.pathname);
-  
-  // Pour les routes publiques
-  if (isPublic) {
+  // Retourner le XML directement
+  if (sitemap) {
     return (
-      <PageTransition key={location.pathname}>
-        <Routes>          
-          {/* Routes publiques avec layout public */}
-          <Route path="/" element={
-            <PublicLayout>
-              <PublicHome />
-            </PublicLayout>
-          } />
-          
-          <Route path="/landing" element={
-            <PublicLayout>
-              <Suspense fallback={<GenericFallback />}>
-                <Landing />
-              </Suspense>
-            </PublicLayout>
-          } />
-          
-          <Route path="/auth" element={
-            <PublicLayout>
-              <Auth />
-            </PublicLayout>
-          } />
-          
-          <Route path="/reset-password" element={
-            <PublicLayout>
-              <Suspense fallback={<GenericFallback />}>
-                <ResetPassword />
-              </Suspense>
-            </PublicLayout>
-          } />
-          
-          <Route path="/blog" element={
-            <PublicLayout>
-              <Blog />
-            </PublicLayout>
-          } />
-          
-          <Route path="/blog/:slug" element={
-            <PublicLayout>
-              <BlogPost />
-            </PublicLayout>
-          } />
-          
-          {/* Routes publiques pour les livres */}
-          <Route path="/books/:id" element={
-            <PublicLayout>
-              <Suspense fallback={<BookFallback />}>
-                <BookPage />
-              </Suspense>
-            </PublicLayout>
-          } />
-          
-          {/* Fallback pour routes non trouvées */}
-          <Route path="*" element={
-            <PublicLayout>
-              <Suspense fallback={<GenericFallback />}>
-                <NotFound />
-              </Suspense>
-            </PublicLayout>
-          } />
-        </Routes>
-      </PageTransition>
+      <div 
+        dangerouslySetInnerHTML={{ __html: sitemap }}
+        style={{ 
+          fontFamily: 'monospace', 
+          whiteSpace: 'pre-wrap',
+          fontSize: '12px'
+        }}
+      />
     );
   }
 
-  // Pour les routes privées, vérifier l'authentification
-  if (isLoading || !isInitialized || !isDocumentReady) {
-    return <LoadingFallback />;
-  }
+  return <div>Génération du sitemap...</div>;
+};
 
-  // Layout privé avec AppHeader et AppFooter - structure simplifiée pour éviter la duplication
-  return (
-    <>
-      <AppHeader />
-      <main className="flex-1 min-h-screen">
-        <PageTransition key={location.pathname}>
-          <Routes>
-            <Route path="/home" element={
-              <AuthGuard>
-                <Home />
-              </AuthGuard>
-            } />
-            
-            <Route path="/profile/:userId?" element={
-              <AuthGuard>
-                <Suspense fallback={<ProfileFallback />}>
-                  <Profile />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/u/:userId" element={
-              <AuthGuard>
-                <Suspense fallback={<ProfileFallback />}>
-                  <PublicProfilePage />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/discover" element={
-              <AuthGuard>
-                <Suspense fallback={<ListFallback />}>
-                  <Discover />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/reading-list" element={
-              <AuthGuard>
-                <Suspense fallback={<ListFallback />}>
-                  <ReadingList />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/explore" element={
-              <AuthGuard>
-                <Suspense fallback={<ListFallback />}>
-                  <Explore />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/achievements" element={
-              <AuthGuard>
-                <Suspense fallback={<GenericFallback />}>
-                  <Achievements />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/followers/:type/:userId?" element={
-              <AuthGuard>
-                <Suspense fallback={<ListFallback />}>
-                  <Followers />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="/admin" element={
-              <AuthGuard>
-                <Suspense fallback={<GenericFallback />}>
-                  <Admin />
-                </Suspense>
-              </AuthGuard>
-            } />
-            
-            <Route path="*" element={
-              <Suspense fallback={<GenericFallback />}>
-                <NotFound />
-              </Suspense>
-            } />
-          </Routes>
-        </PageTransition>
-      </main>
-      <AppFooter />
-    </>
-  );
-}
-
-export default { AppRouter };
+export default AppRouter;

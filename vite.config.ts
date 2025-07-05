@@ -101,5 +101,10 @@ export default defineConfig(({ mode }) => ({
         }
       }
     }
+  },
+
+  // Hook pour vérifier le sitemap à chaque build
+  define: {
+    __SITEMAP_CHECK__: JSON.stringify(process.env.NODE_ENV === 'production')
   }
 }))
