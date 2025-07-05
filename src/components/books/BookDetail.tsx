@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book } from "@/types/book";
@@ -10,7 +9,7 @@ import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { BookBadgeDialog } from "./BookBadgeDialog";
 import { useBookDetailProgress } from "@/hooks/useBookDetailProgress";
-import { useBookValidationHandler } from "@/hooks/useBookValidationHandler";
+import { useBookValidation } from "@/hooks/useBookValidation";
 import { BookMonthlyRewardModal } from "./BookMonthlyRewardHandler";
 import { toast } from "sonner";
 import { usePerformanceTracker } from "@/utils/performanceAudit";
@@ -62,7 +61,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     setShowMonthlyReward,
     handleMainButtonClick,
     sessionStartTimeRef,
-  } = useBookValidationHandler({
+  } = useBookValidation({
+    book: currentBook,
+    userId: user?.id || null,
     currentBook,
     setCurrentBook,
     refreshProgressData,

@@ -22,7 +22,6 @@ export const useCurrentBookValidation = (
           const { data, error } = await supabase.auth.getUser();
           
           if (error) {
-            console.error("Erreur lors de la récupération de l'utilisateur:", error);
             toast.error("Session expirée. Veuillez vous reconnecter.");
             return;
           }
@@ -31,7 +30,6 @@ export const useCurrentBookValidation = (
             setCurrentUserId(data.user.id);
           }
         } catch (error) {
-          console.error("Erreur inattendue:", error);
           toast.error("Impossible de récupérer les informations de session");
         } finally {
           setIsLoadingUser(false);
@@ -60,7 +58,11 @@ export const useCurrentBookValidation = (
     handleValidationConfirm,
     handleValidateReading,
     showConfetti
-  } = useBookValidation(book, currentUserId, onProgressUpdate);
+  } = useBookValidation({
+    book,
+    userId: currentUserId,
+    onProgressUpdate
+  });
 
   return {
     isValidating,
