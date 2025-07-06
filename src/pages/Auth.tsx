@@ -112,10 +112,10 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 sm:p-6 transition-all duration-300">
       <div className="w-full max-w-md mx-auto">
-        <div className="mb-8 text-center">
+        <header className="mb-8 text-center">
           <Image
             src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png"
-            alt="READ Logo"
+            alt="READ - Application de lecture progressive"
             className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105 focus:scale-105 focus:outline-offset-2"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -126,83 +126,106 @@ export default function Auth() {
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
             Reprends goût à la lecture, page après page
           </p>
-        </div>
+        </header>
 
-        <Card className="border-coffee-medium shadow-md transition-all duration-300">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
-            <CardDescription className="text-center">
-              Connecte-toi à ton compte pour continuer ton voyage littéraire
-            </CardDescription>
-          </CardHeader>
+        <main>
+          <Card className="border-coffee-medium shadow-md transition-all duration-300">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center text-foreground">
+                Bienvenue sur READ
+              </CardTitle>
+              <CardDescription className="text-center text-foreground/80">
+                Connecte-toi à ton compte pour continuer ton voyage littéraire
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="relative">
-                <label htmlFor="email" className="sr-only">Email</label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border-coffee-medium focus:border-coffee-dark"
-                  required
-                  disabled={isLoading}
-                  aria-label="Email"
-                  aria-required="true"
-                  autoComplete="email"
-                  onKeyPress={handleKeyPress}
-                />
-              </div>
-              <div className="relative">
-                <label htmlFor="password" className="sr-only">Mot de passe</label>
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Mot de passe"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="border-coffee-medium focus:border-coffee-dark pr-10"
-                  required
-                  disabled={isLoading}
-                  aria-label="Mot de passe"
-                  aria-required="true"
-                  autoComplete="current-password"
-                  onKeyPress={handleKeyPress}
-                />
-                <button 
-                  type="button" 
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-          </CardContent>
+            <CardContent className="space-y-4">
+              <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+                <fieldset disabled={isLoading} className="space-y-3">
+                  <legend className="sr-only">Formulaire de connexion</legend>
+                  <div className="relative">
+                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+                      Email
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="votre@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="border-coffee-medium focus:border-coffee-dark text-foreground bg-background"
+                      required
+                      disabled={isLoading}
+                      aria-label="Adresse email"
+                      aria-required="true"
+                      aria-describedby="email-help"
+                      autoComplete="email"
+                      onKeyPress={handleKeyPress}
+                    />
+                    <p id="email-help" className="sr-only">
+                      Saisissez votre adresse email pour vous connecter
+                    </p>
+                  </div>
+                  <div className="relative">
+                    <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+                      Mot de passe
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Votre mot de passe"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="border-coffee-medium focus:border-coffee-dark pr-10 text-foreground bg-background"
+                        required
+                        disabled={isLoading}
+                        aria-label="Mot de passe"
+                        aria-required="true"
+                        aria-describedby="password-help"
+                        autoComplete="current-password"
+                        onKeyPress={handleKeyPress}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={togglePasswordVisibility}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2 rounded p-1"
+                        aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
+                        aria-pressed={showPassword}
+                      >
+                        {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                      </button>
+                    </div>
+                    <p id="password-help" className="text-xs text-foreground/70 mt-1">
+                      Minimum 6 caractères
+                    </p>
+                  </div>
+                </fieldset>
+              </form>
+            </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
-            <Button
-              onClick={handleLogin}
-              className="w-full bg-coffee-dark hover:bg-coffee-darker transition-colors duration-300 focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2"
-              disabled={isLoading}
-              aria-label="Se connecter"
-            >
-              {isLoading ? "Connexion..." : "Se connecter"}
-            </Button>
-            <Button
-              onClick={handleSignup}
-              variant="outline"
-              className="w-full border-coffee-medium hover:bg-coffee-light/30 transition-colors duration-300 focus:ring-2 focus:ring-coffee-medium focus:ring-offset-2"
-              disabled={isLoading}
-              aria-label="Créer un compte"
-            >
-              {isLoading ? "Création..." : "Créer un compte"}
-            </Button>
-          </CardFooter>
-        </Card>
+            <CardFooter className="flex flex-col gap-3">
+              <Button
+                onClick={handleLogin}
+                className="w-full bg-coffee-dark hover:bg-coffee-darker text-white transition-colors duration-300 focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2"
+                disabled={isLoading}
+                aria-label="Se connecter à votre compte"
+                type="submit"
+              >
+                {isLoading ? "Connexion..." : "Se connecter"}
+              </Button>
+              <Button
+                onClick={handleSignup}
+                variant="outline"
+                className="w-full border-coffee-medium hover:bg-coffee-light/30 text-foreground transition-colors duration-300 focus:ring-2 focus:ring-coffee-medium focus:ring-offset-2"
+                disabled={isLoading}
+                aria-label="Créer un nouveau compte"
+              >
+                {isLoading ? "Création..." : "Créer un compte"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </main>
       </div>
     </div>
   );

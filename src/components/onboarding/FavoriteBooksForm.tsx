@@ -58,41 +58,72 @@ export function FavoriteBooksForm({ open, onComplete, onSkip }: FavoriteBooksFor
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onSkip()}>
-      <DialogContent className="max-w-md w-[95vw] border-coffee-light rounded-lg">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => !isOpen && onSkip()}
+      aria-labelledby="favorites-modal-title"
+      aria-describedby="favorites-modal-description"
+    >
+      <DialogContent 
+        className="max-w-md w-[95vw] border-coffee-light rounded-lg"
+        role="dialog"
+        aria-modal="true"
+      >
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl text-coffee-darker">
+          <DialogTitle 
+            id="favorites-modal-title"
+            className="font-serif text-2xl text-coffee-darker"
+          >
             Quels sont vos livres préférés ?
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          <p className="text-muted-foreground">
+          <p 
+            id="favorites-modal-description"
+            className="text-foreground/80"
+          >
             Partagez jusqu'à trois livres qui ont marqué votre vie de lecteur.
           </p>
           
-          {[0, 1, 2].map((index) => (
-            <div key={index} className="space-y-2">
-              <Label htmlFor={`book-${index}`} className="text-coffee-dark">
-                Livre {index + 1} {index === 0 ? "(obligatoire)" : "(facultatif)"}
-              </Label>
-              <Input
-                id={`book-${index}`}
-                value={books[index]}
-                onChange={(e) => handleChange(index, e.target.value)}
-                placeholder={`Titre de votre livre préféré ${index + 1}`}
-                className="border-coffee-light"
-                required={index === 0}
-              />
-            </div>
-          ))}
+          <fieldset className="space-y-4">
+            <legend className="sr-only">
+              Formulaire de saisie de vos livres préférés
+            </legend>
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="space-y-2">
+                <Label 
+                  htmlFor={`book-${index}`} 
+                  className="text-foreground font-medium"
+                >
+                  Livre {index + 1} {index === 0 ? "(obligatoire)" : "(facultatif)"}
+                </Label>
+                <Input
+                  id={`book-${index}`}
+                  value={books[index]}
+                  onChange={(e) => handleChange(index, e.target.value)}
+                  placeholder={`Titre de votre livre préféré ${index + 1}`}
+                  className="border-coffee-light text-foreground bg-background"
+                  required={index === 0}
+                  aria-required={index === 0}
+                  aria-describedby={index === 0 ? "book-0-help" : undefined}
+                />
+                {index === 0 && (
+                  <p id="book-0-help" className="text-xs text-foreground/70">
+                    Ce champ est obligatoire
+                  </p>
+                )}
+              </div>
+            ))}
+          </fieldset>
         </div>
         
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button 
             onClick={handleSubmit}
-            className="w-full bg-coffee-dark hover:bg-coffee-darker"
+            className="w-full bg-coffee-dark hover:bg-coffee-darker text-white"
             disabled={isSubmitting || !books[0].trim()}
+            aria-describedby={!books[0].trim() ? "submit-requirement" : undefined}
           >
             {isSubmitting ? "Enregistrement..." : "Enregistrer mes livres préférés"}
           </Button>
@@ -100,10 +131,21 @@ export function FavoriteBooksForm({ open, onComplete, onSkip }: FavoriteBooksFor
           <button
             type="button"
             onClick={onSkip}
-            className="mt-2 text-sm text-coffee-medium hover:text-coffee-dark underline"
+            className="mt-2 text-sm text-foreground/80 hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2 rounded"
+            aria-label="Ignorer cette étape et continuer"
           >
             Je préfère le faire plus tard
           </button>
+          
+          {!books[0].trim() && (
+            <div 
+              id="submit-requirement" 
+              className="sr-only"
+              aria-live="polite"
+            >
+              Vous devez saisir au moins un livre préféré
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

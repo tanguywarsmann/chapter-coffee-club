@@ -1,3 +1,4 @@
+
 @import './components/ui/animations.css';
 
 @tailwind base;
@@ -6,65 +7,65 @@
 
 @layer base {
   :root {
-    --background: 30 35% 94%;
-    --foreground: 25 40% 15%;
+    --background: 30 35% 96%;
+    --foreground: 25 40% 12%;
 
-    --card: 30 35% 97%;
-    --card-foreground: 25 40% 15%;
+    --card: 30 35% 98%;
+    --card-foreground: 25 40% 12%;
 
-    --popover: 30 35% 97%;
-    --popover-foreground: 25 40% 15%;
+    --popover: 30 35% 98%;
+    --popover-foreground: 25 40% 12%;
 
-    --primary: 25 40% 20%; /* Darkened for better contrast */
-    --primary-foreground: 30 35% 97%;
+    --primary: 25 40% 18%;
+    --primary-foreground: 30 35% 98%;
 
-    --secondary: 35 30% 85%;
-    --secondary-foreground: 25 40% 20%; /* Darkened for better contrast */
+    --secondary: 35 30% 82%;
+    --secondary-foreground: 25 40% 18%;
 
-    --muted: 35 30% 90%;
-    --muted-foreground: 25 30% 40%; /* Darkened for better contrast */
+    --muted: 35 30% 88%;
+    --muted-foreground: 25 30% 35%;
 
-    --accent: 20 50% 85%;
-    --accent-foreground: 25 40% 20%; /* Darkened for better contrast */
+    --accent: 20 50% 82%;
+    --accent-foreground: 25 40% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 30% 75%; /* Darkened for better contrast */
-    --input: 25 30% 75%; /* Darkened for better contrast */
-    --ring: 25 40% 30%; /* Darkened for better contrast */
+    --border: 25 30% 70%;
+    --input: 25 30% 70%;
+    --ring: 25 40% 25%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 25 40% 15%;
-    --foreground: 30 35% 94%;
+    --background: 25 40% 12%;
+    --foreground: 30 35% 96%;
 
-    --card: 25 40% 18%; /* Adjusted for better contrast */
-    --card-foreground: 30 35% 94%;
+    --card: 25 40% 15%;
+    --card-foreground: 30 35% 96%;
 
-    --popover: 25 40% 18%; /* Adjusted for better contrast */
-    --popover-foreground: 30 35% 94%;
+    --popover: 25 40% 15%;
+    --popover-foreground: 30 35% 96%;
 
-    --primary: 35 30% 80%; /* Lightened for better contrast */
-    --primary-foreground: 25 40% 15%;
+    --primary: 35 30% 85%;
+    --primary-foreground: 25 40% 12%;
 
-    --secondary: 25 40% 25%; /* Adjusted for better contrast */
-    --secondary-foreground: 30 35% 94%;
+    --secondary: 25 40% 22%;
+    --secondary-foreground: 30 35% 96%;
 
-    --muted: 25 40% 22%; /* Adjusted for better contrast */
-    --muted-foreground: 35 30% 75%; /* Lightened for better contrast */
+    --muted: 25 40% 20%;
+    --muted-foreground: 35 30% 80%;
 
-    --accent: 20 50% 25%; /* Adjusted for better contrast */
-    --accent-foreground: 30 35% 94%;
+    --accent: 20 50% 22%;
+    --accent-foreground: 30 35% 96%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 40% 35%; /* Lightened for better contrast */
-    --input: 25 40% 35%; /* Lightened for better contrast */
-    --ring: 35 30% 75%; /* Lightened for better contrast */
+    --border: 25 40% 30%;
+    --input: 25 40% 30%;
+    --ring: 35 30% 80%;
   }
 }
 
@@ -87,19 +88,19 @@
     word-break: break-word;
   }
 
-  /* Enhanced focus styles for accessibility */
+  /* Enhanced focus styles for accessibility - WCAG AA compliant */
   :focus-visible {
-    outline: 2px solid #3d2914;
+    outline: 3px solid hsl(var(--ring));
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3d2914;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 5px hsl(var(--ring));
   }
 
   /* High contrast mode support */
   @media (prefers-contrast: high) {
     :focus-visible {
-      outline: 3px solid #000;
+      outline: 4px solid currentColor;
       outline-offset: 2px;
-      box-shadow: 0 0 0 2px #fff, 0 0 0 6px #000;
+      box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 8px currentColor;
     }
   }
 
@@ -107,7 +108,7 @@
   .skip-to-content {
     @apply absolute z-50 p-3 bg-coffee-dark text-white border border-coffee-medium rounded-md shadow-lg;
     @apply -translate-y-full focus:translate-y-0 transition-transform duration-200;
-    @apply focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2;
+    @apply focus-visible:ring-4 focus-visible:ring-white focus-visible:ring-offset-2;
     top: 1rem;
     left: 1rem;
     font-weight: 600;
@@ -118,6 +119,19 @@
     text-wrap: pretty;
     word-break: break-word;
     hyphens: auto;
+  }
+
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
 
@@ -164,30 +178,30 @@
     @apply space-y-4 sm:space-y-6;
   }
 
-  /* Boutons avec meilleures zones de tap */
+  /* Boutons avec meilleures zones de tap et contraste WCAG AA */
   .btn-primary {
     @apply bg-coffee-dark text-white hover:bg-coffee-darker;
-    @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
+    @apply focus-visible:ring-4 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
     @apply transition-colors duration-200;
     /* Zone de tap plus large */
     @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast ratio */
-    background-color: #2a1c0f;
-    color: #ffffff;
+    /* Ensure good contrast ratio - WCAG AA compliant */
+    background-color: hsl(25 40% 15%);
+    color: hsl(30 35% 98%);
   }
 
   .btn-primary:hover {
-    background-color: #1e140a;
+    background-color: hsl(25 40% 12%);
   }
 
   .btn-secondary {
     @apply border-2 border-coffee-medium bg-transparent hover:bg-coffee-light/20;
-    @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-coffee-medium focus-visible:outline-none;
+    @apply focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-coffee-medium focus-visible:outline-none;
     @apply transition-colors duration-200;
     @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast */
-    border-color: #8b5a3c;
-    color: #3d2914;
+    /* Ensure good contrast - WCAG AA compliant */
+    border-color: hsl(25 30% 40%);
+    color: hsl(25 40% 15%);
   }
 
   /* Transitions de page plus fluides */
@@ -195,32 +209,43 @@
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Champs de formulaire avec meilleures zones de tap */
+  /* Champs de formulaire avec meilleures zones de tap et contraste amélioré */
   .form-field {
     @apply mt-1 block w-full rounded-md border-2 border-coffee-medium shadow-sm;
-    @apply focus:border-coffee-dark focus:ring-2 focus:ring-coffee-dark focus:ring-opacity-50;
+    @apply focus:border-coffee-dark focus:ring-4 focus:ring-coffee-dark focus:ring-opacity-25;
     @apply focus-visible:outline-none transition-colors duration-200;
     @apply min-h-[44px] px-4 py-3 text-base sm:text-sm;
-    /* Better contrast */
-    border-color: #8b5a3c;
+    /* Better contrast - WCAG AA compliant */
+    border-color: hsl(25 30% 40%);
+    color: hsl(25 40% 15%);
+    background-color: hsl(30 35% 98%);
   }
 
   .form-field:focus {
-    border-color: #3d2914;
-    box-shadow: 0 0 0 2px rgba(61, 41, 20, 0.2);
+    border-color: hsl(25 40% 15%);
+    box-shadow: 0 0 0 4px hsla(25, 40%, 15%, 0.15);
   }
 
-  /* Tags de statut avec meilleure lisibilité */
+  /* Tags de statut avec meilleure lisibilité et contraste WCAG AA */
   .status-reading {
-    @apply bg-coffee-light/70 text-coffee-darker px-3 py-2 text-sm font-medium border border-coffee-medium;
+    @apply px-3 py-2 text-sm font-medium border;
+    background-color: hsl(35 30% 85%);
+    color: hsl(25 40% 15%);
+    border-color: hsl(25 30% 40%);
   }
   
   .status-to-read {
-    @apply bg-gray-200 text-gray-800 px-3 py-2 text-sm font-medium border border-gray-400;
+    @apply px-3 py-2 text-sm font-medium border;
+    background-color: hsl(0 0% 88%);
+    color: hsl(0 0% 15%);
+    border-color: hsl(0 0% 40%);
   }
   
   .status-completed {
-    @apply bg-green-200 text-green-900 px-3 py-2 text-sm font-medium border border-green-400;
+    @apply px-3 py-2 text-sm font-medium border;
+    background-color: hsl(120 50% 85%);
+    color: hsl(120 100% 15%);
+    border-color: hsl(120 50% 40%);
   }
 
   /* Améliorations spécifiques mobile */
@@ -231,35 +256,41 @@
 
   .mobile-title {
     /* Titres plus grands sur mobile pour meilleure lisibilité */
-    @apply text-2xl sm:text-xl font-serif font-medium text-coffee-darker;
+    @apply text-2xl sm:text-xl font-serif font-medium;
     @apply mb-4 sm:mb-2;
+    color: hsl(25 40% 15%);
   }
 
   .mobile-subtitle {
-    @apply text-lg sm:text-base font-medium text-coffee-dark;
+    @apply text-lg sm:text-base font-medium;
     @apply mb-3 sm:mb-2;
+    color: hsl(25 40% 20%);
   }
 
-  /* Navigation mobile améliorée */
+  /* Navigation mobile améliorée avec contraste WCAG AA */
   .mobile-nav-item {
     @apply block w-full text-left px-4 py-4 sm:py-2;
     @apply hover:bg-coffee-light/20 active:bg-coffee-light/30;
-    @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
+    @apply focus-visible:ring-4 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
     @apply transition-colors duration-200;
     @apply text-base sm:text-sm font-medium;
     /* Ensure minimum touch target */
     min-height: 48px;
+    color: hsl(25 40% 15%);
   }
 
   /* Cartes de livre optimisées mobile */
   .mobile-book-card {
     @apply p-4 sm:p-3 space-y-3 sm:space-y-2;
     @apply border border-coffee-light rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+    background-color: hsl(30 35% 98%);
+    border-color: hsl(35 30% 75%);
   }
 
-  /* Skeletons pour le chargement */
+  /* Skeletons pour le chargement avec contraste approprié */
   .loading-skeleton {
-    @apply animate-pulse bg-gray-200 rounded;
+    @apply animate-pulse rounded;
+    background-color: hsl(0 0% 88%);
   }
 
   .loading-skeleton-text {
@@ -281,16 +312,16 @@
     box-shadow: none;
   }
   
-  /* More visible and larger focus states on mobile */
+  /* More visible and larger focus states on mobile - WCAG AAA compliant */
   button:focus, 
   a:focus, 
   [role="button"]:focus,
   [role="link"]:focus,
   input:focus,
   textarea:focus {
-    outline: 3px solid #3d2914 !important;
+    outline: 4px solid hsl(25 40% 15%) !important;
     outline-offset: 2px !important;
-    box-shadow: 0 0 0 2px #fff, 0 0 0 5px #3d2914 !important;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 8px hsl(25 40% 15%) !important;
   }
   
   /* Enhanced touch targets */
@@ -303,28 +334,51 @@
   }
 }
 
-/* High contrast mode enhancements */
+/* High contrast mode enhancements - WCAG AAA support */
 @media (prefers-contrast: high) {
   .btn-primary {
-    background-color: #000;
-    color: #fff;
-    border: 2px solid #000;
+    background-color: hsl(0 0% 0%);
+    color: hsl(0 0% 100%);
+    border: 3px solid hsl(0 0% 0%);
   }
   
   .btn-secondary {
-    background-color: #fff;
-    color: #000;
-    border: 2px solid #000;
+    background-color: hsl(0 0% 100%);
+    color: hsl(0 0% 0%);
+    border: 3px solid hsl(0 0% 0%);
   }
   
   .form-field {
-    border: 2px solid #000;
+    border: 3px solid hsl(0 0% 0%);
+    background-color: hsl(0 0% 100%);
+    color: hsl(0 0% 0%);
   }
   
   .status-reading,
   .status-to-read,
   .status-completed {
-    border: 2px solid #000;
+    border: 3px solid hsl(0 0% 0%);
+    background-color: hsl(0 0% 100%);
+    color: hsl(0 0% 0%);
+  }
+  
+  /* High contrast text */
+  .mobile-title,
+  .mobile-subtitle,
+  .mobile-nav-item {
+    color: hsl(0 0% 0%);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

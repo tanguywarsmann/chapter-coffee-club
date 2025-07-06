@@ -51,14 +51,29 @@ export function QuizModal({
   };
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-coffee-medium">
+    <Dialog 
+      open={true} 
+      onOpenChange={onClose}
+      aria-labelledby="quiz-modal-title"
+      aria-describedby="quiz-modal-description"
+    >
+      <DialogContent 
+        className="sm:max-w-md border-coffee-medium"
+        role="dialog"
+        aria-modal="true"
+      >
         <DialogHeader>
-          <DialogTitle className="text-center text-coffee-darker font-serif">
+          <DialogTitle 
+            id="quiz-modal-title"
+            className="text-center text-coffee-darker font-serif"
+          >
             Vérification de lecture: Chapitre {chapterNumber}
           </DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground">
-            Répondez par un mot.
+          <DialogDescription 
+            id="quiz-modal-description"
+            className="text-center text-sm text-foreground/80"
+          >
+            Répondez par un mot pour valider votre compréhension.
           </DialogDescription>
         </DialogHeader>
         
@@ -73,16 +88,32 @@ export function QuizModal({
         />
         
         <DialogFooter className="sm:justify-center gap-2">
-          <Button variant="outline" onClick={onClose} className="border-coffee-medium">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="border-coffee-medium text-foreground hover:bg-muted"
+            aria-label="Annuler le quiz de lecture"
+          >
             Annuler
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={!answer.trim()}
-            className="bg-coffee-dark hover:bg-coffee-darker"
+            className="bg-coffee-dark hover:bg-coffee-darker text-white"
+            aria-label="Valider ma réponse au quiz"
+            aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
           >
             Valider ma réponse
           </Button>
+          {!answer.trim() && (
+            <div 
+              id="answer-requirement" 
+              className="sr-only"
+              aria-live="polite"
+            >
+              Vous devez saisir une réponse avant de valider
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

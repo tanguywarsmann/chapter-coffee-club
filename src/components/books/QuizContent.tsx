@@ -23,25 +23,35 @@ export function QuizContent({
 }: QuizContentProps) {
   return (
     <div className="py-4">
-      <p className="text-sm text-muted-foreground mb-4 text-center">
+      <p className="text-sm text-foreground/80 mb-4 text-center">
         Pour valider votre lecture du chapitre {chapterNumber} de "{bookTitle}", 
         veuillez répondre à la question suivante:
       </p>
       
       <div className="space-y-4">
-        <h3 className="font-medium text-coffee-darker">{question}</h3>
+        <h3 className="font-medium text-foreground" id="quiz-question">
+          {question}
+        </h3>
         
         <div className="mt-2">
-          <Label htmlFor="answer" className="sr-only">Votre réponse</Label>
+          <Label htmlFor="answer" className="text-sm font-medium text-foreground">
+            Votre réponse
+          </Label>
           <Textarea
             id="answer"
             placeholder="Votre réponse..."
             rows={3}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            className="w-full border-coffee-medium resize-none"
+            className="w-full border-coffee-medium resize-none mt-1 text-foreground bg-background"
+            aria-describedby="quiz-question attempts-counter"
+            aria-required="true"
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          <p 
+            id="attempts-counter"
+            className="text-xs text-foreground/70 mt-1"
+            aria-live="polite"
+          >
             Tentatives: {attempts}/{maxAttempts}
           </p>
         </div>

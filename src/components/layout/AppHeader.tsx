@@ -13,19 +13,39 @@ export function AppHeader() {
   const { user, isAdmin } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60">
+    <header 
+      className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60"
+      role="banner"
+    >
       <div className="container flex h-16 sm:h-14 items-center gap-4">
-        {isMobile && <MobileMenu isAdmin={isAdmin} />}
+        {isMobile && (
+          <div role="navigation" aria-label="Menu mobile">
+            <MobileMenu isAdmin={isAdmin} />
+          </div>
+        )}
         
         <HeaderLogo />
         
-        <DesktopNav isAdmin={isAdmin} />
+        <nav role="navigation" aria-label="Navigation principale" className="hidden md:block">
+          <DesktopNav isAdmin={isAdmin} />
+        </nav>
         
         {user ? (
-          <AvatarDropdown />
+          <div role="navigation" aria-label="Menu utilisateur">
+            <AvatarDropdown />
+          </div>
         ) : (
-          <Button variant="default" className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background" asChild>
-            <Link to="/">Se connecter</Link>
+          <Button 
+            variant="default" 
+            className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background focus:ring-2 focus:ring-logo-accent focus:ring-offset-2" 
+            asChild
+          >
+            <Link 
+              to="/"
+              aria-label="Se connecter à votre compte READ"
+            >
+              Se connecter
+            </Link>
           </Button>
         )}
       </div>
