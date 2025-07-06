@@ -24,7 +24,7 @@ if (import.meta.env.DEV) {
   });
 }
 
-// Register service worker (PWA support) with forced update
+// Register service worker (PWA support) with forced update and cross-domain support
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { 
@@ -32,7 +32,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       updateViaCache: 'none' // Force le rechargement du SW
     })
       .then((registration) => {
-        console.log('[PWA] Service Worker registered successfully');
+        console.log('[PWA] Service Worker registered successfully on', window.location.hostname);
         
         // Force la vérification des mises à jour
         registration.update();
@@ -45,6 +45,16 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
               duration: 4000,
               description: 'Les dernières améliorations sont maintenant disponibles'
             });
+          }
+          
+          if (event.data && event.data.type === 'FORCE_RELOAD') {
+            console.log('[PWA] Force reload requested:', event.data.message);
+            toast.info('Nouvelle version disponible! Redémarrage...', {
+              duration: 2000
+            });
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
           }
         });
         
@@ -68,20 +78,36 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
                   }, 2000);
                 } else {
                   // Premier chargement
-                  console.log('[PWA] App ready for offline use');
+                  console.log('[PWA] App ready for offline use on', window.location.hostname);
                 }
               }
             });
           }
         });
         
-        // Vérifier les mises à jour périodiquement
+        // Vérifier les mises à jour périodiquement (toutes les minutes)
         setInterval(() => {
           registration.update();
-        }, 60000); // Toutes les minutes
+          
+          // Vérifier aussi via le service worker
+          if (navigator.serviceWorker.controller) {
+            const messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = (event) => {
+              if (event.data.hasUpdate) {
+                console.log('[PWA] Update detected via service worker check');
+                window.location.reload();
+              }
+            };
+            
+            navigator.serviceWorker.controller.postMessage(
+              { type: 'CHECK_UPDATES' },
+              [messageChannel.port2]
+            );
+          }
+        }, 60000);
       })
       .catch((error) => {
-        console.error('[PWA] Service Worker registration failed:', error);
+        console.error('[PWA] Service Worker registration failed on', window.location.hostname, ':', error);
       });
   });
   

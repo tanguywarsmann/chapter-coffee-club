@@ -2,11 +2,47 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// Service Worker personnalisé pour READ
+// Service Worker personnalisé pour READ avec détection automatique des mises à jour
 // Version forcée pour invalidation du cache PWA
-const CACHE_VERSION = 'read-cache-v2-' + Date.now();
+const CACHE_VERSION = 'read-cache-v3-' + Date.now();
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
+
+// Fonction pour vérifier les nouvelles versions
+const checkForUpdates = async () => {
+  try {
+    const response = await fetch('/version.json?' + Date.now(), { 
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (response.ok) {
+      const versionData = await response.json();
+      const currentVersion = await caches.open('version-cache').then(cache => 
+        cache.match('/current-version').then(response => 
+          response ? response.json() : { version: null }
+        )
+      );
+      
+      if (currentVersion.version && currentVersion.version !== versionData.version) {
+        console.log('[SW] New version detected:', versionData.version);
+        // Forcer la mise à jour
+        await caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))));
+        self.skipWaiting();
+        return true;
+      }
+      
+      // Stocker la version actuelle
+      const versionCache = await caches.open('version-cache');
+      await versionCache.put('/current-version', new Response(JSON.stringify(versionData)));
+    }
+  } catch (error) {
+    console.warn('[SW] Could not check for updates:', error);
+  }
+  return false;
+};
 
 self.addEventListener("install", (event) => {
   console.log('[SW] Installing new service worker version:', CACHE_VERSION);
@@ -15,13 +51,16 @@ self.addEventListener("install", (event) => {
   
   // Pré-cache les ressources critiques (exclut admin)
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll([
-        '/',
-        '/offline.html',
-        '/manifest.json'
-      ]);
-    })
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => {
+        return cache.addAll([
+          '/',
+          '/offline.html',
+          '/manifest.json'
+        ]);
+      }),
+      checkForUpdates()
+    ])
   );
 });
 
@@ -33,11 +72,11 @@ self.addEventListener("activate", (event) => {
       // Prendre le contrôle immédiatement
       self.clients.claim(),
       
-      // Nettoyer tous les anciens caches
+      // Nettoyer tous les anciens caches sauf version-cache
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (!cacheName.startsWith(CACHE_VERSION)) {
+            if (!cacheName.startsWith(CACHE_VERSION) && cacheName !== 'version-cache') {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -65,12 +104,20 @@ self.addEventListener("fetch", (event) => {
     return; // Laisser passer sans mise en cache
   }
 
-  // Stratégie Network First pour les pages HTML pour forcer le rechargement des styles
+  // Vérifier les mises à jour périodiquement sur les requêtes HTML
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Cache la nouvelle version
+      (async () => {
+        try {
+          // Vérifier s'il y a une nouvelle version
+          const hasUpdate = await checkForUpdates();
+          if (hasUpdate) {
+            // Si mise à jour détectée, recharger la page avec la nouvelle version
+            return fetch(event.request);
+          }
+          
+          // Stratégie Network First pour les pages HTML
+          const response = await fetch(event.request);
           if (response.ok) {
             const responseClone = response.clone();
             caches.open(STATIC_CACHE).then((cache) => {
@@ -78,11 +125,11 @@ self.addEventListener("fetch", (event) => {
             });
           }
           return response;
-        })
-        .catch(() => {
+        } catch (error) {
           // Fallback vers le cache en cas d'échec réseau
           return caches.match(event.request) || caches.match('/offline.html');
-        })
+        }
+      })()
     );
   }
   
@@ -131,6 +178,12 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
   
+  if (event.data && event.data.type === 'CHECK_UPDATES') {
+    checkForUpdates().then(hasUpdate => {
+      event.ports[0].postMessage({ hasUpdate });
+    });
+  }
+  
   if (event.data && event.data.type === 'WARM_CACHE') {
     // Warm cache for critical resources
     const urlsToCache = [
@@ -144,3 +197,19 @@ self.addEventListener('message', (event) => {
     });
   }
 });
+
+// Vérifier les mises à jour périodiquement (toutes les 30 secondes)
+setInterval(() => {
+  checkForUpdates().then(hasUpdate => {
+    if (hasUpdate) {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'FORCE_RELOAD',
+            message: 'Nouvelle version détectée'
+          });
+        });
+      });
+    }
+  });
+}, 30000);
