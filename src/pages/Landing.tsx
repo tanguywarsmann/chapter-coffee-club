@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, TrendingUp, ArrowDown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import Image from "@/components/ui/image";
 
 export default function Landing() {
   const features = [
@@ -51,10 +52,11 @@ export default function Landing() {
             {/* Logo READ mis en avant */}
             <div className="mb-12 flex justify-center">
               <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
-                <img 
+                <Image 
                   src="/READ-logo.png" 
                   alt="READ - Application de lecture progressive" 
                   className="h-24 w-24 mx-auto"
+                  priority={true}
                 />
               </div>
             </div>
@@ -78,7 +80,7 @@ export default function Landing() {
               >
                 <Link 
                   to="/auth"
-                  aria-label="Commencer votre parcours de lecture avec READ"
+                  aria-label="Commencer votre parcours de lecture avec read"
                 >
                   Commencer
                 </Link>

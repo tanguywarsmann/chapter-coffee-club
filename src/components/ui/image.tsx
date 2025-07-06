@@ -5,15 +5,17 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   className?: string;
+  priority?: boolean; // Pour les images critiques (au-dessus du pli)
 }
 
-const Image = ({ src, alt, className, ...props }: ImageProps) => {
+const Image = ({ src, alt, className, priority = false, ...props }: ImageProps) => {
   return (
     <img 
       src={src} 
       alt={alt} 
       className={className} 
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
       {...props}
     />
   );

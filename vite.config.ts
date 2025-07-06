@@ -1,110 +1,103 @@
 
-// vite.config.ts - Version 0.16
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import path from 'path'
-import { componentTagger } from 'lovable-tagger'
-import { VitePWA } from 'vite-plugin-pwa'
-import { compression } from 'vite-plugin-compression2'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import { componentTagger } from "lovable-tagger";
+import { VitePWA } from 'vite-plugin-pwa';
+import compression from 'vite-plugin-compression2';
 
-export default defineConfig(({ mode }) => ({
-  server: { 
-    host: '::', 
+export default defineConfig(({ command }) => ({
+  server: {
+    host: "::",
     port: 8080,
-    // Configuration pour désindexer l'admin en développement
-    headers: {
-      'X-Robots-Tag': 'noindex'
-    }
   },
-
   plugins: [
-    // PWA avec stratégie de mise à jour proactive
+    react(),
+    // Activer le composant tagger seulement en développement
+    ...(command === 'serve' ? [componentTagger()] : []),
     VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
-      devOptions: { enabled: true },
-
+      registerType: 'autoUpdate',
       workbox: {
-        cleanupOutdatedCaches: true,
-        navigateFallback: '/index.html',
-        skipWaiting: true,
-        clientsClaim: true,
-        // Exclure les fichiers d'administration du cache
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        globIgnores: ['**/admin/**'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
+        maximumFileSizeToCacheInBytes: 3000000, // 3MB max par fichier
         runtimeCaching: [
           {
-            urlPattern: /\.(?:js|css|png|jpg|jpeg|svg|ico|woff|woff2)$/,
+            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'static-resources',
+              cacheName: 'images-cache',
               expiration: {
-                maxEntries: 60,
-                maxAgeSeconds: 30 * 24 * 60 * 60
-              }
-            }
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
+              },
+            },
+          },
+        ],
+      },
+      manifest: {
+        name: 'READ',
+        short_name: 'READ',
+        description: 'Reprends goût à la lecture, page après page',
+        theme_color: '#B05F2C',
+        icons: [
+          {
+            src: 'icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
           },
           {
-            urlPattern: /^https:\/\/xjumsrjuyzvsixvfwoiz\.supabase\.co\/.*$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-calls',
-              networkTimeoutSeconds: 10
-            }
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png'
           }
         ]
-      },
-
-      manifest: false // Use the manifest.json from the public folder
-    }),
-
-    // Other plugins
-    react(),
-    mode === 'development' && componentTagger(),
-    compression({ algorithm: 'gzip', exclude: [/\.(br|gz)$/] }),
-    compression({ algorithm: 'brotliCompress', exclude: [/\.(br|gz)$/] }),
-  ].filter(Boolean),
-
-  resolve: {
-    alias: { '@': path.resolve(__dirname, './src') }
-  },
-
-  // Configuration de test pour Vitest
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-  },
-
-  build: {
-    emptyOutDir: true,
-    sourcemap: mode === 'development',
-    target: 'esnext',
-    minify: 'terser',
-    chunkSizeWarningLimit: 1000,
-    terserOptions: {
-      compress: { 
-        drop_console: mode !== 'development', 
-        drop_debugger: true 
       }
+    }),
+    compression({
+      algorithm: 'gzip',
+      exclude: [/\.(br)$ /, /\.(gz)$/],
+    }),
+    compression({
+      algorithm: 'brotliCompress',
+      exclude: [/\.(br)$ /, /\.(gz)$/],
+    }),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks: {
-          supabase: ["@supabase/supabase-js"],
-          query: ["@tanstack/react-query"],
-          lucide: ["lucide-react"],
-          charts: ["recharts"],
-          'react-vendor': ['react','react-dom','react-router-dom'],
-          'ui-components': ['@radix-ui/react-dialog','@radix-ui/react-popover']
-        }
-      }
-    }
+          // Séparer les gros packages
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
+        },
+      },
+    },
+    // Optimiser la taille du bundle
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Supprimer les console.log en production
+        drop_debugger: true,
+      },
+    },
+    // Générer des chunks plus petits
+    chunkSizeWarningLimit: 1000, // Avertir si chunk > 1MB
   },
-
-  // Hook pour vérifier le sitemap à chaque build
-  define: {
-    __SITEMAP_CHECK__: JSON.stringify(process.env.NODE_ENV === 'production')
-  }
-}))
+  // Optimisation des dépendances
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'lucide-react',
+    ],
+  },
+}));

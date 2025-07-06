@@ -10,6 +10,7 @@ interface BookCoverProps {
   size?: "sm" | "md" | "lg";
   image?: string;
   title?: string;
+  priority?: boolean; // Nouvelle prop pour les images critiques
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({ 
@@ -17,7 +18,8 @@ export const BookCover: React.FC<BookCoverProps> = ({
   showProgress, 
   size = "md",
   image,
-  title
+  title,
+  priority = false
 }) => {
   // Use either the passed image or get it from the book
   const coverImage = image || book?.coverImage;
@@ -41,6 +43,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
           src={coverImage}
           alt={bookTitle}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          priority={priority}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">

@@ -1,3 +1,4 @@
+
 console.log("Import de PublicCurrentlyReading.tsx OK");
 
 import { useState, useEffect } from "react";
@@ -8,6 +9,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import Image from "@/components/ui/image";
 
 interface PublicCurrentlyReadingProps {
   userId: string;
@@ -124,7 +126,7 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
                 <div className="relative border border-coffee-light rounded-md overflow-hidden">
                   <AspectRatio ratio={2/3}>
                     {book.book_cover ? (
-                      <img
+                      <Image
                         src={book.book_cover}
                         alt={book.book_title || "Couverture du livre"}
                         className="object-cover w-full h-full"

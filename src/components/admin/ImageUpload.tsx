@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { blogService } from '@/services/blogService';
+import Image from '@/components/ui/image';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -82,7 +83,7 @@ export function ImageUpload({
           {currentImageUrl ? (
             <div className="space-y-3">
               <div className="relative inline-block">
-                <img 
+                <Image 
                   src={currentImageUrl} 
                   alt={imageAlt || 'Image de l\'article'}
                   className="w-32 h-20 object-cover rounded border"

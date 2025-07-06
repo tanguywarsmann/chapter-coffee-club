@@ -21,6 +21,7 @@ export function PublicHeader() {
             className="h-8 w-8"
             role="img"
             aria-hidden="true"
+            priority={true} // Logo critique
           />
           <span className="text-xl font-medium text-logo-text">READ</span>
         </Link>

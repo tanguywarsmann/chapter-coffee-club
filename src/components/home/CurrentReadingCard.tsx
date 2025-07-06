@@ -7,6 +7,7 @@ import { Book as BookType } from "@/types/book";
 import { toast } from "sonner";
 import { texts } from "@/i18n/texts";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Image from "@/components/ui/image";
 
 interface CurrentReadingCardProps {
   book: BookType;
@@ -54,10 +55,11 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
       <CardContent className={`flex gap-4 ${isMobile ? 'p-4' : 'p-4'}`}>
         <div className={`book-cover ${isMobile ? 'w-20 h-28' : 'w-20 h-30'} flex-shrink-0`}>
           {book.coverImage ? (
-            <img 
+            <Image 
               src={book.coverImage} 
               alt={book.title} 
-              className="w-full h-full object-cover rounded" 
+              className="w-full h-full object-cover rounded"
+              priority={true} // Image critique pour la lecture en cours
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-chocolate-medium rounded">
