@@ -79,6 +79,7 @@
     "vitest-dom": "^0.1.1",
     "workbox-precaching": "^7.3.0",
     "zod": "^3.23.8"
+    "sharp": "^0.32.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
