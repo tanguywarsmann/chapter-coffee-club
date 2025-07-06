@@ -5,19 +5,28 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   className?: string;
-  priority?: boolean; // Pour les images critiques (au-dessus du pli)
-  sizes?: string; // Pour le responsive
+  priority?: boolean;
+  sizes?: string;
 }
 
 const Image = ({ src, alt, className, priority = false, sizes, ...props }: ImageProps) => {
+  // Pour les URLs externes ou data URLs, utiliser l'image directement
+  if (src.startsWith('http') || src.startsWith('data:')) {
+    return (
+      <img 
+        src={src} 
+        alt={alt} 
+        className={className} 
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        sizes={sizes}
+        {...props}
+      />
+    );
+  }
+
   // Fonction pour générer les chemins des versions optimisées
   const getOptimizedSources = (originalSrc: string) => {
-    // Ne pas optimiser les URLs externes ou les data URLs
-    if (originalSrc.startsWith('http') || originalSrc.startsWith('data:')) {
-      return { avif: null, webp: null };
-    }
-
-    // Extraire le chemin et l'extension
     const lastDotIndex = originalSrc.lastIndexOf('.');
     if (lastDotIndex === -1) {
       return { avif: null, webp: null };
@@ -39,7 +48,7 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
 
   const { avif, webp } = getOptimizedSources(src);
 
-  // Si on a des versions optimisées, utiliser <picture>
+  // Si on a des versions optimisées, utiliser <picture> avec gestion d'erreur
   if (avif || webp) {
     return (
       <picture>
@@ -48,6 +57,10 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
             srcSet={avif} 
             type="image/avif" 
             sizes={sizes}
+            onError={(e) => {
+              // Masquer la source AVIF si elle échoue
+              e.currentTarget.style.display = 'none';
+            }}
           />
         )}
         {webp && (
@@ -55,6 +68,10 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
             srcSet={webp} 
             type="image/webp" 
             sizes={sizes}
+            onError={(e) => {
+              // Masquer la source WebP si elle échoue
+              e.currentTarget.style.display = 'none';
+            }}
           />
         )}
         <img 

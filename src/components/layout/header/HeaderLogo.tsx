@@ -11,10 +11,9 @@ export const HeaderLogo = () => {
     >
       <Image 
         src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
-        alt="" 
+        alt="READ Logo" 
         className="h-8 w-8"
-        aria-hidden="true"
-        priority={true} // Logo critique
+        priority={true}
         sizes="32px"
       />
       <span className="text-xl font-medium text-logo-text">READ</span>

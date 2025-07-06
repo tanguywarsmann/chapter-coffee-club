@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, TrendingUp } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import Image from "@/components/ui/image";
 
 export default function PublicHome() {
   const features = [
@@ -68,10 +69,12 @@ export default function PublicHome() {
             {/* Logo READ mis en avant */}
             <div className="mb-8 flex justify-center">
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
-                <img 
-                  src="/READ-logo.png" 
+                <Image 
+                  src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
                   alt="READ Logo" 
                   className="h-20 w-20 mx-auto"
+                  priority={true}
+                  sizes="80px"
                 />
               </div>
             </div>
@@ -138,7 +141,7 @@ export default function PublicHome() {
               Prêt à recommencer à lire ?
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
-              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec READ.
+              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
             </p>
             <Button 
               size="lg" 
