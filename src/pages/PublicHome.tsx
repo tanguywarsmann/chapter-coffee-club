@@ -1,10 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, TrendingUp } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import Image from "@/components/ui/image";
+import { ImageDebug } from "@/components/debug/ImageDebug";
 
 export default function PublicHome() {
   const features = [
@@ -29,6 +29,8 @@ export default function PublicHome() {
       description: "Analysez vos habitudes de lecture et visualisez votre évolution."
     }
   ];
+
+  const logoSrc = "/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png";
 
   return (
     <>
@@ -63,6 +65,11 @@ export default function PublicHome() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
+        {/* Debug temporaire - À SUPPRIMER après vérification */}
+        <div className="fixed top-0 right-0 z-50 max-w-sm">
+          <ImageDebug src={logoSrc} name="Logo READ" />
+        </div>
+
         {/* Hero Section avec Logo */}
         <section className="relative py-16 px-4">
           <div className="container mx-auto text-center max-w-4xl">
@@ -70,7 +77,7 @@ export default function PublicHome() {
             <div className="mb-8 flex justify-center">
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
                 <Image 
-                  src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
+                  src={logoSrc} 
                   alt="READ Logo" 
                   className="h-20 w-20 mx-auto"
                   priority={true}

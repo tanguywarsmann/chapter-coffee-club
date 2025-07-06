@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -10,6 +10,9 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 const Image = ({ src, alt, className, priority = false, sizes, ...props }: ImageProps) => {
+  const [fallbackToOriginal, setFallbackToOriginal] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   // Pour les URLs externes ou data URLs, utiliser l'image directement
   if (src.startsWith('http') || src.startsWith('data:')) {
     return (
@@ -20,6 +23,7 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         sizes={sizes}
+        onError={() => setImageError(true)}
         {...props}
       />
     );
@@ -48,7 +52,32 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
 
   const { avif, webp } = getOptimizedSources(src);
 
-  // Si on a des versions optimisées, utiliser <picture> avec gestion d'erreur
+  // Si on doit fallback sur l'original ou si les versions optimisées ne sont pas disponibles
+  if (fallbackToOriginal || imageError) {
+    return (
+      <img 
+        src={src} 
+        alt={alt} 
+        className={className} 
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        sizes={sizes}
+        onError={() => {
+          console.warn(`Image failed to load: ${src}`);
+          setImageError(true);
+        }}
+        {...props}
+      />
+    );
+  }
+
+  // Gestionnaire d'erreur pour les sources optimisées
+  const handleOptimizedError = () => {
+    console.log(`Optimized versions not available for ${src}, falling back to original`);
+    setFallbackToOriginal(true);
+  };
+
+  // Si on a des versions optimisées, essayer de les utiliser avec fallback robuste
   if (avif || webp) {
     return (
       <picture>
@@ -57,10 +86,6 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
             srcSet={avif} 
             type="image/avif" 
             sizes={sizes}
-            onError={(e) => {
-              // Masquer la source AVIF si elle échoue
-              e.currentTarget.style.display = 'none';
-            }}
           />
         )}
         {webp && (
@@ -68,10 +93,6 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
             srcSet={webp} 
             type="image/webp" 
             sizes={sizes}
-            onError={(e) => {
-              // Masquer la source WebP si elle échoue
-              e.currentTarget.style.display = 'none';
-            }}
           />
         )}
         <img 
@@ -81,6 +102,7 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           sizes={sizes}
+          onError={handleOptimizedError}
           {...props}
         />
       </picture>
@@ -96,6 +118,10 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       sizes={sizes}
+      onError={() => {
+        console.warn(`Image failed to load: ${src}`);
+        setImageError(true);
+      }}
       {...props}
     />
   );
