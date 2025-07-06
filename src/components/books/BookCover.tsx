@@ -29,11 +29,17 @@ export const BookCover: React.FC<BookCoverProps> = ({
   const progressPercentage = book ? (book.chaptersRead / book.totalChapters) * 100 : 0;
   const pagesRead = book ? Math.floor((book.pages / book.totalChapters) * book.chaptersRead) : 0;
 
-  // Size classes based on the size prop
+  // Size classes and responsive sizes based on the size prop
   const sizeClasses = {
     sm: "w-24 h-36",
     md: "w-32 h-48",
     lg: "w-40 h-60"
+  };
+
+  const responsiveSizes = {
+    sm: "(max-width: 768px) 80px, 96px",
+    md: "(max-width: 768px) 120px, 128px", 
+    lg: "(max-width: 768px) 140px, 160px"
   };
 
   return (
@@ -44,6 +50,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
           alt={bookTitle}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           priority={priority}
+          sizes={responsiveSizes[size]}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">

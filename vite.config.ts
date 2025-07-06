@@ -18,16 +18,16 @@ export default defineConfig(({ command }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}'],
         maximumFileSizeToCacheInBytes: 3000000, // 3MB max par fichier
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp)$/,
+            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|avif)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 150,
                 maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
               },
             },
@@ -76,6 +76,7 @@ export default defineConfig(({ command }) => ({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
+          'vendor-image': ['sharp'], // Séparer Sharp pour éviter les gros chunks
         },
       },
     },
@@ -99,5 +100,6 @@ export default defineConfig(({ command }) => ({
       '@supabase/supabase-js',
       'lucide-react',
     ],
+    exclude: ['sharp'], // Exclure Sharp du pre-bundling
   },
 }));

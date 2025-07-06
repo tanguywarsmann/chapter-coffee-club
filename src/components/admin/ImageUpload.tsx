@@ -87,6 +87,7 @@ export function ImageUpload({
                   src={currentImageUrl} 
                   alt={imageAlt || 'Image de l\'article'}
                   className="w-32 h-20 object-cover rounded border"
+                  sizes="128px"
                 />
                 <Button
                   type="button"

@@ -60,6 +60,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
               alt={book.title} 
               className="w-full h-full object-cover rounded"
               priority={true} // Image critique pour la lecture en cours
+              sizes="(max-width: 768px) 72px, 80px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-chocolate-medium rounded">

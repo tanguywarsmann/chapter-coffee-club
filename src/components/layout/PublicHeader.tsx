@@ -22,6 +22,7 @@ export function PublicHeader() {
             role="img"
             aria-hidden="true"
             priority={true} // Logo critique
+            sizes="32px"
           />
           <span className="text-xl font-medium text-logo-text">READ</span>
         </Link>

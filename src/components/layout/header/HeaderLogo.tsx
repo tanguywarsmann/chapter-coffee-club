@@ -15,6 +15,7 @@ export const HeaderLogo = () => {
         className="h-8 w-8"
         aria-hidden="true"
         priority={true} // Logo critique
+        sizes="32px"
       />
       <span className="text-xl font-medium text-logo-text">READ</span>
     </Link>

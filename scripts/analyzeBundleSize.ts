@@ -43,8 +43,70 @@ function analyzeDistFolder(): ChunkInfo[] {
   return chunks.sort((a, b) => b.size - a.size);
 }
 
+function analyzeImageOptimization(): void {
+  console.log('🖼️  Analyse de l\'optimisation des images:\n');
+  
+  const publicDir = path.join(process.cwd(), 'public');
+  const imageDirs = [
+    path.join(publicDir, 'images'),
+    path.join(publicDir, 'blog-images'),
+    path.join(publicDir, 'lovable-uploads')
+  ];
+  
+  let totalOriginal = 0;
+  let totalWebP = 0;
+  let totalAVIF = 0;
+  let optimizedCount = 0;
+  
+  imageDirs.forEach(dir => {
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir);
+      files.forEach(file => {
+        const ext = path.extname(file).toLowerCase();
+        if (['.jpg', '.jpeg', '.png'].includes(ext)) {
+          const baseName = path.basename(file, ext);
+          const webpPath = path.join(dir, `${baseName}.webp`);
+          const avifPath = path.join(dir, `${baseName}.avif`);
+          
+          const originalStats = fs.statSync(path.join(dir, file));
+          totalOriginal += originalStats.size;
+          
+          if (fs.existsSync(webpPath)) {
+            const webpStats = fs.statSync(webpPath);
+            totalWebP += webpStats.size;
+            optimizedCount++;
+          }
+          
+          if (fs.existsSync(avifPath)) {
+            const avifStats = fs.statSync(avifPath);
+            totalAVIF += avifStats.size;
+          }
+        }
+      });
+    }
+  });
+  
+  if (optimizedCount > 0) {
+    const webpSavings = ((totalOriginal - totalWebP) / totalOriginal * 100).toFixed(1);
+    const avifSavings = ((totalOriginal - totalAVIF) / totalOriginal * 100).toFixed(1);
+    
+    console.log(`📊 Images optimisées: ${optimizedCount}`);
+    console.log(`📦 Taille originale: ${formatBytes(totalOriginal)}`);
+    console.log(`🌐 Taille WebP: ${formatBytes(totalWebP)} (-${webpSavings}%)`);
+    console.log(`🚀 Taille AVIF: ${formatBytes(totalAVIF)} (-${avifSavings}%)`);
+  } else {
+    console.log('❌ Aucune image optimisée détectée.');
+    console.log('💡 Lancez "npm run optimize-images" pour optimiser les images.');
+  }
+  
+  console.log('');
+}
+
 function printBundleAnalysis() {
   console.log('🔍 Analyse du bundle READ\n');
+  
+  // Analyser l'optimisation des images
+  analyzeImageOptimization();
   
   const chunks = analyzeDistFolder();
   
@@ -94,6 +156,14 @@ function printBundleAnalysis() {
   console.log(`   • ${jsFiles.length} fichiers JS`);
   console.log(`   • ${cssFiles.length} fichiers CSS`);
   console.log(`   • Bundle principal: ${jsFiles[0]?.sizeFormatted || 'N/A'}`);
+  
+  console.log('\n🚀 Optimisations appliquées:');
+  console.log('   • Lazy loading des images non critiques');
+  console.log('   • Formats modernes WebP/AVIF avec fallback');
+  console.log('   • Compression Gzip/Brotli');
+  console.log('   • Code splitting par vendor');
+  console.log('   • Minification Terser');
+  console.log('   • Cache PWA des assets');
 }
 
 // Exécuter l'analyse

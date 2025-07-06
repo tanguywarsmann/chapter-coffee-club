@@ -1,5 +1,6 @@
 
 import { Book } from "@/types/book";
+import Image from "@/components/ui/image";
 
 interface BookCoverInfoProps {
   book: Book;
@@ -9,7 +10,12 @@ export const BookCoverInfo = ({ book }: BookCoverInfoProps) => (
   <div className="flex items-start gap-4">
     <div className="book-cover w-32 h-48 flex-shrink-0">
       {book.coverImage ? (
-        <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+        <Image 
+          src={book.coverImage} 
+          alt={book.title} 
+          className="w-full h-full object-cover"
+          sizes="(max-width: 768px) 120px, 128px"
+        />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
           <span className="text-white font-serif italic text-4xl">{book.title.substring(0, 1)}</span>
