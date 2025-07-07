@@ -10,7 +10,8 @@ export async function insertReadingValidation(
   book_id: string,
   segment: number,
   question: ReadingQuestion | null,
-  progressId: string
+  progressId: string,
+  usedJoker: boolean = false
 ) {
   const validationRecord: ReadingValidationRecord = {
     user_id,
@@ -20,7 +21,8 @@ export async function insertReadingValidation(
     correct: true,
     validated_at: new Date().toISOString(),
     answer: question?.answer ?? undefined,
-    progress_id: progressId
+    progress_id: progressId,
+    used_joker: usedJoker
   };
 
   const { data: validationData, error: validationError } = await supabase

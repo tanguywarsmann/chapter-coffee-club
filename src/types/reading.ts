@@ -20,6 +20,7 @@ export interface ReadingValidation {
   answer: string | null
   correct: boolean
   validated_at: string
+  used_joker: boolean
   date_validated?: string
 }
 
