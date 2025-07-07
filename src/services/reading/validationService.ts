@@ -103,13 +103,25 @@ export const validateReading = async (
     // Get question for segment
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
 
+    // Joker logic - allow validation even with wrong answer if jokers available
+    const jokersAllowed = calculateJokersAllowed(bookData.expected_segments || 0);
+    const jokersUsed = await getUsedJokersCount(progressId);
+    const canUseJoker = jokersUsed < jokersAllowed;
+
+    let used_joker = false;
+    if (canUseJoker) {
+      used_joker = true;
+      toast.success("Segment validé grâce à un Joker !");
+    }
+
     // Insert reading validation
     await insertReadingValidation(
       request.user_id,
       request.book_id,
       request.segment,
       question,
-      progressId
+      progressId,
+      used_joker
     );
 
     // Badge/XP/Quest workflow and cache invalidation
