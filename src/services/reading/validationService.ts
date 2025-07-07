@@ -14,6 +14,30 @@ import { PAGES_PER_SEGMENT } from "@/utils/constants";
 
 type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
 
+/**
+ * Calcule le nombre de jokers autorisés selon le nombre de segments
+ */
+function calculateJokersAllowed(expectedSegments: number): number {
+  return Math.floor(expectedSegments / 10) + 1;
+}
+
+/**
+ * Compte le nombre de jokers déjà utilisés pour une lecture
+ */
+async function getUsedJokersCount(progressId: string): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('reading_validations')
+      .select('id')
+      .eq('progress_id', progressId)
+      .eq('used_joker', true);
+    if (error) return 0;
+    return data?.length || 0;
+  } catch {
+    return 0;
+  }
+}
+
 async function getSegmentsRead(progressId: string): Promise<number> {
   try {
     const { data, error } = await supabase
