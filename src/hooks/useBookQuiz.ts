@@ -80,7 +80,7 @@ export const useBookQuiz = (
     }
   };
 
-  const handleQuizComplete = async (correct: boolean) => {
+  const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
       return;
@@ -89,13 +89,19 @@ export const useBookQuiz = (
     try {
       setIsValidating(true);
 
-      if (correct) {
+      if (correct || useJoker) {
         // Validate reading segment
         const result = await validateReading({
           user_id: userId,
           book_id: book.id,
-          segment: quizChapter
+          segment: quizChapter,
+          correct: correct,
+          used_joker: useJoker
         });
+
+        if (useJoker) {
+          toast.success("Segment validé grâce à un Joker !");
+        }
 
         // Close quiz modal
         setShowQuiz(false);
@@ -111,8 +117,9 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
-        // Handle incorrect answer - could show feedback, lock validation, etc.
+        // Handle incorrect answer - don't automatically use joker anymore
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
+        return { canUseJoker: true }; // Signal that joker can be used
       }
     } catch (error) {
       console.error("Error completing quiz:", error);

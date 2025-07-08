@@ -103,21 +103,10 @@ export const validateReading = async (
     // Get question for segment
     const question = await getQuestionForBookSegment(request.book_id, request.segment);
 
-    // Pour l'instant, on assume que la réponse est correcte
-    // Cette logique sera étendue quand on aura l'UI de quiz
-    let correct = true;
-    
-    // Joker logic - allow validation even with wrong answer if jokers available
-    const jokersAllowed = calculateJokersAllowed(bookData.expected_segments || 0);
-    const jokersUsed = await getUsedJokersCount(progressId);
-    const canUseJoker = !correct && jokersUsed < jokersAllowed;
-
-    let used_joker = false;
-    if (canUseJoker) {
-      correct = true;
-      used_joker = true;
-      toast.success("Segment validé grâce à un Joker !");
-    }
+    // The correct answer and joker logic are now handled by the calling code
+    // We accept the used_joker parameter directly
+    const correct = request.correct !== undefined ? request.correct : true;
+    const used_joker = request.used_joker || false;
 
     // Insert reading validation
     await insertReadingValidation(

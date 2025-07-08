@@ -24,7 +24,7 @@ interface BookValidationModalsProps {
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
-  onQuizComplete: (passed: boolean) => void;
+  onQuizComplete: (passed: boolean, useJoker?: boolean) => void;
   onSuccessClose?: () => void;
   onLockExpire?: () => void;
 }
@@ -94,6 +94,8 @@ export const BookValidationModals = memo(({
           onComplete={onQuizComplete}
           onClose={onQuizClose}
           question={currentQuestion}
+          expectedSegments={book.expected_segments || book.total_chapters}
+          progressId={book.id}
         />
       )}
       

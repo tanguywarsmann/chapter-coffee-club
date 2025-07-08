@@ -115,6 +115,8 @@ export interface ValidateReadingRequest {
   user_id: string
   book_id: string
   segment: number
+  correct?: boolean
+  used_joker?: boolean
 }
 
 export interface ValidateReadingResponse {
