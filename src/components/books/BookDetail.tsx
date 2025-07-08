@@ -16,6 +16,10 @@ import { usePerformanceTracker } from "@/utils/performanceAudit";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
 import { useStableCallback } from "@/hooks/useStableCallback";
 import { MemoizedComponent } from "@/components/common/MemoizedComponent";
+import { getJokersInfo } from "@/utils/jokerUtils";
+import { ValidationHistory } from "./ValidationHistory";
+import { getValidationHistory } from "@/services/reading/validationHistoryService";
+import { ReadingValidation } from "@/types/reading";
 
 interface BookDetailProps {
   book: Book;
@@ -73,6 +77,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
+  const [validationHistory, setValidationHistory] = useState<ReadingValidation[]>([]);
 
   // Mémoriser les calculs de progression pour éviter les re-calculs
   const progressData = useMemo(() => {
@@ -99,6 +105,33 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     currentBook.expectedSegments,
     currentBook.total_chapters
   ]);
+
+  // Load jokers data and validation history when book or reading progress changes
+  useEffect(() => {
+    const loadData = async () => {
+      if (!currentBook?.expectedSegments && !currentBook?.total_chapters) return;
+      if (!user?.id) return;
+      
+      const expectedSegments = currentBook.expectedSegments || currentBook.total_chapters || 0;
+      const progressId = readingProgress?.id;
+      
+      try {
+        // Load jokers data
+        const jokers = await getJokersInfo(expectedSegments, progressId);
+        setJokersData(jokers);
+
+        // Load validation history
+        const history = await getValidationHistory(user.id, currentBook.id);
+        setValidationHistory(history);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setJokersData({ jokersAllowed: 0, jokersUsed: 0 });
+        setValidationHistory([]);
+      }
+    };
+
+    loadData();
+  }, [currentBook?.expectedSegments, currentBook?.total_chapters, currentBook?.id, readingProgress?.id, user?.id]);
 
   // Gestionnaire d'ouverture de modal stabilisé
   const handleOpenValidationModal = useStableCallback(
@@ -196,12 +229,17 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           </MemoizedComponent>
         )}
 
-        <MemoizedComponent deps={[progressData.chaptersRead, progressData.totalChapters, progressPercent]}>
+        <MemoizedComponent deps={[progressData.chaptersRead, progressData.totalChapters, progressPercent, jokersData.jokersUsed, jokersData.jokersAllowed]}>
           <>
             <p className="text-muted-foreground text-center">
               Progression : {progressData.chaptersRead} / {progressData.totalChapters} segments validés.
             </p>
-            <BookProgressBar progressPercent={progressPercent} ref={progressRef} />
+            <BookProgressBar 
+              progressPercent={progressPercent} 
+              jokersUsed={jokersData.jokersUsed}
+              jokersAllowed={jokersData.jokersAllowed}
+              ref={progressRef} 
+            />
           </>
         </MemoizedComponent>
 
@@ -217,6 +255,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             isValidating={isValidating}
             isLocked={isLocked}
             remainingLockTime={remainingLockTime}
+            jokersUsed={jokersData.jokersUsed}
+            jokersAllowed={jokersData.jokersAllowed}
             onValidationClose={() => setShowValidationModal(false)}
             onValidationConfirm={handleModalValidationConfirm}
             onQuizClose={() => setShowQuiz(false)}
@@ -242,6 +282,13 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             showMonthlyReward={showMonthlyReward}
             onClose={() => setShowMonthlyReward(false)}
           />
+        )}
+
+        {/* Validation History - Only show if there are validations */}
+        {validationHistory.length > 0 && (
+          <MemoizedComponent deps={[validationHistory.length]}>
+            <ValidationHistory validations={validationHistory} />
+          </MemoizedComponent>
         )}
       </CardContent>
     </Card>
