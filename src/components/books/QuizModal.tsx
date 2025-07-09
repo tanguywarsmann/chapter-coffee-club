@@ -56,15 +56,13 @@ export function QuizModal({
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       
-      if (newAttempts >= maxAttempts) {
-        // Check if joker can be used
-        const canUseJoker = jokersData.jokersUsed < jokersData.jokersAllowed;
-        if (canUseJoker) {
-          setShowJokerConfirmation(true);
-        } else {
-          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-          onComplete(false);
-        }
+      // Check if joker can be used immediately after first wrong answer
+      const canUseJoker = jokersData.jokersUsed < jokersData.jokersAllowed;
+      if (canUseJoker) {
+        setShowJokerConfirmation(true);
+      } else if (newAttempts >= maxAttempts) {
+        toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+        onComplete(false);
       } else {
         toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
       }
