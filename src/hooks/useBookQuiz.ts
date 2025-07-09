@@ -95,7 +95,7 @@ export const useBookQuiz = (
           user_id: userId,
           book_id: book.id,
           segment: quizChapter,
-          correct: correct,
+          correct: useJoker ? true : correct, // Joker simulates a correct answer
           used_joker: useJoker
         });
 
