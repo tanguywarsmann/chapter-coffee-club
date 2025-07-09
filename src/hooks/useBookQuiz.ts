@@ -81,6 +81,8 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
+    console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
+    
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
       return;
@@ -90,6 +92,8 @@ export const useBookQuiz = (
       setIsValidating(true);
 
       if (correct || useJoker) {
+        console.log("✅ Entering validation path with joker:", useJoker);
+        
         // Validate reading segment
         const result = await validateReading({
           user_id: userId,
@@ -98,6 +102,8 @@ export const useBookQuiz = (
           correct: useJoker ? true : correct, // Joker simulates a correct answer
           used_joker: useJoker
         });
+
+        console.log("✅ Validation result:", result);
 
         if (useJoker) {
           toast.success("Segment validé grâce à un Joker !");
@@ -117,13 +123,14 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
+        console.log("❌ Entering error path - no joker used");
         // Handle incorrect answer without joker
         setShowQuiz(false);
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
         return { canUseJoker: true };
       }
     } catch (error) {
-      console.error("Error completing quiz:", error);
+      console.error("❌ Error completing quiz:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
       throw error;
