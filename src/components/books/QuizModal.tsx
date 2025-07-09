@@ -16,6 +16,8 @@ interface QuizModalProps {
   question: ReadingQuestion;
   expectedSegments?: number;
   progressId?: string;
+  jokersRemaining?: number;
+  isUsingJoker?: boolean;
 }
 
 export function QuizModal({ 
@@ -25,7 +27,9 @@ export function QuizModal({
   onClose,
   question,
   expectedSegments = 0,
-  progressId
+  progressId,
+  jokersRemaining = 0,
+  isUsingJoker = false
 }: QuizModalProps) {
   const [answer, setAnswer] = useState("");
   const [attempts, setAttempts] = useState(0);
@@ -33,12 +37,16 @@ export function QuizModal({
   const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
   const maxAttempts = 3;
 
-  // Load jokers data when modal opens
+  // Load jokers data when modal opens (fallback si jokersRemaining n'est pas fourni)
   React.useEffect(() => {
-    if (expectedSegments > 0 && progressId) {
+    if (expectedSegments > 0 && progressId && jokersRemaining === 0) {
       getJokersInfo(expectedSegments, progressId).then(setJokersData);
+    } else if (expectedSegments > 0) {
+      const jokersAllowed = Math.floor(expectedSegments / 10) + 1;
+      const jokersUsed = Math.max(0, jokersAllowed - jokersRemaining);
+      setJokersData({ jokersAllowed, jokersUsed });
     }
-  }, [expectedSegments, progressId]);
+  }, [expectedSegments, progressId, jokersRemaining]);
 
   const handleSubmit = () => {
     if (!answer.trim()) {
@@ -57,7 +65,7 @@ export function QuizModal({
       setAttempts(newAttempts);
       
       // Check if joker can be used immediately after first wrong answer
-      const canUseJoker = jokersData.jokersUsed < jokersData.jokersAllowed;
+      const canUseJoker = jokersRemaining > 0 && !isUsingJoker;
       if (canUseJoker) {
         setShowJokerConfirmation(true);
       } else if (newAttempts >= maxAttempts) {
@@ -153,6 +161,8 @@ export function QuizModal({
         segment={chapterNumber}
         jokersUsed={jokersData.jokersUsed}
         jokersAllowed={jokersData.jokersAllowed}
+        jokersRemaining={jokersRemaining}
+        isUsingJoker={isUsingJoker}
         onConfirm={handleJokerConfirm}
         onCancel={handleJokerCancel}
       />

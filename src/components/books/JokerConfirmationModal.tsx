@@ -7,6 +7,8 @@ interface JokerConfirmationModalProps {
   segment: number;
   jokersUsed: number;
   jokersAllowed: number;
+  jokersRemaining?: number;
+  isUsingJoker?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -16,10 +18,12 @@ export function JokerConfirmationModal({
   segment,
   jokersUsed,
   jokersAllowed,
+  jokersRemaining: propJokersRemaining,
+  isUsingJoker = false,
   onConfirm,
   onCancel
 }: JokerConfirmationModalProps) {
-  const jokersRemaining = Math.max(0, jokersAllowed - jokersUsed);
+  const jokersRemaining = propJokersRemaining ?? Math.max(0, jokersAllowed - jokersUsed);
 
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
@@ -61,11 +65,11 @@ export function JokerConfirmationModal({
           </Button>
           <Button 
             onClick={onConfirm}
-            disabled={jokersRemaining <= 0}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
+            disabled={jokersRemaining <= 0 || isUsingJoker}
+            className="bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Utiliser un Joker
+            {isUsingJoker ? "Utilisation..." : "Utiliser un Joker"}
           </Button>
         </DialogFooter>
       </DialogContent>

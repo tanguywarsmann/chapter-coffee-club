@@ -65,6 +65,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     setShowMonthlyReward,
     handleMainButtonClick,
     sessionStartTimeRef,
+    isUsingJoker,
+    jokersRemaining
   } = useBookValidation({
     book: currentBook,
     userId: user?.id || null,
@@ -257,6 +259,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             remainingLockTime={remainingLockTime}
             jokersUsed={jokersData.jokersUsed}
             jokersAllowed={jokersData.jokersAllowed}
+            jokersRemaining={jokersRemaining}
+            isUsingJoker={isUsingJoker}
             onValidationClose={() => setShowValidationModal(false)}
             onValidationConfirm={handleModalValidationConfirm}
             onQuizClose={() => setShowQuiz(false)}

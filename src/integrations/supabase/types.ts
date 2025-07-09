@@ -520,7 +520,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      use_joker: {
+        Args: { p_book_id: string; p_user_id: string; p_segment: number }
+        Returns: {
+          jokers_remaining: number
+          success: boolean
+          message: string
+        }[]
+      }
     }
     Enums: {
       reading_status: "to_read" | "in_progress" | "completed"

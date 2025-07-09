@@ -21,6 +21,8 @@ interface BookValidationModalsProps {
   remainingLockTime?: number | null;
   jokersUsed?: number;
   jokersAllowed?: number;
+  jokersRemaining?: number;
+  isUsingJoker?: boolean;
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
@@ -42,6 +44,8 @@ export const BookValidationModals = memo(({
   remainingLockTime = null,
   jokersUsed = 0,
   jokersAllowed = 0,
+  jokersRemaining = 0,
+  isUsingJoker = false,
   onValidationClose,
   onValidationConfirm,
   onQuizClose,
@@ -96,6 +100,8 @@ export const BookValidationModals = memo(({
           question={currentQuestion}
           expectedSegments={book.expected_segments || book.total_chapters}
           progressId={book.id}
+          jokersRemaining={jokersRemaining}
+          isUsingJoker={isUsingJoker}
         />
       )}
       

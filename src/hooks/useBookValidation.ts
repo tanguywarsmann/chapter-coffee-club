@@ -74,7 +74,9 @@ export const useBookValidation = ({
     handleQuizComplete: originalHandleQuizComplete,
     isLocked,
     remainingLockTime,
-    handleLockExpire
+    handleLockExpire,
+    isUsingJoker,
+    jokersRemaining
   } = useBookQuiz(book, userId, onProgressUpdate);
 
   const {
@@ -306,6 +308,8 @@ export const useBookValidation = ({
     setShowMonthlyReward,
     handleMainButtonClick,
     sessionStartTimeRef,
+    isUsingJoker,
+    jokersRemaining,
   }), [
     isValidating,
     showQuiz,
@@ -331,7 +335,9 @@ export const useBookValidation = ({
     unlockedBadges,
     monthlyReward,
     showMonthlyReward,
-    handleMainButtonClick
+    handleMainButtonClick,
+    isUsingJoker,
+    jokersRemaining,
   ]);
   
   return returnValue;
