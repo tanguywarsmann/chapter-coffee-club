@@ -182,9 +182,10 @@ export const useBookValidation = ({
   );
 
   // Handler consolidé pour la complétion du quiz
-  const handleQuizCompleteWrapper = useCallback(async (correct: boolean) => {
+  const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
+    console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
     try {
-      const result = await handleQuizComplete(correct);
+      const result = await handleQuizComplete(correct, useJoker);
 
       if (correct) {
         showConfetti();

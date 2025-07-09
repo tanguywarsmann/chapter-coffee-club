@@ -9,7 +9,7 @@ import { useReadingProgress } from "./useReadingProgress";
 interface UseQuizCompletionProps {
   book: Book | null;
   userId: string | null;
-  originalHandleQuizComplete: (correct: boolean) => Promise<any>;
+  originalHandleQuizComplete: (correct: boolean, useJoker?: boolean) => Promise<any>;
   onProgressUpdate?: (bookId: string) => void;
 }
 
@@ -22,9 +22,10 @@ export const useQuizCompletion = ({
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const { forceRefresh } = useReadingProgress();
 
-  const handleQuizComplete = async (correct: boolean) => {
+  const handleQuizComplete = async (correct: boolean, useJoker?: boolean) => {
+    console.log("🎲 useQuizCompletion.handleQuizComplete called with:", { correct, useJoker });
     try {
-      const result = await originalHandleQuizComplete(correct);
+      const result = await originalHandleQuizComplete(correct, useJoker);
       
       if (correct && userId && book?.id) {
         // Force immediate refresh of multiple data sources for mobile
