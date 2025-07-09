@@ -117,9 +117,10 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
-        // Handle incorrect answer - don't automatically use joker anymore
+        // Handle incorrect answer without joker
+        setShowQuiz(false);
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
-        return { canUseJoker: true }; // Signal that joker can be used
+        return { canUseJoker: true };
       }
     } catch (error) {
       console.error("Error completing quiz:", error);
