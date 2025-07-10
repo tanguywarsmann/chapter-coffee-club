@@ -24,7 +24,7 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
   
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose && onClose()}>
-      <DialogContent className="sm:max-w-md border-coffee-medium">
+      <DialogContent className="sm:max-w-md border-coffee-medium" data-testid="success-message">
         <DialogHeader className="pb-2">
           <div className="flex flex-col items-center justify-center">
             <CheckCircle className="w-16 h-16 text-green-500 mb-2 animate-scale-in" />
@@ -50,6 +50,7 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
           <Button 
             onClick={() => onClose && onClose()} 
             className="bg-coffee-dark hover:bg-coffee-darker"
+            data-testid="success-close-button"
           >
             Continuer ma lecture
           </Button>

@@ -89,8 +89,6 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
-    console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
-    
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
       return;
@@ -100,7 +98,6 @@ export const useBookQuiz = (
       setIsValidating(true);
 
       if (useJoker) {
-        console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
         setIsUsingJoker(true);
         
         // Utiliser la fonction RPC atomique
@@ -123,7 +120,6 @@ export const useBookQuiz = (
           used_joker: true
         });
         
-        console.log("✅ Validation avec joker réussie:", result);
         toast.success("Segment validé grâce à un Joker !");
         
         // Invalider les caches SWR pour synchronisation
@@ -140,8 +136,6 @@ export const useBookQuiz = (
         
         return result;
       } else if (correct) {
-        console.log("✅ Réponse correcte sans joker");
-        
         // Validate reading segment normalement
         const result = await validateReading({
           user_id: userId,
@@ -150,8 +144,6 @@ export const useBookQuiz = (
           correct: true,
           used_joker: false
         });
-
-        console.log("✅ Validation normale réussie:", result);
 
         // Invalider les caches SWR pour synchronisation
         await invalidateAllJokersCache(book.id);
@@ -170,21 +162,28 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
-        console.log("❌ Réponse incorrecte - pas de joker utilisé");
         // Handle incorrect answer without joker
         setShowQuiz(false);
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
-      console.error("❌ Error completing quiz:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
       throw error;
     } finally {
+      // 🔑 Toujours exécuté, même en cas d'erreur ou de fermeture prématurée
       setIsValidating(false);
       setIsUsingJoker(false);
     }
+  };
+
+  // Méthode pour réinitialiser l'état (utile pour les changements de segment)
+  const resetQuizState = () => {
+    setIsValidating(false);
+    setIsUsingJoker(false);
+    setShowQuiz(false);
+    setShowSuccessMessage(false);
   };
 
   return {
@@ -201,6 +200,7 @@ export const useBookQuiz = (
     remainingLockTime,
     handleLockExpire,
     isUsingJoker,
-    jokersRemaining
+    jokersRemaining,
+    resetQuizState
   };
 };

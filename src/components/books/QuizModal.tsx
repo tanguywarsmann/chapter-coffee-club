@@ -138,6 +138,7 @@ export function QuizModal({
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
               aria-label="Valider ma réponse au quiz"
               aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
+              data-testid="quiz-submit-button"
             >
               Valider ma réponse
             </Button>

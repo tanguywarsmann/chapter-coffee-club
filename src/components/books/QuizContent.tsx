@@ -46,6 +46,7 @@ export function QuizContent({
             className="w-full border-coffee-medium resize-none mt-1 text-foreground bg-background"
             aria-describedby="quiz-question attempts-counter"
             aria-required="true"
+            data-testid="quiz-answer-input"
           />
           <p 
             id="attempts-counter"

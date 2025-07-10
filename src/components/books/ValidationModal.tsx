@@ -125,6 +125,7 @@ export function ValidationModal({
             onClick={onClose} 
             className="border-coffee-medium text-foreground hover:bg-muted"
             aria-label="Annuler la validation de lecture"
+            data-testid="validation-cancel-button"
           >
             Annuler
           </Button>
@@ -135,6 +136,7 @@ export function ValidationModal({
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
               aria-label={isValidating ? "Validation en cours" : "Valider cette étape de lecture"}
               aria-describedby={!hasRead ? "validation-requirement" : undefined}
+              data-testid="validation-confirm-button"
             >
               {isValidating ? (
                 <>

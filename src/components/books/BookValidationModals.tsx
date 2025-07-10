@@ -93,6 +93,7 @@ export const BookValidationModals = memo(({
       
       {showQuizModal && currentQuestion && (
         <QuizModal
+          key={`quiz-${currentQuestion.segment || 0}`}
           bookTitle={book.title}
           chapterNumber={currentQuestion.segment || 0}
           onComplete={onQuizComplete}
