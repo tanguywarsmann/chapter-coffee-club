@@ -16,10 +16,10 @@ import { usePerformanceTracker } from "@/utils/performanceAudit";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
 import { useStableCallback } from "@/hooks/useStableCallback";
 import { MemoizedComponent } from "@/components/common/MemoizedComponent";
-import { getJokersInfo } from "@/utils/jokerUtils";
 import { ValidationHistory } from "./ValidationHistory";
 import { getValidationHistory } from "@/services/reading/validationHistoryService";
 import { ReadingValidation } from "@/types/reading";
+import { useJokersInfo } from "@/hooks/useJokersInfo";
 
 interface BookDetailProps {
   book: Book;
@@ -79,8 +79,18 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   });
 
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
   const [validationHistory, setValidationHistory] = useState<ReadingValidation[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Hook SWR pour les jokers avec invalidation automatique
+  const { jokersInfo, invalidateJokersCache } = useJokersInfo(
+    currentBook?.id || null,
+    currentBook?.expectedSegments || currentBook?.total_chapters || null,
+    readingProgress?.id || null,
+    refreshTrigger
+  );
+
+  const jokersData = jokersInfo || { jokersAllowed: 0, jokersUsed: 0, jokersRemaining: 0 };
 
   // Mémoriser les calculs de progression pour éviter les re-calculs
   const progressData = useMemo(() => {
@@ -108,32 +118,30 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     currentBook.total_chapters
   ]);
 
-  // Load jokers data and validation history when book or reading progress changes
+  // Load validation history when book or reading progress changes
   useEffect(() => {
-    const loadData = async () => {
-      if (!currentBook?.expectedSegments && !currentBook?.total_chapters) return;
-      if (!user?.id) return;
-      
-      const expectedSegments = currentBook.expectedSegments || currentBook.total_chapters || 0;
-      const progressId = readingProgress?.id;
+    const loadValidationHistory = async () => {
+      if (!user?.id || !currentBook?.id) return;
       
       try {
-        // Load jokers data
-        const jokers = await getJokersInfo(expectedSegments, progressId);
-        setJokersData(jokers);
-
-        // Load validation history
         const history = await getValidationHistory(user.id, currentBook.id);
         setValidationHistory(history);
       } catch (error) {
-        console.error('Error loading data:', error);
-        setJokersData({ jokersAllowed: 0, jokersUsed: 0 });
+        console.error('Error loading validation history:', error);
         setValidationHistory([]);
       }
     };
 
-    loadData();
-  }, [currentBook?.expectedSegments, currentBook?.total_chapters, currentBook?.id, readingProgress?.id, user?.id]);
+    loadValidationHistory();
+  }, [currentBook?.id, user?.id, readingProgress?.chaptersRead, readingProgress?.updated_at]);
+
+  // Forcer le refresh des jokers après validation
+  useEffect(() => {
+    if (readingProgress?.chaptersRead) {
+      setRefreshTrigger(prev => prev + 1);
+      invalidateJokersCache();
+    }
+  }, [readingProgress?.chaptersRead, readingProgress?.updated_at, invalidateJokersCache]);
 
   // Gestionnaire d'ouverture de modal stabilisé
   const handleOpenValidationModal = useStableCallback(
@@ -221,6 +229,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                 disabled={isValidating}
                 onClick={handleOpenValidationModal}
                 className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-lg font-serif my-4"
+                data-testid="start-quiz-button"
               >
                 {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
               </Button>
@@ -240,7 +249,8 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
               progressPercent={progressPercent} 
               jokersUsed={jokersData.jokersUsed}
               jokersAllowed={jokersData.jokersAllowed}
-              ref={progressRef} 
+              ref={progressRef}
+              data-testid="book-progress-bar"
             />
           </>
         </MemoizedComponent>
@@ -259,7 +269,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             remainingLockTime={remainingLockTime}
             jokersUsed={jokersData.jokersUsed}
             jokersAllowed={jokersData.jokersAllowed}
-            jokersRemaining={jokersRemaining}
+            jokersRemaining={jokersData.jokersRemaining || jokersRemaining}
             isUsingJoker={isUsingJoker}
             onValidationClose={() => setShowValidationModal(false)}
             onValidationConfirm={handleModalValidationConfirm}

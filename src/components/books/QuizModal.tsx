@@ -37,16 +37,14 @@ export function QuizModal({
   const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
   const maxAttempts = 3;
 
-  // Load jokers data when modal opens (fallback si jokersRemaining n'est pas fourni)
+  // Calculer les données des jokers à partir des props
   React.useEffect(() => {
-    if (expectedSegments > 0 && progressId && jokersRemaining === 0) {
-      getJokersInfo(expectedSegments, progressId).then(setJokersData);
-    } else if (expectedSegments > 0) {
+    if (expectedSegments > 0) {
       const jokersAllowed = Math.floor(expectedSegments / 10) + 1;
-      const jokersUsed = Math.max(0, jokersAllowed - jokersRemaining);
+      const jokersUsed = Math.max(0, jokersAllowed - (jokersRemaining || 0));
       setJokersData({ jokersAllowed, jokersUsed });
     }
-  }, [expectedSegments, progressId, jokersRemaining]);
+  }, [expectedSegments, jokersRemaining]);
 
   const handleSubmit = () => {
     if (!answer.trim()) {

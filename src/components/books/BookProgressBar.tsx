@@ -7,10 +7,11 @@ interface BookProgressBarProps {
   progressPercent: number;
   jokersUsed?: number;
   jokersAllowed?: number;
+  'data-testid'?: string;
 }
 
 export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
-  ({ progressPercent, jokersUsed = 0, jokersAllowed = 0 }, ref) => {
+  ({ progressPercent, jokersUsed = 0, jokersAllowed = 0, 'data-testid': testId }, ref) => {
     useEffect(() => {
       if (progressPercent > 0 && ref && typeof ref !== 'function' && ref.current) {
         setTimeout(() => {
@@ -20,7 +21,7 @@ export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
     }, [progressPercent, ref]);
 
     return (
-      <div ref={ref} className="my-3">
+      <div ref={ref} className="my-3" data-testid={testId}>
         <div className="flex items-center gap-2">
           <Progress value={progressPercent} />
           <span className="text-xs font-medium text-coffee-darker">{progressPercent}%</span>
@@ -30,8 +31,8 @@ export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
         {jokersAllowed > 0 && (
           <div className="flex items-center justify-center gap-1 mt-1">
             <Sparkles className="h-3 w-3 text-amber-500" />
-            <span className="text-xs text-muted-foreground">
-              Jokers : {jokersUsed} / {jokersAllowed} utilisés
+            <span className="text-xs text-muted-foreground" data-testid="jokers-progress">
+              Jokers {jokersUsed} / {jokersAllowed} utilisés
             </span>
           </div>
         )}

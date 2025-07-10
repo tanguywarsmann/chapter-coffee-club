@@ -27,7 +27,7 @@ export function JokerConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md border-coffee-medium">
+      <DialogContent className="sm:max-w-md border-coffee-medium" data-testid="joker-confirmation-modal">
         <DialogHeader>
           <DialogTitle className="text-center text-coffee-darker font-serif flex items-center justify-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-500" />
@@ -45,7 +45,7 @@ export function JokerConfirmationModal({
             </p>
             <div className="flex items-center gap-2 text-xs text-amber-700">
               <Sparkles className="h-3 w-3" />
-              <span>Jokers restants : {jokersRemaining} / {jokersAllowed}</span>
+              <span data-testid="jokers-remaining">Jokers restants : {jokersRemaining} / {jokersAllowed}</span>
             </div>
           </div>
           
@@ -67,6 +67,7 @@ export function JokerConfirmationModal({
             onClick={onConfirm}
             disabled={jokersRemaining <= 0 || isUsingJoker}
             className="bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
+            data-testid="confirm-joker-button"
           >
             <Sparkles className="h-4 w-4 mr-2" />
             {isUsingJoker ? "Utilisation..." : "Utiliser un Joker"}

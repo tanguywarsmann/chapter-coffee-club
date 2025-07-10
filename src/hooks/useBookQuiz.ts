@@ -6,6 +6,7 @@ import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services
 import { validateReading } from "@/services/reading/validationService";
 import { checkValidationLock } from "@/services/validation/lockService";
 import { useJokerAtomically, getRemainingJokers } from "@/services/jokerService";
+import { invalidateAllJokersCache } from "@/hooks/useJokersInfo";
 
 export const useBookQuiz = (
   book: Book | null,
@@ -125,6 +126,9 @@ export const useBookQuiz = (
         console.log("✅ Validation avec joker réussie:", result);
         toast.success("Segment validé grâce à un Joker !");
         
+        // Invalider les caches SWR pour synchronisation
+        await invalidateAllJokersCache(book.id);
+        
         // Fermer le quiz et afficher le message de succès
         setShowQuiz(false);
         setShowSuccessMessage(true);
@@ -148,6 +152,9 @@ export const useBookQuiz = (
         });
 
         console.log("✅ Validation normale réussie:", result);
+
+        // Invalider les caches SWR pour synchronisation
+        await invalidateAllJokersCache(book.id);
 
         // Close quiz modal
         setShowQuiz(false);
