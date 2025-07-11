@@ -15,6 +15,7 @@ import Explore from '@/pages/Explore';
 import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -35,7 +36,7 @@ const AppRouter = () => {
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />
-      <Route path="/explore" element={<Explore />} />
+      <Route path="/explore" element={<AuthGuard><Explore /></AuthGuard>} />
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/followers/:type/:userId" element={<Followers />} />
       

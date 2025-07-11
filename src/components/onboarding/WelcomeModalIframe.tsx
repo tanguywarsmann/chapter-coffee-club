@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface WelcomeModalIframeProps {
   open: boolean;
@@ -8,9 +9,19 @@ interface WelcomeModalIframeProps {
 }
 
 export function WelcomeModalIframe({ open, onClose }: WelcomeModalIframeProps) {
+  let navigate: (to: string) => void;
+
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    console.error("useNavigate() a échoué dans WelcomeModalIframe.tsx :", error);
+    navigate = () => {}; // fallback no-op pour éviter le crash
+  }
+
   const handleStart = () => {
     localStorage.setItem("onboardingDone", "true");
     onClose(false);
+    navigate("/auth?mode=signup");
   };
 
   const handleSkip = () => onClose(true);
@@ -44,7 +55,7 @@ export function WelcomeModalIframe({ open, onClose }: WelcomeModalIframeProps) {
             className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-lg"
             autoFocus
           >
-            Je commence ma lecture
+            Créer mon compte
           </Button>
           <button
             type="button"
