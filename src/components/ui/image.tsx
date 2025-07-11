@@ -77,8 +77,11 @@ const Image = ({ src, alt, className, priority = false, sizes, ...props }: Image
     setFallbackToOriginal(true);
   };
 
-  // Si on a des versions optimisées, essayer de les utiliser avec fallback robuste
-  if (avif || webp) {
+  // Pour les uploads Lovable, désactiver l'optimisation automatique en preview
+  const shouldUseOptimized = !src.includes('lovable-uploads');
+
+  // Si on a des versions optimisées ET qu'on doit les utiliser, essayer de les utiliser avec fallback robuste
+  if ((avif || webp) && shouldUseOptimized) {
     return (
       <picture>
         {avif && (
