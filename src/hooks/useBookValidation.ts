@@ -185,8 +185,8 @@ export const useBookValidation = ({
 
   // Handler consolidé pour la complétion du quiz
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
     try {
+      setIsValidating(true);
       const result = await handleQuizComplete(correct, useJoker);
 
       if (correct) {
@@ -262,6 +262,8 @@ export const useBookValidation = ({
         await refreshProgressData();
       }
       forceRefresh();
+    } finally {
+      setIsValidating(false);
     }
   }, [
     handleQuizComplete,

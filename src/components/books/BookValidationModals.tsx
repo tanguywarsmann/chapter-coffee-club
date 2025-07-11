@@ -61,34 +61,20 @@ export const BookValidationModals = memo(({
   return (
     <>
       {showValidationModal && validationSegment && (
-        <>
-          {isLocked && remainingLockTime && remainingLockTime > 0 ? (
-            <ValidationModal
-              bookTitle={book.title}
-              segment={validationSegment}
-              isOpen={showValidationModal}
-              isValidating={isValidating}
-              isLocked={true}
-              remainingLockTime={remainingLockTime}
-              jokersUsed={jokersUsed}
-              jokersAllowed={jokersAllowed}
-              onClose={onValidationClose}
-              onValidate={onValidationConfirm}
-              onLockExpire={onLockExpire}
-            />
-          ) : (
-            <ValidationModal
-              bookTitle={book.title}
-              segment={validationSegment}
-              isOpen={showValidationModal}
-              isValidating={isValidating}
-              jokersUsed={jokersUsed}
-              jokersAllowed={jokersAllowed}
-              onClose={onValidationClose}
-              onValidate={onValidationConfirm}
-            />
-          )}
-        </>
+        <ValidationModal
+          key={`validation-${validationSegment}`}
+          bookTitle={book.title}
+          segment={validationSegment}
+          isOpen={showValidationModal}
+          isValidating={isValidating}
+          isLocked={isLocked}
+          remainingLockTime={remainingLockTime}
+          jokersUsed={jokersUsed}
+          jokersAllowed={jokersAllowed}
+          onClose={onValidationClose}
+          onValidate={onValidationConfirm}
+          onLockExpire={onLockExpire}
+        />
       )}
       
       {showQuizModal && currentQuestion && (

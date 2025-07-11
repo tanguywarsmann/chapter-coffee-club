@@ -16,7 +16,7 @@ export const useBookQuiz = (
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
+  // isValidating state removed - now managed by useBookValidation
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
@@ -34,8 +34,6 @@ export const useBookQuiz = (
     }
 
     try {
-      setIsValidating(true);
-
       // Check if user is locked from validating this segment
       const lockCheck = await checkValidationLock(userId, book.id, segment);
       
@@ -83,8 +81,6 @@ export const useBookQuiz = (
       console.error("Error preparing question:", error);
       toast.error("Erreur lors de la préparation du quiz");
       throw error;
-    } finally {
-      setIsValidating(false);
     }
   };
 
@@ -95,8 +91,6 @@ export const useBookQuiz = (
     }
 
     try {
-      setIsValidating(true);
-
       if (useJoker) {
         setIsUsingJoker(true);
         
@@ -173,14 +167,12 @@ export const useBookQuiz = (
       throw error;
     } finally {
       // 🔑 Toujours exécuté, même en cas d'erreur ou de fermeture prématurée
-      setIsValidating(false);
       setIsUsingJoker(false);
     }
   };
 
   // Méthode pour réinitialiser l'état (utile pour les changements de segment)
   const resetQuizState = () => {
-    setIsValidating(false);
     setIsUsingJoker(false);
     setShowQuiz(false);
     setShowSuccessMessage(false);
@@ -193,7 +185,6 @@ export const useBookQuiz = (
     currentQuestion,
     showSuccessMessage,
     setShowSuccessMessage,
-    isValidating,
     prepareAndShowQuestion,
     handleQuizComplete,
     isLocked,

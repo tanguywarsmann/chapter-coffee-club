@@ -19,60 +19,35 @@ test.describe('Validation multi-segments', () => {
     }
   });
 
-  test('doit permettre de valider plusieurs segments sans blocage', async ({ page }) => {
-    // Étape 1: Valider le premier segment
-    const validateButton1 = page.locator('[data-testid="validate-button"]').first();
-    await expect(validateButton1).toBeVisible();
-    await validateButton1.click();
-
-    // Confirmation de validation
-    const confirmButton = page.locator('[data-testid="validation-confirm-button"]');
-    await expect(confirmButton).toBeVisible();
-    await confirmButton.click();
-
-    // Répondre au quiz du premier segment
-    const answerInput = page.locator('[data-testid="quiz-answer-input"]');
-    await expect(answerInput).toBeVisible();
-    await answerInput.fill('oui');
-
-    const submitQuizButton = page.locator('[data-testid="quiz-submit-button"]');
-    await expect(submitQuizButton).toBeEnabled();
-    await submitQuizButton.click();
-
-    // Attendre le message de succès
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
+  test('should allow validation of multiple segments without isValidating blocking', async ({ page }) => {
+    // Validate first segment
+    await page.getByTestId('main-validate-button').click();
+    await page.getByTestId('validation-confirm-button').click();
     
-    // Fermer le message de succès
-    const closeSuccessButton = page.locator('[data-testid="success-close-button"]');
-    await closeSuccessButton.click();
-
-    // Étape 2: Valider le deuxième segment
-    // Attendre un peu pour que l'état se stabilise
+    // Answer quiz correctly
+    await page.getByTestId('quiz-answer-button').click();
+    await page.getByTestId('quiz-submit-button').click();
+    
+    // Wait for success message and close it
+    await expect(page.getByTestId('success-message')).toBeVisible();
+    await page.getByTestId('success-close-button').click();
+    
+    // Wait a moment for state to settle
     await page.waitForTimeout(500);
-
-    const validateButton2 = page.locator('[data-testid="validate-button"]').first();
-    await expect(validateButton2).toBeVisible();
-    await expect(validateButton2).toBeEnabled({ timeout: 10000 });
     
-    await validateButton2.click();
-
-    // Confirmation de validation du deuxième segment
-    const confirmButton2 = page.locator('[data-testid="validation-confirm-button"]');
-    await expect(confirmButton2).toBeVisible();
-    await expect(confirmButton2).toBeEnabled();
-    await confirmButton2.click();
-
-    // Répondre au quiz du deuxième segment
-    const answerInput2 = page.locator('[data-testid="quiz-answer-input"]');
-    await expect(answerInput2).toBeVisible();
-    await answerInput2.fill('oui');
-
-    const submitQuizButton2 = page.locator('[data-testid="quiz-submit-button"]');
-    await expect(submitQuizButton2).toBeEnabled();
-    await submitQuizButton2.click();
-
-    // Vérifier le succès du deuxième segment
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
+    // Validate second segment - button should be active (not blocked by isValidating)
+    await page.getByTestId('main-validate-button').click();
+    
+    // Critical test: validation button should be enabled for second segment
+    await expect(page.getByTestId('validation-confirm-button')).toBeEnabled();
+    
+    // Complete second validation without blocking
+    await page.getByTestId('validation-confirm-button').click();
+    await page.getByTestId('quiz-answer-button').click();
+    await page.getByTestId('quiz-submit-button').click();
+    
+    // Should successfully see second success message
+    await expect(page.getByTestId('success-message')).toBeVisible();
   });
 
   test('doit gérer les erreurs sans bloquer isSubmitting', async ({ page }) => {
