@@ -21,7 +21,7 @@ try {
   const handleStart = () => {
     localStorage.setItem("onboardingDone", "true");
     onClose(false);
-    navigate("/explore");
+    navigate("/auth?mode=signup");
   };
 
   const handleSkip = () => onClose(true);
@@ -55,7 +55,7 @@ try {
             className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-lg"
             autoFocus
           >
-            Je commence ma lecture
+            Créer mon compte
           </Button>
           <button
             type="button"
