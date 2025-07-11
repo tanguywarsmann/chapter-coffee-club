@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,24 +35,11 @@ export function ValidationModal({
   onLockExpire
 }: ValidationModalProps) {
   const [hasRead, setHasRead] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
-  
-  // Reset local state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setHasRead(false);
-      setLocalLoading(false);
-    }
-  }, [isOpen]);
   
   const handleSubmit = () => {
-    if (!hasRead || isValidating || localLoading) return;
-    setLocalLoading(true);
+    if (!hasRead) return;
     onValidate();
   };
-
-  // Source unique de disable
-  const disabled = isValidating || localLoading;
 
   return (
     <Dialog 
@@ -138,20 +125,18 @@ export function ValidationModal({
             onClick={onClose} 
             className="border-coffee-medium text-foreground hover:bg-muted"
             aria-label="Annuler la validation de lecture"
-            data-testid="validation-cancel-button"
           >
             Annuler
           </Button>
           {!isLocked && (
             <Button 
               onClick={handleSubmit} 
-              disabled={!hasRead || disabled}
+              disabled={!hasRead || isValidating}
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
-              aria-label={disabled ? "Validation en cours" : "Valider cette étape de lecture"}
+              aria-label={isValidating ? "Validation en cours" : "Valider cette étape de lecture"}
               aria-describedby={!hasRead ? "validation-requirement" : undefined}
-              data-testid="validation-confirm-button"
             >
-              {disabled ? (
+              {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                   <span>Validation...</span>

@@ -6,7 +6,6 @@ import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services
 import { validateReading } from "@/services/reading/validationService";
 import { checkValidationLock } from "@/services/validation/lockService";
 import { useJokerAtomically, getRemainingJokers } from "@/services/jokerService";
-import { invalidateAllJokersCache } from "@/hooks/useJokersInfo";
 
 export const useBookQuiz = (
   book: Book | null,
@@ -16,7 +15,7 @@ export const useBookQuiz = (
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
-  // isValidating state removed - now managed by useBookValidation
+  const [isValidating, setIsValidating] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
@@ -34,6 +33,8 @@ export const useBookQuiz = (
     }
 
     try {
+      setIsValidating(true);
+
       // Check if user is locked from validating this segment
       const lockCheck = await checkValidationLock(userId, book.id, segment);
       
@@ -81,17 +82,24 @@ export const useBookQuiz = (
       console.error("Error preparing question:", error);
       toast.error("Erreur lors de la préparation du quiz");
       throw error;
+    } finally {
+      setIsValidating(false);
     }
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
+    console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
+    
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
       return;
     }
 
     try {
+      setIsValidating(true);
+
       if (useJoker) {
+        console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
         setIsUsingJoker(true);
         
         // Utiliser la fonction RPC atomique
@@ -114,10 +122,8 @@ export const useBookQuiz = (
           used_joker: true
         });
         
+        console.log("✅ Validation avec joker réussie:", result);
         toast.success("Segment validé grâce à un Joker !");
-        
-        // Invalider les caches SWR pour synchronisation
-        await invalidateAllJokersCache(book.id);
         
         // Fermer le quiz et afficher le message de succès
         setShowQuiz(false);
@@ -130,6 +136,8 @@ export const useBookQuiz = (
         
         return result;
       } else if (correct) {
+        console.log("✅ Réponse correcte sans joker");
+        
         // Validate reading segment normalement
         const result = await validateReading({
           user_id: userId,
@@ -139,8 +147,7 @@ export const useBookQuiz = (
           used_joker: false
         });
 
-        // Invalider les caches SWR pour synchronisation
-        await invalidateAllJokersCache(book.id);
+        console.log("✅ Validation normale réussie:", result);
 
         // Close quiz modal
         setShowQuiz(false);
@@ -156,26 +163,21 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
+        console.log("❌ Réponse incorrecte - pas de joker utilisé");
         // Handle incorrect answer without joker
         setShowQuiz(false);
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
+      console.error("❌ Error completing quiz:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
       throw error;
     } finally {
-      // 🔑 Toujours exécuté, même en cas d'erreur ou de fermeture prématurée
+      setIsValidating(false);
       setIsUsingJoker(false);
     }
-  };
-
-  // Méthode pour réinitialiser l'état (utile pour les changements de segment)
-  const resetQuizState = () => {
-    setIsUsingJoker(false);
-    setShowQuiz(false);
-    setShowSuccessMessage(false);
   };
 
   return {
@@ -185,13 +187,13 @@ export const useBookQuiz = (
     currentQuestion,
     showSuccessMessage,
     setShowSuccessMessage,
+    isValidating,
     prepareAndShowQuestion,
     handleQuizComplete,
     isLocked,
     remainingLockTime,
     handleLockExpire,
     isUsingJoker,
-    jokersRemaining,
-    resetQuizState
+    jokersRemaining
   };
 };

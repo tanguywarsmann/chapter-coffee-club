@@ -37,14 +37,16 @@ export function QuizModal({
   const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
   const maxAttempts = 3;
 
-  // Calculer les données des jokers à partir des props
+  // Load jokers data when modal opens (fallback si jokersRemaining n'est pas fourni)
   React.useEffect(() => {
-    if (expectedSegments > 0) {
+    if (expectedSegments > 0 && progressId && jokersRemaining === 0) {
+      getJokersInfo(expectedSegments, progressId).then(setJokersData);
+    } else if (expectedSegments > 0) {
       const jokersAllowed = Math.floor(expectedSegments / 10) + 1;
-      const jokersUsed = Math.max(0, jokersAllowed - (jokersRemaining || 0));
+      const jokersUsed = Math.max(0, jokersAllowed - jokersRemaining);
       setJokersData({ jokersAllowed, jokersUsed });
     }
-  }, [expectedSegments, jokersRemaining]);
+  }, [expectedSegments, progressId, jokersRemaining]);
 
   const handleSubmit = () => {
     if (!answer.trim()) {
@@ -138,7 +140,6 @@ export function QuizModal({
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
               aria-label="Valider ma réponse au quiz"
               aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
-              data-testid="quiz-submit-button"
             >
               Valider ma réponse
             </Button>
