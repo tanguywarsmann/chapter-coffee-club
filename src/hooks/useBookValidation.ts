@@ -96,7 +96,10 @@ export const useBookValidation = ({
 
   // Debug logging pour tracer isValidating
   useEffect(() => {
-    console.info('[isValidating]', isValidating, 'seg', effectiveValidationSegment);
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line no-console
+      console.info('[Dbg:isValidating]', { isValidating, seg: effectiveValidationSegment });
+    }
   }, [isValidating, effectiveValidationSegment]);
 
   // Handler for main validation button
