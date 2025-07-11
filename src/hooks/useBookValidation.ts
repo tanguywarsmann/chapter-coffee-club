@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
@@ -14,6 +14,7 @@ import { withErrorHandling } from "@/utils/errorBoundaryUtils";
 import { recordReadingSession } from "@/services/badgeService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
 import { useMonthlyReward } from "@/components/books/BookMonthlyRewardHandler";
+import { mutate } from "swr";
 
 interface UseBookValidationProps {
   book: Book | null;
@@ -93,6 +94,11 @@ export const useBookValidation = ({
   // Synchroniser les segments entre les états
   const effectiveValidationSegment = validationSegment || stateValidationSegment;
 
+  // Debug logging pour tracer isValidating
+  useEffect(() => {
+    console.info('[isValidating]', isValidating, 'seg', effectiveValidationSegment);
+  }, [isValidating, effectiveValidationSegment]);
+
   // Handler for main validation button
   const handleMainButtonClick = useCallback((readingProgress: any) => {
     if (!userId) {
@@ -163,13 +169,14 @@ export const useBookValidation = ({
         return;
       }
 
+      setIsValidating(true);
       try {
-        setIsValidating(true);
         await prepareAndShowQuestion(segmentToValidate);
         
         // Refresh immédiat pour éviter les états incohérents
         forceRefresh();
       } catch (error: any) {
+        console.error('[prepareAndShowQuestion]', error);
         toast.error("Erreur de validation", {
           description: error.message || "Impossible de préparer la validation",
           duration: 5000
@@ -177,6 +184,7 @@ export const useBookValidation = ({
         
         // Refresh même en cas d'erreur pour resynchroniser
         forceRefresh();
+        throw error; // pour que le finally soit toujours déclenché
       } finally {
         setIsValidating(false);
       }
@@ -185,8 +193,8 @@ export const useBookValidation = ({
 
   // Handler consolidé pour la complétion du quiz
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
+    setIsValidating(true);
     try {
-      setIsValidating(true);
       const result = await handleQuizComplete(correct, useJoker);
 
       if (correct) {
@@ -264,6 +272,11 @@ export const useBookValidation = ({
       forceRefresh();
     } finally {
       setIsValidating(false);
+      // Déplacer mutate() après le finally pour garantir la synchronisation
+      if (book?.id) {
+        mutate(['book-progress', book.id]);
+        mutate(['jokers-info', book.id]);
+      }
     }
   }, [
     handleQuizComplete,

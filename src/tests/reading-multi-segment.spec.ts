@@ -32,8 +32,10 @@ test.describe('Validation multi-segments', () => {
     await expect(page.getByTestId('success-message')).toBeVisible();
     await page.getByTestId('success-close-button').click();
     
-    // Wait a moment for state to settle
-    await page.waitForTimeout(500);
+    // Wait for isValidating to become false (check console logs)
+    await page.waitForFunction(() => {
+      return window.console.info.toString().includes('[isValidating] false');
+    }, { timeout: 2000 });
     
     // Validate second segment - button should be active (not blocked by isValidating)
     await page.getByTestId('main-validate-button').click();

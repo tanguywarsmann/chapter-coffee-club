@@ -35,18 +35,24 @@ export function ValidationModal({
   onLockExpire
 }: ValidationModalProps) {
   const [hasRead, setHasRead] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   
   // Reset local state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setHasRead(false);
+      setLocalLoading(false);
     }
   }, [isOpen]);
   
   const handleSubmit = () => {
-    if (!hasRead) return;
+    if (!hasRead || isValidating || localLoading) return;
+    setLocalLoading(true);
     onValidate();
   };
+
+  // Source unique de disable
+  const disabled = isValidating || localLoading;
 
   return (
     <Dialog 
@@ -139,13 +145,13 @@ export function ValidationModal({
           {!isLocked && (
             <Button 
               onClick={handleSubmit} 
-              disabled={!hasRead || isValidating}
+              disabled={!hasRead || disabled}
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
-              aria-label={isValidating ? "Validation en cours" : "Valider cette étape de lecture"}
+              aria-label={disabled ? "Validation en cours" : "Valider cette étape de lecture"}
               aria-describedby={!hasRead ? "validation-requirement" : undefined}
               data-testid="validation-confirm-button"
             >
-              {isValidating ? (
+              {disabled ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                   <span>Validation...</span>
