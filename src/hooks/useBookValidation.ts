@@ -77,7 +77,7 @@ export const useBookValidation = ({
     handleLockExpire,
     isUsingJoker,
     jokersRemaining
-  } = useBookQuiz(book, userId, onProgressUpdate);
+  } = useBookQuiz(book, userId, onProgressUpdate, isValidating, setIsValidating);
 
   const {
     newBadges,
@@ -185,7 +185,9 @@ export const useBookValidation = ({
 
   // Handler consolidé pour la complétion du quiz
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
+    if (process.env.NODE_ENV === 'development') {
+      console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
+    }
     try {
       const result = await handleQuizComplete(correct, useJoker);
 

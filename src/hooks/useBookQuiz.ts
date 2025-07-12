@@ -10,12 +10,13 @@ import { useJokerAtomically, getRemainingJokers } from "@/services/jokerService"
 export const useBookQuiz = (
   book: Book | null,
   userId: string | null,
-  onProgressUpdate?: (bookId: string) => void
+  onProgressUpdate?: (bookId: string) => void,
+  isValidating: boolean = false,
+  setIsValidating?: (value: boolean) => void
 ) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
   const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
@@ -33,7 +34,7 @@ export const useBookQuiz = (
     }
 
     try {
-      setIsValidating(true);
+      if (setIsValidating) setIsValidating(true);
 
       // Check if user is locked from validating this segment
       const lockCheck = await checkValidationLock(userId, book.id, segment);
@@ -83,12 +84,14 @@ export const useBookQuiz = (
       toast.error("Erreur lors de la préparation du quiz");
       throw error;
     } finally {
-      setIsValidating(false);
+      if (setIsValidating) setIsValidating(false);
     }
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
-    console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
+    }
     
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
@@ -96,10 +99,12 @@ export const useBookQuiz = (
     }
 
     try {
-      setIsValidating(true);
+      if (setIsValidating) setIsValidating(true);
 
       if (useJoker) {
-        console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
+        }
         setIsUsingJoker(true);
         
         // Utiliser la fonction RPC atomique
@@ -122,7 +127,9 @@ export const useBookQuiz = (
           used_joker: true
         });
         
-        console.log("✅ Validation avec joker réussie:", result);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✅ Validation avec joker réussie:", result);
+        }
         toast.success("Segment validé grâce à un Joker !");
         
         // Fermer le quiz et afficher le message de succès
@@ -136,7 +143,9 @@ export const useBookQuiz = (
         
         return result;
       } else if (correct) {
-        console.log("✅ Réponse correcte sans joker");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✅ Réponse correcte sans joker");
+        }
         
         // Validate reading segment normalement
         const result = await validateReading({
@@ -147,7 +156,9 @@ export const useBookQuiz = (
           used_joker: false
         });
 
-        console.log("✅ Validation normale réussie:", result);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✅ Validation normale réussie:", result);
+        }
 
         // Close quiz modal
         setShowQuiz(false);
@@ -163,7 +174,9 @@ export const useBookQuiz = (
         // Return the result including any new badges
         return result;
       } else {
-        console.log("❌ Réponse incorrecte - pas de joker utilisé");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("❌ Réponse incorrecte - pas de joker utilisé");
+        }
         // Handle incorrect answer without joker
         setShowQuiz(false);
         toast.error("Réponse incorrecte. Essayez de relire le passage.");
@@ -175,7 +188,7 @@ export const useBookQuiz = (
       toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
       throw error;
     } finally {
-      setIsValidating(false);
+      if (setIsValidating) setIsValidating(false);
       setIsUsingJoker(false);
     }
   };

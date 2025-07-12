@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { QuizContent } from "./QuizContent";
 import { ReadingQuestion } from "@/types/reading";
 import { JokerConfirmationModal } from "./JokerConfirmationModal";
-import { calculateJokersAllowed, getJokersInfo } from "@/utils/jokerUtils";
+import { useJokersInfo } from "@/hooks/useJokersInfo";
 
 interface QuizModalProps {
   bookTitle: string;
@@ -34,19 +34,14 @@ export function QuizModal({
   const [answer, setAnswer] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [showJokerConfirmation, setShowJokerConfirmation] = useState(false);
-  const [jokersData, setJokersData] = useState({ jokersAllowed: 0, jokersUsed: 0 });
   const maxAttempts = 3;
 
-  // Load jokers data when modal opens (fallback si jokersRemaining n'est pas fourni)
-  React.useEffect(() => {
-    if (expectedSegments > 0 && progressId && jokersRemaining === 0) {
-      getJokersInfo(expectedSegments, progressId).then(setJokersData);
-    } else if (expectedSegments > 0) {
-      const jokersAllowed = Math.floor(expectedSegments / 10) + 1;
-      const jokersUsed = Math.max(0, jokersAllowed - jokersRemaining);
-      setJokersData({ jokersAllowed, jokersUsed });
-    }
-  }, [expectedSegments, progressId, jokersRemaining]);
+  // Récupérer les informations de jokers via le hook dédié
+  const { jokersAllowed, jokersUsed } = useJokersInfo({
+    bookId: question.book_slug || progressId || null,
+    userId: null, // Pas accès direct au userId ici
+    expectedSegments
+  });
 
   const handleSubmit = () => {
     if (!answer.trim()) {
@@ -159,8 +154,8 @@ export function QuizModal({
       <JokerConfirmationModal
         isOpen={showJokerConfirmation}
         segment={chapterNumber}
-        jokersUsed={jokersData.jokersUsed}
-        jokersAllowed={jokersData.jokersAllowed}
+        jokersUsed={jokersUsed}
+        jokersAllowed={jokersAllowed}
         jokersRemaining={jokersRemaining}
         isUsingJoker={isUsingJoker}
         onConfirm={handleJokerConfirm}
