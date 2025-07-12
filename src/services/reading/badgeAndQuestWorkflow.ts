@@ -12,6 +12,7 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
   await clearProgressCache(user_id);
   mutate((key) => typeof key === 'string' && key.includes(`reading-progress-${user_id}`), undefined, { revalidate: true });
   mutate((key) => typeof key === 'string' && key.includes(`book-progress-${book_id}`), undefined, { revalidate: true });
+  mutate((key) => typeof key === 'string' && key.includes(`jokers-info-${book_id}`), undefined, { revalidate: true });
   mutate(() => getBookReadingProgress(user_id, book_id), undefined, { revalidate: true });
 
   await recordReadingActivity(user_id);
