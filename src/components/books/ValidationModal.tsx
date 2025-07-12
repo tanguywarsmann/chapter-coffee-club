@@ -74,7 +74,10 @@ export function ValidationModal({
             <div className="bg-muted/50 p-3 rounded-lg border border-coffee-light">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles className="h-4 w-4" />
-                <span className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}>
+                <span 
+                  className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}
+                  data-testid="jokers-remaining"
+                >
                   Jokers disponibles : {Math.max(0, jokersAllowed - jokersUsed)} / {jokersAllowed}
                 </span>
               </div>

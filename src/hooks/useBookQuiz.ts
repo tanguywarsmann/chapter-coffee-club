@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { mutate } from "swr";
 import { Book } from "@/types/book";
 import { ReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
@@ -117,6 +118,10 @@ export const useBookQuiz = (
         
         // Mettre à jour le compteur de jokers
         setJokersRemaining(jokerResult.jokersRemaining);
+        
+        // Invalider le cache SWR pour rafraîchir l'affichage des jokers
+        mutate(['jokers-info', book.id]);
+        mutate(['book-progress', book.id]);
         
         // Valider le segment avec le joker
         const result = await validateReading({
