@@ -61,8 +61,8 @@ export default function Landing() {
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
-              L'appli qui t'accompagne<br />
+            <h1 className="hero-title text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
+              L'appli qui <span className="whitespace-nowrap">t'accompagne</span><br />
               dans ta lecture,<br />
               <span className="text-reed-light">page après page</span>
             </h1>

@@ -96,6 +96,19 @@
     line-height: 1.1;
   }
 
+  /* Titre hero spécifique - empêche toute coupure */
+  .hero-title {
+    hyphens: none;
+    overflow-wrap: normal;
+    word-break: normal;
+    line-break: strict;
+    white-space: normal;
+    text-wrap: balance;
+    font-size: clamp(1.6rem, 5.5vw + 0.5rem, 4.2rem);
+    line-height: 1.12;
+    max-inline-size: 34rem;
+  }
+
   h2 {
     font-size: clamp(1.8rem, 4vw + 0.4rem, 3.5rem);
     line-height: 1.15;
