@@ -520,6 +520,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_stats: {
+        Args: { uid: string }
+        Returns: {
+          books_read: number
+          pages_read: number
+          badges_count: number
+          streak_current: number
+          streak_best: number
+          quests_done: number
+          xp: number
+          lvl: number
+        }[]
+      }
       use_joker: {
         Args: { p_book_id: string; p_user_id: string; p_segment: number }
         Returns: {

@@ -1,64 +1,21 @@
 
-import { Award, Book, FileText, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getUserBadges } from "@/services/badgeService";
-import { getTotalPagesRead, getBooksReadCount } from "@/services/reading/statsService";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { Award, Book, FileText, Flag, Sparkles } from "lucide-react";
 
-export function StatsCards() {
-  const [booksRead, setBooksRead] = useState<number>(0);
-  const [pagesRead, setPagesRead] = useState<number>(0);
-  const [badgesCount, setBadgesCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth();
+interface StatsCardsProps {
+  booksRead: number;
+  pagesRead: number;
+  badges: number;
+  quests: number;
+  isLoading?: boolean;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.id) {
-        console.log("No user ID available");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        console.log(`Fetching stats for user: ${user.id}`);
-        
-        // For the specific user f5e55556-c5ae-40dc-9909-88600a13393b, use hardcoded values
-        if (user.id === 'f5e55556-c5ae-40dc-9909-88600a13393b') {
-          setBadgesCount(10); // Total badges earned
-          setBooksRead(7); // 7 completed books
-          setPagesRead(2300); // 2300 pages read
-        } else {
-          const [userBadges, booksCount, pagesCount] = await Promise.all([
-            getUserBadges(user.id),
-            getBooksReadCount(user.id),
-            getTotalPagesRead(user.id)
-          ]);
-          
-          console.log(`Stats fetched: badges=${userBadges.length}, books=${booksCount}, pages=${pagesCount}`);
-          
-          setBadgesCount(userBadges.length);
-          setBooksRead(booksCount);
-          setPagesRead(pagesCount);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des statistiques:", error);
-        toast.error("Impossible de charger vos statistiques");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [user?.id]);
+export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = false }: StatsCardsProps) {
 
   const stats = [
     {
       icon: Award,
-      value: badgesCount,
-      label: badgesCount === 0 ? "Aucun badge" : badgesCount === 1 ? "Badge obtenu" : "Badges obtenus",
+      value: badges,
+      label: badges === 0 ? "Aucun badge" : badges === 1 ? "Badge obtenu" : "Badges obtenus",
       gradient: "from-reed-primary to-reed-dark",
       bgGradient: "from-reed-secondary to-reed-light",
       iconColor: "text-reed-primary",
@@ -81,11 +38,20 @@ export function StatsCards() {
       bgGradient: "from-reed-light to-white",
       iconColor: "text-reed-primary",
       glowColor: "from-reed-secondary/20 to-reed-light/20"
+    },
+    {
+      icon: Flag,
+      value: quests,
+      label: quests === 0 ? "Aucune quête" : quests === 1 ? "Quête accomplie" : "Quêtes accomplies",
+      gradient: "from-reed-secondary to-reed-primary",
+      bgGradient: "from-reed-light to-reed-secondary",
+      iconColor: "text-reed-secondary",
+      glowColor: "from-reed-secondary/20 to-reed-primary/20"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
       {stats.map((stat, index) => (
         <div key={index} className="group relative">
           {/* Effet de lueur d'arrière-plan avec les couleurs Reed */}
