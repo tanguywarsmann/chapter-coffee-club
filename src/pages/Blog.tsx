@@ -129,6 +129,7 @@ export default function Blog() {
                           src={post.imageUrl} 
                           alt={post.imageAlt || post.title}
                           className="object-cover w-full h-full"
+                          loading="lazy"
                         />
                       </div>
                     )}

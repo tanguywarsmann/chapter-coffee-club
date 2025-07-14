@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageUrl } from "@/lib/getOptimizedImageUrl";
 
 export interface BlogPost {
   id: string;
@@ -11,6 +12,7 @@ export interface BlogPost {
   tags?: string[];
   published: boolean;
   imageUrl?: string;
+  imageHero?: string;
   imageAlt?: string;
   created_at: string;
   updated_at: string;
@@ -50,7 +52,8 @@ export const blogService = {
     console.log('Published posts fetched:', data);
     return (data || []).map(post => ({
       ...post,
-      imageUrl: post.image_url,
+      imageUrl: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 640 }) : undefined,
+      imageHero: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 1280 }) : undefined,
       imageAlt: post.image_alt
     }));
   },
@@ -71,7 +74,8 @@ export const blogService = {
     console.log('All posts fetched:', data);
     return (data || []).map(post => ({
       ...post,
-      imageUrl: post.image_url,
+      imageUrl: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 640 }) : undefined,
+      imageHero: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 1280 }) : undefined,
       imageAlt: post.image_alt
     }));
   },
@@ -96,7 +100,8 @@ export const blogService = {
     
     return {
       ...data,
-      imageUrl: data.image_url,
+      imageUrl: data.image_url ? getOptimizedImageUrl(data.image_url, { width: 640 }) : undefined,
+      imageHero: data.image_url ? getOptimizedImageUrl(data.image_url, { width: 1280 }) : undefined,
       imageAlt: data.image_alt
     };
   },

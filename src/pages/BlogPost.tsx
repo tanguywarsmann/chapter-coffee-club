@@ -127,12 +127,13 @@ export default function BlogPost() {
           {/* Article */}
           <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Article Image */}
-            {post.imageUrl && (
+            {post.imageHero && (
               <div className="relative h-64 md:h-80 w-full overflow-hidden">
                 <img 
-                  src={post.imageUrl} 
+                  src={post.imageHero} 
                   alt={post.imageAlt || post.title}
                   className="object-cover w-full h-full"
+                  loading="eager"
                 />
               </div>
             )}
