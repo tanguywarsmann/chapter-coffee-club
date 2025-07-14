@@ -10,8 +10,8 @@ export interface BlogPost {
   author?: string;
   tags?: string[];
   published: boolean;
-  image_url?: string;
-  image_alt?: string;
+  imageUrl?: string;
+  imageAlt?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,8 +24,8 @@ export interface CreateBlogPostData {
   author?: string;
   tags?: string[];
   published?: boolean;
-  image_url?: string;
-  image_alt?: string;
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
 export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {
@@ -48,7 +48,11 @@ export const blogService = {
     }
 
     console.log('Published posts fetched:', data);
-    return data || [];
+    return (data || []).map(post => ({
+      ...post,
+      imageUrl: post.image_url,
+      imageAlt: post.image_alt
+    }));
   },
 
   // Récupérer tous les articles (pour l'admin)
@@ -65,7 +69,11 @@ export const blogService = {
     }
 
     console.log('All posts fetched:', data);
-    return data || [];
+    return (data || []).map(post => ({
+      ...post,
+      imageUrl: post.image_url,
+      imageAlt: post.image_alt
+    }));
   },
 
   // Récupérer un article par slug
@@ -84,15 +92,24 @@ export const blogService = {
     }
 
     console.log('Post fetched by slug:', data);
-    return data;
+    if (!data) return null;
+    
+    return {
+      ...data,
+      imageUrl: data.image_url,
+      imageAlt: data.image_alt
+    };
   },
 
   // Créer un nouvel article
   async createPost(postData: CreateBlogPostData): Promise<BlogPost> {
+    const { imageUrl, imageAlt, ...rest } = postData;
     const { data, error } = await supabase
       .from('blog_posts')
       .insert([{
-        ...postData,
+        ...rest,
+        image_url: imageUrl,
+        image_alt: imageAlt,
         published: postData.published ?? true
       }])
       .select()
@@ -103,16 +120,24 @@ export const blogService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      imageUrl: data.image_url,
+      imageAlt: data.image_alt
+    };
   },
 
   // Mettre à jour un article
   async updatePost(postData: UpdateBlogPostData): Promise<BlogPost> {
-    const { id, ...updateData } = postData;
+    const { id, imageUrl, imageAlt, ...rest } = postData;
     
     const { data, error } = await supabase
       .from('blog_posts')
-      .update(updateData)
+      .update({
+        ...rest,
+        image_url: imageUrl,
+        image_alt: imageAlt
+      })
       .eq('id', id)
       .select()
       .single();
@@ -122,7 +147,11 @@ export const blogService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      imageUrl: data.image_url,
+      imageAlt: data.image_alt
+    };
   },
 
   // Supprimer un article

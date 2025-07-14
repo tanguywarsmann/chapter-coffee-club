@@ -120,9 +120,18 @@ export default function Blog() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+                <div className="space-y-6">
                 {posts.map((post) => (
                   <Card key={post.id} className="border-coffee-light hover:shadow-lg transition-shadow">
+                    {post.imageUrl && (
+                      <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                        <img 
+                          src={post.imageUrl} 
+                          alt={post.imageAlt || post.title}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )}
                     <CardHeader>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex-1">

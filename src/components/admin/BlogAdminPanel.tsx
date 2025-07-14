@@ -31,8 +31,8 @@ export function BlogAdminPanel() {
     author: 'READ',
     tags: [],
     published: true,
-    image_url: '',
-    image_alt: ''
+    imageUrl: '',
+    imageAlt: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -83,8 +83,8 @@ export function BlogAdminPanel() {
       author: 'READ',
       tags: [],
       published: true,
-      image_url: '',
-      image_alt: ''
+      imageUrl: '',
+      imageAlt: ''
     });
     setIsEditing(true);
   };
@@ -99,8 +99,8 @@ export function BlogAdminPanel() {
       author: post.author || 'READ',
       tags: post.tags || [],
       published: post.published,
-      image_url: post.image_url || '',
-      image_alt: post.image_alt || ''
+      imageUrl: post.imageUrl || '',
+      imageAlt: post.imageAlt || ''
     });
     setIsEditing(true);
   };
@@ -108,16 +108,16 @@ export function BlogAdminPanel() {
   const handleImageChange = (imageUrl: string, imageAlt: string) => {
     setFormData(prev => ({
       ...prev,
-      image_url: imageUrl,
-      image_alt: imageAlt
+      imageUrl: imageUrl,
+      imageAlt: imageAlt
     }));
   };
 
   const handleImageRemove = () => {
     setFormData(prev => ({
       ...prev,
-      image_url: '',
-      image_alt: ''
+      imageUrl: '',
+      imageAlt: ''
     }));
   };
 
@@ -197,8 +197,8 @@ export function BlogAdminPanel() {
           </div>
 
           <ImageUpload
-            currentImageUrl={formData.image_url}
-            currentImageAlt={formData.image_alt}
+            currentImageUrl={formData.imageUrl}
+            currentImageAlt={formData.imageAlt}
             onImageChange={handleImageChange}
             onImageRemove={handleImageRemove}
           />

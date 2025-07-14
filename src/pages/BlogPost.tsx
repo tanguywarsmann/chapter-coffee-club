@@ -126,6 +126,17 @@ export default function BlogPost() {
 
           {/* Article */}
           <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Article Image */}
+            {post.imageUrl && (
+              <div className="relative h-64 md:h-80 w-full overflow-hidden">
+                <img 
+                  src={post.imageUrl} 
+                  alt={post.imageAlt || post.title}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            )}
+            
             {/* Article Header */}
             <header className="p-8 pb-6">
               <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker mb-4">
