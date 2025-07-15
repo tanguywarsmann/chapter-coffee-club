@@ -1,7 +1,8 @@
 /**
- * Retourne une URL optimisée via Supabase `/render/image`.
- *  - Accepte soit le *chemin* (ex. "blog/roman.jpg")
- *  - soit l'URL absolue Supabase (ex. "https://xyz.supabase.co/storage/v1/object/public/blog/roman.jpg")
+ * Construit une URL optimisée via Supabase `/render/image`.
+ * - Accepte un chemin relatif (ex. "blog-images/roman.jpg")
+ * - ou une URL absolue (ex. "https://xyz.supabase.co/storage/v1/object/public/blog-images/roman.jpg")
+ * Ajoute width / quality / format=webp et supprime les doubles « // ».
  */
 export function getOptimizedImageUrl(
   src: string,
@@ -9,14 +10,21 @@ export function getOptimizedImageUrl(
 ) {
   const { width, quality = 75 } = opts;
 
-  // ① Cas URL absolue ➜ on transforme "/object/" ➜ "/render/image/"
+  /** normalise et évite les “//” hors protocole */
+  const squash = (url: string) => url.replace(/([^:]\/)\/+/g, '$1');
+
+  // ── ① URL absolue Supabase déjà complète ──────────────────────────
   if (src.startsWith('http')) {
-    return src
-      .replace('/storage/v1/object/', '/storage/v1/render/image/')
-      + `?width=${width}&quality=${quality}&format=webp`;
+    const transformed = src.replace(
+      '/storage/v1/object/',
+      '/storage/v1/render/image/'
+    );
+    return squash(`${transformed}?width=${width}&quality=${quality}&format=webp`);
   }
 
-  // ② Cas chemin "bucket/path.jpg"
-  const base = 'https://xjumsrjuyzvsixvfwoiz.supabase.co';
-  return `${base}/storage/v1/render/image/public/${src}?width=${width}&quality=${quality}&format=webp`;
+  // ── ② Chemin relatif “bucket/fichier.jpg” ─────────────────────────
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  return squash(
+    `${base}/storage/v1/render/image/public/${src}?width=${width}&quality=${quality}&format=webp`
+  );
 }
