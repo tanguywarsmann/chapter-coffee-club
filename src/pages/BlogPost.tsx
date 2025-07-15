@@ -134,6 +134,8 @@ export default function BlogPost() {
                   alt={post.imageAlt || post.title}
                   className="object-cover w-full h-full"
                   loading="eager"
+                  width={1280}
+                  height={720}
                 />
               </div>
             )}

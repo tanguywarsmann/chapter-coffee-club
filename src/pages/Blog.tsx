@@ -130,6 +130,8 @@ export default function Blog() {
                           alt={post.imageAlt || post.title}
                           className="object-cover w-full h-full"
                           loading="lazy"
+                          width={640}
+                          height={360}
                         />
                       </div>
                     )}

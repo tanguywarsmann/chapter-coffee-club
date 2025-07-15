@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { getOptimizedImageUrl } from "@/lib/getOptimizedImageUrl";
+import { getPublicImageUrl } from "@/lib/getPublicImageUrl";
 
 export interface BlogPost {
   id: string;
@@ -52,8 +52,8 @@ export const blogService = {
     console.log('Published posts fetched:', data);
     return (data || []).map(post => ({
       ...post,
-      imageUrl: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 640 }) : undefined,
-      imageHero: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 1280 }) : undefined,
+      imageUrl: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
+      imageHero: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
       imageAlt: post.image_alt
     }));
   },
@@ -74,8 +74,8 @@ export const blogService = {
     console.log('All posts fetched:', data);
     return (data || []).map(post => ({
       ...post,
-      imageUrl: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 640 }) : undefined,
-      imageHero: post.image_url ? getOptimizedImageUrl(post.image_url, { width: 1280 }) : undefined,
+      imageUrl: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
+      imageHero: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
       imageAlt: post.image_alt
     }));
   },
@@ -100,8 +100,8 @@ export const blogService = {
     
     return {
       ...data,
-      imageUrl: data.image_url ? getOptimizedImageUrl(data.image_url, { width: 640 }) : undefined,
-      imageHero: data.image_url ? getOptimizedImageUrl(data.image_url, { width: 1280 }) : undefined,
+      imageUrl: data.image_url ? getPublicImageUrl(data.image_url) : undefined,
+      imageHero: data.image_url ? getPublicImageUrl(data.image_url) : undefined,
       imageAlt: data.image_alt
     };
   },
