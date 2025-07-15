@@ -1,20 +1,22 @@
+/**
+ * Retourne une URL optimisée via Supabase `/render/image`.
+ *  - Accepte soit le *chemin* (ex. "blog/roman.jpg")
+ *  - soit l'URL absolue Supabase (ex. "https://xyz.supabase.co/storage/v1/object/public/blog/roman.jpg")
+ */
 export function getOptimizedImageUrl(
-  fullPath: string,
+  src: string,
   opts: { width: number; quality?: number } = { width: 800, quality: 75 }
 ) {
   const { width, quality = 75 } = opts;
-  
-  // Si l'URL est déjà complète, extraire le chemin
-  if (fullPath.includes('supabase.co')) {
-    const url = new URL(fullPath);
-    const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
-    if (pathMatch) {
-      const bucket = pathMatch[1];
-      const filePath = pathMatch[2];
-      return `https://xjumsrjuyzvsixvfwoiz.supabase.co/storage/v1/render/image/public/${bucket}/${filePath}?width=${width}&quality=${quality}&format=webp`;
-    }
+
+  // ① Cas URL absolue ➜ on transforme "/object/" ➜ "/render/image/"
+  if (src.startsWith('http')) {
+    return src
+      .replace('/storage/v1/object/', '/storage/v1/render/image/')
+      + `?width=${width}&quality=${quality}&format=webp`;
   }
 
-  // Si c'est juste un chemin (ex: "blog-images/mon-image.jpg")
-  return `https://xjumsrjuyzvsixvfwoiz.supabase.co/storage/v1/render/image/public/${fullPath}?width=${width}&quality=${quality}&format=webp`;
+  // ② Cas chemin "bucket/path.jpg"
+  const base = 'https://xjumsrjuyzvsixvfwoiz.supabase.co';
+  return `${base}/storage/v1/render/image/public/${src}?width=${width}&quality=${quality}&format=webp`;
 }
