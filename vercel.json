@@ -1,64 +1,14 @@
 {
-  // Configuration Vercel pour vread.fr - SPA avec React Router
-  "cleanUrls": false,
-  "trailingSlash": false,
-  
-  // Redirects permanents depuis vread.blog vers vread.fr/blog
+  "rewrites": [
+    { "source": "/blog", "destination": "/" },
+    { "source": "/blog/:path*", "destination": "/" }
+  ],
   "redirects": [
     {
-      "source": "https://vread.blog/(.*)",
-      "destination": "https://vread.fr/blog/$1",
-      "permanent": true
-    },
-    {
-      "source": "https://vread.blog",
+      "source": "/",
       "destination": "https://vread.fr/blog",
-      "permanent": true
-    }
-  ],
-  
-  // Rewrites pour SPA React Router
-  "rewrites": [
-    // Routes du blog vers index.html pour que React Router gère le rendu
-    {
-      "source": "/blog",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/blog/(.*)",
-      "destination": "/index.html"
-    },
-    
-    // Fallback SPA global - toute route inconnue vers index.html
-    {
-      "source": "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.json|icons/|lovable-uploads/|public/).*)",
-      "destination": "/index.html"
-    }
-  ],
-  
-  // Headers pour optimiser le cache et SEO
-  "headers": [
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=86400"
-        }
-      ]
-    },
-    {
-      "source": "/robots.txt",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        }
-      ]
+      "permanent": true,
+      "has": [{ "type": "host", "value": "vread.blog" }]
     }
   ]
 }
