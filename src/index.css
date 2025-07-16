@@ -67,16 +67,6 @@
     --input: 25 40% 30%;
     --ring: 35 30% 80%;
   }
-
-  /* READ Color Palette */
-  :root {
-    --coffee-lightest: 44 33% 97%;  /* #FAF1E6 */
-    --coffee-light: 44 33% 85%;
-    --coffee-medium: 44 33% 65%;
-    --coffee-dark: 44 33% 45%;
-    --coffee-darker: 44 33% 25%;
-    --coffee-darkest: 44 33% 15%;
-  }
 }
 
 @layer base {

@@ -72,14 +72,11 @@ export default {
 					darker: '#6B3A23' // Version très foncée
 				},
 				coffee: {
-					lightest: 'hsl(var(--coffee-lightest))',
-					light: 'hsl(var(--coffee-light))',
-					medium: 'hsl(var(--coffee-medium))',
-					dark: 'hsl(var(--coffee-dark))',
-					darker: 'hsl(var(--coffee-darker))',
-					darkest: 'hsl(var(--coffee-darkest))',
+					light: '#E6D7C3',
+					medium: '#C8B6A6',
+					dark: '#A0522D',
+					darker: '#8B4513',
 				},
-				cream: 'hsl(var(--coffee-lightest))',
 				chocolate: {
 					light: '#D2B48C',
 					medium: '#A67B5B',
