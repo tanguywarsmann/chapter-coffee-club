@@ -1,46 +1,70 @@
 
-import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ActivityFeed } from "@/components/discover/ActivityFeed";
-import { CommunityStats } from "@/components/discover/CommunityStats";
-import { ReadersAccordion } from "@/components/discover/ReadersAccordion";
+import { useDiscoverData } from "@/hooks/useDiscoverData";
+import { Section } from "@/components/discover/Section";
+import { HorizontalCards } from "@/components/discover/HorizontalCards";
+import { DiscoverBookGrid } from "@/components/discover/DiscoverBookGrid";
 
 export default function Discover() {
   const { user } = useAuth();
+  const [progressQuery, newestQuery, favoritesQuery] = useDiscoverData(user?.id || null);
+
+  const progressBooks = progressQuery.data?.data || [];
+  const newestBooks = newestQuery.data?.data || [];
+  const favoriteBooks = favoritesQuery.data?.data || [];
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-coffee-lightest via-white to-coffee-light/30">
+      <div 
+        className="min-h-screen"
+        style={{ 
+          background: `linear-gradient(135deg, hsl(var(--discover-brown)) 0%, hsl(var(--discover-cream)) 100%)` 
+        }}
+      >
         <AppHeader />
-        <main className="container py-6 max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker mb-2">
-              Découvrir des lecteurs
+        
+        <main className="mx-auto max-w-5xl px-4 py-8 space-y-12">
+          {/* Hero Section */}
+          <header className="text-center space-y-2">
+            <h1 className="font-serif text-4xl md:text-5xl" style={{ color: 'hsl(var(--discover-cream))' }}>
+              Découvre, lis, progresse 📚
             </h1>
-            <p className="text-coffee-dark font-light">
-              Explorez la communauté et suivez l'activité des autres lecteurs
+            <p className="text-lg opacity-90" style={{ color: 'hsl(var(--discover-cream))' }}>
+              Reprends ta lecture ou trouve ton prochain livre préféré.
             </p>
-          </div>
-          
-          {/* Grille principale */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Colonne principale - Fil d'actualité */}
-            <div className="lg:col-span-2 space-y-6">
-              <ActivityFeed />
-              
-              {/* Section lecteurs avec accordéon */}
-              <ReadersAccordion />
-            </div>
-            
-            {/* Sidebar droite - Statistiques */}
-            <div className="space-y-6">
-              <CommunityStats />
-            </div>
-          </div>
+          </header>
+
+          {/* Section 1: Continue ta lecture */}
+          {progressBooks.length > 0 && (
+            <Section title="Continue ta lecture">
+              <HorizontalCards books={progressBooks} />
+            </Section>
+          )}
+
+          {/* Section 2: Découvre un nouveau livre */}
+          <Section title="Découvre un nouveau livre">
+            <DiscoverBookGrid books={newestBooks} />
+          </Section>
+
+          {/* Section 3: Tes favoris */}
+          {favoriteBooks.length > 0 && (
+            <Section title="Tes favoris">
+              <div className="text-center p-8 border border-dashed border-white/20 rounded-lg">
+                <p className="text-white/80">
+                  {favoriteBooks.length} livre{favoriteBooks.length > 1 ? 's' : ''} favori{favoriteBooks.length > 1 ? 's' : ''}
+                </p>
+                <div className="mt-4 space-y-2">
+                  {favoriteBooks.map((fav, index) => (
+                    <p key={index} className="text-sm text-white/70">
+                      {index + 1}. {fav.book_title}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </Section>
+          )}
         </main>
       </div>
     </AuthGuard>
