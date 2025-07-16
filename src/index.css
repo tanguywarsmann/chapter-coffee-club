@@ -7,10 +7,6 @@
 
 @layer base {
   :root {
-    /* Discover page brown/cream palette */
-    --discover-brown: 25 40% 31%;
-    --discover-cream: 35 30% 96%;
-    
     --background: 30 35% 96%;
     --foreground: 25 40% 12%;
 
