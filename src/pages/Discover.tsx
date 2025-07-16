@@ -1,46 +1,87 @@
 
-import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ActivityFeed } from "@/components/discover/ActivityFeed";
-import { CommunityStats } from "@/components/discover/CommunityStats";
-import { ReadersAccordion } from "@/components/discover/ReadersAccordion";
+import { useDiscoverFeed } from "@/hooks/useDiscoverFeed";
+import { ActivityCard } from "@/components/discover/ActivityCard";
+import { UserChip } from "@/components/discover/UserChip";
+import { ActivitySkeletonList } from "@/components/discover/ActivitySkeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sparkles, Users } from "lucide-react";
 
 export default function Discover() {
   const { user } = useAuth();
+  const { feed, suggestions } = useDiscoverFeed(user?.id || '');
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-coffee-lightest via-white to-coffee-light/30">
+      <div className="min-h-screen bg-gradient-to-br from-coffee-darker to-coffee-dark">
         <AppHeader />
-        <main className="container py-6 max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker mb-2">
-              Découvrir des lecteurs
+        <main className="mx-auto max-w-3xl px-4 py-8 space-y-12">
+          <header className="text-center space-y-2">
+            <h1 className="font-serif text-4xl md:text-5xl text-coffee-lightest">
+              Fil d'activité 📖
             </h1>
-            <p className="text-coffee-dark font-light">
-              Explorez la communauté et suivez l'activité des autres lecteurs
+            <p className="text-lg text-coffee-light">
+              Découvrez les dernières activités de la communauté
             </p>
-          </div>
-          
-          {/* Grille principale */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Colonne principale - Fil d'actualité */}
-            <div className="lg:col-span-2 space-y-6">
-              <ActivityFeed />
-              
-              {/* Section lecteurs avec accordéon */}
-              <ReadersAccordion />
-            </div>
-            
-            {/* Sidebar droite - Statistiques */}
-            <div className="space-y-6">
-              <CommunityStats />
-            </div>
-          </div>
+          </header>
+
+          {/* ACTIVITY FEED */}
+          <Card className="bg-coffee-lightest border-coffee-medium">
+            <CardHeader className="bg-gradient-to-r from-coffee-light/20 to-coffee-medium/10 border-b border-coffee-light/30">
+              <CardTitle className="font-serif text-coffee-darker flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-coffee-medium/20 to-coffee-light/20 rounded-xl">
+                  <Sparkles className="h-5 w-5 text-coffee-dark" />
+                </div>
+                <span>Activité récente</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {feed.isLoading && <ActivitySkeletonList />}
+                {feed.data && feed.data.length > 0 ? (
+                  feed.data.map((item, index) => (
+                    <ActivityCard 
+                      key={`${item.kind}-${item.posted_at}-${item.actor_id}-${index}`} 
+                      item={item} 
+                    />
+                  ))
+                ) : (
+                  !feed.isLoading && (
+                    <div className="text-center py-8 text-coffee-medium">
+                      <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucune activité récente à afficher</p>
+                      <p className="text-sm mt-2">
+                        Suivez d'autres lecteurs pour voir leur activité !
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SUGGESTIONS */}
+          {suggestions.data && suggestions.data.length > 0 && (
+            <Card className="bg-coffee-lightest border-coffee-medium">
+              <CardHeader className="bg-gradient-to-r from-coffee-light/20 to-coffee-medium/10 border-b border-coffee-light/30">
+                <CardTitle className="font-serif text-coffee-darker flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-coffee-medium/20 to-coffee-light/20 rounded-xl">
+                    <Users className="h-5 w-5 text-coffee-dark" />
+                  </div>
+                  <span>Lecteurs à suivre</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {suggestions.data.map((user) => (
+                    <UserChip key={user.id} user={user} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </main>
       </div>
     </AuthGuard>
