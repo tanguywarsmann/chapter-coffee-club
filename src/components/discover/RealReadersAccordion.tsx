@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, BookOpen, Award, Flame } from "lucide-react";
+import { Users, BookOpen, Award, Flame, User, Plus } from "lucide-react";
 import { DiscoverReader } from "@/services/user/realDiscoverService";
 
 interface RealReadersAccordionProps {
@@ -73,37 +73,47 @@ export function RealReadersAccordion({ readers, loading }: RealReadersAccordionP
 
 function ReaderItem({ reader }: { reader: DiscoverReader }) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-coffee-light/5 to-white/50 border border-coffee-light/20 hover:from-coffee-light/10 hover:to-white/70 transition-all">
-      <div className="flex items-center space-x-3">
+    <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-coffee-light/5 to-white/50 border border-coffee-light/20 hover:from-coffee-light/10 hover:to-white/70 transition-all p-4">
+      {/* Avatar ou icône */}
+      {reader.avatar_url ? (
         <img
           src={reader.avatar_url}
           alt={reader.username}
-          className="w-12 h-12 rounded-full bg-coffee-light/20"
+          className="w-10 h-10 rounded-full bg-coffee-light/20 object-cover shrink-0"
         />
-        <div>
-          <h4 className="font-medium text-coffee-darker">{reader.username}</h4>
-          <div className="flex items-center space-x-4 text-sm text-coffee-dark">
-            <div className="flex items-center space-x-1">
-              <BookOpen className="h-4 w-4" />
-              <span>{reader.in_progress} en cours</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Award className="h-4 w-4" />
-              <span>{reader.badges} badges</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Flame className="h-4 w-4" />
-              <span>{reader.streak} jours</span>
-            </div>
-          </div>
+      ) : (
+        <User className="w-8 h-8 text-coffee-dark/50 shrink-0" />
+      )}
+
+      {/* Contenu principal */}
+      <div className="min-w-0 flex-1">
+        <h4 className="font-medium text-coffee-darker truncate">{reader.username}</h4>
+        
+        {/* Jauges stats */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-coffee-dark whitespace-nowrap">
+          <span className="flex items-center gap-1">
+            <BookOpen className="h-3 w-3" />
+            {reader.in_progress} en cours
+          </span>
+          <span className="flex items-center gap-1">
+            <Award className="h-3 w-3" />
+            {reader.badges} badges
+          </span>
+          <span className="flex items-center gap-1">
+            <Flame className="h-3 w-3" />
+            {reader.streak} j
+          </span>
         </div>
       </div>
+
+      {/* Bouton suivre */}
       <Button 
         variant="outline" 
         size="sm"
-        className="border-coffee-light/30 text-coffee-dark hover:bg-coffee-light/10 hover:text-coffee-darker"
+        className="border-coffee-light/30 text-coffee-dark hover:bg-coffee-light/10 hover:text-coffee-darker shrink-0 px-3"
+        aria-label="Suivre"
       >
-        Suivre
+        <Plus className="h-4 w-4" />
       </Button>
     </div>
   );
