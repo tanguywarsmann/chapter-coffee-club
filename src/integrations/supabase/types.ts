@@ -520,6 +520,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      discover_feed: {
+        Args: { uid: string; lim?: number }
+        Returns: Json
+      }
+      get_activity_feed: {
+        Args: { uid: string; lim?: number }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          actor_avatar: string
+          kind: string
+          payload_id: string
+          payload_title: string
+          posted_at: string
+        }[]
+      }
       get_user_stats: {
         Args: { uid: string }
         Returns: {
