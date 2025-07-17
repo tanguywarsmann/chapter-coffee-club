@@ -75,26 +75,23 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
   });
 
   return (
-    <div className="flex items-start space-x-3 p-3 rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors">
-      <div className="flex-shrink-0">
-        <img
-          src={activity.avatar_url}
-          alt={activity.actor_name}
-          className="w-10 h-10 rounded-full bg-coffee-light/20"
-        />
-      </div>
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors">
+      {/* Avatar seulement si présent */}
+      {activity.avatar_url && (
+        <div className="flex-shrink-0">
+          <img
+            src={activity.avatar_url}
+            alt={activity.actor_name}
+            className="w-10 h-10 rounded-full bg-coffee-light/20"
+          />
+        </div>
+      )}
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-medium text-coffee-darker text-sm">
             {activity.actor_name}
           </span>
-          {activity.kind === 'finished' && (
-            <BookOpen className="h-4 w-4 text-coffee-dark" />
-          )}
-          {activity.kind === 'badge' && (
-            <Award className="h-4 w-4 text-coffee-dark" />
-          )}
         </div>
         
         <p className="text-coffee-dark text-sm">
@@ -107,6 +104,16 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
         </p>
         
         <p className="text-coffee-dark/60 text-xs mt-1">{timeAgo}</p>
+      </div>
+
+      {/* Icône livre à droite */}
+      <div className="flex-shrink-0">
+        {activity.kind === 'finished' && (
+          <BookOpen className="h-4 w-4 text-green-600" />
+        )}
+        {activity.kind === 'badge' && (
+          <Award className="h-4 w-4 text-yellow-500" />
+        )}
       </div>
     </div>
   );
