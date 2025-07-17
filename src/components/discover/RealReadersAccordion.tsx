@@ -6,9 +6,9 @@ import {
   AccordionTrigger 
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, BookOpen, Award, Flame, User, Plus } from "lucide-react";
+import { Users, BookOpen, Award, Flame, User } from "lucide-react";
 import { DiscoverReader } from "@/services/user/realDiscoverService";
+import { FollowButton } from "@/components/profile/FollowButton";
 
 interface RealReadersAccordionProps {
   readers: DiscoverReader[];
@@ -107,14 +107,13 @@ function ReaderItem({ reader }: { reader: DiscoverReader }) {
       </div>
 
       {/* Bouton suivre */}
-      <Button 
-        variant="outline" 
-        size="sm"
-        className="border-coffee-light/30 text-coffee-dark hover:bg-coffee-light/10 hover:text-coffee-darker shrink-0 px-3"
-        aria-label="Suivre"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
+      <FollowButton 
+        targetUserId={reader.id}
+        onFollowChange={() => {
+          // Optionnel: rafraîchir la liste si nécessaire
+          console.log(`Follow status changed for ${reader.username}`);
+        }}
+      />
     </div>
   );
 }
