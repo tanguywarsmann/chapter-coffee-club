@@ -208,64 +208,40 @@ async function generateReadingData() {
     console.log(`  ✅ ${booksCount} lectures générées pour ${profile.username}`);
   }
 
-  // Convertir en CSV
-  console.log('\n📝 Génération des fichiers CSV...');
+  // Injecter directement dans Supabase
+  console.log('\n💾 Injection des données dans Supabase...');
   
-  // CSV Reading Progress
-  const progressHeaders = [
-    'id', 'user_id', 'book_id', 'current_page', 'total_pages', 
-    'status', 'started_at', 'updated_at', 'streak_current', 'streak_best'
-  ];
+  // Injecter les lectures de progression
+  console.log(`📖 Injection de ${readingProgressData.length} lectures...`);
+  const { error: progressError } = await supabase
+    .from('reading_progress')
+    .insert(readingProgressData);
   
-  const progressCsv = [
-    progressHeaders.join(','),
-    ...readingProgressData.map(row => [
-      row.id,
-      row.user_id,
-      row.book_id,
-      row.current_page,
-      row.total_pages,
-      row.status,
-      row.started_at,
-      row.updated_at,
-      row.streak_current,
-      row.streak_best
-    ].join(','))
-  ].join('\n');
+  if (progressError) {
+    console.error('❌ Erreur lors de l\'injection des lectures:', progressError);
+    return;
+  }
   
-  // CSV Reading Validations
-  const validationsHeaders = [
-    'id', 'user_id', 'book_id', 'segment', 'question_id', 'answer',
-    'correct', 'validated_at', 'used_joker', 'progress_id'
-  ];
+  console.log('✅ Lectures injectées avec succès');
   
-  const validationsCsv = [
-    validationsHeaders.join(','),
-    ...readingValidationsData.map(row => [
-      row.id,
-      row.user_id,
-      row.book_id,
-      row.segment,
-      row.question_id || '',
-      row.answer || '',
-      row.correct,
-      row.validated_at,
-      row.used_joker,
-      row.progress_id
-    ].join(','))
-  ].join('\n');
+  // Injecter les validations
+  console.log(`✅ Injection de ${readingValidationsData.length} validations...`);
+  const { error: validationsError } = await supabase
+    .from('reading_validations')
+    .insert(readingValidationsData);
   
-  // Écrire les fichiers
-  writeFileSync('reading_progress_rows.csv', progressCsv);
-  writeFileSync('reading_validations_rows.csv', validationsCsv);
+  if (validationsError) {
+    console.error('❌ Erreur lors de l\'injection des validations:', validationsError);
+    return;
+  }
+  
+  console.log('✅ Validations injectées avec succès');
   
   console.log('\n📊 Résumé:');
-  console.log(`📖 ${readingProgressData.length} lectures complètes générées`);
-  console.log(`✅ ${readingValidationsData.length} validations générées`);
-  console.log(`📄 Fichiers créés:`);
-  console.log(`   - reading_progress_rows.csv`);
-  console.log(`   - reading_validations_rows.csv`);
-  console.log('🎯 Terminé ✔️');
+  console.log(`📖 ${readingProgressData.length} lectures complètes injectées`);
+  console.log(`✅ ${readingValidationsData.length} validations injectées`);
+  console.log('🎯 Injection terminée ✔️');
+  console.log('\n🔍 Vous pouvez maintenant vérifier la page /discover dans l\'application');
 }
 
 // Exécuter le script
