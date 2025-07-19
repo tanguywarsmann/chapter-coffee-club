@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -187,7 +188,13 @@ export default function BlogPost() {
             {/* Article Content */}
             <div 
               className="px-8 pb-8 prose prose-lg max-w-none prose-headings:text-coffee-darker prose-p:text-coffee-dark prose-strong:text-coffee-darker prose-a:text-logo-accent prose-a:no-underline hover:prose-a:underline"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(post.content, {
+                  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'code', 'pre'],
+                  ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class'],
+                  ALLOW_DATA_ATTR: false
+                })
+              }}
             />
           </article>
         </div>

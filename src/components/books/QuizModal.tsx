@@ -49,6 +49,12 @@ export function QuizModal({
       return;
     }
 
+    // TODO: SECURITY - Move answer validation to server-side
+    // Current client-side validation exposes answers to users
+    // Should implement a Supabase function that:
+    // 1. Validates answers securely without exposing expected answers
+    // 2. Implements proper rate limiting
+    // 3. Uses hashed/encrypted answer comparison
     const isCorrect = question.answer === "libre" || 
       answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
     

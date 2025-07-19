@@ -2,37 +2,63 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ShieldAlert } from "lucide-react";
 
 interface AdminGuardProps {
   children: React.ReactNode;
 }
 
-const ADMIN_EMAIL = "tanguy.warsmann@gmail.com";
-
 export function AdminGuard({ children }: AdminGuardProps) {
   const { user, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
 
-  // Check if current user is the specific admin
-  const isAuthorizedAdmin = user?.email === ADMIN_EMAIL;
-
-  // Debug logs
+  // Check if user is admin from database
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("AdminGuard: user email=", user?.email, "isAuthorizedAdmin=", isAuthorizedAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
+    const checkAdminStatus = async () => {
+      if (!user?.id) {
+        setIsAdmin(false);
+        setCheckingAdmin(false);
+        return;
+      }
+
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(profile?.is_admin || false);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } finally {
+        setCheckingAdmin(false);
+      }
+    };
+
+    if (isInitialized && !isLoading) {
+      checkAdminStatus();
     }
-  }, [user?.email, isAuthorizedAdmin, isLoading, isInitialized]);
-  
+  }, [user?.id, isInitialized, isLoading]);
+
   // Handle admin state changes and navigate accordingly
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("AdminGuard: isAuthorizedAdmin=", isAuthorizedAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
+      console.log("AdminGuard: isAdmin=", isAdmin, "checkingAdmin=", checkingAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
     
-    // Initialization is complete and user is not the authorized admin
-    if (isInitialized && !isLoading && !isAuthorizedAdmin && !isRedirecting) {
+    // Initialization is complete and user is not admin
+    if (isInitialized && !isLoading && !checkingAdmin && isAdmin === false && !isRedirecting) {
       setIsRedirecting(true);
       
       if (process.env.NODE_ENV === 'development') {
@@ -46,24 +72,24 @@ export function AdminGuard({ children }: AdminGuardProps) {
       
       return () => clearTimeout(timer);
     }
-  }, [isAuthorizedAdmin, isLoading, isInitialized, navigate, isRedirecting]);
+  }, [isAdmin, checkingAdmin, isLoading, isInitialized, navigate, isRedirecting]);
 
   // Show loading state while checking admin status
-  if (isLoading || !isInitialized) {
+  if (isLoading || !isInitialized || checkingAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
           <p className="text-muted-foreground">
-            Vérification des droits d'accès...
+            Vérification des droits d'administration...
           </p>
         </div>
       </div>
     );
   }
 
-  // User is not the authorized admin
-  if (!isAuthorizedAdmin) {
+  // User is not admin
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
