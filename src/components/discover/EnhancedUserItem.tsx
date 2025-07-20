@@ -36,7 +36,7 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
           className="flex items-start space-x-3 hover:opacity-80 transition-opacity flex-1"
         >
           <EnhancedAvatar 
-            src="/placeholder.svg"
+            src={user.avatar}
             alt={user.username}
             fallbackText={user.username}
             size="md"

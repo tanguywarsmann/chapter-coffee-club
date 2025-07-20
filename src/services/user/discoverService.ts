@@ -5,6 +5,7 @@ export interface DiscoverUser {
   id: string;
   username: string;
   email?: string;
+  avatar?: string | null;
   stats: {
     booksReading: number;
     badges: number;
@@ -38,6 +39,7 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
         id: profile.id,
         username: username,
         email: profile.email,
+        avatar: null, // Pas d'avatar par défaut, géré par EnhancedAvatar
         stats: {
           booksReading: Math.floor(Math.random() * 4) + 1,
           badges: Math.floor(Math.random() * 20) + 5,
@@ -52,6 +54,7 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
       const additionalUser: DiscoverUser = {
         id: `fictional-${users.length + 1}`,
         username: `Lecteur${users.length + 1}`,
+        avatar: null,
         stats: {
           booksReading: Math.floor(Math.random() * 4) + 1,
           badges: Math.floor(Math.random() * 20) + 5,
@@ -150,7 +153,7 @@ export async function getDiscoverActivities() {
         user: {
           id: user.id,
           name: username,
-          avatar: "/placeholder.svg"
+          avatar: user.avatar
         },
         activity: {
           type: template.type,
