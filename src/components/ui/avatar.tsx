@@ -70,7 +70,7 @@ const EnhancedAvatar = React.forwardRef<
 
   return (
     <Avatar ref={ref} className={cn(sizeClasses[size], className)}>
-      {src && <AvatarImage src={src} alt={alt} />}
+      <AvatarImage src={src ?? undefined} alt={alt} />
       <AvatarFallback className="bg-muted/50 text-muted-foreground border border-border/20">
         {initials}
       </AvatarFallback>
