@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
@@ -60,12 +60,13 @@ export function UserItem({ user, compact = false, hideUnfollow = false }: UserIt
         className="flex items-center gap-3 hover:underline"
         aria-label={`Voir le profil de ${userName}`}
       >
-        <Avatar className={`${compact ? 'h-8 w-8' : 'h-10 w-10'} border border-coffee-light`}>
-          <AvatarImage src={user.avatar} alt={userName} />
-          <AvatarFallback className="bg-coffee-medium text-primary-foreground">
-            {userName.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <EnhancedAvatar
+          src={user.avatar}
+          alt={userName}
+          fallbackText={userName}
+          size={compact ? "sm" : "md"}
+          className="border border-coffee-light"
+        />
         <span className={`font-medium text-coffee-darker ${compact ? 'text-sm' : 'text-base'}`}>
           {loading ? "Chargement..." : userName}
         </span>

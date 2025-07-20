@@ -2,6 +2,7 @@ import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
 import { cn } from "@/lib/utils"
+import { getUserInitials } from "@/services/user/userProfileService"
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -37,7 +38,7 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-full bg-muted text-muted-foreground font-medium",
       className
     )}
     {...props}
@@ -45,4 +46,37 @@ const AvatarFallback = React.forwardRef<
 ))
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 
-export { Avatar, AvatarImage, AvatarFallback }
+// Enhanced Avatar component with integrated fallback logic
+interface EnhancedAvatarProps {
+  src?: string | null
+  alt?: string
+  fallbackText?: string
+  className?: string
+  size?: "sm" | "md" | "lg" | "xl"
+}
+
+const EnhancedAvatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  EnhancedAvatarProps
+>(({ src, alt, fallbackText, className, size = "md" }, ref) => {
+  const sizeClasses = {
+    sm: "h-8 w-8 text-xs",
+    md: "h-10 w-10 text-sm", 
+    lg: "h-16 w-16 text-xl",
+    xl: "h-24 w-24 text-2xl"
+  }
+
+  const initials = fallbackText ? getUserInitials(fallbackText) : "U"
+
+  return (
+    <Avatar ref={ref} className={cn(sizeClasses[size], className)}>
+      {src && <AvatarImage src={src} alt={alt} />}
+      <AvatarFallback className="bg-muted/50 text-muted-foreground border border-border/20">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
+  )
+})
+EnhancedAvatar.displayName = "EnhancedAvatar"
+
+export { Avatar, AvatarImage, AvatarFallback, EnhancedAvatar }

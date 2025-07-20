@@ -3,7 +3,7 @@ import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { UserRound, Pencil, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getFollowerCounts } from "@/services/user/profileService";
@@ -146,12 +146,13 @@ export function UserProfile() {
               </div>
             ) : (
               <div className="flex flex-col md:flex-row md:items-start md:gap-4">
-                <Avatar className="h-16 w-16 border-2 border-coffee-light mb-4 md:mb-0">
-                  <AvatarImage src={profileData?.avatar} alt={displayName} />
-                  <AvatarFallback className="text-xl bg-coffee-light text-coffee-darker">
-                    {displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <EnhancedAvatar 
+                  src={profileData?.avatar}
+                  alt={displayName}
+                  fallbackText={displayName}
+                  size="lg"
+                  className="border-2 border-coffee-light mb-4 md:mb-0"
+                />
                 <div className="space-y-1 flex-1">
                   <h3 className="text-lg font-medium text-coffee-darker truncate max-w-[calc(100vw-2rem)]">
                     {displayName}

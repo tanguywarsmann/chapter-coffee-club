@@ -78,6 +78,22 @@ export function getDisplayName(username: string | null | undefined, email: strin
 }
 
 /**
+ * Génère les initiales pour l'avatar à partir du nom d'affichage
+ * @param displayName Nom d'affichage de l'utilisateur
+ * @returns Une ou deux initiales en majuscules
+ */
+export function getUserInitials(displayName: string): string {
+  if (!displayName) return "U";
+  
+  const words = displayName.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  } else {
+    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+  }
+}
+
+/**
  * Crée ou met à jour le profil utilisateur avec l'email actuel
  * @param userId ID de l'utilisateur
  * @param email Email de l'utilisateur

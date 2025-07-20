@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -165,12 +165,13 @@ export default function Profile() {
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Avatar and Basic Info */}
                 <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-shrink-0">
-                  <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-coffee-light shadow-lg mb-4">
-                    <AvatarImage src={profileData?.avatar} alt={displayName} />
-                    <AvatarFallback className="text-2xl sm:text-3xl bg-gradient-to-br from-coffee-light to-coffee-medium text-coffee-darker">
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <EnhancedAvatar 
+                    src={profileData?.avatar}
+                    alt={displayName}
+                    fallbackText={displayName}
+                    size="xl"
+                    className="border-4 border-coffee-light shadow-lg mb-4"
+                  />
                   
                   {isOwnProfile && !isEditingProfile && (
                     <Button 

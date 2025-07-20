@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
 import { FollowButton } from "@/components/profile/FollowButton";
@@ -71,12 +71,13 @@ export function UserPublicHeader({ userId, onProfileLoaded }: UserPublicHeaderPr
       <CardContent className="py-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 border-2 border-coffee-light">
-              <AvatarImage src={null} alt={displayName} />
-              <AvatarFallback className="text-xl bg-coffee-light text-coffee-darker">
-                {displayName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <EnhancedAvatar 
+              src={null}
+              alt={displayName}
+              fallbackText={displayName}
+              size="lg"
+              className="border-2 border-coffee-light"
+            />
             <div className="space-y-1 max-w-[calc(100vw-4rem)] md:max-w-none truncate">
               <h2 className="text-2xl font-serif font-medium text-coffee-darker truncate">
                 {displayName}

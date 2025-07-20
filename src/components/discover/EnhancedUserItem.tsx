@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,17 +27,6 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
 
   const shouldShowFollowButton = currentUser && currentUser.id !== user.id;
 
-  // Générer la couleur de l'avatar basée sur la première lettre
-  const getAvatarColor = (username: string) => {
-    const firstLetter = username.charAt(0).toUpperCase();
-    const colors = [
-      'bg-coffee-light/60 text-coffee-darker',
-      'bg-coffee-medium/40 text-coffee-darker',
-      'bg-coffee-light/80 text-coffee-dark',
-      'bg-coffee-medium/20 text-coffee-darker'
-    ];
-    return colors[firstLetter.charCodeAt(0) % colors.length];
-  };
 
   return (
     <div className="p-4 border border-coffee-light/30 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all duration-200 shadow-sm">
@@ -46,12 +35,13 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
           to={`/profile/${user.id}`} 
           className="flex items-start space-x-3 hover:opacity-80 transition-opacity flex-1"
         >
-          <Avatar className="h-10 w-10 border border-coffee-light/50">
-            <AvatarImage src="/placeholder.svg" alt={user.username} />
-            <AvatarFallback className={`text-sm font-medium ${getAvatarColor(user.username)}`}>
-              {user.username.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <EnhancedAvatar 
+            src="/placeholder.svg"
+            alt={user.username}
+            fallbackText={user.username}
+            size="md"
+            className="border border-coffee-light/50"
+          />
           
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-coffee-darker text-base mb-2 break-words">

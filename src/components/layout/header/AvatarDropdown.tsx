@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
@@ -35,10 +35,6 @@ export const AvatarDropdown = () => {
     }
   };
 
-  const getUserInitials = () => {
-    if (!user?.email) return "U";
-    return user.email.charAt(0).toUpperCase();
-  };
 
   if (!user) return null;
 
@@ -46,12 +42,13 @@ export const AvatarDropdown = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-logo-accent">
-          <Avatar className="h-8 w-8 border border-logo-accent">
-            <AvatarImage src="/avatar.png" alt="Avatar" />
-            <AvatarFallback className="bg-logo-accent text-primary-foreground">
-              {getUserInitials()}
-            </AvatarFallback>
-          </Avatar>
+          <EnhancedAvatar 
+            src="/avatar.png" 
+            alt="Avatar"
+            fallbackText={user?.email || "Utilisateur"}
+            size="sm"
+            className="border border-logo-accent" 
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-background border border-border" align="end" forceMount>

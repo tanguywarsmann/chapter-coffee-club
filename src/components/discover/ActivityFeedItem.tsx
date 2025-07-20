@@ -1,5 +1,5 @@
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Book, Award, Clock, Flame, PlayCircle, BookOpen } from "lucide-react";
@@ -77,28 +77,18 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
     }
   };
 
-  // Génération d'avatar avec initiale
-  const getAvatarColor = (name: string) => {
-    const firstLetter = name.charAt(0).toUpperCase();
-    const colors = [
-      'bg-coffee-light/60 text-coffee-darker',
-      'bg-coffee-medium/40 text-coffee-darker',
-      'bg-coffee-light/80 text-coffee-dark',
-      'bg-coffee-medium/20 text-coffee-darker'
-    ];
-    return colors[firstLetter.charCodeAt(0) % colors.length];
-  };
 
   return (
     <Card className="border-coffee-light/40 bg-white/90 backdrop-blur-sm hover:shadow-sm transition-all duration-200">
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
-          <Avatar className="h-10 w-10 border border-coffee-light/50">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className={`text-sm font-medium ${getAvatarColor(user.name)}`}>
-              {user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <EnhancedAvatar 
+            src={user.avatar}
+            alt={user.name}
+            fallbackText={user.name}
+            size="md"
+            className="border border-coffee-light/50"
+          />
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
