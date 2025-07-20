@@ -60,13 +60,11 @@ export function UserItem({ user, compact = false, hideUnfollow = false }: UserIt
         className="flex items-center gap-3 hover:underline"
         aria-label={`Voir le profil de ${userName}`}
       >
-        <EnhancedAvatar
-          src={user.avatar}
-          alt={userName}
-          fallbackText={userName}
-          size={compact ? "sm" : "md"}
-          className="border border-coffee-light"
-        />
+      <EnhancedAvatar
+  src={user.avatar_url || undefined}
+  alt={userName}
+  fallbackText={userName}
+/>
         <span className={`font-medium text-coffee-darker ${compact ? 'text-sm' : 'text-base'}`}>
           {loading ? "Chargement..." : userName}
         </span>
