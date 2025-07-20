@@ -83,14 +83,17 @@ export function getDisplayName(username: string | null | undefined, email: strin
  * @returns Une ou deux initiales en majuscules
  */
 export function getUserInitials(displayName: string): string {
-  if (!displayName) return "U";
-  
-  const words = displayName.trim().split(/\s+/);
-  if (words.length === 1) {
-    return words[0].charAt(0).toUpperCase();
-  } else {
-    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-  }
+  if (!displayName || typeof displayName !== "string") return "??";
+
+  const words = displayName.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length === 0) return "??";
+  if (words.length === 1) return words[0][0].toUpperCase();
+
+  const first = words[0][0].toUpperCase();
+  const last = words[words.length - 1][0].toUpperCase();
+
+  return first + last;
 }
 
 /**
