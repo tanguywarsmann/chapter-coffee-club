@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DiscoverFeedItem } from "@/services/user/realDiscoverService";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 
 interface RealActivityFeedProps {
   activities: DiscoverFeedItem[];
@@ -76,16 +77,16 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
 
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors">
-      {/* Avatar seulement si présent */}
-      {activity.avatar_url && (
-        <div className="flex-shrink-0">
-          <img
-            src={activity.avatar_url}
-            alt={activity.actor_name}
-            className="w-10 h-10 rounded-full bg-coffee-light/20"
-          />
-        </div>
-      )}
+      {/* Avatar */}
+      <div className="flex-shrink-0">
+        <EnhancedAvatar
+          src={activity.avatar_url ?? undefined}
+          alt={activity.actor_name}
+          fallbackText={activity.actor_name}
+          size="sm"
+          className="border border-coffee-light/20"
+        />
+      </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">

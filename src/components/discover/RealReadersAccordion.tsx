@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, Award, Flame, User } from "lucide-react";
 import { DiscoverReader } from "@/services/user/realDiscoverService";
 import { FollowButton } from "@/components/profile/FollowButton";
+import { EnhancedAvatar } from "@/components/ui/avatar";
 
 interface RealReadersAccordionProps {
   readers: DiscoverReader[];
@@ -76,20 +77,14 @@ function ReaderItem({ reader }: { reader: DiscoverReader }) {
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl bg-gradient-to-r from-coffee-light/5 to-white/50 border border-coffee-light/20 hover:from-coffee-light/10 hover:to-white/70 transition-all p-4">
       {/* Section principale avec avatar et contenu */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        {/* Avatar ou icône */}
-        <div className="w-10 h-10 rounded-full bg-coffee-light/20 flex items-center justify-center shrink-0 overflow-hidden">
-          {reader.avatar_url ? (
-            <img
-              src={reader.avatar_url}
-              alt={reader.username}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-coffee-dark font-medium text-sm">
-              {reader.username?.slice(0, 2).toUpperCase() || "??"}
-            </span>
-          )}
-        </div>
+        {/* Avatar */}
+        <EnhancedAvatar
+          src={reader.avatar_url ?? undefined}
+          alt={reader.username}
+          fallbackText={reader.username}
+          size="sm"
+          className="border border-coffee-light/20"
+        />
 
         {/* Contenu principal */}
         <div className="min-w-0 flex-1">
