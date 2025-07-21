@@ -10,6 +10,7 @@ interface User {
   id: string;
   name?: string;
   avatar?: string;
+  avatar_url?: string | null;
   username?: string;
   email?: string;
 }

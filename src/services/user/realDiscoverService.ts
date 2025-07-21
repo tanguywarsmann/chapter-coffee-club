@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type DiscoverFeedItem = {
   actor_id: string;
   actor_name: string;
-  avatar_url: string;
+  avatar_url: string | null;
   kind: 'finished' | 'badge';
   book_id?: string;
   payload_title: string;
@@ -14,7 +14,7 @@ export type DiscoverFeedItem = {
 export type DiscoverReader = {
   id: string;
   username: string;
-  avatar_url: string;
+  avatar_url: string | null;
   in_progress: number;
   badges: number;
   streak: number;

@@ -77,15 +77,19 @@ function ReaderItem({ reader }: { reader: DiscoverReader }) {
       {/* Section principale avec avatar et contenu */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {/* Avatar ou icône */}
-        {reader.avatar_url ? (
-          <img
-            src={reader.avatar_url}
-            alt={reader.username}
-            className="w-10 h-10 rounded-full bg-coffee-light/20 object-cover shrink-0"
-          />
-        ) : (
-          <User className="w-8 h-8 text-coffee-dark/50 shrink-0" />
-        )}
+        <div className="w-10 h-10 rounded-full bg-coffee-light/20 flex items-center justify-center shrink-0 overflow-hidden">
+          {reader.avatar_url ? (
+            <img
+              src={reader.avatar_url}
+              alt={reader.username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-coffee-dark font-medium text-sm">
+              {reader.username?.slice(0, 2).toUpperCase() || "??"}
+            </span>
+          )}
+        </div>
 
         {/* Contenu principal */}
         <div className="min-w-0 flex-1">
