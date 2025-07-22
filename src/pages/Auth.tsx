@@ -111,7 +111,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 sm:p-6 transition-all duration-300">
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md lg:max-w-6xl mx-auto">
         <header className="mb-8 text-center">
           <Image
             src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png"

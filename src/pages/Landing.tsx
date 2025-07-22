@@ -114,7 +114,7 @@ export default function Landing() {
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
                 Une nouvelle façon de lire
               </h2>
-              <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              <p className="text-xl text-white/90 max-w-3xl lg:max-w-6xl mx-auto">
                 READ transforme votre expérience de lecture en un parcours engageant et personnalisé
               </p>
             </header>
@@ -147,7 +147,7 @@ export default function Landing() {
 
         {/* CTA Section finale */}
         <section className="py-20 px-4" role="region" aria-labelledby="cta-heading">
-          <div className="container mx-auto text-center max-w-4xl">
+          <div className="container mx-auto text-center max-w-4xl lg:max-w-6xl">
             <h2 id="cta-heading" className="text-4xl md:text-5xl font-serif font-bold text-white mb-8">
               Prêt à recommencer à lire ?
             </h2>

@@ -180,7 +180,7 @@ export default function BookPage() {
             </div>
           ) : error ? (
             <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="text-center max-w-md">
+              <div className="text-center max-w-md lg:max-w-6xl">
                 <h2 className="text-xl font-medium text-coffee-darker mb-2">Erreur</h2>
                 <p className="text-muted-foreground mb-4">{error}</p>
                 <button 
@@ -195,7 +195,7 @@ export default function BookPage() {
             <BookDetail book={book} onChapterComplete={handleChapterComplete} />
           ) : (
             <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="text-center max-w-md">
+              <div className="text-center max-w-md lg:max-w-6xl">
                 <h2 className="text-xl font-medium text-coffee-darker mb-2">Livre non disponible</h2>
                 <p className="text-muted-foreground mb-4">Le livre demandé n'est pas disponible pour le moment.</p>
                 <button 
