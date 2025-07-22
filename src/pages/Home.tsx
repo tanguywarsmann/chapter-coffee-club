@@ -126,7 +126,8 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-logo-background text-logo-text transition-all duration-300">
+      {/* Section héros - s'étend sur toute la largeur */}
+      <section className="relative isolate w-screen left-1/2 right-1/2 -translate-x-1/2 min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
         {showWelcome && (
           <WelcomeModal 
@@ -148,7 +149,7 @@ export default function Home() {
             <MainContent {...mainContentProps} />
           </div>
         </main>
-      </div>
+      </section>
     </AuthGuard>
   );
 }
