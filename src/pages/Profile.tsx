@@ -140,7 +140,7 @@ export default function Profile() {
       <AuthGuard>
         <div className="min-h-screen bg-background">
           <AppHeader />
-          <main className="container py-8">
+          <main className="mx-auto w-full px-4 lg:max-w-6xl py-8">
             <div className="flex items-center justify-center h-64">
               <div className="text-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
@@ -158,7 +158,7 @@ export default function Profile() {
       <div className="min-h-screen bg-gradient-to-br from-coffee-light/20 via-background to-coffee-light/10">
         <AppHeader />
         
-        <main className="container max-w-7xl lg:max-w-none mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+        <main className="mx-auto w-full px-4 lg:max-w-6xl max-w-7xl lg:max-w-none mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
           {/* Profile Header */}
           <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
             <CardContent className="p-4 sm:p-6 lg:p-8">

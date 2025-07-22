@@ -125,7 +125,7 @@ export default function Explore() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
-        <main className="container py-6 space-y-6">
+        <main className="mx-auto w-full px-4 lg:max-w-6xl py-6 space-y-6">
           <div className="space-y-4">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
 

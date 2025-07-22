@@ -170,7 +170,7 @@ export default function BookPage() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container py-6">
+        <main className="mx-auto w-full px-4 lg:max-w-6xl py-6">
           {loading ? (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center">

@@ -33,7 +33,7 @@ export default function Blog() {
   if (loading) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 lg:max-w-6xl py-8">
           <div className="text-center text-white">Chargement des articles...</div>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function Blog() {
   if (error) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 lg:max-w-6xl py-8">
           <div className="text-center text-white">{error}</div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function Blog() {
       </Helmet>
       
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 lg:max-w-6xl py-8">
           {/* Bouton retour à l'accueil */}
           <div className="mb-6">
             <Link to="/">
