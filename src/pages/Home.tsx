@@ -126,7 +126,7 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-logo-background text-logo-text transition-all duration-300">
+      <div className="w-full min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
         {showWelcome && (
           <WelcomeModal 
