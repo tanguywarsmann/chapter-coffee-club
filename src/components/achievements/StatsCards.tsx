@@ -51,7 +51,7 @@ export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = f
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 sm:gap-8">
       {stats.map((stat, index) => (
         <div key={index} className="group relative">
           {/* Effet de lueur d'arrière-plan avec les couleurs Reed */}

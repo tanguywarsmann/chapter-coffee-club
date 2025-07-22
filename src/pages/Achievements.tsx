@@ -107,7 +107,7 @@ export default function Achievements() {
 
         <AppHeader />
         
-        <main className="relative z-10 container mx-auto px-4 py-8 sm:py-12 max-w-6xl">
+         <main className="relative z-10 container mx-auto px-4 py-8 sm:py-12 max-w-6xl lg:max-w-7xl">
           {/* En-tête avec design premium */}
           <div className="text-center mb-12 sm:mb-16 relative">
             {/* Badge décoratif d'arrière-plan */}

@@ -13,7 +13,7 @@ export function BadgeGrid({
   className
 }: BadgeGridProps) {
   return (
-    <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6", className)}>
+    <div className={cn("grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6", className)}>
       {badges.map((badge) => (
         <BadgeCard 
           key={badge.id}

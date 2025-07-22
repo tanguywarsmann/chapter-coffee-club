@@ -52,7 +52,7 @@ export function StatsCards() {
   };
 
   return (
-    <div className="flex flex-wrap gap-4 mb-6">
+    <div className="flex flex-wrap gap-4 mb-6 lg:justify-center xl:justify-start">
       <Card className="flex-1 p-4 border-coffee-light min-w-[140px]">
         <div className="flex items-center gap-3 mb-2">
           <User className="h-5 w-5 text-coffee-dark" />

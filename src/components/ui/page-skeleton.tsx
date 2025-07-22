@@ -13,7 +13,7 @@ export function PageSkeleton({ showHeader = true, variant = "home" }: PageSkelet
       {showHeader && <AppHeader />}
       
       <main className="container py-4 sm:py-6">
-        <div className="max-w-2xl mx-auto px-2 sm:px-0 mb-6 sm:mb-8">
+        <div className="max-w-2xl lg:max-w-7xl mx-auto px-2 sm:px-0 mb-6 sm:mb-8">
           {/* Search bar skeleton */}
           <Skeleton className="h-12 w-full rounded-lg mb-6" />
         </div>
