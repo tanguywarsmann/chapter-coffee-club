@@ -45,7 +45,7 @@ export default function Landing() {
         <link rel="canonical" href="https://vread.fr/landing" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
+      <div className="w-screen min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
         {/* Hero Section avec Logo */}
         <section className="relative py-20 px-4" role="banner">
           <div className="w-full mx-auto px-0 max-w-none text-center">
