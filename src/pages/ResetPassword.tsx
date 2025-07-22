@@ -75,7 +75,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4">
-      <div className="w-full max-w-md lg:max-w-6xl mx-auto">
+      <div className="w-full max-w-none mx-auto">
         <div className="mb-8 text-center">
           <Image 
             src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
