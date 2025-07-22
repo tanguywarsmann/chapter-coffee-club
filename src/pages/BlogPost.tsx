@@ -126,7 +126,7 @@ export default function BlogPost() {
           </div>
 
           {/* Article */}
-          <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <article className="max-w-none mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Article Image */}
             {post.imageHero && (
               <div className="relative h-64 md:h-80 w-full overflow-hidden">
