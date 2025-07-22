@@ -112,7 +112,7 @@ export default function ReadingList() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         
-        <main className="mx-auto w-full px-4 max-w-none px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <main className="container px-4 sm:px-6 lg:px-8 py-6 space-y-8">
           <ReadingListHeader 
             sortBy={sortBy}
             onSortChange={setSortBy}

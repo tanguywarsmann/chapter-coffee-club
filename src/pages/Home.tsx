@@ -126,8 +126,7 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      {/* Section héros - s'étend sur toute la largeur */}
-      <section className="relative isolate w-screen left-1/2 right-1/2 -translate-x-1/2 min-h-screen bg-logo-background text-logo-text transition-all duration-300">
+      <div className="min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
         {showWelcome && (
           <WelcomeModal 
@@ -136,8 +135,8 @@ export default function Home() {
           />
         )}
         
-        <main className={`mx-auto w-full px-4 max-w-none mobile-optimized ${isMobile ? 'py-4' : 'py-4 sm:py-6'} animate-fade-in focus:outline-none`} tabIndex={-1}>
-          <div className="max-w-none mx-auto px-2 sm:px-0 mb-6 sm:mb-8">
+        <main className={`container mobile-optimized ${isMobile ? 'py-4' : 'py-4 sm:py-6'} animate-fade-in focus:outline-none`} tabIndex={-1}>
+          <div className="max-w-4xl lg:max-w-6xl mx-auto px-2 sm:px-0 mb-6 sm:mb-8">
             <h1 className="sr-only">{texts.home} - READ</h1>
             <SearchBar 
               onSearch={handleSearch}
@@ -149,7 +148,7 @@ export default function Home() {
             <MainContent {...mainContentProps} />
           </div>
         </main>
-      </section>
+      </div>
     </AuthGuard>
   );
 }

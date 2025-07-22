@@ -44,7 +44,7 @@ export default function BlogPost() {
   if (loading) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center text-white">Chargement de l'article...</div>
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function BlogPost() {
   if (error || !post) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center text-white">{error || 'Article non trouvé'}</div>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function BlogPost() {
       </Helmet>
       
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           {/* Navigation */}
           <div className="mb-6">
             <Link to="/blog">
@@ -126,7 +126,7 @@ export default function BlogPost() {
           </div>
 
           {/* Article */}
-          <article className="max-w-none mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Article Image */}
             {post.imageHero && (
               <div className="relative h-64 md:h-80 w-full overflow-hidden">

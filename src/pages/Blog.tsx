@@ -33,7 +33,7 @@ export default function Blog() {
   if (loading) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center text-white">Chargement des articles...</div>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function Blog() {
   if (error) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center text-white">{error}</div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function Blog() {
       </Helmet>
       
       <div className="min-h-screen bg-logo-background">
-        <div className="mx-auto w-full px-4 max-w-none py-8">
+        <div className="container mx-auto px-4 py-8">
           {/* Bouton retour à l'accueil */}
           <div className="mb-6">
             <Link to="/">
@@ -107,12 +107,12 @@ export default function Blog() {
 
           <header className="text-center mb-12">
             <h1 className="text-4xl font-serif font-bold text-white mb-4">Blog READ</h1>
-            <p className="text-lg text-white/90 max-w-none mx-auto">
+            <p className="text-lg text-white/90 max-w-2xl lg:max-w-7xl mx-auto">
               Découvrez nos articles sur la lecture, les livres et la culture littéraire
             </p>
           </header>
 
-          <div className="max-w-none mx-auto">
+          <div className="max-w-4xl lg:max-w-7xl mx-auto">
             {posts.length === 0 ? (
               <Card className="border-coffee-light">
                 <CardContent className="text-center py-12">

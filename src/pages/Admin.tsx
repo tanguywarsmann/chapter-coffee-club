@@ -92,7 +92,7 @@ export default function Admin() {
       <AdminGuard>
         <div className="min-h-screen bg-logo-background text-logo-text">
           <AppHeader />
-          <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
+          <main className="container py-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h1 className="text-3xl font-serif font-medium text-coffee-darker">{texts.admin}</h1>
               

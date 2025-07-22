@@ -458,7 +458,7 @@
 
 /* Optimisations pour les très petits écrans */
 @media (max-width: 360px) {
-  .content-wrapper {
+  .container {
     @apply px-3;
   }
   

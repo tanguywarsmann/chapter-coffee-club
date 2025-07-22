@@ -72,7 +72,7 @@ export default function PublicHome() {
 
         {/* Hero Section avec Logo */}
         <section className="relative py-16 px-4">
-          <div className="mx-auto w-full px-4 max-w-none text-center">
+          <div className="container mx-auto text-center max-w-4xl lg:max-w-6xl">
             {/* Logo READ mis en avant */}
             <div className="mb-8 flex justify-center">
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
@@ -92,7 +92,7 @@ export default function PublicHome() {
               <span className="text-reed-light">page après page</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-none mx-auto">
+            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl lg:max-w-6xl mx-auto">
               Relevez des défis, suivez vos progrès, lisez à votre rythme. 
               Redécouvrez le plaisir de la lecture avec une approche moderne et bienveillante.
             </p>
@@ -119,7 +119,7 @@ export default function PublicHome() {
 
         {/* Features Section */}
         <section className="py-16 px-4 bg-white/10 backdrop-blur-sm">
-          <div className="mx-auto w-full px-4 max-w-none">
+          <div className="container mx-auto max-w-6xl">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-center text-white mb-12">
               Une nouvelle façon de lire
             </h2>
@@ -143,7 +143,7 @@ export default function PublicHome() {
 
         {/* CTA Section */}
         <section className="py-16 px-4">
-          <div className="mx-auto w-full px-4 max-w-none text-center">
+          <div className="container mx-auto text-center max-w-3xl lg:max-w-6xl">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">
               Prêt à recommencer à lire ?
             </h2>
