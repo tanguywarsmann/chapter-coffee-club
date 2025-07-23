@@ -90,6 +90,7 @@ export default function BlogPost() {
         title={post.title}
         description={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`}
         author={post.author || 'READ'}
+        authorUrl="https://vread.fr/"
         publishedDate={post.created_at}
         modifiedDate={post.updated_at}
         url={`https://vread.fr/blog/${post.slug}`}

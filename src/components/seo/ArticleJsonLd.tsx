@@ -4,6 +4,7 @@ interface ArticleJsonLdProps {
   title: string;
   description: string;
   author: string;
+  authorUrl?: string;
   publishedDate: string;
   modifiedDate: string;
   url: string;
@@ -15,6 +16,7 @@ export function ArticleJsonLd({
   title,
   description,
   author,
+  authorUrl,
   publishedDate,
   modifiedDate,
   url,
@@ -28,7 +30,8 @@ export function ArticleJsonLd({
     "description": description,
     "author": {
       "@type": "Organization",
-      "name": author
+      "name": author,
+      ...(authorUrl && { "url": authorUrl })
     },
     "publisher": {
       "@type": "Organization",
