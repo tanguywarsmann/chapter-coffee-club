@@ -158,7 +158,7 @@ export default function Profile() {
       <div className="min-h-screen bg-gradient-to-br from-coffee-light/20 via-background to-coffee-light/10">
         <AppHeader />
         
-        <main className="container max-w-7xl lg:max-w-none mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+        <main className="container w-full px-4 lg:px-8 mx-auto max-w-none py-4 sm:py-8 space-y-6 sm:space-y-8">
           {/* Profile Header */}
           <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
             <CardContent className="p-4 sm:p-6 lg:p-8">
