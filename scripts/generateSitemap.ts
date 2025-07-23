@@ -1,16 +1,15 @@
-
-import { writeFileSync, readdirSync, statSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { getBlogPosts } from '../src/utils/blogUtils';
+import { createClient } from '@supabase/supabase-js';
 
 interface SitemapUrl {
   loc: string;
   lastmod: string;
-  changefreq: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  changefreq: 'weekly' | 'monthly';
   priority: string;
 }
 
-function generateSitemap() {
+async function generateStaticSitemap() {
   const baseUrl = 'https://vread.fr';
   const today = new Date().toISOString().split('T')[0];
   
@@ -26,43 +25,38 @@ function generateSitemap() {
       loc: `${baseUrl}/blog`,
       lastmod: today,
       changefreq: 'weekly',
-      priority: '0.8'
+      priority: '0.9'
     }
   ];
 
-  // Articles de blog depuis les fichiers .md et la base de données
   let blogUrls: SitemapUrl[] = [];
   
   try {
-    // Récupérer les articles depuis les fichiers markdown
-    const blogPosts = getBlogPosts();
-    blogUrls = blogPosts.map(post => ({
-      loc: `${baseUrl}/blog/${post.slug}`,
-      lastmod: post.date,
-      changefreq: 'monthly' as const,
-      priority: '0.7'
-    }));
-  } catch (error) {
-    // Fallback: scanner directement le dossier content/blog
-    try {
-      const contentPath = join(process.cwd(), 'content', 'blog');
-      const files = readdirSync(contentPath).filter(file => file.endsWith('.md'));
-      
-      blogUrls = files.map(file => {
-        const slug = file.replace('.md', '');
-        const filePath = join(contentPath, file);
-        const stats = statSync(filePath);
-        
-        return {
-          loc: `${baseUrl}/blog/${slug}`,
-          lastmod: stats.mtime.toISOString().split('T')[0],
-          changefreq: 'monthly' as const,
-          priority: '0.7'
-        };
-      });
-    } catch (fallbackError) {
-      // En cas d'échec total, au moins les pages statiques seront générées
+    // Connexion à Supabase pour récupérer les articles
+    const supabase = createClient(
+      "https://xjumsrjuyzvsixvfwoiz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqdW1zcmp1eXp2c2l4dmZ3b2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNTU1NjYsImV4cCI6MjA2MDczMTU2Nn0.GXAF1p5iTeI3mLwwYi4rnXLsWHSUwglmdQJ7SoC3rH8"
+    );
+    
+    const { data: blogPosts, error } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at')
+      .eq('published', true)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.warn('Erreur lors de la récupération des articles:', error);
+    } else {
+      blogUrls = (blogPosts || []).map(post => ({
+        loc: `${baseUrl}/blog/${post.slug}`,
+        lastmod: post.updated_at.split('T')[0],
+        changefreq: 'monthly' as const,
+        priority: '0.8'
+      }));
     }
+  } catch (error) {
+    console.warn('Impossible de récupérer les articles de blog:', error);
+    // Continue avec seulement les pages statiques
   }
 
   const allUrls = [...staticPages, ...blogUrls];
@@ -80,8 +74,7 @@ ${allUrls.map(url => `  <url>
   const publicPath = join(process.cwd(), 'public', 'sitemap.xml');
   writeFileSync(publicPath, sitemap, 'utf8');
   
-  // eslint-disable-next-line no-console
-  console.log(`✅ Sitemap généré avec ${allUrls.length} URLs dans public/sitemap.xml`);
+  console.log(`✅ Sitemap statique généré avec ${allUrls.length} URLs dans public/sitemap.xml`);
 }
 
-generateSitemap();
+generateStaticSitemap().catch(console.error);

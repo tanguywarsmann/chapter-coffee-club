@@ -99,8 +99,11 @@ self.addEventListener("activate", (event) => {
 
 // Handle fetch events for offline support
 self.addEventListener("fetch", (event) => {
-  // Ne pas cacher les routes d'administration
-  if (event.request.url.includes('/admin/')) {
+  // Ne pas cacher les routes d'administration, API et fichiers spéciaux
+  if (event.request.url.includes('/admin/') || 
+      event.request.url.includes('/api/') ||
+      event.request.url.includes('/sitemap.xml') ||
+      event.request.url.includes('/robots.txt')) {
     return; // Laisser passer sans mise en cache
   }
 

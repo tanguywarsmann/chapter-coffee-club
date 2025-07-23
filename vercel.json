@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/blog", "destination": "/" },
-    { "source": "/blog/:path*", "destination": "/" }
+    { "source": "/blog/:path*", "destination": "/" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
   ],
   "redirects": [
     {
@@ -9,6 +10,21 @@
       "destination": "https://vread.fr/blog/$1",
       "permanent": true,
       "has": [{ "type": "host", "value": "vread.blog" }]
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
     }
   ]
 }
