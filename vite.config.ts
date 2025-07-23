@@ -5,15 +5,21 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression2';
-import tsconfig from "./tsconfig.base.json";
 
 export default defineConfig(({ command }) => ({
   server: {
     host: "::",
     port: 8080,
   },
-  esbuild: { 
-    tsconfigRaw: tsconfig 
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        target: "ESNext",
+        lib: ["DOM", "DOM.Iterable", "ESNext"],
+        types: ["vite/client", "node"],
+        skipLibCheck: true
+      }
+    }
   },
   plugins: [
     react(),
