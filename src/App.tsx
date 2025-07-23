@@ -27,11 +27,7 @@ const UserOnboarding = lazy(() =>
     default: mod.UserOnboarding
   }))
 );
-const AppRouter = lazy(() => 
-  import("./components/navigation/AppRouter").then(mod => ({
-    default: mod.default
-  }))
-);
+const AppRouter = lazy(() => import("./components/navigation/AppRouter"));
 
 const App = () => {
   console.info("[APP] App component rendering");

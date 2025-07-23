@@ -32,7 +32,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export function AppRouter() {
+function AppRouter() {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -145,3 +145,5 @@ export function AppRouter() {
     </Suspense>
   );
 }
+
+export default AppRouter;
