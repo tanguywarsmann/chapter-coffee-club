@@ -1,149 +1,101 @@
 
-import { Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { isPublicRoute } from "@/utils/publicRoutes";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Landing from '@/pages/Landing';
+import Home from '@/pages/Home';
+import Auth from '@/pages/Auth';
+import ResetPassword from '@/pages/ResetPassword';
+import Profile from '@/pages/Profile';
+import BookPage from '@/pages/BookPage';
+import Blog from '@/pages/Blog';
+import BlogPost from '@/pages/BlogPost';
+import ReadingList from '@/pages/ReadingList';
+import Discover from '@/pages/Discover';
+import Explore from '@/pages/Explore';
+import Achievements from '@/pages/Achievements';
+import Followers from '@/pages/Followers';
+import Admin from '@/pages/Admin';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
-// Lazy load components
-const Index = lazy(() => import("@/pages/Index"));
-const Home = lazy(() => import("@/pages/Home"));
-const Auth = lazy(() => import("@/pages/Auth"));
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const ReadingList = lazy(() => import("@/pages/ReadingList"));
-const Achievements = lazy(() => import("@/pages/Achievements"));
-const Discover = lazy(() => import("@/pages/Discover"));
-const Explore = lazy(() => import("@/pages/Explore"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const Blog = lazy(() => import("@/pages/Blog"));
-const BlogPost = lazy(() => import("@/pages/BlogPost"));
-const BookPage = lazy(() => import("@/pages/BookPage"));
-const PublicProfilePage = lazy(() => import("@/pages/PublicProfilePage"));
-const Followers = lazy(() => import("@/pages/Followers"));
-const Landing = lazy(() => import("@/pages/Landing"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
-const SitemapXml = lazy(() => import("@/pages/SitemapXml"));
+const AppRouter = () => {
+  console.log("[ROUTER] AppRouter component mounted");
+  
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/profile/:userId" element={<Profile />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/u/:userId" element={<Profile />} />
+      <Route path="/book/:id" element={<BookPage />} />
+      <Route path="/books/:id" element={<BookPage />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/reading-list" element={<ReadingList />} />
+      <Route path="/discover" element={<Discover />} />
+      <Route path="/explore" element={<AuthGuard><Explore /></AuthGuard>} />
+      <Route path="/achievements" element={<Achievements />} />
+      <Route path="/followers/:type/:userId" element={<Followers />} />
+      
+      {/* Admin Panel */}
+      <Route path="/admin" element={<Admin />} />
+      
+      {/* Route pour le sitemap dynamique */}
+      <Route 
+        path="/sitemap.xml" 
+        element={<SitemapRoute />} 
+      />
+    </Routes>
+  );
+};
 
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-logo-accent"></div>
-  </div>
-);
+// Composant pour servir le sitemap
+const SitemapRoute = () => {
+  const [sitemap, setSitemap] = useState<string>('');
 
-function AppRouter() {
-  const location = useLocation();
-  const currentPath = location.pathname;
+  useEffect(() => {
+    const generateSitemap = async () => {
+      try {
+        const { generateCompleteSitemap } = await import('@/utils/sitemapServer');
+        const sitemapContent = await generateCompleteSitemap();
+        setSitemap(sitemapContent);
+        
+        // Définir les headers appropriés
+        document.querySelector('meta[name="content-type"]')?.setAttribute('content', 'application/xml');
+      } catch (error) {
+        console.error('Erreur génération sitemap:', error);
+        setSitemap(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://vread.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+      }
+    };
 
-  // Handle sitemap.xml route with proper content type
-  if (currentPath === '/sitemap.xml') {
+    generateSitemap();
+  }, []);
+
+  // Retourner le XML directement
+  if (sitemap) {
     return (
-      <Suspense fallback={<LoadingSpinner />}>
-        <SitemapXml />
-      </Suspense>
+      <div 
+        dangerouslySetInnerHTML={{ __html: sitemap }}
+        style={{ 
+          fontFamily: 'monospace', 
+          whiteSpace: 'pre-wrap',
+          fontSize: '12px'
+        }}
+      />
     );
   }
 
-  // Check if current route is public
-  const isPublic = isPublicRoute(currentPath);
-
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={
-          <PublicLayout>
-            <Index />
-          </PublicLayout>
-        } />
-        <Route path="/landing" element={
-          <PublicLayout>
-            <Landing />
-          </PublicLayout>
-        } />
-        <Route path="/auth" element={
-          <PublicLayout>
-            <Auth />
-          </PublicLayout>
-        } />
-        <Route path="/reset-password" element={
-          <PublicLayout>
-            <ResetPassword />
-          </PublicLayout>
-        } />
-        <Route path="/blog" element={
-          <PublicLayout>
-            <Blog />
-          </PublicLayout>
-        } />
-        <Route path="/blog/:slug" element={
-          <PublicLayout>
-            <BlogPost />
-          </PublicLayout>
-        } />
-        <Route path="/books/:id" element={
-          <PublicLayout>
-            <BookPage />
-          </PublicLayout>
-        } />
-        <Route path="/u/:userId" element={
-          <PublicLayout>
-            <PublicProfilePage />
-          </PublicLayout>
-        } />
-        
-        {/* Protected routes */}
-        <Route path="/home" element={
-          <AuthGuard>
-            <Home />
-          </AuthGuard>
-        } />
-        <Route path="/profile" element={
-          <AuthGuard>
-            <Profile />
-          </AuthGuard>
-        } />
-        <Route path="/reading-list" element={
-          <AuthGuard>
-            <ReadingList />
-          </AuthGuard>
-        } />
-        <Route path="/achievements" element={
-          <AuthGuard>
-            <Achievements />
-          </AuthGuard>
-        } />
-        <Route path="/discover" element={
-          <AuthGuard>
-            <Discover />
-          </AuthGuard>
-        } />
-        <Route path="/explore" element={
-          <AuthGuard>
-            <Explore />
-          </AuthGuard>
-        } />
-        <Route path="/admin" element={
-          <AuthGuard>
-            <Admin />
-          </AuthGuard>
-        } />
-        <Route path="/followers/:type/:userId" element={
-          <AuthGuard>
-            <Followers />
-          </AuthGuard>
-        } />
-        
-        {/* 404 route */}
-        <Route path="*" element={
-          <PublicLayout>
-            <NotFound />
-          </PublicLayout>
-        } />
-      </Routes>
-    </Suspense>
-  );
-}
+  return <div>Génération du sitemap...</div>;
+};
 
 export default AppRouter;

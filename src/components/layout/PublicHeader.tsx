@@ -9,7 +9,7 @@ export function PublicHeader() {
       className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60"
       role="banner"
     >
-      <div className="container flex h-16 sm:h-14 items-center justify-between">
+      <div className="w-full mx-auto px-4 lg:px-8 flex h-16 sm:h-14 items-center justify-between">
         <Link 
           to="/" 
           className="flex items-center gap-2 transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md focus:outline-none"

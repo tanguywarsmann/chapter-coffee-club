@@ -11,16 +11,6 @@ export default defineConfig(({ command }) => ({
     host: "::",
     port: 8080,
   },
-  esbuild: {
-    tsconfigRaw: {
-      compilerOptions: {
-        target: "ESNext",
-        lib: ["DOM", "DOM.Iterable", "ESNext"],
-        types: ["vite/client", "node"],
-        skipLibCheck: true
-      }
-    }
-  },
   plugins: [
     react(),
     // Activer le composant tagger seulement en développement

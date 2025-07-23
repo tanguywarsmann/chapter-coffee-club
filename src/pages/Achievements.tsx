@@ -74,7 +74,7 @@ export default function Achievements() {
                   <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-reed-primary"></div>
                 </div>
                 
-                <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl mx-auto leading-relaxed px-4">
+                <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl lg:max-w-6xl mx-auto leading-relaxed px-4">
                   Célébrez votre parcours littéraire et découvrez vos prochains défis
                 </p>
               </div>
@@ -136,7 +136,7 @@ export default function Achievements() {
                 <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-reed-primary"></div>
               </div>
               
-              <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl mx-auto leading-relaxed px-4">
+              <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl lg:max-w-6xl mx-auto leading-relaxed px-4">
                 Célébrez votre parcours littéraire et découvrez vos prochains défis
               </p>
             </div>

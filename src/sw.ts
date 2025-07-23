@@ -1,91 +1,147 @@
 
-/// <reference no-default-lib="true"/>
-/// <reference lib="ES2020" />
-/// <reference lib="WebWorker" />
-
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-
+/// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// Clean up outdated caches
-cleanupOutdatedCaches();
+// Service Worker personnalisé pour READ avec détection automatique des mises à jour
+// Version forcée pour invalidation du cache PWA
+const CACHE_VERSION = 'read-cache-v3-' + Date.now();
+const STATIC_CACHE = `${CACHE_VERSION}-static`;
+const API_CACHE = `${CACHE_VERSION}-api`;
 
-// Precache files
-precacheAndRoute(self.__WB_MANIFEST);
-
-// Cache strategy for blog posts and images
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  
-  // Don't intercept requests from search engine bots
-  const userAgent = event.request.headers.get('user-agent') || '';
-  const isBotRequest = /bot|crawler|spider|crawling/i.test(userAgent);
-  
-  if (isBotRequest) {
-    return;
+// Fonction pour vérifier les nouvelles versions
+const checkForUpdates = async () => {
+  try {
+    const response = await fetch('/version.json?' + Date.now(), { 
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (response.ok) {
+      const versionData = await response.json();
+      const currentVersion = await caches.open('version-cache').then(cache => 
+        cache.match('/current-version').then(response => 
+          response ? response.json() : { version: null }
+        )
+      );
+      
+      if (currentVersion.version && currentVersion.version !== versionData.version) {
+        console.log('[SW] New version detected:', versionData.version);
+        // Forcer la mise à jour
+        await caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))));
+        self.skipWaiting();
+        return true;
+      }
+      
+      // Stocker la version actuelle
+      const versionCache = await caches.open('version-cache');
+      await versionCache.put('/current-version', new Response(JSON.stringify(versionData)));
+    }
+  } catch (error) {
+    console.warn('[SW] Could not check for updates:', error);
   }
+  return false;
+};
+
+self.addEventListener("install", (event) => {
+  console.log('[SW] Installing new service worker version:', CACHE_VERSION);
+  // Force l'activation immédiate sans attendre
+  self.skipWaiting();
   
-  // Handle sitemap.xml requests
-  if (url.pathname === '/sitemap.xml') {
+  // Pré-cache les ressources critiques (exclut admin)
+  event.waitUntil(
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => {
+        return cache.addAll([
+          '/',
+          '/offline.html',
+          '/manifest.json'
+        ]);
+      }),
+      checkForUpdates()
+    ])
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  console.log('[SW] Activating new service worker version:', CACHE_VERSION);
+  
+  event.waitUntil(
+    Promise.all([
+      // Prendre le contrôle immédiatement
+      self.clients.claim(),
+      
+      // Nettoyer tous les anciens caches sauf version-cache
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (!cacheName.startsWith(CACHE_VERSION) && cacheName !== 'version-cache') {
+              console.log('[SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    ])
+  );
+  
+  // Notifier tous les clients de la mise à jour
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({
+        type: 'SW_UPDATED',
+        version: CACHE_VERSION
+      });
+    });
+  });
+});
+
+// Handle fetch events for offline support
+self.addEventListener("fetch", (event) => {
+  // Ne pas cacher les routes d'administration
+  if (event.request.url.includes('/admin/')) {
+    return; // Laisser passer sans mise en cache
+  }
+
+  // Vérifier les mises à jour périodiquement sur les requêtes HTML
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
+      (async () => {
+        try {
+          // Vérifier s'il y a une nouvelle version
+          const hasUpdate = await checkForUpdates();
+          if (hasUpdate) {
+            // Si mise à jour détectée, recharger la page avec la nouvelle version
+            return fetch(event.request);
+          }
+          
+          // Stratégie Network First pour les pages HTML
+          const response = await fetch(event.request);
           if (response.ok) {
-            const headers = new Headers(response.headers);
-            headers.set('Content-Type', 'application/xml; charset=UTF-8');
-            return new Response(response.body, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: headers
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseClone);
             });
           }
           return response;
-        })
-        .catch(() => {
-          // Fallback sitemap if network fails
-          const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://vread.fr/</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>`;
-          return new Response(fallbackSitemap, {
-            headers: { 'Content-Type': 'application/xml; charset=UTF-8' }
-          });
-        })
+        } catch (error) {
+          // Fallback vers le cache en cas d'échec réseau
+          return caches.match(event.request) || caches.match('/offline.html');
+        }
+      })()
     );
-    return;
   }
-
-  // Cache blog images
-  if (url.pathname.includes('/blog-images/')) {
-    event.respondWith(
-      caches.open('blog-images-v1').then(cache => {
-        return cache.match(event.request).then(response => {
-          if (response) {
-            return response;
-          }
-          return fetch(event.request).then(networkResponse => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        });
-      })
-    );
-    return;
-  }
-
-  // Network-first strategy for API calls and dynamic content
-  if (url.pathname.includes('/api/') || url.pathname.includes('/blog/') || url.pathname.includes('/books/')) {
+  
+  // Stratégie Network First pour les CSS et JS pour forcer le rechargement
+  else if (event.request.destination === 'script' || 
+           event.request.destination === 'style') {
     event.respondWith(
       fetch(event.request)
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             const responseClone = response.clone();
-            caches.open('dynamic-v1').then(cache => {
+            caches.open(STATIC_CACHE).then((cache) => {
               cache.put(event.request, responseClone);
             });
           }
@@ -96,29 +152,64 @@ self.addEventListener('fetch', (event) => {
         })
     );
   }
-});
-
-// Handle robots.txt to ensure proper SEO
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
   
-  if (url.pathname === '/robots.txt') {
+  // Cache First pour les images et autres ressources statiques
+  else if (event.request.destination === 'image') {
     event.respondWith(
-      new Response(`User-agent: *
-Allow: /
-
-Sitemap: https://vread.fr/sitemap.xml`, {
-        headers: { 'Content-Type': 'text/plain' }
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          if (fetchResponse.ok) {
+            const responseClone = fetchResponse.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return fetchResponse;
+        });
       })
     );
   }
 });
 
-// Skip waiting and claim clients immediately
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
+// Handle messages from the main app
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Force update requested');
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CHECK_UPDATES') {
+    checkForUpdates().then(hasUpdate => {
+      event.ports[0].postMessage({ hasUpdate });
+    });
+  }
+  
+  if (event.data && event.data.type === 'WARM_CACHE') {
+    // Warm cache for critical resources
+    const urlsToCache = [
+      '/',
+      '/offline.html',
+      '/manifest.json'
+    ];
+    
+    caches.open(STATIC_CACHE).then((cache) => {
+      cache.addAll(urlsToCache);
+    });
+  }
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
-});
+// Vérifier les mises à jour périodiquement (toutes les 30 secondes)
+setInterval(() => {
+  checkForUpdates().then(hasUpdate => {
+    if (hasUpdate) {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'FORCE_RELOAD',
+            message: 'Nouvelle version détectée'
+          });
+        });
+      });
+    }
+  });
+}, 30000);

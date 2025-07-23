@@ -13,7 +13,7 @@ export const insertClassicBooks = async (): Promise<void> => {
 // Expose la fonction à l'objet window du navigateur
 declare global {
   interface Window {
-    bookService?: {
+    bookService: {
       insertClassicBooks: () => Promise<void>;
     };
   }
@@ -21,5 +21,6 @@ declare global {
 
 // Initialise l'objet window.bookService s'il n'existe pas
 if (typeof window !== 'undefined') {
-  window.bookService = window.bookService || { insertClassicBooks };
+  window.bookService = window.bookService || { insertClassicBooks: insertClassicBooks };
+  window.bookService.insertClassicBooks = insertClassicBooks;
 }
