@@ -5,11 +5,15 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression2';
+import tsconfig from "./tsconfig.lovable.json";
 
 export default defineConfig(({ command }) => ({
   server: {
     host: "::",
     port: 8080,
+  },
+  esbuild: { 
+    tsconfigRaw: tsconfig 
   },
   plugins: [
     react(),
