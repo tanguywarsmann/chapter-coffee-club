@@ -209,18 +209,20 @@ useEffect(() => {
   - Maintien de la sécurité pour Supabase et Firestore
   - Élargi `img-src` à `*` pour autoriser toutes les images
 
-### 3. Erreurs TypeScript DOM
-- **Fichier** : `tsconfig.lovable.json` (nouveau)
+### 3. Erreurs TypeScript DOM - CORRIGÉ
+- **Fichier** : `tsconfig.base.json` (nouveau)
 - **Problème** : Cannot find name 'document', 'window', DOM types manquants
-- **Solution** : Création d'un nouveau fichier tsconfig avec :
+- **Solution** : Création d'un fichier de base tsconfig avec :
   - `"lib": ["DOM", "DOM.Iterable", "ESNext"]`
   - `"types": ["vite/client", "node"]`
-  - `"include": ["src", "api", "types"]`
-  - `"strict": false` pour contourner temporairement les erreurs strictes
+  - `"include": ["src", "api"]`
 - **Fichier** : `vite.config.ts`
-- **Solution** : Ajout de `esbuild: { tsconfigRaw: tsconfig }` pour utiliser le nouveau config
-- **Fichier** : `types/dom-globals.d.ts` (nouveau)
-- **Solution** : Déclarations globales explicites pour DOM APIs, Window, Document, Image, etc.
+- **Solution** : Import `tsconfig.base.json` au lieu de `tsconfig.lovable.json`
+- **Fichier** : `src/types/dom-globals.d.ts` (nouveau)
+- **Solution** : Déclarations fallback pour SSR
+
+✅ **BUILD OK** - Toutes les erreurs TypeScript DOM résolues
+✅ **CSP élargie testée** - fonts + lovable iframe autorisés
 
 ---
 
