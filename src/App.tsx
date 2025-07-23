@@ -46,7 +46,16 @@ const App = () => {
                 <Toaster />
               </Suspense>
               <Suspense fallback={null}>
-                <Sonner />
+                <Sonner 
+                  richColors
+                  position="top-right"
+                  toastOptions={{
+                    classNames: {
+                      toast: 'pointer-events-auto',
+                    },
+                  }}
+                  className="fixed inset-y-4 right-4 flex flex-col gap-4 w-full max-w-sm md:max-w-sm pointer-events-none z-[100]"
+                />
               </Suspense>
               
               <Suspense fallback={null}>
