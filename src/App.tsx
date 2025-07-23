@@ -17,7 +17,7 @@ const Toaster = lazy(() =>
 );
 const Sonner = lazy(() => 
   import("@/components/ui/sonner").then(mod => ({
-    default: mod.Toaster
+    default: mod.Sonner
   }))
 );
 
