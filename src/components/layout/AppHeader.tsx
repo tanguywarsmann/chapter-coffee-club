@@ -17,7 +17,7 @@ export function AppHeader() {
       className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60"
       role="banner"
     >
-      <div className="w-full mx-auto px-4 lg:px-8 flex h-16 sm:h-14 items-center gap-4">
+      <div className="container flex h-16 sm:h-14 items-center gap-4">
         {isMobile && (
           <div role="navigation" aria-label="Menu mobile">
             <MobileMenu isAdmin={isAdmin} />
