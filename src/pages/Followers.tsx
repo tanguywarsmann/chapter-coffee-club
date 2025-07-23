@@ -71,7 +71,7 @@ export default function Followers() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container py-6">
+        <main className="mx-auto w-full px-4 max-w-none py-6">
           <div className="flex items-center gap-2 mb-6">
             <Button 
               variant="ghost" 

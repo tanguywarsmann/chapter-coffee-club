@@ -41,9 +41,6 @@ pop3_port = 54327
 [functions.send-follow-notification]
 verify_jwt = false
 
-[functions.sitemap]
-verify_jwt = false
-
 [auth]
 enabled = true
 port = 54326

@@ -7,7 +7,6 @@ import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { blogService } from "@/services/blogService";
-import { ArticleJsonLd } from "@/components/seo/ArticleJsonLd";
 import type { BlogPost } from "@/services/blogService";
 
 export default function BlogPost() {
@@ -45,7 +44,7 @@ export default function BlogPost() {
   if (loading) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 max-w-none py-8">
           <div className="text-center text-white">Chargement de l'article...</div>
         </div>
       </div>
@@ -55,7 +54,7 @@ export default function BlogPost() {
   if (error || !post) {
     return (
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 max-w-none py-8">
           <div className="text-center text-white">{error || 'Article non trouvé'}</div>
         </div>
       </div>
@@ -71,7 +70,7 @@ export default function BlogPost() {
         <title>{post.title} - Blog READ</title>
         <meta name="description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
         <meta property="og:title" content={`${post.title} - Blog READ`} />
-        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog read`} />
+        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
         <meta property="article:published_time" content={post.created_at} />
@@ -82,24 +81,40 @@ export default function BlogPost() {
         ))}
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={`${post.title} - Blog READ`} />
-        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog read`} />
+        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
         <link rel="canonical" href={`https://vread.fr/blog/${post.slug}`} />
+        
+        {/* Schema.org structured data for article */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": post.title,
+            "description": post.excerpt || "",
+            "author": {
+              "@type": "Organization",
+              "name": post.author || "READ"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "READ",
+              "url": "https://vread.fr"
+            },
+            "datePublished": post.created_at,
+            "dateModified": post.updated_at,
+            "url": `https://vread.fr/blog/${post.slug}`,
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": `https://vread.fr/blog/${post.slug}`
+            },
+            "keywords": post.tags?.join(", ") || "",
+            "articleSection": "Littérature"
+          })}
+        </script>
       </Helmet>
       
-      <ArticleJsonLd
-        title={post.title}
-        description={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`}
-        author={post.author || 'READ'}
-        authorUrl="https://vread.fr/"
-        publishedDate={post.created_at}
-        modifiedDate={post.updated_at}
-        url={`https://vread.fr/blog/${post.slug}`}
-        tags={post.tags}
-        imageUrl={post.imageHero}
-      />
-      
       <div className="min-h-screen bg-logo-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto w-full px-4 max-w-none py-8">
           {/* Navigation */}
           <div className="mb-6">
             <Link to="/blog">
@@ -111,7 +126,7 @@ export default function BlogPost() {
           </div>
 
           {/* Article */}
-          <article className="w-full px-4 lg:px-8 mx-auto max-w-none bg-white rounded-lg shadow-lg overflow-hidden">
+          <article className="max-w-none mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Article Image */}
             {post.imageHero && (
               <div className="relative h-64 md:h-80 w-full overflow-hidden">

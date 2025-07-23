@@ -47,7 +47,7 @@ export default function Achievements() {
 
           <AppHeader />
           
-          <main className="relative z-10 container mx-auto px-4 py-8 sm:py-12 max-w-6xl">
+          <main className="relative z-10 mx-auto w-full px-4 max-w-none py-8 sm:py-12">
             <div className="text-center mb-12 sm:mb-16 relative">
               {/* ... keep existing header styling ... */}
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4">
@@ -74,7 +74,7 @@ export default function Achievements() {
                   <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-reed-primary"></div>
                 </div>
                 
-                <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl lg:max-w-6xl mx-auto leading-relaxed px-4">
+                <p className="text-lg sm:text-xl text-reed-dark font-light max-w-none mx-auto leading-relaxed px-4">
                   Célébrez votre parcours littéraire et découvrez vos prochains défis
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function Achievements() {
 
         <AppHeader />
         
-         <main className="relative z-10 container mx-auto px-4 py-8 sm:py-12 max-w-6xl lg:max-w-7xl">
+         <main className="relative z-10 mx-auto w-full px-4 max-w-none py-8 sm:py-12">
           {/* En-tête avec design premium */}
           <div className="text-center mb-12 sm:mb-16 relative">
             {/* Badge décoratif d'arrière-plan */}
@@ -136,7 +136,7 @@ export default function Achievements() {
                 <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-reed-primary"></div>
               </div>
               
-              <p className="text-lg sm:text-xl text-reed-dark font-light max-w-3xl lg:max-w-6xl mx-auto leading-relaxed px-4">
+              <p className="text-lg sm:text-xl text-reed-dark font-light max-w-none mx-auto leading-relaxed px-4">
                 Célébrez votre parcours littéraire et découvrez vos prochains défis
               </p>
             </div>

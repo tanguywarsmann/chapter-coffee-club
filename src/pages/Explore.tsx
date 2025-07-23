@@ -125,11 +125,11 @@ export default function Explore() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
-        <main className="container py-6 space-y-6">
+        <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
           <div className="space-y-4">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
 
-            <div className="w-full px-4 lg:px-8 mx-auto max-w-none">
+            <div className="max-w-none">
               <SearchBar 
                 onSearch={handleSearch} 
                 placeholder="Rechercher par titre, auteur ou thématique..."

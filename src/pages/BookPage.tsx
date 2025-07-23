@@ -170,7 +170,7 @@ export default function BookPage() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container py-6">
+        <main className="mx-auto w-full px-4 max-w-none py-6">
           {loading ? (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center">
@@ -180,7 +180,7 @@ export default function BookPage() {
             </div>
           ) : error ? (
             <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="text-center max-w-md lg:max-w-6xl">
+              <div className="text-center max-w-none">
                 <h2 className="text-xl font-medium text-coffee-darker mb-2">Erreur</h2>
                 <p className="text-muted-foreground mb-4">{error}</p>
                 <button 
@@ -195,7 +195,7 @@ export default function BookPage() {
             <BookDetail book={book} onChapterComplete={handleChapterComplete} />
           ) : (
             <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="text-center max-w-md lg:max-w-6xl">
+              <div className="text-center max-w-none">
                 <h2 className="text-xl font-medium text-coffee-darker mb-2">Livre non disponible</h2>
                 <p className="text-muted-foreground mb-4">Le livre demandé n'est pas disponible pour le moment.</p>
                 <button 

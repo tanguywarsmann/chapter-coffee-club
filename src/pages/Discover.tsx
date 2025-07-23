@@ -15,7 +15,7 @@ export default function Discover() {
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-coffee-lightest via-white to-coffee-light/30">
         <AppHeader />
-        <main className="container py-6 w-full px-4 lg:px-8 mx-auto max-w-none">
+        <main className="mx-auto w-full px-4 max-w-none py-6">
           <div className="mb-8">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker mb-2">
               Découvrir des lecteurs

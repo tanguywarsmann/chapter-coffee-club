@@ -1,7 +1,14 @@
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.vread.fr/blog/quel-classique-hollandaise-es-tu</loc>
-    <lastmod>2025-07-23</lastmod>
-  </url>
-  <!-- répète pour chaque article -->
-</urlset>
+
+// Ce fichier sera traité par Vite pour générer le sitemap dynamiquement
+import { generateCompleteSitemap } from '../src/utils/sitemapServer';
+
+export default async function handler() {
+  const sitemap = await generateCompleteSitemap();
+  
+  return new Response(sitemap, {
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400'
+    }
+  });
+}

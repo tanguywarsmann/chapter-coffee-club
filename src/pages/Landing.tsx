@@ -45,10 +45,10 @@ export default function Landing() {
         <link rel="canonical" href="https://vread.fr/landing" />
       </Helmet>
 
-      <div className="w-screen min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
         {/* Hero Section avec Logo */}
         <section className="relative py-20 px-4" role="banner">
-          <div className="w-full mx-auto px-0 max-w-none text-center">
+          <div className="mx-auto w-full px-4 max-w-none text-center">
             {/* Logo READ mis en avant */}
             <div className="mb-12 flex justify-center">
               <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
@@ -67,7 +67,7 @@ export default function Landing() {
               <span className="text-reed-light">page après page</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed max-w-4xl mx-auto font-light">
+            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed max-w-none mx-auto font-light">
               Relevez des défis, suivez vos progrès, lisez à votre rythme. 
               Redécouvrez le plaisir de la lecture avec une approche moderne et bienveillante.
             </p>
@@ -109,12 +109,12 @@ export default function Landing() {
 
         {/* Features Section - Bloc secondaire avec visuel */}
         <section className="py-20 px-4 bg-white/15 backdrop-blur-sm">
-          <div className="w-full mx-auto px-0 max-w-none">
+          <div className="mx-auto w-full px-4 max-w-none">
             <header className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
                 Une nouvelle façon de lire
               </h2>
-              <p className="text-xl text-white/90 max-w-3xl lg:max-w-6xl mx-auto">
+              <p className="text-xl text-white/90 max-w-none mx-auto">
                 READ transforme votre expérience de lecture en un parcours engageant et personnalisé
               </p>
             </header>
@@ -147,7 +147,7 @@ export default function Landing() {
 
         {/* CTA Section finale */}
         <section className="py-20 px-4" role="region" aria-labelledby="cta-heading">
-          <div className="w-full mx-auto px-0 max-w-none text-center">
+          <div className="mx-auto w-full px-4 max-w-none text-center">
             <h2 id="cta-heading" className="text-4xl md:text-5xl font-serif font-bold text-white mb-8">
               Prêt à recommencer à lire ?
             </h2>

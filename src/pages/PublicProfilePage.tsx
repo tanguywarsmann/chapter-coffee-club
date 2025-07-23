@@ -45,7 +45,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container py-6 space-y-6">
+        <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-3">
@@ -67,7 +67,7 @@ export default function PublicProfilePage() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container py-6">
+        <main className="mx-auto w-full px-4 max-w-none py-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-serif text-coffee-darker">
@@ -88,7 +88,7 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="container py-6 space-y-6">
+      <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
         <Card className="border-coffee-light">
           <CardContent className="pt-6">
             <h1 className="text-3xl font-serif font-medium text-coffee-darker">
