@@ -156,7 +156,7 @@
   }
 
   /* Empêche la coupure de mots pour tous les éléments texte */
-  p, span, div, button, a, label {
+  p, span, button, a, label {
     text-wrap: pretty;
     word-break: keep-all;
     hyphens: none;
