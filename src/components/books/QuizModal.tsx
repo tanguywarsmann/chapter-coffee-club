@@ -7,6 +7,7 @@ import { QuizContent } from "./QuizContent";
 import { ReadingQuestion } from "@/types/reading";
 import { JokerConfirmationModal } from "./JokerConfirmationModal";
 import { useJokersInfo } from "@/hooks/useJokersInfo";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuizModalProps {
   bookTitle: string;
@@ -43,38 +44,59 @@ export function QuizModal({
     expectedSegments
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!answer.trim()) {
       toast.error("Veuillez entrer une réponse");
       return;
     }
 
-    // TODO: SECURITY - Move answer validation to server-side
-    // Current client-side validation exposes answers to users
-    // Should implement a Supabase function that:
-    // 1. Validates answers securely without exposing expected answers
-    // 2. Implements proper rate limiting
-    // 3. Uses hashed/encrypted answer comparison
-    const isCorrect = question.answer === "libre" || 
-      answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
-    
-    if (isCorrect) {
-      toast.success("Bonne réponse !");
-      onComplete(true);
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      
-      // Check if joker can be used immediately after first wrong answer
-      const canUseJoker = jokersRemaining > 0 && !isUsingJoker;
-      if (canUseJoker) {
-        setShowJokerConfirmation(true);
-      } else if (newAttempts >= maxAttempts) {
-        toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-        onComplete(false);
-      } else {
-        toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+    try {
+      // Use secure server-side answer validation
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Vous devez être connecté pour valider une réponse");
+        return;
       }
+
+      const { data, error } = await supabase.functions.invoke('validate-answer', {
+        body: {
+          questionId: question.id,
+          userAnswer: answer.trim(),
+          bookId: question.book_slug,
+          segment: chapterNumber,
+          progressId
+        }
+      });
+
+      if (error) {
+        console.error('Validation error:', error);
+        toast.error("Erreur lors de la validation. Veuillez réessayer.");
+        return;
+      }
+
+      const { isCorrect } = data;
+      
+      if (isCorrect) {
+        toast.success("Bonne réponse !");
+        onComplete(true);
+      } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        
+        // Check if joker can be used immediately after first wrong answer
+        const canUseJoker = jokersRemaining > 0 && !isUsingJoker;
+        if (canUseJoker) {
+          setShowJokerConfirmation(true);
+        } else if (newAttempts >= maxAttempts) {
+          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+          onComplete(false);
+        } else {
+          toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+        }
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.error("Erreur lors de la soumission. Veuillez réessayer.");
     }
   };
 

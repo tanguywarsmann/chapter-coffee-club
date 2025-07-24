@@ -2,9 +2,27 @@
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { Database } from "lucide-react"
+import { toast } from "sonner"
 
 export default function ExportSQLButtonFinal() {
   async function exportData() {
+    // Security check: Verify admin status before allowing export
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Vous devez être connecté pour exporter les données");
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      toast.error("Accès refusé: Droits administrateur requis");
+      return;
+    }
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const
     let fullSQL = "-- Export SQL pour READ\n\n"
 
