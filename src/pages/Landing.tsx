@@ -80,41 +80,36 @@ export default function Landing() {
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
         {/* Hero Section */}
         <section className="relative py-20 px-4" role="banner">
-          {/* WRAPPER CENTRÉ */}
-          <div className="mx-auto max-w-5xl px-4 text-center">
+          <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
             {/* Logo */}
-            <div className="mb-12 flex justify-center">
-              <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
-                <Image
-                  src="/READ-logo.png"
-                  alt="READ - Application de lecture progressive"
-                  className="h-24 w-24 mx-auto"
-                  priority={true}
-                />
-              </div>
+            <div className="bg-reed-primary/80 rounded-3xl border-4 border-reed-light/30 p-8 shadow-2xl">
+              <Image
+                src="/READ-logo.png"
+                alt="READ - Application de lecture progressive"
+                className="mx-auto h-24 w-24"
+                priority
+              />
             </div>
 
-            <h1 className="hero-title text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
+            <h1 className="hero-title mb-8 font-serif font-bold leading-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
               L'appli qui <span className="whitespace-nowrap">t'accompagne</span>
-              <br />
-              dans ta lecture,
-              <br />
-              <span className="text-reed-light">page après page</span>
+              <br /> dans ta lecture,
+              <br /> <span className="text-reed-light">page après page</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed font-light mx-auto max-w-3xl">
+            <p className="mx-auto mb-12 max-w-3xl text-lg font-light leading-relaxed text-white/95 md:text-2xl">
               Relevez des défis, suivez vos progrès, lisez à votre rythme. Redécouvrez
               le plaisir de la lecture avec une approche moderne et bienveillante.
             </p>
 
             <div
-              className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
+              className="mb-16 flex flex-col gap-6 sm:flex-row sm:justify-center"
               role="group"
               aria-label="Actions principales"
             >
               <Button
                 size="lg"
-                className="bg-reed-light hover:bg-reed-secondary text-reed-darker font-bold text-xl px-12 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+                className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
                 <Link to="/auth" aria-label="Commencer votre parcours de lecture avec read">
@@ -124,7 +119,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-3 border-white text-white hover:bg-white hover:text-reed-primary font-bold text-xl px-12 py-6 rounded-full transition-all duration-300 hover:scale-105 transform focus:ring-4 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+                className="border-3 border-white px-12 py-6 text-xl font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-white hover:text-reed-primary focus:ring-4 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
                 <Link to="/blog" aria-label="Découvrir le blog READ">
@@ -133,40 +128,44 @@ export default function Landing() {
               </Button>
             </div>
 
-            {/* Scroll indicator */}
-            <div className="flex justify-center" role="presentation">
-              <ArrowDown className="h-8 w-8 text-white/70 animate-bounce" aria-hidden="true" />
-            </div>
+            <ArrowDown
+              className="h-8 w-8 animate-bounce text-white/70"
+              aria-hidden="true"
+            />
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-20 px-4 bg-white/15 backdrop-blur-sm">
-          <div className="mx-auto max-w-6xl px-4 text-center">
-            <header className="mb-16">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">Une nouvelle façon de lire</h2>
-              <p className="text-xl text-white/90 mx-auto max-w-3xl">
+        <section className="bg-white/15 backdrop-blur-sm py-20 px-4">
+          <div className="mx-auto w-full max-w-screen-xl px-4 text-center">
+            <header className="mb-16 space-y-6">
+              <h2 className="text-4xl font-serif font-bold text-white md:text-5xl">
+                Une nouvelle façon de lire
+              </h2>
+              <p className="mx-auto max-w-4xl text-xl text-white/90">
                 READ transforme votre expérience de lecture en un parcours engageant et personnalisé
               </p>
             </header>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8" role="list">
-              {features.map(({ icon: Icon, title, description }, index) => (
+            <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 lg:grid-cols-4" role="list">
+              {features.map(({ icon: Icon, title, description }, i) => (
                 <Card
-                  key={index}
-                  className="bg-white/20 border-white/40 backdrop-blur-md hover:bg-white/25 transition-all duration-300 hover:scale-105 transform shadow-xl focus-within:ring-2 focus-within:ring-white/50"
+                  key={i}
+                  className="bg-white/20 backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-105 hover:bg-white/25 focus-within:ring-2 focus-within:ring-white/50"
                   role="listitem"
                 >
-                  <CardHeader className="text-center pb-6">
+                  <CardHeader className="pb-6 text-center">
                     <div className="mb-6 flex justify-center">
-                      <div className="bg-reed-light/20 p-4 rounded-full" role="presentation">
+                      <div className="bg-reed-light/20 rounded-full p-4">
                         <Icon className="h-12 w-12 text-reed-light" aria-hidden="true" />
                       </div>
                     </div>
-                    <CardTitle className="text-white text-xl font-semibold">{title}</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-white">
+                      {title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-white/95 text-center leading-relaxed text-base mx-auto max-w-xs">
+                    <CardDescription className="text-base leading-relaxed text-white/95">
                       {description}
                     </CardDescription>
                   </CardContent>
@@ -176,18 +175,24 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Finale */}
+        {/* CTA Section */}
         <section className="py-20 px-4" role="region" aria-labelledby="cta-heading">
-          <div className="mx-auto max-w-5xl px-4 text-center">
-            <h2 id="cta-heading" className="text-4xl md:text-5xl font-serif font-bold text-white mb-8">
-              Prêt à recommencer à lire ?
-            </h2>
-            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed font-light mx-auto max-w-3xl">
-              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
-            </p>
+          <div className="mx-auto flex max-w-screen-md flex-col items-center gap-12 px-4 text-center">
+            <div>
+              <h2
+                id="cta-heading"
+                className="mb-8 font-serif text-4xl font-bold text-white md:text-5xl"
+              >
+                Prêt à recommencer à lire ?
+              </h2>
+              <p className="mx-auto max-w-2xl text-xl font-light leading-relaxed text-white/95 md:text-2xl">
+                Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
+              </p>
+            </div>
+
             <Button
               size="lg"
-              className="bg-reed-light hover:bg-reed-secondary text-reed-darker font-bold text-xl px-12 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+              className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
               asChild
             >
               <Link to="/auth" aria-label="Créer votre compte READ gratuit maintenant">
