@@ -244,6 +244,7 @@ export type Database = {
       reading_questions: {
         Row: {
           answer: string
+          book_id: string | null
           book_slug: string
           id: string
           question: string
@@ -251,6 +252,7 @@ export type Database = {
         }
         Insert: {
           answer: string
+          book_id?: string | null
           book_slug: string
           id?: string
           question: string
@@ -258,6 +260,7 @@ export type Database = {
         }
         Update: {
           answer?: string
+          book_id?: string | null
           book_slug?: string
           id?: string
           question?: string
@@ -538,6 +541,10 @@ export type Database = {
           payload_title: string
           posted_at: string
         }[]
+      }
+      get_current_user_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       get_user_stats: {
         Args: { uid: string }
