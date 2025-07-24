@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = "v0.15"; // Phase 2 : Optimisations Performance
+const APP_VERSION = "v.020";
 
 export const AppFooter = () => {
   return (
