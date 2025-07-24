@@ -4,14 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Settings, Bell, Lock, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function UserSettings() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    toast.success("Déconnexion réussie");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error("Erreur lors de la déconnexion");
+        return;
+      }
+      // Clear localStorage only after successful server logout
+      localStorage.clear();
+      toast.success("Déconnexion réussie");
+      navigate("/");
+    } catch (error) {
+      toast.error("Erreur lors de la déconnexion");
+    }
   };
 
   return (
