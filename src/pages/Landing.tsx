@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,17 +60,20 @@ export default function Landing() {
               </div>
             </div>
             
-            <h1 className="hero-title text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
+            {/* TITRE CENTRÉ */}
+            <h1 className="hero-title text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight text-center">
               L'appli qui <span className="whitespace-nowrap">t'accompagne</span><br />
               dans ta lecture,<br />
               <span className="text-reed-light">page après page</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed max-w-none mx-auto font-light">
+            {/* SOUS-TITRE CENTRÉ */}
+            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed max-w-none mx-auto font-light text-center">
               Relevez des défis, suivez vos progrès, lisez à votre rythme. 
               Redécouvrez le plaisir de la lecture avec une approche moderne et bienveillante.
             </p>
             
+            {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16" role="group" aria-label="Actions principales">
               <Button 
                 size="lg" 
@@ -110,11 +112,11 @@ export default function Landing() {
         {/* Features Section - Bloc secondaire avec visuel */}
         <section className="py-20 px-4 bg-white/15 backdrop-blur-sm">
           <div className="mx-auto w-full px-4 max-w-none">
-            <header className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
+            <header className="mb-16 text-center">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6 text-center">
                 Une nouvelle façon de lire
               </h2>
-              <p className="text-xl text-white/90 max-w-none mx-auto">
+              <p className="text-xl text-white/90 max-w-none mx-auto text-center">
                 READ transforme votre expérience de lecture en un parcours engageant et personnalisé
               </p>
             </header>
@@ -132,7 +134,7 @@ export default function Landing() {
                         <feature.icon className="h-12 w-12 text-reed-light" aria-hidden="true" />
                       </div>
                     </div>
-                    <CardTitle className="text-white text-xl font-semibold">{feature.title}</CardTitle>
+                    <CardTitle className="text-white text-xl font-semibold text-center">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-white/95 text-center leading-relaxed text-base">
@@ -148,10 +150,10 @@ export default function Landing() {
         {/* CTA Section finale */}
         <section className="py-20 px-4" role="region" aria-labelledby="cta-heading">
           <div className="mx-auto w-full px-4 max-w-none text-center">
-            <h2 id="cta-heading" className="text-4xl md:text-5xl font-serif font-bold text-white mb-8">
+            <h2 id="cta-heading" className="text-4xl md:text-5xl font-serif font-bold text-white mb-8 text-center">
               Prêt à recommencer à lire ?
             </h2>
-            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed font-light">
+            <p className="text-xl md:text-2xl text-white/95 mb-12 leading-relaxed font-light text-center">
               Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
             </p>
             <Button 
