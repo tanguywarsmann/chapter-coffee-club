@@ -89,6 +89,17 @@ export default {
 					accent: '#D4C6A1'  // Couleur d'accent basée sur la bordure du marque-page
 				}
 			},
+			fontSize: {
+				// Système typographique unifié - 8 tailles fixes
+				'hero': ['clamp(2.5rem, 5vw, 4.5rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
+				'h1': ['clamp(2rem, 4vw, 3.5rem)', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
+				'h2': ['clamp(1.5rem, 3vw, 2.5rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '-0.01em' }],
+				'h3': ['clamp(1.25rem, 2.5vw, 2rem)', { lineHeight: '1.4', fontWeight: '600' }],
+				'h4': ['clamp(1.125rem, 2vw, 1.5rem)', { lineHeight: '1.4', fontWeight: '500' }],
+				'body': ['clamp(1rem, 1.5vw, 1.125rem)', { lineHeight: '1.6', fontWeight: '400' }],
+				'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
+				'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400', letterSpacing: '0.02em' }],
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

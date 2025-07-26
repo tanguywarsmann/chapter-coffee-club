@@ -8,6 +8,6 @@ interface BookDetailHeaderProps {
 
 export const BookDetailHeader = ({ title }: BookDetailHeaderProps) => (
   <CardHeader>
-    <CardTitle className="text-2xl font-serif text-coffee-darker">{title}</CardTitle>
+    <CardTitle className="text-h2 font-serif text-coffee-darker">{title}</CardTitle>
   </CardHeader>
 );

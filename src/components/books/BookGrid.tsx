@@ -50,7 +50,7 @@ export function BookGrid({
     <div className="space-y-4">
       {title && (
         <div className="mb-4">
-          <h2 className="text-xl font-serif font-medium text-coffee-darker">{title}</h2>
+          <h2 className="text-h4 font-serif text-coffee-darker">{title}</h2>
           {description && <p className="text-muted-foreground text-sm mt-1">{description}</p>}
         </div>
       )}

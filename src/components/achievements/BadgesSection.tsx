@@ -135,7 +135,7 @@ export function BadgesSection() {
       
       <Card className="relative border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
-          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-lg sm:text-xl">
+          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-h4">
             <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
               <Award className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
             </div>

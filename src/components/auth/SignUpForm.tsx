@@ -92,7 +92,7 @@ export function SignUpForm() {
   return (
     <Card className="w-full max-w-md mx-auto border-coffee-medium transition-all duration-300 hover:shadow-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">Créer un compte</CardTitle>
+        <CardTitle className="text-h2 font-serif text-center">Créer un compte</CardTitle>
         <CardDescription className="text-center">
           Inscrivez-vous pour commencer votre voyage littéraire
         </CardDescription>

@@ -6,5 +6,5 @@ interface BookDescriptionProps {
 }
 
 export const BookDescription = ({ description }: BookDescriptionProps) => (
-  <p className="text-coffee-darker">{description}</p>
+  <p className="text-body text-coffee-darker">{description}</p>
 );

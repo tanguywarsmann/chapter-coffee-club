@@ -100,7 +100,7 @@ export function LoginForm() {
               className="w-full h-full object-cover"
             />
           </div>
-          <CardTitle className="text-2xl text-center">Bienvenue sur READ</CardTitle>
+          <CardTitle className="text-h2 font-serif text-center">Bienvenue sur READ</CardTitle>
           <CardDescription className="text-center">
             Connectez-vous à votre compte pour continuer votre voyage littéraire
           </CardDescription>

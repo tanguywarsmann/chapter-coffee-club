@@ -22,7 +22,7 @@ export function PublicHeader() {
             priority={true}
             sizes="32px"
           />
-          <span className="text-xl font-medium text-logo-text">READ</span>
+          <span className="text-h4 font-serif text-logo-text">READ</span>
         </Link>
         
         <nav 

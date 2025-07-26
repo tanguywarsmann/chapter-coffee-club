@@ -14,7 +14,7 @@ export function FeaturedBooks({ recentlyAdded, popular, recommended }: FeaturedB
   return (
     <Card className="border-coffee-light">
       <CardHeader>
-        <CardTitle className="text-xl font-serif text-coffee-darker">Découvrir des livres</CardTitle>
+        <CardTitle className="text-h4 font-serif text-coffee-darker">Découvrir des livres</CardTitle>
         <CardDescription>Explorer notre catalogue pour trouver votre prochaine lecture</CardDescription>
       </CardHeader>
       <CardContent>
