@@ -98,10 +98,10 @@ export function BadgeRarityProgress({
         return (
           <div key={rarity.name} className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className={cn("text-sm font-medium", rarity.color)}>
+              <span className={cn("text-body-sm font-medium", rarity.color)}>
                 {rarity.label}
               </span>
-              <span className="text-xs text-coffee-medium">
+              <span className="text-caption text-coffee-medium">
                 {progress.earned} / {progress.total}
               </span>
             </div>

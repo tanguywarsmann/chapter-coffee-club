@@ -262,7 +262,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                     name="cover_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm text-muted-foreground">URL de l'image</FormLabel>
+                        <FormLabel className="text-body-sm text-muted-foreground">URL de l'image</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="https://example.com/cover.jpg" 
@@ -282,7 +282,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                   <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-4">
                     <label htmlFor="cover-upload" className="flex flex-col items-center justify-center cursor-pointer">
                       <Upload className="h-6 w-6 text-gray-400 mb-2" />
-                      <span className="text-sm text-muted-foreground">Uploader une image</span>
+                      <span className="text-body-sm text-muted-foreground">Uploader une image</span>
                       <input
                         id="cover-upload"
                         type="file"

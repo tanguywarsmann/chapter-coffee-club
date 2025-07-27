@@ -49,7 +49,7 @@ export function ChallengesSection() {
       
       <Card className="relative border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
-          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-lg sm:text-xl">
+          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-h4">
             <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
               <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
             </div>
@@ -78,7 +78,7 @@ export function ChallengesSection() {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-serif font-semibold text-reed-darker text-lg sm:text-xl mb-2 break-words">
+                      <h3 className="font-serif font-semibold text-reed-darker text-h4 mb-2 break-words">
                         {challenge.title}
                       </h3>
                       <p className="text-reed-dark font-light leading-relaxed break-words">
@@ -89,7 +89,7 @@ export function ChallengesSection() {
                     {/* Badge de statut premium */}
                     <div className="flex-shrink-0 self-start">
                       <div className="inline-flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-green-100 to-green-200 rounded-full border border-green-300 backdrop-blur-sm">
-                        <span className="text-xs sm:text-sm font-serif font-medium text-green-800 whitespace-nowrap">
+                        <span className="text-caption sm:text-body-sm font-serif font-medium text-green-800 whitespace-nowrap">
                           {challenge.progress >= challenge.total ? "Terminé" : "En cours"}
                         </span>
                         <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 ml-2 text-green-600 flex-shrink-0" />
@@ -100,8 +100,8 @@ export function ChallengesSection() {
                   {/* Section progression élégante */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-serif font-medium text-reed-dark">Progression</span>
-                      <span className="text-sm font-serif font-semibold text-reed-darker">
+                      <span className="text-body-sm font-serif font-medium text-reed-dark">Progression</span>
+                      <span className="text-body-sm font-serif font-semibold text-reed-darker">
                         {challenge.progress}/{challenge.total}
                         {challenge.id === 3 ? ' pages' : challenge.id === 2 ? ' catégories' : ' jours'}
                       </span>
@@ -119,11 +119,11 @@ export function ChallengesSection() {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <div className="text-xs text-reed-dark font-light">
+                      <div className="text-caption text-reed-dark font-light">
                         {Math.round((challenge.progress / challenge.total) * 100)}% accompli
                       </div>
                       {challenge.progress >= challenge.total && (
-                        <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <div className="flex items-center gap-1 text-caption text-green-600 font-medium">
                           <Sparkles className="h-3 w-3 flex-shrink-0" />
                           <span className="whitespace-nowrap">Défi accompli !</span>
                         </div>

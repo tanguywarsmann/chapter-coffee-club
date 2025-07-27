@@ -60,7 +60,7 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-coffee-light/10 to-transparent rounded-bl-full" />
       
       <CardHeader className="relative pb-4">
-        <CardTitle className="flex items-center gap-3 text-2xl font-serif text-coffee-darker">
+        <CardTitle className="flex items-center gap-3 text-h3 font-serif text-coffee-darker">
           <div className={cn(
             "p-2 rounded-xl transition-all duration-300",
             hasStreak 
@@ -80,7 +80,7 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
             <div className="font-serif text-coffee-darker">
               {getStreakMessage(currentStreak)}
             </div>
-            <p className="text-sm font-light text-coffee-medium mt-1 italic">
+            <p className="text-body-sm font-light text-coffee-medium mt-1 italic">
               {getMotivationalQuote(currentStreak)}
             </p>
           </div>
@@ -92,7 +92,7 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
         <div className="text-center py-4">
           <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 rounded-2xl border border-coffee-light/30 shadow-sm">
             <Target className="h-5 w-5 text-coffee-dark" />
-            <span className="text-3xl font-serif font-bold text-coffee-darker">
+            <span className="text-h2 font-serif font-bold text-coffee-darker">
               {formatStreakText(currentStreak)}
             </span>
           </div>

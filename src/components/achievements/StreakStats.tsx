@@ -36,10 +36,10 @@ export function StreakStats({ current, best }: StreakStatsProps) {
             </div>
             
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
+              <h3 className="text-caption sm:text-body-sm font-serif font-medium text-reed-dark uppercase mb-2">
                 Série Actuelle
               </h3>
-              <p className="text-xl sm:text-2xl font-serif font-semibold text-reed-darker leading-tight break-words">
+              <p className="text-h4 sm:text-h3 font-serif font-semibold text-reed-darker leading-tight break-words">
                 {formatStreakText(current, "série")}
               </p>
             </div>
@@ -64,10 +64,10 @@ export function StreakStats({ current, best }: StreakStatsProps) {
             </div>
             
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
+              <h3 className="text-caption sm:text-body-sm font-serif font-medium text-reed-dark uppercase mb-2">
                 Record Personnel
               </h3>
-              <p className="text-xl sm:text-2xl font-serif font-semibold text-reed-darker leading-tight break-words">
+              <p className="text-h4 sm:text-h3 font-serif font-semibold text-reed-darker leading-tight break-words">
                 {formatStreakText(best, "record")}
               </p>
             </div>

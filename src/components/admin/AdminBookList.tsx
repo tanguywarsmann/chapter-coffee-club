@@ -301,7 +301,7 @@ export function AdminBookList() {
                 ))}
               </div>
               <div className="mt-4 p-3 bg-muted rounded-md">
-                <p className="text-sm flex items-start gap-2">
+                <p className="text-body-sm flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span>
                     Rappel : le segment 1 correspond aux pages 1 à 30, le segment 2 aux pages 31 à 60, etc.
@@ -331,7 +331,7 @@ export function AdminBookList() {
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
-          <h3 className="text-lg font-medium mb-2 text-destructive">Erreur</h3>
+          <h3 className="text-h4 font-medium mb-2 text-destructive">Erreur</h3>
           <p className="text-muted-foreground">{error}</p>
           <Button onClick={fetchBooksValidationStatus} className="mt-4">
             Réessayer
@@ -344,7 +344,7 @@ export function AdminBookList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-serif font-medium text-coffee-darker">
+        <h2 className="text-h4 font-serif font-medium text-coffee-darker">
           État des questions de validation ({books.length} livres)
         </h2>
         <div className="flex items-center gap-2">

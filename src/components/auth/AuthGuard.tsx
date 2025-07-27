@@ -23,7 +23,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
               : "Chargement..."}
           </p>
           {loadingTimeout && (
-            <div className="text-sm text-muted-foreground mt-2 max-w-md">
+            <div className="text-body-sm text-muted-foreground mt-2 max-w-md">
               <p className="mb-2">Si cela persiste, essayez de rafraîchir la page ou vérifiez votre connexion internet.</p>
               {error && <p className="text-red-500">Erreur: {error}</p>}
             </div>

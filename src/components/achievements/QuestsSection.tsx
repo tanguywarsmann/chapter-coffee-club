@@ -43,7 +43,7 @@ export function QuestsSection() {
       
       <Card className="relative border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
-          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-lg sm:text-xl">
+          <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-h4">
             <div className="p-2 bg-gradient-to-br from-reed-light to-white rounded-xl flex-shrink-0">
               <Scroll className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
             </div>
@@ -77,7 +77,7 @@ export function QuestsSection() {
                   </div>
                 </div>
               </div>
-              <h3 className="font-serif text-lg sm:text-xl text-reed-darker mb-3">Aucune quête accomplie</h3>
+              <h3 className="font-serif text-h4 text-reed-darker mb-3">Aucune quête accomplie</h3>
               <p className="text-reed-dark font-light leading-relaxed px-4">
                 Continuez à lire pour débloquer vos premières quêtes<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>et découvrir des récompenses exceptionnelles

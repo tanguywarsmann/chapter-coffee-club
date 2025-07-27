@@ -23,7 +23,7 @@ export function LevelCard({ xp, level }: LevelCardProps) {
             </div>
             {/* Badge niveau */}
             <div className="absolute -top-2 -right-2">
-              <div className="px-2 py-1 bg-gradient-to-br from-reed-primary to-reed-dark rounded-full text-xs font-bold text-white">
+              <div className="px-2 py-1 bg-gradient-to-br from-reed-primary to-reed-dark rounded-full text-caption font-bold text-white">
                 {level}
               </div>
             </div>

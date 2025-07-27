@@ -221,7 +221,7 @@ export function BlogAdminPanel() {
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
               placeholder="Contenu de l'article (HTML ou Markdown)..."
-              className="min-h-[300px] font-mono text-sm"
+              className="min-h-[300px] font-mono text-body-sm"
             />
           </div>
 
@@ -291,7 +291,7 @@ export function BlogAdminPanel() {
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell className="text-muted-foreground">{post.slug}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-2 py-1 rounded text-caption ${
                       post.published 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'

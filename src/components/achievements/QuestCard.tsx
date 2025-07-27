@@ -38,10 +38,10 @@ export function QuestCard({ quest }: QuestCardProps) {
             <h3 className="font-medium text-coffee-darker">
               {quest.quest?.title || quest.quest_slug}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {quest.quest?.description || "Quête débloquée !"}
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-caption text-muted-foreground mt-2">
               Débloquée le {format(new Date(quest.unlocked_at), "d MMMM yyyy", { locale: fr })}
             </p>
           </div>

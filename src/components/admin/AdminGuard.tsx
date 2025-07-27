@@ -94,7 +94,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <ShieldAlert className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-medium mb-2">Accès refusé</h2>
+          <h2 className="text-h4 font-medium mb-2">Accès refusé</h2>
           <p className="text-muted-foreground mb-6">
             Vous n'avez pas les droits d'administration nécessaires pour accéder à cette page.
           </p>
