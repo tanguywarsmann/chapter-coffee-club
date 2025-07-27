@@ -64,7 +64,7 @@ export default function Achievements() {
                   </div>
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-light text-reed-darker mb-4 tracking-wide px-4">
+              <h1 className="text-h2 sm:text-h1 lg:text-hero font-serif font-light text-reed-darker mb-4 px-4">
                   Vos <span className="font-medium bg-gradient-to-r from-reed-primary to-reed-dark bg-clip-text text-transparent">Accomplissements</span>
                 </h1>
                 
@@ -126,7 +126,7 @@ export default function Achievements() {
                 </div>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-light text-reed-darker mb-4 tracking-wide px-4">
+              <h1 className="text-h2 sm:text-h1 lg:text-hero font-serif font-light text-reed-darker mb-4 px-4">
                 Vos <span className="font-medium bg-gradient-to-r from-reed-primary to-reed-dark bg-clip-text text-transparent">Accomplissements</span>
               </h1>
               

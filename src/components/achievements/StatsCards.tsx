@@ -60,11 +60,11 @@ export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = f
           <div className="relative bg-white/70 backdrop-blur-md border border-white/40 rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:-translate-y-2">
             <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-3">
+                <h3 className="text-caption sm:text-body-sm font-serif font-medium text-reed-dark uppercase mb-3">
                   {stat.label}
                 </h3>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-3xl sm:text-4xl font-serif font-bold text-reed-darker leading-none break-all">
+                  <p className="text-h2 sm:text-h1 font-serif font-bold text-reed-darker leading-none break-all">
                     {isLoading ? "—" : stat.value.toLocaleString()}
                   </p>
                   {!isLoading && stat.value > 0 && (

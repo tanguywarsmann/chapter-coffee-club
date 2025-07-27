@@ -52,12 +52,12 @@ export function BadgeCard({
                 isLocked ? "shadow-sm grayscale" : "shadow-md"
               )}
             >
-              <span className="text-3xl">{icon}</span>
+              <span className="text-h2">{icon}</span>
               
               {/* Overlay with lock for locked badges */}
               {isLocked && (
                 <div className="absolute inset-0 rounded-full bg-coffee-dark/20 flex items-center justify-center">
-                  <span className="text-xl">🔒</span>
+                  <span className="text-h4">🔒</span>
                 </div>
               )}
               
@@ -93,10 +93,10 @@ export function BadgeCard({
             )}
             
             <div className="space-y-1 px-1">
-              <h3 className={cn("font-medium text-sm", isLocked ? "text-coffee-medium" : "text-coffee-darker")}>
+              <h3 className={cn("font-medium text-body-sm", isLocked ? "text-coffee-medium" : "text-coffee-darker")}>
                 {name}
               </h3>
-              <p className="text-xs text-muted-foreground line-clamp-2">
+              <p className="text-caption text-muted-foreground line-clamp-2">
                 {description}
               </p>
               
@@ -109,10 +109,10 @@ export function BadgeCard({
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[200px] text-sm">
+        <TooltipContent className="max-w-[200px] text-body-sm">
           <div className="space-y-1">
             <p className="font-medium">{name}</p>
-            <p className="text-xs">{description}</p>
+            <p className="text-caption">{description}</p>
           </div>
         </TooltipContent>
       </Tooltip>

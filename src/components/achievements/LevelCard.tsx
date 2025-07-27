@@ -30,10 +30,10 @@ export function LevelCard({ xp, level }: LevelCardProps) {
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="text-xs sm:text-sm font-serif font-medium text-reed-dark uppercase tracking-wider mb-2">
+            <h3 className="text-caption sm:text-body-sm font-serif font-medium text-reed-dark uppercase mb-2">
               Niveau {level}
             </h3>
-            <p className="text-lg sm:text-xl font-serif font-semibold text-reed-darker mb-3 break-words">
+            <p className="text-h4 sm:text-h4 font-serif font-semibold text-reed-darker mb-3 break-words">
               {xp.toLocaleString()} XP
             </p>
             
@@ -44,7 +44,7 @@ export function LevelCard({ xp, level }: LevelCardProps) {
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <p className="text-xs text-reed-dark mt-1">
+            <p className="text-caption text-reed-dark mt-1">
               {1000 - (xp % 1000)} XP jusqu'au niveau {level + 1}
             </p>
           </div>

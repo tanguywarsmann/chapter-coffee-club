@@ -1,0 +1,12 @@
+{
+  "text-6xl": "text-hero",
+  "text-5xl": "text-h1",
+  "text-4xl": "text-h1",
+  "text-3xl": "text-h2",
+  "text-2xl": "text-h3",
+  "text-xl": "text-h4",
+  "text-lg": "text-h4",
+  "text-base": "text-body",
+  "text-sm": "text-body-sm",
+  "text-xs": "text-caption"
+}

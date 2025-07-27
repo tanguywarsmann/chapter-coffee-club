@@ -164,22 +164,22 @@ export function BadgesSection() {
                     <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/20 to-reed-secondary/20 rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
                     
                     <div className="relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1 text-center">
-                      <div className="text-3xl sm:text-4xl mb-3">{badge.icon}</div>
-                      <h3 className="font-serif font-semibold text-reed-darker text-sm sm:text-base mb-2 break-words">
+                      <div className="text-h2 mb-3">{badge.icon}</div>
+                      <h3 className="font-serif font-semibold text-reed-darker text-body-sm sm:text-body mb-2 break-words">
                         {badge.name}
                       </h3>
-                      <p className="text-xs sm:text-sm text-reed-dark font-light leading-relaxed break-words">
+                      <p className="text-caption sm:text-body-sm text-reed-dark font-light leading-relaxed break-words">
                         {badge.description}
                       </p>
                       {badge.dateEarned && (
-                        <p className="text-xs text-reed-medium mt-2 font-light">
+                        <p className="text-caption text-reed-medium mt-2 font-light">
                           Obtenu le {badge.dateEarned}
                         </p>
                       )}
                       
                       {/* Badge de rareté */}
                       <div className="absolute -top-2 -right-2">
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <div className={`px-2 py-1 rounded-full text-caption font-medium ${
                           badge.rarity === 'legendary' ? 'bg-amber-100 text-amber-800' :
                           badge.rarity === 'epic' ? 'bg-purple-100 text-purple-800' :
                           badge.rarity === 'rare' ? 'bg-blue-100 text-blue-800' :
@@ -196,8 +196,8 @@ export function BadgesSection() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4 opacity-30">🏆</div>
-                <h3 className="font-serif text-reed-darker text-xl mb-2">
+                <div className="text-hero mb-4 opacity-30">🏆</div>
+                <h3 className="font-serif text-reed-darker text-h4 mb-2">
                   Aucun badge débloqué
                 </h3>
                 <p className="text-reed-dark font-light">
