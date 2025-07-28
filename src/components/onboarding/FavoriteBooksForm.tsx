@@ -72,7 +72,7 @@ export function FavoriteBooksForm({ open, onComplete, onSkip }: FavoriteBooksFor
         <DialogHeader>
           <DialogTitle 
             id="favorites-modal-title"
-            className="font-serif text-2xl text-coffee-darker"
+            className="font-serif text-h3 text-coffee-darker"
           >
             Quels sont vos livres préférés ?
           </DialogTitle>
@@ -109,7 +109,7 @@ export function FavoriteBooksForm({ open, onComplete, onSkip }: FavoriteBooksFor
                   aria-describedby={index === 0 ? "book-0-help" : undefined}
                 />
                 {index === 0 && (
-                  <p id="book-0-help" className="text-xs text-foreground/70">
+                  <p id="book-0-help" className="text-caption text-foreground/70">
                     Ce champ est obligatoire
                   </p>
                 )}
@@ -131,7 +131,7 @@ export function FavoriteBooksForm({ open, onComplete, onSkip }: FavoriteBooksFor
           <button
             type="button"
             onClick={onSkip}
-            className="mt-2 text-sm text-foreground/80 hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2 rounded"
+            className="mt-2 text-body-sm text-foreground/80 hover:text-foreground underline focus:outline-none focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2 rounded"
             aria-label="Ignorer cette étape et continuer"
           >
             Je préfère le faire plus tard

@@ -85,7 +85,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
       <CardHeader className={`flex flex-row items-center justify-between ${isMobile ? 'pb-4' : ''}`}>
         <div>
           <CardTitle className="mobile-title">{texts.currentReadings}</CardTitle>
-          <CardDescription className="text-base sm:text-sm">{texts.continueWhereYouLeftOff}</CardDescription>
+          <CardDescription className="text-body sm:text-body-sm">{texts.continueWhereYouLeftOff}</CardDescription>
         </div>
         
         {progresses.length > 0 && !isMobile && (
@@ -101,7 +101,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
           <div className="text-center p-8 sm:p-6 border border-dashed border-coffee-light rounded-lg mobile-optimized">
             <BookOpen className="mx-auto h-12 w-12 sm:h-8 sm:w-8 text-muted-foreground mb-4 sm:mb-2" />
             <h3 className="mobile-subtitle">{texts.noCurrentReading}</h3>
-            <p className="text-muted-foreground mb-6 sm:mb-4 text-base sm:text-sm">{texts.startYourNextAdventure}</p>
+            <p className="text-muted-foreground mb-6 sm:mb-4 text-body sm:text-body-sm">{texts.startYourNextAdventure}</p>
             <Button className="bg-coffee-dark hover:bg-coffee-darker" asChild>
               <Link to="/explore">{texts.exploreBooks}</Link>
             </Button>
@@ -150,7 +150,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         />
                       ) : (
                         <div className="w-16 h-20 flex items-center justify-center bg-chocolate-medium rounded">
-                          <span className="font-serif italic text-white text-lg">
+                          <span className="font-serif italic text-white text-h4">
                             {(progress.book_title || "?").substring(0, 1)}
                           </span>
                         </div>
@@ -158,7 +158,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                       
                       <div className="flex-1 min-w-0">
                         <Link to={`/books/${progress.book_id}`} className="block">
-                          <h3 className="font-medium text-coffee-darker group-hover:underline text-base mb-2 line-clamp-2">
+                          <h3 className="font-medium text-coffee-darker group-hover:underline text-body mb-2 line-clamp-2">
                             {progress.book_title || "Titre inconnu"}
                           </h3>
                           
@@ -169,7 +169,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                                 style={{ width: `${progressPercent}%` }}
                               ></div>
                             </div>
-                            <div className="flex justify-between text-sm text-muted-foreground">
+                            <div className="flex justify-between text-body-sm text-muted-foreground">
                               <span>{progressPercent}% terminé</span>
                               <span>{chaptersRead}/{totalSegments}</span>
                             </div>
@@ -233,7 +233,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                         {progress.book_title || "Titre inconnu"}
                       </h3>
                       
-                      <p className="text-xs text-muted-foreground">{progress.book_author || "Auteur inconnu"}</p>
+                      <p className="text-caption text-muted-foreground">{progress.book_author || "Auteur inconnu"}</p>
                       
                       <div className="mt-2 space-y-1">
                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -242,7 +242,7 @@ export function ReadingProgress({ progressItems, isLoading = false }: ReadingPro
                             style={{ width: `${progressPercent}%` }}
                           ></div>
                         </div>
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex justify-between text-caption text-muted-foreground">
                           <span>{progressPercent}% terminé</span>
                           <span>
                             {`${chaptersRead}/${totalSegments} segments`}

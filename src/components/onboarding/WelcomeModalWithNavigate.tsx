@@ -30,7 +30,7 @@ try {
     <Dialog open={open} onOpenChange={() => onClose(true)}>
       <DialogContent className="max-w-md w-[95vw] text-center border-coffee-light p-0 rounded-lg overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl md:text-3xl pt-8 pb-2 text-coffee-darker">
+          <DialogTitle className="font-serif text-h3 md:text-h2 pt-8 pb-2 text-coffee-darker">
             Bienvenue sur READ <span role="img" aria-label="livre">📚</span>
           </DialogTitle>
         </DialogHeader>
@@ -52,7 +52,7 @@ try {
         <DialogFooter className="flex flex-col gap-2 pb-6 px-6">
           <Button
             onClick={handleStart}
-            className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-lg"
+            className="bg-coffee-dark hover:bg-coffee-darker min-w-[200px] text-h4"
             autoFocus
           >
             Créer mon compte
@@ -60,7 +60,7 @@ try {
           <button
             type="button"
             onClick={handleSkip}
-            className="mt-2 text-sm text-coffee-medium hover:text-coffee-dark underline bg-transparent border-none outline-none"
+            className="mt-2 text-body-sm text-coffee-medium hover:text-coffee-dark underline bg-transparent border-none outline-none"
             tabIndex={-1}
           >
             Plus tard

@@ -23,7 +23,7 @@ export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-          <span className="text-white font-serif italic text-xl">{book.title.substring(0, 1)}</span>
+          <span className="text-white font-serif italic text-h4">{book.title.substring(0, 1)}</span>
         </div>
       )}
     </div>

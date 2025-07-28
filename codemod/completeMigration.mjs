@@ -124,9 +124,13 @@ function processFile(filePath) {
   }
 }
 
-// Traiter tous les fichiers dans src/
+// Traiter tous les fichiers dans src/ et autres dossiers
 const srcPath = join(__dirname, '../src');
-const allFiles = getAllFiles(srcPath);
+const allFiles = [
+  ...getAllFiles(srcPath),
+  ...getAllFiles(join(__dirname, '../tests')),
+  ...getAllFiles(join(__dirname, '../stories')),
+].filter(file => file.match(/\.(ts|tsx|js|jsx)$/));
 
 console.log('🚀 Migration automatique complète...\n');
 

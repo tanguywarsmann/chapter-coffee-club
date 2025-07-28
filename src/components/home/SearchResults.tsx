@@ -28,7 +28,7 @@ export function SearchResults({ searchResults, onReset, redirecting = false }: S
   return (
     <div className={`space-y-6 ${redirecting ? 'opacity-80 transition-opacity duration-300' : ''}`}>
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-serif font-medium text-coffee-darker">
+        <h2 className="text-h4 font-serif font-medium text-coffee-darker">
           {searchResults.length > 0 
             ? `Résultats de recherche (${searchResults.length})` 
             : "Aucun résultat trouvé"}
@@ -46,7 +46,7 @@ export function SearchResults({ searchResults, onReset, redirecting = false }: S
         <BookGrid books={searchResults} showAddButton />
       ) : (
         <div className="text-center p-8 border border-dashed border-coffee-light rounded-lg bg-muted/50">
-          <h3 className="text-lg font-medium text-coffee-darker mb-2">Aucun livre trouvé</h3>
+          <h3 className="text-h4 font-medium text-coffee-darker mb-2">Aucun livre trouvé</h3>
           <p className="text-muted-foreground">Essayez une autre recherche ou explorez notre catalogue</p>
         </div>
       )}

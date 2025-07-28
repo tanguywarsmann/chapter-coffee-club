@@ -55,7 +55,7 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
         }}
       >
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-lg">{texts.menu || "Menu"}</SheetTitle>
+          <SheetTitle className="text-left text-h4">{texts.menu || "Menu"}</SheetTitle>
         </SheetHeader>
         <nav className="mt-4" role="navigation" aria-label="Navigation principale">
           <ul className="space-y-1" role="list">

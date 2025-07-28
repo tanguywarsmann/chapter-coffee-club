@@ -56,7 +56,7 @@ export const HomeContent = memo(function HomeContent({
       {/* Mobile-optimized stats button */}
       <div className="text-center p-4">
         <Button 
-          className="w-full bg-coffee-dark text-white hover:bg-coffee-darker rounded-xl text-base font-semibold px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
+          className="w-full bg-coffee-dark text-white hover:bg-coffee-darker rounded-xl text-body font-semibold px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md"
           onClick={() => navigate("/achievements")}
         >
           {texts.viewYourReadingStats} →

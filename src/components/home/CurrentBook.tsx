@@ -35,11 +35,11 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
+          <CardTitle className="text-h4 font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
         </CardHeader>
         <CardContent className="text-center p-6">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-coffee-darker mb-2">{texts.noCurrentReading}</h3>
+          <h3 className="text-h4 font-medium text-coffee-darker mb-2">{texts.noCurrentReading}</h3>
           <p className="text-muted-foreground mb-4">{texts.startYourNextAdventure}</p>
           <Button 
             className="bg-coffee-dark hover:bg-coffee-darker"
@@ -78,7 +78,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     <>
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
+          <CardTitle className="text-h4 font-serif text-coffee-darker">{texts.currentReadings}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">

@@ -48,7 +48,7 @@ export function QuoteDisplay() {
           <BookOpen className="h-24 w-24 text-white -rotate-12 translate-x-6 -translate-y-2" />
         </div>
         <Quote className="h-6 w-6 text-amber-300 mt-0.5 flex-shrink-0" />
-        <p className="text-white font-serif italic text-lg leading-relaxed relative z-10">
+        <p className="text-white font-serif italic text-h4 leading-relaxed relative z-10">
           {message}
         </p>
       </CardContent>

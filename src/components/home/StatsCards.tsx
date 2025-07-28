@@ -57,12 +57,12 @@ export function StatsCards() {
         <div className="flex items-center gap-3 mb-2">
           <User className="h-5 w-5 text-coffee-dark" />
           <div>
-            <p className="text-sm text-muted-foreground">{getFollowersText()}</p>
-            <p className="text-2xl font-medium text-coffee-darker">{followers.length}</p>
+            <p className="text-body-sm text-muted-foreground">{getFollowersText()}</p>
+            <p className="text-h3 font-medium text-coffee-darker">{followers.length}</p>
           </div>
         </div>
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-caption text-muted-foreground">
             <span>{followers.length}/10 pour débloquer un badge</span>
           </div>
           <Progress value={followersProgress} className="h-1.5" />
@@ -73,12 +73,12 @@ export function StatsCards() {
         <div className="flex items-center gap-3 mb-2">
           <User className="h-5 w-5 text-coffee-dark" />
           <div>
-            <p className="text-sm text-muted-foreground">{getFollowingText()}</p>
-            <p className="text-2xl font-medium text-coffee-darker">{following.length}</p>
+            <p className="text-body-sm text-muted-foreground">{getFollowingText()}</p>
+            <p className="text-h3 font-medium text-coffee-darker">{following.length}</p>
           </div>
         </div>
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-caption text-muted-foreground">
             <span>{getBadgesText()}</span>
           </div>
           <Progress value={badgesProgress} className="h-1.5" />

@@ -21,7 +21,7 @@ export function RealReadersAccordion({ readers, loading }: RealReadersAccordionP
     return (
       <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
+          <CardTitle className="text-h4 font-serif text-coffee-darker flex items-center gap-2">
             <Users className="h-5 w-5 text-coffee-dark" />
             Lecteurs à découvrir
           </CardTitle>
@@ -40,7 +40,7 @@ export function RealReadersAccordion({ readers, loading }: RealReadersAccordionP
   return (
     <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
+        <CardTitle className="text-h4 font-serif text-coffee-darker flex items-center gap-2">
           <Users className="h-5 w-5 text-coffee-dark" />
           Lecteurs à découvrir
         </CardTitle>
@@ -91,7 +91,7 @@ function ReaderItem({ reader }: { reader: DiscoverReader }) {
           <h4 className="font-medium text-coffee-darker truncate">{reader.username}</h4>
           
           {/* Jauges stats */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-coffee-dark">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm text-coffee-dark">
             <span className="flex items-center gap-1 whitespace-nowrap">
               <BookOpen className="h-3 w-3" />
               {reader.in_progress} en cours

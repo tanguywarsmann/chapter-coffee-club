@@ -49,18 +49,18 @@ export const CurrentBookInfo = ({
     <div className="flex-1 min-w-0">
       <h3 
         className={`font-medium text-coffee-darker hover:underline cursor-pointer transition-colors duration-200 ${
-          isMobile ? 'text-lg mb-2 line-clamp-2' : 'text-base mb-1'
+          isMobile ? 'text-h4 mb-2 line-clamp-2' : 'text-body mb-1'
         }`}
         onClick={onNavigate}
       >
         {book.title}
       </h3>
-      <p className={`text-muted-foreground ${isMobile ? 'text-base mb-4' : 'text-sm mb-3'}`}>
+      <p className={`text-muted-foreground ${isMobile ? 'text-body mb-4' : 'text-body-sm mb-3'}`}>
         {book.author}
       </p>
       
       <div className={`space-y-2 ${isMobile ? 'mb-6' : 'mb-4'}`}>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-body-sm">
           <span className="text-coffee-darker font-medium">{texts.progression}</span>
           <span className="text-muted-foreground">
             {chaptersRead} {texts.chaptersRead} sur {chaptersTotal}
@@ -71,7 +71,7 @@ export const CurrentBookInfo = ({
       
       <Button 
         className={`w-full bg-coffee-dark hover:bg-coffee-darker text-center transition-all duration-200 ${
-          isMobile ? 'min-h-[48px] text-base' : 'min-h-[44px]'
+          isMobile ? 'min-h-[48px] text-body' : 'min-h-[44px]'
         }`}
         onClick={onValidate}
         disabled={isValidating}

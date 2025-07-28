@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
     if (this.state.hasError) {
       return (
         <div className="p-4 border border-red-300 bg-red-50 rounded-md">
-          <h1 className="text-xl text-red-700 font-bold mb-2">Une erreur est survenue</h1>
+          <h1 className="text-h4 text-red-700 font-bold mb-2">Une erreur est survenue</h1>
           {this.state.error && (
             <div className="mb-3">
               <p className="text-red-600 font-medium">Message: {this.state.error.toString()}</p>
@@ -46,8 +46,8 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
           )}
           {this.state.errorInfo && (
             <div className="mt-2">
-              <p className="text-sm font-medium mb-1 text-red-800">Trace de l'erreur:</p>
-              <pre className="text-xs overflow-auto bg-red-100 p-2 rounded border border-red-200 max-h-40">
+              <p className="text-body-sm font-medium mb-1 text-red-800">Trace de l'erreur:</p>
+              <pre className="text-caption overflow-auto bg-red-100 p-2 rounded border border-red-200 max-h-40">
                 {this.state.errorInfo.componentStack}
               </pre>
             </div>

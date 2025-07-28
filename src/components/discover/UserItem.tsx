@@ -66,7 +66,7 @@ export function UserItem({ user, compact = false, hideUnfollow = false }: UserIt
   alt={userName}
   fallbackText={userName}
 />
-        <span className={`font-medium text-coffee-darker ${compact ? 'text-sm' : 'text-base'}`}>
+        <span className={`font-medium text-coffee-darker ${compact ? 'text-body-sm' : 'text-body'}`}>
           {loading ? "Chargement..." : userName}
         </span>
       </Link>

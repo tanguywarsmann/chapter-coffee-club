@@ -9,7 +9,7 @@ interface DesktopNavProps {
 
 export const DesktopNav = ({ isAdmin }: DesktopNavProps) => {
   return (
-    <nav className="hidden md:flex items-center space-x-6 text-sm font-medium flex-1">
+    <nav className="hidden md:flex items-center space-x-6 text-body-sm font-medium flex-1">
       <Link to="/home">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.home}

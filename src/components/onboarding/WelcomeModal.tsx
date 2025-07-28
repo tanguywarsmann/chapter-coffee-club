@@ -59,7 +59,7 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
     return open ? (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div className="bg-white p-6 rounded-lg max-w-md w-full">
-          <h2 className="text-xl font-semibold mb-4">Bienvenue sur READ</h2>
+          <h2 className="text-h4 font-semibold mb-4">Bienvenue sur READ</h2>
           <p className="mb-4">Reprends goût à la lecture, page après page.</p>
           <button 
             className="w-full bg-coffee-dark text-white py-2 rounded-md"

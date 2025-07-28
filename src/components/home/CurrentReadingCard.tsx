@@ -71,13 +71,13 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
 
         <div className="flex-1 flex flex-col justify-between min-w-0">
           <div className="mb-4">
-            <h3 className={`font-medium text-coffee-darker line-clamp-2 ${isMobile ? 'text-lg mb-2' : 'text-base mb-1'}`}>
+            <h3 className={`font-medium text-coffee-darker line-clamp-2 ${isMobile ? 'text-h4 mb-2' : 'text-body mb-1'}`}>
               {book.title}
             </h3>
-            <p className={`text-muted-foreground ${isMobile ? 'text-base mb-2' : 'text-sm mb-1'}`}>
+            <p className={`text-muted-foreground ${isMobile ? 'text-body mb-2' : 'text-body-sm mb-1'}`}>
               {book.author}
             </p>
-            <p className={`text-muted-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>
+            <p className={`text-muted-foreground ${isMobile ? 'text-body' : 'text-body-sm'}`}>
               {segment + 1} sur {totalSegments || '?'} segments
             </p>
           </div>
@@ -85,7 +85,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
           {!isReadingInvalid ? (
             <Button 
               className={`bg-coffee-dark text-white hover:bg-coffee-darker gap-2 transition-all duration-200 ${
-                isMobile ? 'min-h-[48px] text-base w-full' : 'mt-4'
+                isMobile ? 'min-h-[48px] text-body w-full' : 'mt-4'
               }`}
               onClick={handleContinueReading}
             >
@@ -93,7 +93,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
               {texts.continueReading}
             </Button>
           ) : (
-            <p className={`text-muted-foreground italic ${isMobile ? 'text-base mt-4' : 'text-sm mt-4'}`}>
+            <p className={`text-muted-foreground italic ${isMobile ? 'text-body mt-4' : 'text-body-sm mt-4'}`}>
               {texts.noCurrentReading}
             </p>
           )}
