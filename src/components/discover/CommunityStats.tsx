@@ -30,7 +30,7 @@ export function CommunityStats() {
   return (
     <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
       <CardHeader className="pb-3">
-        <CardTitle className="font-serif text-coffee-darker text-lg">
+        <CardTitle className="font-serif text-coffee-darker text-h4">
           Statistiques de la communauté
         </CardTitle>
       </CardHeader>
@@ -41,9 +41,9 @@ export function CommunityStats() {
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
-              <span className="text-coffee-dark font-medium text-sm">{stat.label}</span>
+              <span className="text-coffee-dark font-medium text-body-sm">{stat.label}</span>
             </div>
-            <span className="font-bold text-coffee-darker text-lg">{stat.value}</span>
+            <span className="font-bold text-coffee-darker text-h4">{stat.value}</span>
           </div>
         ))}
       </CardContent>

@@ -44,7 +44,7 @@ export function RealActivityFeed({ activities, loading }: RealActivityFeedProps)
           </div>
           <span>Fil d'actualité</span>
         </CardTitle>
-        <p className="text-coffee-dark font-light text-sm">
+        <p className="text-coffee-dark font-light text-body-sm">
           Découvrez les dernières activités de la communauté
         </p>
       </CardHeader>
@@ -54,7 +54,7 @@ export function RealActivityFeed({ activities, loading }: RealActivityFeedProps)
             <div className="text-center py-8 text-coffee-dark">
               <Sparkles className="h-12 w-12 mx-auto mb-4 text-coffee-light" />
               <p>Aucune activité récente à afficher</p>
-              <p className="text-sm text-coffee-dark/70 mt-2">
+              <p className="text-body-sm text-coffee-dark/70 mt-2">
                 Les activités de la communauté apparaîtront ici
               </p>
             </div>
@@ -90,21 +90,21 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-coffee-darker text-sm">
+          <span className="font-medium text-coffee-darker text-body-sm">
             {activity.actor_name}
           </span>
         </div>
         
-        <p className="text-coffee-dark text-sm">
+        <p className="text-coffee-dark text-body-sm">
           {activity.kind === 'finished' && (
             <>a terminé la lecture de <span className="font-medium">{activity.payload_title}</span></>
           )}
           {activity.kind === 'badge' && (
-            <>a débloqué le badge <Badge variant="secondary" className="inline-flex items-center text-xs bg-coffee-light/20 text-coffee-darker border-coffee-light/30">{activity.payload_title}</Badge></>
+            <>a débloqué le badge <Badge variant="secondary" className="inline-flex items-center text-caption bg-coffee-light/20 text-coffee-darker border-coffee-light/30">{activity.payload_title}</Badge></>
           )}
         </p>
         
-        <p className="text-coffee-dark/60 text-xs mt-1">{timeAgo}</p>
+        <p className="text-coffee-dark/60 text-caption mt-1">{timeAgo}</p>
       </div>
 
       {/* Icône livre à droite */}

@@ -164,7 +164,7 @@ export function BookCard({
           <h3 className="font-medium text-coffee-darker mb-1 focus:outline-none">
             {truncateTitle(book.title)}
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body-sm text-muted-foreground">
             {book.author || "Auteur inconnu"}
           </p>
 
@@ -173,7 +173,7 @@ export function BookCard({
               <Badge
                 key={index}
                 variant="outline"
-                className="text-xs border-coffee-light"
+                className="text-caption border-coffee-light"
                 aria-label={`Catégorie: ${category}`}
               >
                 {category}

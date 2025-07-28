@@ -15,7 +15,7 @@ export function BookBadgeDialog({ open, badges, setOpen }: BookBadgeDialogProps)
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md border-coffee-medium animate-enter">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-serif text-coffee-darker">
+          <DialogTitle className="text-center text-h4 font-serif text-coffee-darker">
             🎉 Nouveau badge débloqué !
           </DialogTitle>
           <DialogDescription className="text-center">

@@ -33,23 +33,23 @@ export function JokerConfirmationModal({
             <Sparkles className="h-5 w-5 text-amber-500" />
             Utiliser un Joker ?
           </DialogTitle>
-          <DialogDescription className="text-center text-sm text-foreground/80">
+          <DialogDescription className="text-center text-body-sm text-foreground/80">
             Réponse incorrecte au segment {segment}
           </DialogDescription>
         </DialogHeader>
         
         <div className="py-4 space-y-4">
           <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-            <p className="text-sm text-amber-800 mb-2">
+            <p className="text-body-sm text-amber-800 mb-2">
               Souhaitez-vous utiliser un Joker pour valider ce segment malgré la réponse incorrecte ?
             </p>
-            <div className="flex items-center gap-2 text-xs text-amber-700">
+            <div className="flex items-center gap-2 text-caption text-amber-700">
               <Sparkles className="h-3 w-3" />
               <span>Jokers restants : {jokersRemaining} / {jokersAllowed}</span>
             </div>
           </div>
           
-          <div className="text-xs text-muted-foreground text-center">
+          <div className="text-caption text-muted-foreground text-center">
             Si vous refusez, le segment restera non validé et vous pourrez réessayer plus tard.
           </div>
         </div>

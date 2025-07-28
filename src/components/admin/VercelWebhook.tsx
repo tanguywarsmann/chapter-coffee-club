@@ -64,7 +64,7 @@ export function VercelWebhook() {
             onChange={(e) => setWebhookUrl(e.target.value)}
             placeholder="https://api.vercel.com/v1/integrations/deploy/..."
           />
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             Créez un webhook dans votre projet Vercel pour déclencher les redéploiements automatiques
           </p>
         </div>

@@ -93,22 +93,22 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
               {getActivityIcon()}
-              <span className="font-medium text-coffee-darker text-sm">{user.name}</span>
-              <span className="text-coffee-medium/70 text-xs">{getRelativeTime(activity.timestamp)}</span>
+              <span className="font-medium text-coffee-darker text-body-sm">{user.name}</span>
+              <span className="text-coffee-medium/70 text-caption">{getRelativeTime(activity.timestamp)}</span>
             </div>
             
-            <p className="text-coffee-dark text-sm mb-2 leading-relaxed">
+            <p className="text-coffee-dark text-body-sm mb-2 leading-relaxed">
               {activity.content}
             </p>
             
             {activity.details && (
-              <p className="text-coffee-medium/80 text-xs mb-2 italic">
+              <p className="text-coffee-medium/80 text-caption mb-2 italic">
                 {activity.details}
               </p>
             )}
             
             {activity.badge && (
-              <Badge className={`text-xs ${getBadgeColor(activity.badge.rarity)}`}>
+              <Badge className={`text-caption ${getBadgeColor(activity.badge.rarity)}`}>
                 {activity.badge.icon} {activity.badge.name}
               </Badge>
             )}

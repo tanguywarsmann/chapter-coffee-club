@@ -62,7 +62,7 @@ export function ValidationModal({
           </DialogTitle>
           <DialogDescription 
             id="validation-modal-description"
-            className="text-center text-sm text-foreground/80"
+            className="text-center text-body-sm text-foreground/80"
           >
             Confirmez votre lecture de "{bookTitle}"
           </DialogDescription>
@@ -72,7 +72,7 @@ export function ValidationModal({
           {/* Jokers info */}
           {jokersAllowed > 0 && (
             <div className="bg-muted/50 p-3 rounded-lg border border-coffee-light">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
                 <Sparkles className="h-4 w-4" />
                 <span 
                   className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}
@@ -82,7 +82,7 @@ export function ValidationModal({
                 </span>
               </div>
               {jokersUsed >= jokersAllowed && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-caption text-muted-foreground mt-1">
                   Tous vos jokers ont été utilisés pour ce livre
                 </p>
               )}
@@ -107,13 +107,13 @@ export function ValidationModal({
               <div className="grid gap-1.5 leading-none">
                 <Label
                   htmlFor="hasRead"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                  className="text-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
                 >
                   J'ai lu ces pages et je souhaite valider cette étape
                 </Label>
                 <p 
                   id="checkbox-description"
-                  className="text-xs text-foreground/70"
+                  className="text-caption text-foreground/70"
                 >
                   Cochez cette case pour confirmer que vous avez terminé la lecture de cette section
                 </p>

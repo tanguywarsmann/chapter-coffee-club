@@ -40,7 +40,7 @@ export function BookGrid({
   if (!books.length) {
     return (
       <div className="text-center p-8 border border-dashed border-coffee-light rounded-lg bg-muted/50">
-        <h3 className="text-lg font-medium text-coffee-darker mb-2">Aucun livre trouvé</h3>
+        <h3 className="text-h4 font-medium text-coffee-darker mb-2">Aucun livre trouvé</h3>
         <p className="text-muted-foreground">Essayez une autre recherche ou explorez notre catalogue</p>
       </div>
     );
@@ -51,7 +51,7 @@ export function BookGrid({
       {title && (
         <div className="mb-4">
           <h2 className="text-h4 font-serif text-coffee-darker">{title}</h2>
-          {description && <p className="text-muted-foreground text-sm mt-1">{description}</p>}
+          {description && <p className="text-muted-foreground text-body-sm mt-1">{description}</p>}
         </div>
       )}
       

@@ -76,7 +76,7 @@ export function LoginForm() {
     return (
       <div className="space-y-6">
         <SignUpForm />
-        <div className="text-sm text-center">
+        <div className="text-body-sm text-center">
           Déjà un compte?{" "}
           <button 
             onClick={() => setShowSignUp(false)}
@@ -136,7 +136,7 @@ export function LoginForm() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <div className="text-sm text-center text-muted-foreground">
+          <div className="text-body-sm text-center text-muted-foreground">
             <button 
               onClick={() => setShowForgotPassword(true)}
               className="underline text-coffee-dark hover:text-coffee-darker"
@@ -144,7 +144,7 @@ export function LoginForm() {
               Mot de passe oublié?
             </button>
           </div>
-          <div className="text-sm text-center">
+          <div className="text-body-sm text-center">
             Pas encore de compte?{" "}
             <button 
               onClick={() => setShowSignUp(true)}

@@ -13,7 +13,7 @@ export function ValidationHistory({ validations }: ValidationHistoryProps) {
   return (
     <Card className="border-coffee-light">
       <CardHeader>
-        <CardTitle className="text-lg font-medium text-coffee-darker flex items-center">
+        <CardTitle className="text-h4 font-medium text-coffee-darker flex items-center">
           <Calendar className="mr-2 h-5 w-5" />
           Historique de mes validations
         </CardTitle>
@@ -31,17 +31,17 @@ export function ValidationHistory({ validations }: ValidationHistoryProps) {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm text-coffee-darker">
+                  <p className="font-medium text-body-sm text-coffee-darker">
                     Validation du segment {validation.segment} (pages {(validation.segment-1)*30+1}-{validation.segment*30})
                   </p>
                   {validation.used_joker && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-caption bg-amber-100 text-amber-700 rounded-full">
                       <Sparkles className="h-3 w-3" />
                       Joker utilisé
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   {new Date(validation.validated_at || validation.date_validated).toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'long', 

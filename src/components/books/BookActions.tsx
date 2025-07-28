@@ -18,7 +18,7 @@ export const BookActions = ({
 }: BookActionsProps) => (
   <>
     <div className="flex justify-between items-center">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-body-sm text-muted-foreground">
         {pages} pages • {language}
       </span>
       <div className="flex gap-2">

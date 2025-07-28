@@ -44,18 +44,18 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
           />
           
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-coffee-darker text-base mb-2 break-words">
+            <h3 className="font-medium text-coffee-darker text-body mb-2 break-words">
               {user.username}
             </h3>
             
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-caption border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 📚 {user.stats.booksReading} en cours
               </Badge>
-              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-caption border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 🏆 {user.stats.badges} badges
               </Badge>
-              <Badge variant="outline" className="text-xs border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
+              <Badge variant="outline" className="text-caption border-coffee-light/50 text-coffee-dark bg-coffee-light/10">
                 🔥 {user.stats.streak}j
               </Badge>
             </div>
@@ -82,7 +82,7 @@ export function EnhancedUserItem({ user }: EnhancedUserItemProps) {
               )}
             </Button>
             {isFollowing && (
-              <span className="text-xs text-coffee-medium/60">Suivi</span>
+              <span className="text-caption text-coffee-medium/60">Suivi</span>
             )}
           </div>
         )}

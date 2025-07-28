@@ -23,14 +23,14 @@ export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
       <div ref={ref} className="my-3">
         <div className="flex items-center gap-2">
           <Progress value={progressPercent} />
-          <span className="text-xs font-medium text-coffee-darker">{progressPercent}%</span>
+          <span className="text-caption font-medium text-coffee-darker">{progressPercent}%</span>
         </div>
         
         {/* Jokers info */}
         {jokersAllowed > 0 && (
           <div className="flex items-center justify-center gap-1 mt-1">
             <Sparkles className="h-3 w-3 text-amber-500" />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-caption text-muted-foreground">
               Jokers : {jokersUsed} / {jokersAllowed} utilisés
             </span>
           </div>

@@ -132,7 +132,7 @@ export function QuizModal({
             </DialogTitle>
             <DialogDescription 
               id="quiz-modal-description"
-              className="text-center text-sm text-foreground/80"
+              className="text-center text-body-sm text-foreground/80"
             >
               Répondez par un mot pour valider votre compréhension.
             </DialogDescription>

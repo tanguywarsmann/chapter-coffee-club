@@ -63,7 +63,7 @@ export function MonthlyRewardModal({
       <DialogContent className="sm:max-w-md border-amber-300 animate-enter bg-gradient-to-b from-amber-50 to-white">
         <div ref={confettiRef} className="absolute inset-0 pointer-events-none" />
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-serif text-amber-800">
+          <DialogTitle className="text-center text-h3 font-serif text-amber-800">
             🎁 Cadeau Mystère du Mois 🎁
           </DialogTitle>
           <DialogDescription className="text-center text-amber-700">
@@ -77,17 +77,17 @@ export function MonthlyRewardModal({
             <BadgeCard badge={badge} className="scale-150 animate-scale-in relative z-10" />
           </div>
           
-          <p className="text-center text-lg text-amber-700 font-medium">
+          <p className="text-center text-h4 text-amber-700 font-medium">
             {badge.name}
           </p>
           
-          <p className="text-center text-sm text-amber-600">
+          <p className="text-center text-body-sm text-amber-600">
             {badge.description}
           </p>
           
           <Button 
             onClick={onClose}
-            className="mt-4 bg-amber-500 hover:bg-amber-600 text-white px-8 py-6 text-lg"
+            className="mt-4 bg-amber-500 hover:bg-amber-600 text-white px-8 py-6 text-h4"
           >
             Génial, merci !
           </Button>

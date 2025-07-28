@@ -28,7 +28,7 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
         <DialogHeader className="pb-2">
           <div className="flex flex-col items-center justify-center">
             <CheckCircle className="w-16 h-16 text-green-500 mb-2 animate-scale-in" />
-            <DialogTitle className="text-xl text-center font-serif text-coffee-darker">
+            <DialogTitle className="text-h4 text-center font-serif text-coffee-darker">
               Parfait !
             </DialogTitle>
           </div>
@@ -41,7 +41,7 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
           <p className="text-muted-foreground">
             Rendez-vous dans 30 pages pour valider la suite de votre lecture.
           </p>
-          <p className="text-sm mt-2 font-medium">
+          <p className="text-body-sm mt-2 font-medium">
             Prochain segment à valider : {nextSegment}
           </p>
         </div>

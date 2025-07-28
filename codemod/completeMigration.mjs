@@ -124,7 +124,7 @@ function processFile(filePath) {
   }
 }
 
-// Traiter tous les fichiers
+// Traiter tous les fichiers dans src/
 const srcPath = join(__dirname, '../src');
 const allFiles = getAllFiles(srcPath);
 

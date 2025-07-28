@@ -59,7 +59,7 @@ export function LockTimer({ remainingSeconds, onExpire }: LockTimerProps) {
     <Alert className="bg-amber-50 border-amber-200">
       <div className="flex items-center gap-2 text-amber-800">
         <Clock className="h-4 w-4" />
-        <AlertDescription className="text-sm">
+        <AlertDescription className="text-body-sm">
           Vous pourrez réessayer dans <span className="font-medium">{timeDisplay}</span>
         </AlertDescription>
       </div>

@@ -115,7 +115,7 @@ export function ImageUpload({
                   {uploading ? 'Upload en cours...' : 'Choisir une image'}
                 </Button>
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-body-sm text-gray-500 mt-2">
                 PNG, JPG, GIF jusqu'à 5MB
               </p>
             </div>
@@ -140,7 +140,7 @@ export function ImageUpload({
             onChange={(e) => handleAltChange(e.target.value)}
             placeholder="Description de l'image pour l'accessibilité"
           />
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             Décrivez l'image pour l'accessibilité et le SEO
           </p>
         </div>

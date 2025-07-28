@@ -51,7 +51,7 @@ export function ActivityFeed() {
           </div>
           <span>Fil d'actualité</span>
         </CardTitle>
-        <p className="text-coffee-dark font-light text-sm">
+        <p className="text-coffee-dark font-light text-body-sm">
           Découvrez les dernières activités de la communauté
         </p>
       </CardHeader>

@@ -17,7 +17,7 @@ export function PopularBooks({ books, readersCount }: PopularBooksProps) {
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <ListPlus className="h-5 w-5 text-coffee-dark" />
-          <h2 className="text-xl font-serif font-medium text-coffee-darker">Les plus lus en ce moment</h2>
+          <h2 className="text-h4 font-serif font-medium text-coffee-darker">Les plus lus en ce moment</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -27,7 +27,7 @@ export function PopularBooks({ books, readersCount }: PopularBooksProps) {
                 book={book} 
                 showAddButton={true}
               />
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-body-sm text-center text-muted-foreground">
                 {readersCount[book.id] || 0} lecteur{readersCount[book.id] !== 1 ? "s" : ""} en ce moment
               </p>
             </div>

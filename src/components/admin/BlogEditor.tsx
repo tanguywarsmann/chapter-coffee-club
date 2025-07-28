@@ -118,7 +118,7 @@ Votre contenu ici...
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               placeholder="Contenu de l'article en Markdown..."
-              className="min-h-[400px] font-mono text-sm"
+              className="min-h-[400px] font-mono text-body-sm"
             />
           </div>
 
@@ -132,7 +132,7 @@ Votre contenu ici...
             </Button>
           </div>
 
-          <div className="text-sm text-muted-foreground">
+          <div className="text-body-sm text-muted-foreground">
             <strong>Note :</strong> En mode développement, la sauvegarde est simulée. 
             Pour une vraie sauvegarde, il faudrait une API backend.
           </div>
@@ -158,7 +158,7 @@ Votre contenu ici...
             <div key={post.slug} className="flex items-center justify-between p-3 border rounded">
               <div>
                 <h3 className="font-medium">{post.title}</h3>
-                <p className="text-sm text-muted-foreground">{post.date} • {post.slug}</p>
+                <p className="text-body-sm text-muted-foreground">{post.date} • {post.slug}</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => handleEditPost(post)}>
                 <Edit className="h-4 w-4" />

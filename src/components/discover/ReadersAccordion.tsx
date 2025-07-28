@@ -39,7 +39,7 @@ export function ReadersAccordion() {
     return (
       <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
+          <CardTitle className="text-h4 font-serif text-coffee-darker flex items-center gap-2">
             <Users className="h-5 w-5 text-coffee-dark" />
             Lecteurs à découvrir
           </CardTitle>
@@ -58,7 +58,7 @@ export function ReadersAccordion() {
   return (
     <Card className="border-coffee-light/40 bg-white/80 backdrop-blur-md shadow-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-serif text-coffee-darker flex items-center gap-2">
+        <CardTitle className="text-h4 font-serif text-coffee-darker flex items-center gap-2">
           <Users className="h-5 w-5 text-coffee-dark" />
           Lecteurs à découvrir
         </CardTitle>

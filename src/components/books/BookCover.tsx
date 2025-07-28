@@ -54,14 +54,14 @@ export const BookCover: React.FC<BookCoverProps> = ({
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-          <span className="text-white font-serif italic text-xl">{bookTitle.substring(0, 1)}</span>
+          <span className="text-white font-serif italic text-h4">{bookTitle.substring(0, 1)}</span>
         </div>
       )}
 
       {showProgress && book && book.chaptersRead > 0 && (
         <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2">
           <Progress value={progressPercentage} className="h-2" />
-          <p className="text-white text-xs mt-1 text-center">
+          <p className="text-white text-caption mt-1 text-center">
             {pagesRead} / {book.pages} pages
           </p>
         </div>

@@ -36,7 +36,7 @@ export const ImageDebug = ({ src, name }: ImageDebugProps) => {
   }, [src]);
 
   return (
-    <div className="p-2 bg-gray-100 text-xs font-mono">
+    <div className="p-2 bg-gray-100 text-caption font-mono">
       <div><strong>{name}:</strong></div>
       <div>Original: {exists === null ? '⏳' : exists ? '✅' : '❌'} {src}</div>
       {webpExists !== null && (

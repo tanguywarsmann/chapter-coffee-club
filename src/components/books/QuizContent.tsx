@@ -23,7 +23,7 @@ export function QuizContent({
 }: QuizContentProps) {
   return (
     <div className="py-4">
-      <p className="text-sm text-foreground/80 mb-4 text-center">
+      <p className="text-body-sm text-foreground/80 mb-4 text-center">
         Pour valider votre lecture du chapitre {chapterNumber} de "{bookTitle}", 
         veuillez répondre à la question suivante:
       </p>
@@ -34,7 +34,7 @@ export function QuizContent({
         </h3>
         
         <div className="mt-2">
-          <Label htmlFor="answer" className="text-sm font-medium text-foreground">
+          <Label htmlFor="answer" className="text-body-sm font-medium text-foreground">
             Votre réponse
           </Label>
           <Textarea
@@ -49,7 +49,7 @@ export function QuizContent({
           />
           <p 
             id="attempts-counter"
-            className="text-xs text-foreground/70 mt-1"
+            className="text-caption text-foreground/70 mt-1"
             aria-live="polite"
           >
             Tentatives: {attempts}/{maxAttempts}

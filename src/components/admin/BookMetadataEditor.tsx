@@ -278,13 +278,13 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Modifier "{book.title}"</DialogTitle>
+          <DialogTitle className="text-h4">Modifier "{book.title}"</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           {/* Métadonnées du livre */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Métadonnées</h3>
+            <h3 className="text-h4 font-medium">Métadonnées</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -375,7 +375,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
           
           {/* Ajout rapide de questions de validation */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Ajouter une question de validation</h3>
+            <h3 className="text-h4 font-medium">Ajouter une question de validation</h3>
             
             {book.missingSegments && book.missingSegments.length > 0 ? (
               <div className="space-y-4">
@@ -414,7 +414,7 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
                     onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Exemple: Jean"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     La réponse doit contenir un seul mot, sans espace.
                   </p>
                 </div>
