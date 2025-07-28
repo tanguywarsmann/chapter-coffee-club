@@ -21,7 +21,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Lecture en cours</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Lecture en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
@@ -74,7 +74,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Lecture en cours</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Lecture en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
@@ -89,7 +89,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Lecture en cours</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Lecture en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
@@ -106,7 +106,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
   return (
     <Card className="border-coffee-light">
       <CardHeader>
-        <CardTitle className="text-xl font-serif text-coffee-darker">Lecture en cours</CardTitle>
+        <CardTitle className="text-h3 font-serif text-coffee-darker">Lecture en cours</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4">
@@ -120,12 +120,12 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
             </Link>
           </div>
           <div className="flex-grow space-y-4">
-            <h3 className="text-lg font-medium text-coffee-darker">
+            <h3 className="text-h4 font-medium text-coffee-darker">
               <Link to={`/books/${currentBook.book_id || currentBook.slug || ''}`} className="hover:underline">
                 {currentBook.book_title || "Titre inconnu"}
               </Link>
             </h3>
-            <p className="text-sm text-muted-foreground">{currentBook.book_author || "Auteur inconnu"}</p>
+            <p className="text-body-sm text-muted-foreground">{currentBook.book_author || "Auteur inconnu"}</p>
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">

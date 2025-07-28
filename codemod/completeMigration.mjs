@@ -128,8 +128,9 @@ function processFile(filePath) {
 const srcPath = join(__dirname, '../src');
 const allFiles = [
   ...getAllFiles(srcPath),
-  ...getAllFiles(join(__dirname, '../tests')),
-  ...getAllFiles(join(__dirname, '../stories')),
+  ...getAllFiles(join(__dirname, '../pages')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
+  ...getAllFiles(join(__dirname, '../tests')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
+  ...getAllFiles(join(__dirname, '../stories')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
 ].filter(file => file.match(/\.(ts|tsx|js|jsx)$/));
 
 console.log('🚀 Migration automatique complète...\n');

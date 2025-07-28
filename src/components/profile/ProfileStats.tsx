@@ -37,13 +37,13 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card className="border-coffee-light">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-serif text-coffee-darker">Statistiques générales</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Statistiques générales</CardTitle>
           <CardDescription>Votre parcours de lecture</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground">{getBooksReadText()}</span>
+              <span className="text-body-sm text-muted-foreground">{getBooksReadText()}</span>
               <div className="flex items-center">
                 <BookOpen className="h-4 w-4 mr-1 text-coffee-dark" />
                 <span className="text-2xl font-medium text-coffee-darker">{stats.booksRead}</span>

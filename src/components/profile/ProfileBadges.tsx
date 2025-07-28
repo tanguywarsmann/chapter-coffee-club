@@ -62,7 +62,7 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Mes badges</CardTitle>
           <CardDescription>Chargement des badges...</CardDescription>
         </CardHeader>
         <CardContent>
@@ -87,7 +87,7 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
       <Card className="border-coffee-light">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges favoris</CardTitle>
+            <CardTitle className="text-h3 font-serif text-coffee-darker">Mes badges favoris</CardTitle>
             <CardDescription>Les badges dont je suis le plus fier</CardDescription>
           </div>
           <Button 
@@ -120,7 +120,7 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
       <Card className="border-coffee-light">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges favoris</CardTitle>
+            <CardTitle className="text-h3 font-serif text-coffee-darker">Mes badges favoris</CardTitle>
             <CardDescription>Sélectionne tes badges préférés dans la section Badges</CardDescription>
           </div>
           <Button 
@@ -135,10 +135,10 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
         <CardContent>
           <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <span className="text-2xl text-muted-foreground">⭐</span>
+              <span className="text-h3 text-muted-foreground">⭐</span>
             </div>
             <p className="text-muted-foreground">Tu n'as pas encore sélectionné de badge favori</p>
-            <p className="text-xs text-muted-foreground">Choisis jusqu'à 3 badges pour les mettre en avant sur ton profil</p>
+            <p className="text-caption text-muted-foreground">Choisis jusqu'à 3 badges pour les mettre en avant sur ton profil</p>
           </div>
         </CardContent>
       </Card>
@@ -149,16 +149,16 @@ export function ProfileBadges({ badges: propBadges, userId: propUserId }: Profil
   return (
     <Card className="border-coffee-light">
       <CardHeader>
-        <CardTitle className="text-xl font-serif text-coffee-darker">Mes badges</CardTitle>
+        <CardTitle className="text-h3 font-serif text-coffee-darker">Mes badges</CardTitle>
         <CardDescription>Complétez des livres pour gagner des badges</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-2xl text-muted-foreground">🏆</span>
+            <span className="text-h3 text-muted-foreground">🏆</span>
           </div>
           <p className="text-muted-foreground">Vous n'avez pas encore de badges</p>
-          <p className="text-xs text-muted-foreground">Continuez votre parcours de lecture pour en débloquer!</p>
+          <p className="text-caption text-muted-foreground">Continuez votre parcours de lecture pour en débloquer!</p>
         </div>
       </CardContent>
     </Card>

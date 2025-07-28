@@ -63,7 +63,7 @@ export function CompletedBooks({ userId }: CompletedBooksProps) {
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-coffee-darker">Livres terminés</CardTitle>
+          <CardTitle className="text-h3 font-serif text-coffee-darker">Livres terminés</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
@@ -77,7 +77,7 @@ export function CompletedBooks({ userId }: CompletedBooksProps) {
   return (
     <Card className="border-coffee-light">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl font-serif text-coffee-darker">Livres terminés</CardTitle>
+        <CardTitle className="text-h3 font-serif text-coffee-darker">Livres terminés</CardTitle>
         <Button
           variant="outline"
           size="sm"
@@ -107,10 +107,10 @@ export function CompletedBooks({ userId }: CompletedBooksProps) {
                   title={book.book_title || "Titre inconnu"}
                   size="sm"
                 />
-                <div className="text-sm text-center line-clamp-1 font-medium text-coffee-darker">
+                <div className="text-body-sm text-center line-clamp-1 font-medium text-coffee-darker">
                   {book.book_title || "Titre inconnu"}
                 </div>
-                <div className="text-xs text-center line-clamp-1 text-muted-foreground">
+                <div className="text-caption text-center line-clamp-1 text-muted-foreground">
                   {book.book_author || "Auteur inconnu"}
                 </div>
               </Link>
