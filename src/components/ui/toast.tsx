@@ -22,16 +22,29 @@ const ToastViewport = React.forwardRef<
 ))
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
+const emojiByVariant = {
+  success: "✅",
+  destructive: "❌", 
+  info: "⚠️",
+  default: "ℹ️"
+} as const
+
+const iconDescriptionByVariant = {
+  success: "Succès",
+  destructive: "Erreur",
+  info: "Information", 
+  default: "Notice"
+} as const
+
 const toastVariants = cva(
   "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full data-[state=closed]:slide-out-to-right-full",
   {
     variants: {
       variant: {
-        default: "border-coffee-light bg-background text-foreground",
-        destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
-        success: "border-green-200 bg-green-50 text-green-800",
-        info: "border-blue-200 bg-blue-50 text-blue-800",
+        default: "border-coffee-light bg-background/95 text-foreground",
+        destructive: "border-coffee-light bg-background/95 text-foreground",
+        success: "border-coffee-light bg-background/95 text-foreground",
+        info: "border-coffee-light bg-background/95 text-foreground",
       },
     },
     defaultVariants: {
@@ -44,15 +57,33 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+>(({ className, variant, children, ...props }, ref) => {
+  const icon = emojiByVariant[variant ?? "default"]
+  const iconDescription = iconDescriptionByVariant[variant ?? "default"]
+  
   return (
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), 
         "animate-enter transition-all duration-300 ease-in-out", 
         className)}
+      role="status"
+      aria-live="polite"
       {...props}
-    />
+    >
+      <div className="flex items-start space-x-2">
+        <span 
+          aria-hidden="true" 
+          className="text-lg" 
+          aria-label={iconDescription}
+        >
+          {icon}
+        </span>
+        <div className="flex flex-col">
+          {children}
+        </div>
+      </div>
+    </ToastPrimitives.Root>
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName
