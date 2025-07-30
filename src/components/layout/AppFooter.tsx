@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const APP_VERSION = "v.020";
+const APP_VERSION = "v.021";
 
 export const AppFooter = () => {
   return (

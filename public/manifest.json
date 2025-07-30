@@ -2,7 +2,7 @@
 {
   "name": "READ — Reprends goût à la lecture, page après page",
   "short_name": "READ",
-  "version": "0.17.0",
+  "version": "0.21.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#B05F2C",
