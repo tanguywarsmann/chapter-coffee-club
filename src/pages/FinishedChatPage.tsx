@@ -63,8 +63,10 @@ export default function FinishedChatPage() {
         
         // Récupérer les infos du livre
         const bookData = await getBookById(slug);
+        console.log("📚 Livre récupéré:", bookData);
+        
         if (!bookData) {
-          toast.error("Livre introuvable");
+          console.log("❌ Livre introuvable");
           navigate("/explore");
           return;
         }
@@ -73,9 +75,13 @@ export default function FinishedChatPage() {
         
         // Vérifier si l'utilisateur a terminé le livre
         const progress = await getBookReadingProgress(user.id, slug);
+        console.log("📊 Progression récupérée:", progress);
+        
         const completed = progress?.progressPercent >= 100 || progress?.status === 'completed';
+        console.log("✅ Livre terminé?", completed, "Progress:", progress?.progressPercent, "Status:", progress?.status);
         
         if (!completed) {
+          console.log("🚫 Accès refusé - livre non terminé");
           // Pas de toast error - redirection directe avec state
           navigate(`/${slug}`, { 
             state: { 
@@ -86,6 +92,7 @@ export default function FinishedChatPage() {
           return;
         }
         
+        console.log("🎉 Accès autorisé au salon");
         setIsCompleted(true);
         
         // Charger les messages
@@ -93,7 +100,6 @@ export default function FinishedChatPage() {
         
       } catch (error) {
         console.error("Erreur lors de la vérification d'accès:", error);
-        toast.error("Erreur lors du chargement");
         navigate("/explore");
       } finally {
         setLoading(false);
@@ -212,8 +218,27 @@ export default function FinishedChatPage() {
     );
   }
 
-  if (!isCompleted || !book) {
-    return null; // Redirection gérée dans useEffect
+  console.log("🔍 État du rendu:", { isCompleted, book: !!book, loading });
+
+  // Plus de return null qui bloque l'affichage - on affiche toujours quelque chose
+  if (!isCompleted && !loading) {
+    console.log("⚠️ Redirection en cours...");
+    // La redirection est gérée dans useEffect, on affiche un message temporaire
+    return (
+      <AuthGuard>
+        <div className="min-h-screen bg-background">
+          <AppHeader />
+          <main className="container mx-auto px-4 py-6">
+            <div className="min-h-[60vh] flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
+                <p className="text-muted-foreground">Redirection en cours...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </AuthGuard>
+    );
   }
 
   return (
@@ -234,7 +259,7 @@ export default function FinishedChatPage() {
             <div className="flex items-center gap-3 mb-2">
               <MessageCircle className="h-6 w-6 text-coffee-dark" />
               <h1 className="text-2xl font-bold text-coffee-darker">
-                Salon — {book.title}
+                Salon — {book?.title || 'Livre'}
               </h1>
             </div>
             <p className="text-muted-foreground">
@@ -246,7 +271,7 @@ export default function FinishedChatPage() {
           <Card className="border-coffee-light">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg text-coffee-dark">
-                Messages de la communauté
+                Messages de la communauté {book?.title ? `— ${book.title}` : ''}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
