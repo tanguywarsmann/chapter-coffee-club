@@ -60,6 +60,7 @@ export default function FinishedChatPage() {
     const checkAccess = async () => {
       try {
         setLoading(true);
+        console.log("🔗 Navigation vers salon avec slug :", slug);
         
         // Récupérer les infos du livre
         const bookData = await getBookById(slug);
@@ -82,7 +83,7 @@ export default function FinishedChatPage() {
         
         if (!completed) {
           console.log("🚫 Accès refusé - livre non terminé");
-          // Pas de toast error - redirection directe avec state
+          // Redirection vers la page du livre avec un message d'erreur
           navigate(`/${slug}`, { 
             state: { 
               accessDenied: true,
@@ -92,7 +93,7 @@ export default function FinishedChatPage() {
           return;
         }
         
-        console.log("🎉 Accès autorisé au salon");
+        console.log("✅ Navigation autorisée - Accès au salon confirmé");
         setIsCompleted(true);
         
         // Charger les messages
