@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
@@ -192,7 +192,31 @@ export default function BookPage() {
               </div>
             </div>
           ) : book ? (
-            <BookDetail book={book} onChapterComplete={handleChapterComplete} />
+            <div className="space-y-6">
+              <BookDetail book={book} onChapterComplete={handleChapterComplete} />
+              {book.progressPercent >= 100 && (
+                <div className="max-w-4xl mx-auto">
+                  <div className="bg-coffee-lightest/50 border border-coffee-light rounded-lg p-6 text-center">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <span className="text-2xl">🎉</span>
+                      <h3 className="text-xl font-semibold text-coffee-darker">
+                        Félicitations ! Vous avez terminé ce livre
+                      </h3>
+                    </div>
+                    <p className="text-muted-foreground mb-4">
+                      Rejoignez la discussion avec d'autres lecteurs qui ont également terminé "{book.title}"
+                    </p>
+                    <Link 
+                      to={`/finished-chat/${book.slug || id}`}
+                      className="inline-flex items-center gap-2 bg-coffee-dark hover:bg-coffee-darker text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                      <span>💬</span>
+                      Accéder au salon de discussion
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center max-w-none">

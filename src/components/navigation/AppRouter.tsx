@@ -15,6 +15,7 @@ import Explore from '@/pages/Explore';
 import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
+import FinishedChatPage from '@/pages/FinishedChatPage';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const AppRouter = () => {
@@ -39,6 +40,7 @@ const AppRouter = () => {
       <Route path="/explore" element={<AuthGuard><Explore /></AuthGuard>} />
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/followers/:type/:userId" element={<Followers />} />
+      <Route path="/finished-chat/:slug" element={<FinishedChatPage />} />
       
       {/* Admin Panel */}
       <Route path="/admin" element={<Admin />} />
