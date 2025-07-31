@@ -137,9 +137,9 @@ export function BookListSection({
                 )}
                 
                 {/* Date information */}
-                {showDate && (
+                {showDate && book.completed_at && (
                   <div className="text-sm text-muted-foreground mb-2">
-                    Terminé le: {new Date().toLocaleDateString('fr-FR')}
+                    Terminé le: {new Date(book.completed_at).toLocaleDateString('fr-FR')}
                   </div>
                 )}
                 

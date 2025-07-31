@@ -162,6 +162,30 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
 /**
  * Filter progress by status
  */
+/**
+ * Get completion date for a book from reading_validations
+ */
+export const getBookCompletionDate = async (userId: string, bookId: string): Promise<string | null> => {
+  if (!userId || !bookId) return null;
+  
+  try {
+    const { data, error } = await supabase
+      .from("reading_validations")
+      .select("validated_at")
+      .eq("user_id", userId)
+      .eq("book_id", bookId)
+      .order("validated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (error || !data) return null;
+    return data.validated_at;
+  } catch (error) {
+    console.error("Erreur dans getBookCompletionDate:", error);
+    return null;
+  }
+};
+
 export const getBooksByStatus = async (userId: string, status: "to_read" | "in_progress" | "completed"): Promise<BookWithProgress[]> => {
   if (!userId) return [];
   try {
@@ -177,6 +201,13 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
     if (!data || data.length === 0) return [];
     const enriched = await Promise.all(data.map(async (item: any) => {
       const book = item.books;
+      let completionDate = null;
+      
+      // For completed books, get the real completion date
+      if (status === "completed") {
+        completionDate = await getBookCompletionDate(userId, item.book_id);
+      }
+      
       const baseProgress = {
         ...item,
         ...book,
@@ -185,6 +216,7 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
         book_author: book?.author ?? "Auteur inconnu",
         book_slug: book?.slug ?? "slug inconnu",
         book_cover: book?.cover_url ?? "",
+        completed_at: completionDate,
       };
       return await addDerivedFields(baseProgress);
     }));

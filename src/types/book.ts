@@ -33,4 +33,5 @@ export interface Book {
   
   // Add camelCase alias for expected_segments to fix type errors
   expectedSegments?: number;
+  completed_at?: string;
 }

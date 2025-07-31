@@ -76,8 +76,13 @@ export default function FinishedChatPage() {
         const completed = progress?.progressPercent >= 100 || progress?.status === 'completed';
         
         if (!completed) {
-          toast.error("Vous devez terminer ce livre pour accéder au salon de discussion");
-          navigate(`/${slug}`);
+          // Pas de toast error - redirection directe avec state
+          navigate(`/${slug}`, { 
+            state: { 
+              accessDenied: true,
+              message: "Vous devez terminer ce livre pour accéder au salon de discussion" 
+            }
+          });
           return;
         }
         

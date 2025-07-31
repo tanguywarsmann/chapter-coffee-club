@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BookDetail } from "@/components/books/BookDetail";
 import { getBookById } from "@/services/books/bookQueries";
@@ -18,8 +18,21 @@ export default function BookPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const isMounted = useRef(true);
+  
+  // État pour les messages d'alerte
+  const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Vérifier si on vient d'une redirection avec message d'erreur
+    if (location.state?.accessDenied && location.state?.message) {
+      setAccessDeniedMessage(location.state.message);
+      // Nettoyer le state pour éviter que le message persiste
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -150,13 +163,13 @@ export default function BookPage() {
 
       if (updatedProgress) {
         setBook(updatedProgress);
-        toast.success("Segment validé avec succès !");
+        // Pas de toast success ici - remplacé par un encart intégré
       } else {
         const updatedBook = await syncBookWithAPI(user.id, bookId);
         if (!isMounted.current) return;
         if (updatedBook) {
           setBook(updatedBook as BookWithProgress);
-          toast.success("Lecture synchronisée avec succès !");
+          // Pas de toast success ici - remplacé par un encart intégré
         } else {
           toast.error("Impossible de mettre à jour le livre");
         }
@@ -193,6 +206,18 @@ export default function BookPage() {
             </div>
           ) : book ? (
             <div className="space-y-6">
+              {/* Message d'alerte si accès refusé au salon */}
+              {accessDeniedMessage && (
+                <div className="max-w-4xl mx-auto">
+                  <div className="bg-coffee-lightest border border-coffee-light rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-orange-500">⚠️</span>
+                      <p className="text-coffee-dark font-medium">{accessDeniedMessage}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <BookDetail book={book} onChapterComplete={handleChapterComplete} />
               {book.progressPercent >= 100 && (
                 <div className="max-w-4xl mx-auto">
