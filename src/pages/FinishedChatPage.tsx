@@ -77,12 +77,16 @@ export default function FinishedChatPage() {
         // Vérifier si l'utilisateur a terminé le livre
         const progress = await getBookReadingProgress(user.id, slug);
         console.log("📊 Progression récupérée:", progress);
+        console.log("📊 Types de données - progressPercent:", typeof progress?.progressPercent, "value:", progress?.progressPercent);
+        console.log("📊 Status:", progress?.status);
+        console.log("📊 ID utilisateur:", user.id, "Slug:", slug);
         
         const completed = progress?.progressPercent >= 100 || progress?.status === 'completed';
         console.log("✅ Livre terminé?", completed, "Progress:", progress?.progressPercent, "Status:", progress?.status);
         
-        if (!completed) {
-          console.log("🚫 Accès refusé - livre non terminé");
+        // Ne rediriger QUE si on est sûr que le livre n'est pas terminé
+        if (!completed && progress !== null) {
+          console.log("🚫 Accès refusé - livre non terminé confirmé");
           // Redirection vers la page du livre avec un message d'erreur
           navigate(`/${slug}`, { 
             state: { 
