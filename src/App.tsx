@@ -44,7 +44,7 @@ const AppContent = () => {
       </Suspense>
       <Suspense fallback={null}>
         <Sonner
-          richColors
+          richColors={false}
           position="top-right"
           visibleToasts={isLanding ? 0 : undefined}
           className="w-full max-w-sm sm:max-w-sm"
