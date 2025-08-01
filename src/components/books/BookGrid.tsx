@@ -2,6 +2,9 @@ import { BookCard } from "./BookCard";
 import { Book } from "@/types/book";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { usePaginatedBooks } from "@/hooks/usePaginatedBooks";
+import { LoadMoreButton } from "@/components/ui/load-more-button";
+import { BookGridSkeleton } from "@/components/ui/book-grid-skeleton";
 
 interface BookGridProps {
   books: Book[];
@@ -13,6 +16,9 @@ interface BookGridProps {
   showDeleteButton?: boolean;
   actionLabel?: string;
   onAction?: (bookId: string) => void;
+  enablePagination?: boolean;
+  initialPageSize?: number;
+  pageSize?: number;
 }
 
 export function BookGrid({ 
@@ -24,9 +30,26 @@ export function BookGrid({
   showAddButton = false,
   showDeleteButton = false,
   actionLabel,
-  onAction
+  onAction,
+  enablePagination = false,
+  initialPageSize = 12,
+  pageSize = 8
 }: BookGridProps) {
   const navigate = useNavigate();
+  
+  const {
+    paginatedBooks,
+    hasMore,
+    loadMore,
+    showingItems,
+    totalItems
+  } = usePaginatedBooks(books, { 
+    initialPageSize, 
+    pageSize 
+  });
+
+  // Use paginated books only if pagination is enabled
+  const displayBooks = enablePagination ? paginatedBooks : books;
 
   const handleAddBook = async (bookId: string) => {
     toast.success("Livre ajouté à ta liste !");
@@ -56,7 +79,7 @@ export function BookGrid({
       )}
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 md:gap-6">
-        {books.map((book) => {
+        {displayBooks.map((book) => {
           // S'assurer qu'on a un identifiant valide
           const bookIdentifier = book.id || book.slug || '';
           
@@ -74,6 +97,17 @@ export function BookGrid({
           );
         })}
       </div>
+
+      {/* Load more button for pagination */}
+      {enablePagination && (
+        <LoadMoreButton
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          showingCount={showingItems}
+          totalCount={totalItems}
+          className="mt-8"
+        />
+      )}
     </div>
   );
 }

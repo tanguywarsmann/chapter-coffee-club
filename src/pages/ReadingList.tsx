@@ -90,6 +90,8 @@ export default function ReadingList() {
             books={books.toRead}
             actionLabel="Commencer la lecture"
             onAction={navigateToBook}
+            enablePagination={books.toRead.length > 8}
+            initialPageSize={8}
           />
         )}
         
@@ -101,6 +103,8 @@ export default function ReadingList() {
             showDate
             actionLabel="Relire"
             onAction={navigateToBook}
+            enablePagination={books.completed.length > 10}
+            initialPageSize={10}
           />
         )}
       </div>

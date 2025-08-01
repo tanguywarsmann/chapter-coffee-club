@@ -162,6 +162,9 @@ export default function Explore() {
                 books={filteredBooks} 
                 title="Livres disponibles" 
                 showAddButton={true}
+                enablePagination={true}
+                initialPageSize={12}
+                pageSize={8}
               />
 
               {suggestedBook && (

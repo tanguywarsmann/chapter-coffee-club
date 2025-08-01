@@ -10,7 +10,7 @@ interface BookCoverProps {
   size?: "sm" | "md" | "lg";
   image?: string;
   title?: string;
-  priority?: boolean; // Nouvelle prop pour les images critiques
+  priority?: boolean; // Réservé aux images critiques (lecture en cours)
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({ 
@@ -19,7 +19,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
   size = "md",
   image,
   title,
-  priority = false
+  priority = false // Par défaut: pas de priorité pour éviter de bloquer le chargement
 }) => {
   // Use either the passed image or get it from the book
   const coverImage = image || book?.coverImage;

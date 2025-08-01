@@ -6,6 +6,8 @@ import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { usePaginatedBooks } from '@/hooks/usePaginatedBooks';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 
 interface BookListSectionProps {
   title: string;
@@ -16,6 +18,8 @@ interface BookListSectionProps {
   showProgress?: boolean;
   showDate?: boolean;
   hideUnavailableBooks?: boolean;
+  enablePagination?: boolean;
+  initialPageSize?: number;
 }
 
 export function BookListSection({
@@ -26,10 +30,12 @@ export function BookListSection({
   onAction,
   showProgress = false,
   showDate = false,
-  hideUnavailableBooks = false
+  hideUnavailableBooks = false,
+  enablePagination = false,
+  initialPageSize = 8
 }: BookListSectionProps) {
   // Filtrer les livres à afficher selon le paramètre hideUnavailableBooks
-  const displayBooks = useMemo(() => {
+  const filteredBooks = useMemo(() => {
     const validBooks = Array.isArray(books) ? books : [];
     console.log(`[DIAGNOSTIQUE] BookListSection "${title}" - Books reçus:`, validBooks.length, 'livres, valides:', validBooks !== null && Array.isArray(validBooks));
     
@@ -41,6 +47,19 @@ export function BookListSection({
       ? validBooks.filter(book => !book.isUnavailable)
       : validBooks;
   }, [books, hideUnavailableBooks, title]);
+
+  const {
+    paginatedBooks,
+    hasMore,
+    loadMore,
+    showingItems,
+    totalItems
+  } = usePaginatedBooks(filteredBooks, { 
+    initialPageSize, 
+    pageSize: 6 
+  });
+
+  const displayBooks = enablePagination ? paginatedBooks : filteredBooks;
 
   React.useEffect(() => {
     console.log(`[DIAGNOSTIQUE] Rendering BookListSection "${title}" with ${displayBooks.length} books`);
@@ -160,6 +179,17 @@ export function BookListSection({
           );
         })}
       </div>
+
+      {/* Load more button for pagination */}
+      {enablePagination && (
+        <LoadMoreButton
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          showingCount={showingItems}
+          totalCount={totalItems}
+          className="mt-6"
+        />
+      )}
     </div>
   );
 }
