@@ -63,6 +63,7 @@ export type Database = {
           image_alt: string | null
           image_url: string | null
           published: boolean
+          published_at: string | null
           slug: string
           tags: string[] | null
           title: string
@@ -77,6 +78,7 @@ export type Database = {
           image_alt?: string | null
           image_url?: string | null
           published?: boolean
+          published_at?: string | null
           slug: string
           tags?: string[] | null
           title: string
@@ -91,6 +93,7 @@ export type Database = {
           image_alt?: string | null
           image_url?: string | null
           published?: boolean
+          published_at?: string | null
           slug?: string
           tags?: string[] | null
           title?: string

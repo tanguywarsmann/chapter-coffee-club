@@ -11,6 +11,7 @@ export interface BlogPost {
   author?: string;
   tags?: string[];
   published: boolean;
+  published_at?: string;
   imageUrl?: string;
   imageHero?: string;
   imageAlt?: string;
@@ -26,6 +27,7 @@ export interface CreateBlogPostData {
   author?: string;
   tags?: string[];
   published?: boolean;
+  published_at?: string;
   imageUrl?: string;
   imageAlt?: string;
 }
@@ -42,7 +44,8 @@ export const blogService = {
       .from('blog_posts')
       .select('*')
       .eq('published', true)
-      .order('created_at', { ascending: false });
+      .or('published_at.is.null,published_at.lte.' + new Date().toISOString())
+      .order('published_at', { ascending: false, nullsFirst: false });
 
     if (error) {
       console.error('Error fetching published posts:', error);
@@ -108,13 +111,14 @@ export const blogService = {
 
   // Créer un nouvel article
   async createPost(postData: CreateBlogPostData): Promise<BlogPost> {
-    const { imageUrl, imageAlt, ...rest } = postData;
+    const { imageUrl, imageAlt, published_at, ...rest } = postData;
     const { data, error } = await supabase
       .from('blog_posts')
       .insert([{
         ...rest,
         image_url: imageUrl,
         image_alt: imageAlt,
+        published_at: published_at,
         published: postData.published ?? true
       }])
       .select()
@@ -134,14 +138,15 @@ export const blogService = {
 
   // Mettre à jour un article
   async updatePost(postData: UpdateBlogPostData): Promise<BlogPost> {
-    const { id, imageUrl, imageAlt, ...rest } = postData;
+    const { id, imageUrl, imageAlt, published_at, ...rest } = postData;
     
     const { data, error } = await supabase
       .from('blog_posts')
       .update({
         ...rest,
         image_url: imageUrl,
-        image_alt: imageAlt
+        image_alt: imageAlt,
+        published_at: published_at
       })
       .eq('id', id)
       .select()
