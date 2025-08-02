@@ -7,7 +7,7 @@ const corsHeaders = {
 
 /**
  * Edge Function pour publier automatiquement les articles planifiés
- * Cron: */15 * * * * (toutes les 15 minutes)
+ * Cron: toutes les 15 minutes (0,15,30,45 * * * *)
  */
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
