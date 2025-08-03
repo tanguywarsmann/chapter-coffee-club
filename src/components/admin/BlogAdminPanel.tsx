@@ -14,9 +14,18 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { Edit, Plus, Save, Trash2, Eye } from 'lucide-react';
+import { Edit, Plus, Save, Trash2, Eye, CalendarIcon, Clock } from 'lucide-react';
 import { blogService, BlogPost, CreateBlogPostData } from '@/services/blogService';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { ImageUpload } from './ImageUpload';
 
 export function BlogAdminPanel() {
@@ -31,6 +40,7 @@ export function BlogAdminPanel() {
     author: 'READ',
     tags: [],
     published: true,
+    published_at: undefined,
     imageUrl: '',
     imageAlt: ''
   });
@@ -83,6 +93,7 @@ export function BlogAdminPanel() {
       author: 'READ',
       tags: [],
       published: true,
+      published_at: undefined,
       imageUrl: '',
       imageAlt: ''
     });
@@ -99,6 +110,7 @@ export function BlogAdminPanel() {
       author: post.author || 'READ',
       tags: post.tags || [],
       published: post.published,
+      published_at: post.published_at,
       imageUrl: post.imageUrl || '',
       imageAlt: post.imageAlt || ''
     });
@@ -225,15 +237,91 @@ export function BlogAdminPanel() {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="published"
-              checked={formData.published}
-              onCheckedChange={(checked) => 
-                setFormData(prev => ({ ...prev, published: !!checked }))
-              }
-            />
-            <Label htmlFor="published">Publié</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="published"
+                checked={formData.published}
+                onCheckedChange={(checked) => 
+                  setFormData(prev => ({ ...prev, published: !!checked }))
+                }
+              />
+              <Label htmlFor="published">Publié</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Date de publication programmée (optionnel)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.published_at && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.published_at ? (
+                      format(new Date(formData.published_at), "PPP 'à' HH:mm", { locale: fr })
+                    ) : (
+                      <span>Sélectionner une date et heure</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.published_at ? new Date(formData.published_at) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        // Conserver l'heure actuelle ou définir 12:00 par défaut
+                        const currentTime = formData.published_at ? new Date(formData.published_at) : new Date();
+                        date.setHours(currentTime.getHours(), currentTime.getMinutes());
+                        setFormData(prev => ({ ...prev, published_at: date.toISOString() }));
+                      } else {
+                        setFormData(prev => ({ ...prev, published_at: undefined }));
+                      }
+                    }}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                  {formData.published_at && (
+                    <div className="p-3 border-t">
+                      <Label className="text-caption">Heure</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Input
+                          type="time"
+                          value={formData.published_at ? format(new Date(formData.published_at), "HH:mm") : "12:00"}
+                          onChange={(e) => {
+                            if (formData.published_at) {
+                              const date = new Date(formData.published_at);
+                              const [hours, minutes] = e.target.value.split(':');
+                              date.setHours(parseInt(hours), parseInt(minutes));
+                              setFormData(prev => ({ ...prev, published_at: date.toISOString() }));
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData(prev => ({ ...prev, published_at: undefined }))}
+                        >
+                          Supprimer
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+              {formData.published_at && (
+                <p className="text-caption text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  L'article sera publié automatiquement
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -291,16 +379,30 @@ export function BlogAdminPanel() {
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell className="text-muted-foreground">{post.slug}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-caption ${
-                      post.published 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {post.published ? 'Publié' : 'Brouillon'}
-                    </span>
+                    {post.published_at && new Date(post.published_at) > new Date() ? (
+                      <span className="px-2 py-1 rounded text-caption bg-blue-100 text-blue-800 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        Programmé
+                      </span>
+                    ) : (
+                      <span className={`px-2 py-1 rounded text-caption ${
+                        post.published 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {post.published ? 'Publié' : 'Brouillon'}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    {new Date(post.created_at).toLocaleDateString('fr-FR')}
+                    <div>
+                      <div>{new Date(post.created_at).toLocaleDateString('fr-FR')}</div>
+                      {post.published_at && new Date(post.published_at) > new Date() && (
+                        <div className="text-caption text-muted-foreground">
+                          Prog: {format(new Date(post.published_at), "dd/MM 'à' HH:mm", { locale: fr })}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
