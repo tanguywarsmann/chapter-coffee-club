@@ -51,7 +51,7 @@ export function WelcomeModalIframe({ open, onClose }: WelcomeModalIframeProps) {
                 id="welcome-title"
                 className="font-serif text-2xl md:text-3xl text-coffee-darker font-bold"
               >
-                Bienvenue sur READ
+                Bienvenue sur VREAD
               </DialogTitle>
             </div>
           </DialogHeader>
