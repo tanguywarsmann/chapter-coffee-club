@@ -95,7 +95,7 @@ export function LoginForm() {
         <CardHeader className="space-y-1 flex flex-col items-center">
           <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
             <Image 
-              src="/branding/vread-logo-1024-q80.webp" 
+              src="/branding/vread-logo.svg" 
               alt="VREAD Logo" 
               className="w-full h-full object-cover"
             />

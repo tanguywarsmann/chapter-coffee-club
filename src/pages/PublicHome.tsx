@@ -30,7 +30,7 @@ export default function PublicHome() {
     }
   ];
 
-  const logoSrc = "/branding/vread-logo-1024-q80.webp";
+  const logoSrc = "/branding/vread-logo.svg";
 
   return (
     <>

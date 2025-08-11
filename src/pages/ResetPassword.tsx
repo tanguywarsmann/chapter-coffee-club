@@ -78,7 +78,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-none mx-auto">
         <div className="mb-8 text-center">
           <Image 
-            src="/branding/vread-logo-1024-q80.webp" 
+            src="/branding/vread-logo.svg" 
             alt="VREAD Logo" 
             className="mx-auto mb-4 w-40 h-auto"
           />

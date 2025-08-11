@@ -83,11 +83,15 @@ export default function Landing() {
           <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
             <div className="mb-12 flex justify-center">
               <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
-                <Image 
-                  src="/READ-logo.png"
+                <Image
+                  src="/branding/vread-logo.svg"
                   alt="VREAD - Application de lecture progressive"
+                  width={96}
+                  height={96}
                   className="h-24 w-24 mx-auto"
-                  priority={true}
+                  loading="eager"
+                  priority
+                  decoding="async"
                 />
               </div>
             </div>

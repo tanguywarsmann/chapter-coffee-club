@@ -114,7 +114,7 @@ export default function Auth() {
       <div className="w-full max-w-none mx-auto">
         <header className="mb-8 text-center">
           <Image
-            src="/branding/vread-logo-512.png"
+            src="/branding/vread-logo.svg"
             alt="VREAD - Application de lecture progressive"
             className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105 focus:scale-105 focus:outline-offset-2"
             onError={(e) => {
