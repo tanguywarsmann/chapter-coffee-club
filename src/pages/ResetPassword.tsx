@@ -78,8 +78,8 @@ export default function ResetPassword() {
       <div className="w-full max-w-none mx-auto">
         <div className="mb-8 text-center">
           <Image 
-            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png" 
-            alt="READ Logo" 
+            src="/branding/vread-logo-1024-q80.webp" 
+            alt="VREAD Logo" 
             className="mx-auto mb-4 w-40 h-auto"
           />
           <p className="text-logo-text text-lg mb-6">

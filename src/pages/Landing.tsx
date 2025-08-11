@@ -49,30 +49,30 @@ export default function Landing() {
     <>
       <Helmet>
         <title>
-          READ — L'appli qui t'accompagne dans ta lecture, page après page
+          VREAD — L'appli qui t'accompagne dans ta lecture, page après page
         </title>
         <meta
           name="description"
-          content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
+          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
         />
         <meta
           property="og:title"
-          content="READ — L'appli qui t'accompagne dans ta lecture, page après page"
+          content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page"
         />
         <meta
           property="og:description"
-          content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
+          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://vread.fr/landing" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="READ — L'appli qui t'accompagne dans ta lecture, page après page"
+          content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page"
         />
         <meta
           name="twitter:description"
-          content="READ vous aide à reprendre goût à la lecture avec une approche progressive."
+          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive."
         />
         <link rel="canonical" href="https://vread.fr/landing" />
       </Helmet>
@@ -84,8 +84,8 @@ export default function Landing() {
             {/* Logo */}
             <div className="bg-reed-primary/80 rounded-3xl border-4 border-reed-light/30 p-8 shadow-2xl">
               <Image
-                src="/READ-logo.png"
-                alt="READ - Application de lecture progressive"
+                src="/branding/vread-logo-1024-q80.webp"
+                alt="VREAD - Application de lecture progressive"
                 className="mx-auto h-24 w-24"
                 priority
               />
@@ -122,7 +122,7 @@ export default function Landing() {
                 className="border-3 border-white px-12 py-6 text-xl font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-white hover:text-reed-primary focus:ring-4 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/blog" aria-label="Découvrir le blog READ">
+                <Link to="/blog" aria-label="Découvrir le blog VREAD">
                   Découvrir le blog
                 </Link>
               </Button>
@@ -143,7 +143,7 @@ export default function Landing() {
                 Une nouvelle façon de lire
               </h2>
               <p className="mx-auto max-w-4xl text-xl text-white/90">
-                READ transforme votre expérience de lecture en un parcours engageant et personnalisé
+                VREAD transforme votre expérience de lecture en un parcours engageant et personnalisé
               </p>
             </header>
 
@@ -195,9 +195,9 @@ export default function Landing() {
               className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
               asChild
             >
-              <Link to="/auth" aria-label="Créer votre compte READ gratuit maintenant">
-                Créer mon compte gratuit
-              </Link>
+                <Link to="/auth" aria-label="Créer votre compte VREAD gratuit maintenant">
+                  Créer mon compte gratuit
+                </Link>
             </Button>
           </div>
         </section>

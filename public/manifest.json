@@ -1,7 +1,6 @@
-
 {
-  "name": "READ — Reprends goût à la lecture, page après page",
-  "short_name": "READ",
+  "name": "VREAD",
+  "short_name": "VREAD",
   "version": "0.21.0",
   "start_url": "/",
   "display": "standalone",
@@ -12,34 +11,13 @@
   "description": "Reprends goût à la lecture, page après page. Une approche moderne de la lecture lente et consciente.",
   "lang": "fr",
   "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "/branding/vread-logo-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/branding/vread-logo-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/branding/vread-logo-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
   ],
   "screenshots": [
     {
-      "src": "/icons/icon-512.png",
+      "src": "/branding/vread-logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow"

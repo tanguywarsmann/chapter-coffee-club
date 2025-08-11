@@ -42,7 +42,7 @@ export function AppHeader() {
           >
             <Link 
               to="/"
-              aria-label="Se connecter à votre compte READ"
+              aria-label="Se connecter à votre compte VREAD"
             >
               Se connecter
             </Link>

@@ -30,27 +30,29 @@ export default function PublicHome() {
     }
   ];
 
-  const logoSrc = "/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png";
+  const logoSrc = "/branding/vread-logo-1024-q80.webp";
 
   return (
     <>
       <Helmet>
-        <title>READ — L'appli qui t'accompagne dans ta lecture, page après page</title>
-        <meta name="description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
-        <meta property="og:title" content="READ — L'appli qui t'accompagne dans ta lecture, page après page" />
-        <meta property="og:description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
+        <title>VREAD — L'appli qui t'accompagne dans ta lecture, page après page</title>
+        <meta name="description" content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
+        <meta property="og:title" content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page" />
+        <meta property="og:description" content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://vread.fr/" />
+        <meta property="og:image" content="/branding/vread-logo-512.png" />
+        <meta property="og:site_name" content="VREAD" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="READ — L'appli qui t'accompagne dans ta lecture, page après page" />
-        <meta name="twitter:description" content="READ vous aide à reprendre goût à la lecture avec une approche progressive." />
+        <meta name="twitter:title" content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page" />
+        <meta name="twitter:description" content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive." />
         <link rel="canonical" href="https://vread.fr/" />
         
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "READ",
+            "name": "VREAD",
             "description": "Application pour reprendre goût à la lecture avec une approche progressive",
             "url": "https://vread.fr",
             "applicationCategory": "EducationalApplication",
@@ -67,7 +69,7 @@ export default function PublicHome() {
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
         {/* Debug temporaire - À SUPPRIMER après vérification */}
         <div className="fixed top-0 right-0 z-50 max-w-sm">
-          <ImageDebug src={logoSrc} name="Logo READ" />
+          <ImageDebug src={logoSrc} name="Logo VREAD" />
         </div>
 
         {/* Hero Section avec Logo */}
@@ -78,7 +80,7 @@ export default function PublicHome() {
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
                 <Image 
                   src={logoSrc} 
-                  alt="READ Logo" 
+                  alt="VREAD Logo" 
                   className="h-20 w-20 mx-auto"
                   priority={true}
                   sizes="80px"

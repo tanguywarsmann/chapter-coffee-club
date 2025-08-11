@@ -95,12 +95,12 @@ export function LoginForm() {
         <CardHeader className="space-y-1 flex flex-col items-center">
           <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
             <Image 
-              src="/lovable-uploads/f8f10dfb-9602-4b38-b705-d6e6f42cce5d.png" 
-              alt="READ Logo" 
+              src="/branding/vread-logo-1024-q80.webp" 
+              alt="VREAD Logo" 
               className="w-full h-full object-cover"
             />
           </div>
-          <CardTitle className="text-h2 font-serif text-center">Bienvenue sur READ</CardTitle>
+          <CardTitle className="text-h2 font-serif text-center">Bienvenue sur VREAD</CardTitle>
           <CardDescription className="text-center">
             Connectez-vous à votre compte pour continuer votre voyage littéraire
           </CardDescription>
