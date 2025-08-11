@@ -138,7 +138,7 @@ export default function Home() {
         
         <main className={`mx-auto w-full px-4 max-w-none mobile-optimized ${isMobile ? 'py-4' : 'py-4 sm:py-6'} animate-fade-in focus:outline-none`} tabIndex={-1}>
           <div className="max-w-none mx-auto px-2 sm:px-0 mb-6 sm:mb-8">
-            <h1 className="sr-only">{texts.home} - READ</h1>
+            <h1 className="sr-only">{texts.home} - VREAD</h1>
             <SearchBar 
               onSearch={handleSearch}
               isSearching={isSearching} 

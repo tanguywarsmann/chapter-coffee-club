@@ -67,10 +67,10 @@ export default function BlogPost() {
   return (
     <>
       <Helmet>
-        <title>{post.title} - Blog READ</title>
-        <meta name="description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
-        <meta property="og:title" content={`${post.title} - Blog READ`} />
-        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
+        <title>{post.title} - Blog VREAD</title>
+        <meta name="description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
+        <meta property="og:title" content={`${post.title} - Blog VREAD`} />
+        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
         <meta property="article:published_time" content={post.created_at} />
@@ -80,8 +80,8 @@ export default function BlogPost() {
           <meta key={tag} property="article:tag" content={tag} />
         ))}
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={`${post.title} - Blog READ`} />
-        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog READ`} />
+        <meta name="twitter:title" content={`${post.title} - Blog VREAD`} />
+        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
         <link rel="canonical" href={`https://vread.fr/blog/${post.slug}`} />
         
         {/* Schema.org structured data for article */}
@@ -93,7 +93,7 @@ export default function BlogPost() {
             "description": post.excerpt || "",
             "author": {
               "@type": "Organization",
-              "name": post.author || "READ"
+              "name": post.author || "VREAD"
             },
             "publisher": {
               "@type": "Organization",
