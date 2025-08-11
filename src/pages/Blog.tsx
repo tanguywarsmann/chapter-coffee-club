@@ -53,15 +53,15 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog READ — Découvrez nos articles sur la lecture</title>
-        <meta name="description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application READ." />
-        <meta property="og:title" content="Blog READ — Découvrez nos articles sur la lecture" />
-        <meta property="og:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application READ." />
+        <title>Blog VREAD — Découvrez nos articles sur la lecture</title>
+        <meta name="description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
+        <meta property="og:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
+        <meta property="og:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://vread.fr/blog" />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Blog READ — Découvrez nos articles sur la lecture" />
-        <meta name="twitter:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application READ." />
+        <meta name="twitter:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
+        <meta name="twitter:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
         <link rel="canonical" href="https://vread.fr/blog" />
         
         {/* Schema.org structured data for blog */}
@@ -69,12 +69,12 @@ export default function Blog() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Blog",
-            "name": "Blog READ",
+            "name": "Blog VREAD",
             "description": "Découvrez nos articles sur la lecture, les livres et la culture littéraire",
             "url": "https://vread.fr/blog",
             "publisher": {
               "@type": "Organization",
-              "name": "READ",
+              "name": "VREAD",
               "url": "https://vread.fr"
             },
             "mainEntity": posts.map(post => ({
@@ -85,7 +85,7 @@ export default function Blog() {
               "dateModified": post.updated_at,
               "author": {
                 "@type": "Organization",
-                "name": post.author || "READ"
+                "name": post.author || "VREAD"
               },
               "url": `https://vread.fr/blog/${post.slug}`
             }))
@@ -106,7 +106,7 @@ export default function Blog() {
           </div>
 
           <header className="text-center mb-12">
-            <h1 className="text-4xl font-serif font-bold text-white mb-4">Blog READ</h1>
+            <h1 className="text-4xl font-serif font-bold text-white mb-4">Blog VREAD</h1>
             <p className="text-lg text-white/90 max-w-none mx-auto">
               Découvrez nos articles sur la lecture, les livres et la culture littéraire
             </p>

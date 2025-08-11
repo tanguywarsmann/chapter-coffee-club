@@ -114,8 +114,8 @@ export default function Auth() {
       <div className="w-full max-w-none mx-auto">
         <header className="mb-8 text-center">
           <Image
-            src="/lovable-uploads/c14c3df9-c069-478b-a304-1b78f5abf7b0.png"
-            alt="READ - Application de lecture progressive"
+            src="/branding/vread-logo-512.png"
+            alt="VREAD - Application de lecture progressive"
             className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105 focus:scale-105 focus:outline-offset-2"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -132,7 +132,7 @@ export default function Auth() {
           <Card className="border-coffee-medium shadow-md transition-all duration-300">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl text-center text-foreground">
-                Bienvenue sur READ
+                Bienvenue sur VREAD
               </CardTitle>
               <CardDescription className="text-center text-foreground/80">
                 Connecte-toi à ton compte pour continuer ton voyage littéraire

@@ -75,7 +75,7 @@ export default function BlogPost() {
         <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
         <meta property="article:published_time" content={post.created_at} />
         <meta property="article:modified_time" content={post.updated_at} />
-        <meta property="article:author" content={post.author || 'READ'} />
+        <meta property="article:author" content={post.author || 'VREAD'} />
         {post.tags && post.tags.map(tag => (
           <meta key={tag} property="article:tag" content={tag} />
         ))}
@@ -97,7 +97,7 @@ export default function BlogPost() {
             },
             "publisher": {
               "@type": "Organization",
-              "name": "READ",
+              "name": "VREAD",
               "url": "https://vread.fr"
             },
             "datePublished": post.created_at,
