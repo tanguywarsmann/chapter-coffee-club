@@ -16,8 +16,8 @@ export function PublicHeader() {
           aria-label="VREAD - Retour à l'accueil"
         >
           <Image 
-            src="/branding/vread-logo-512.png" 
-            alt="VREAD Logo" 
+            src="/READ-logo.png" 
+            alt="VREAD logo" 
             className="h-8 w-8"
             priority={true}
             sizes="32px"

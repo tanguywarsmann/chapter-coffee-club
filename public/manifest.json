@@ -1,7 +1,7 @@
 {
-  "name": "VREAD",
+  "name": "VREAD — L'appli qui t'accompagne dans ta lecture, page après page",
   "short_name": "VREAD",
-  "version": "0.21.0",
+  "version": "0.18.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#B05F2C",

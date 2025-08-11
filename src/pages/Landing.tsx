@@ -81,14 +81,15 @@ export default function Landing() {
         {/* Hero Section */}
         <section className="relative py-20 px-4" role="banner">
           <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
-            {/* Logo */}
-            <div className="bg-reed-primary/80 rounded-3xl border-4 border-reed-light/30 p-8 shadow-2xl">
-              <Image
-                src="/branding/vread-logo-1024-q80.webp"
-                alt="VREAD - Application de lecture progressive"
-                className="mx-auto h-24 w-24"
-                priority
-              />
+            <div className="mb-12 flex justify-center">
+              <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
+                <Image 
+                  src="/READ-logo.png"
+                  alt="VREAD - Application de lecture progressive"
+                  className="h-24 w-24 mx-auto"
+                  priority={true}
+                />
+              </div>
             </div>
 
             <h1 className="hero-title mb-8 font-serif font-bold leading-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
