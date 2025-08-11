@@ -42,10 +42,10 @@ export const blogService = {
     console.log('Fetching published posts...');
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('*')
+      .select('*, sort_date:coalesce(published_at, created_at)')
       .eq('published', true)
       .or('published_at.is.null,published_at.lte.' + new Date().toISOString())
-      .order('published_at', { ascending: false, nullsFirst: false });
+      .order('sort_date', { ascending: false });
 
     if (error) {
       console.error('Error fetching published posts:', error);
