@@ -38,17 +38,21 @@ export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {
 
 export const blogService = {
   // Récupérer tous les articles publiés
-  async getPublishedPosts(): Promise<BlogPost[]> {
+  async getPublishedPosts(limit = 50): Promise<BlogPost[]> {
     console.log('Fetching published posts...');
+    const nowIso = new Date().toISOString();
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('*, sort_date:coalesce(published_at, created_at)')
+      .select('id,title,slug,content,excerpt,author,tags,published,created_at,updated_at,image_url,image_alt,published_at')
       .eq('published', true)
-      .or('published_at.is.null,published_at.lte.' + new Date().toISOString())
-      .order('sort_date', { ascending: false });
+      .or(`published_at.is.null,published_at.lte.${nowIso}`)
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(limit);
 
     if (error) {
-      console.error('Error fetching published posts:', error);
+      console.error('getPublishedPosts error', error);
       throw error;
     }
 
