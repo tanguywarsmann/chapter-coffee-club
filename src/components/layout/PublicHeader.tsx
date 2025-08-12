@@ -12,7 +12,7 @@ export function PublicHeader() {
       <div className="mx-auto w-full px-4 max-w-none flex h-16 sm:h-14 items-center justify-between">
         <Link 
           to="/" 
-          className="flex items-center gap-2 transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md focus:outline-none"
+          className="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md focus:outline-none"
           aria-label="VREAD - Retour à l'accueil"
         >
           <LogoVread className="h-8 w-8" />

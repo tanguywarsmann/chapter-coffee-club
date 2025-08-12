@@ -83,7 +83,7 @@ export default function Landing() {
           <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
             <div className="mb-12 flex justify-center">
               <div className="p-8 rounded-3xl shadow-2xl border-4 border-[#EEDCC8] bg-transparent">
-                <LogoVread className="h-24 w-24 mx-auto" />
+                <LogoVread className="h-24 w-24" />
               </div>
             </div>
 
