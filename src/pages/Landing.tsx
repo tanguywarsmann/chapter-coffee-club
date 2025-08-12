@@ -15,7 +15,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import Image from "@/components/ui/image";
+import LogoVread from "@/components/brand/LogoVread";
 
 export default function Landing() {
   const features = [
@@ -82,17 +82,8 @@ export default function Landing() {
         <section className="relative py-20 px-4" role="banner">
           <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
             <div className="mb-12 flex justify-center">
-              <div className="bg-reed-primary/80 p-8 rounded-3xl shadow-2xl border-4 border-reed-light/30">
-                <Image
-                  src="/branding/vread-logo.svg"
-                  alt="VREAD - Application de lecture progressive"
-                  width={96}
-                  height={96}
-                  className="h-24 w-24 mx-auto"
-                  loading="eager"
-                  priority
-                  decoding="async"
-                />
+              <div className="p-8 rounded-3xl shadow-2xl border-4 border-reed-light bg-transparent">
+                <LogoVread className="h-24 w-24 mx-auto" />
               </div>
             </div>
 
