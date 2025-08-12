@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import Image from "@/components/ui/image";
+import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
@@ -113,16 +113,11 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4 sm:p-6 transition-all duration-300">
       <div className="w-full max-w-none mx-auto">
         <header className="mb-8 text-center">
-          <Image
-            src="/branding/vread-logo.svg"
-            alt="VREAD - Application de lecture progressive"
-            className="mx-auto mb-4 w-40 h-auto transition-transform duration-300 hover:scale-105 focus:scale-105 focus:outline-offset-2"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/placeholder.svg";
-              target.alt = "Logo placeholder";
-            }}
-          />
+          <div className="mx-auto mb-4 flex justify-center">
+            <div className="p-8 rounded-3xl shadow-2xl border-4 border-[#EEDCC8] bg-transparent">
+              <LogoVreadPng size={96} className="h-24 w-24" />
+            </div>
+          </div>
           <p className="text-logo-text text-lg mb-6 max-w-sm mx-auto">
             Reprends goût à la lecture, page après page
           </p>

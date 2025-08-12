@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import Image from "@/components/ui/image";
+import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { SignUpForm } from "./SignUpForm";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,12 +93,10 @@ export function LoginForm() {
     <>
       <Card className="w-full max-w-md mx-auto border-coffee-medium">
         <CardHeader className="space-y-1 flex flex-col items-center">
-          <div className="w-40 h-40 rounded-full overflow-hidden mb-2">
-            <Image 
-              src="/branding/vread-logo.svg" 
-              alt="VREAD Logo" 
-              className="w-full h-full object-cover"
-            />
+          <div className="mb-2 flex justify-center">
+            <div className="p-8 rounded-3xl shadow-2xl border-4 border-[#EEDCC8] bg-transparent">
+              <LogoVreadPng size={96} className="h-24 w-24" />
+            </div>
           </div>
           <CardTitle className="text-h2 font-serif text-center">Bienvenue sur VREAD</CardTitle>
           <CardDescription className="text-center">
