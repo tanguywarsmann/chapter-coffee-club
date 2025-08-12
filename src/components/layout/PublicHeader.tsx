@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Image from "@/components/ui/image";
+import LogoVread from "@/components/brand/LogoVread";
 
 export function PublicHeader() {
   return (
@@ -15,13 +15,7 @@ export function PublicHeader() {
           className="flex items-center gap-2 transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md focus:outline-none"
           aria-label="VREAD - Retour à l'accueil"
         >
-          <Image 
-            src="/branding/vread-logo.svg" 
-            alt="VREAD logo" 
-            className="h-8 w-8"
-            priority={true}
-            sizes="32px"
-          />
+          <LogoVread className="h-8 w-8" />
           <span className="text-h4 font-serif text-logo-text">VREAD</span>
         </Link>
         
