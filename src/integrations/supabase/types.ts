@@ -573,6 +573,24 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_public_profile: {
+        Args: { target_id: string }
+        Returns: {
+          id: string
+          username: string
+          avatar_url: string
+          created_at: string
+        }[]
+      }
+      get_public_profiles_for_ids: {
+        Args: { ids: string[] }
+        Returns: {
+          id: string
+          username: string
+          avatar_url: string
+          created_at: string
+        }[]
+      }
       get_user_stats: {
         Args: { uid: string }
         Returns: {

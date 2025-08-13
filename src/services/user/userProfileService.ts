@@ -17,22 +17,51 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
   }
   
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+    // Récupérer l'utilisateur courant pour décider quelle source interroger
+    const { data: sessionRes } = await supabase.auth.getSession();
+    const currentUserId = sessionRes.session?.user?.id || null;
+
+    if (currentUserId && currentUserId === userId) {
+      // Propre profil: on peut lire toutes les colonnes (dont l'email)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching own user profile:", error);
+        toast({ title: "Erreur : Impossible de charger votre profil", variant: "destructive" });
+        return null;
+      }
+      return data;
+    }
+
+    // Profil public d'un autre utilisateur: utiliser l'RPC sécurisé sans email
+    const { data: publicData, error: publicError } = await supabase
+      .rpc('get_public_profile', { target_id: userId })
       .maybeSingle();
-    
-    if (error) {
-      console.error("Error fetching user profile:", error);
-      toast({
-        title: "Erreur : Impossible de charger les informations du profil",
-        variant: "destructive",
-      });
+
+    if (publicError) {
+      console.error("Error fetching public profile via RPC:", publicError);
+      toast({ title: "Erreur : Impossible de charger le profil public", variant: "destructive" });
       return null;
     }
-    
-    return data;
+
+    if (!publicData) return null;
+
+    // Mapper vers la forme du ProfileRecord avec email masqué
+    const mapped = {
+      id: publicData.id,
+      username: publicData.username ?? null,
+      avatar_url: publicData.avatar_url ?? null,
+      created_at: publicData.created_at ?? null,
+      updated_at: null,
+      email: null,
+      is_admin: null,
+    } as unknown as ProfileRecord;
+
+    return mapped;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     toast({

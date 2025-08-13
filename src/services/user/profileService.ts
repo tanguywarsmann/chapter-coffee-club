@@ -163,15 +163,13 @@ export async function getFollowers(userId: string): Promise<ProfileRecord[]> {
     
     if (!followerIds.length) return [];
     
-    // Récupérer les informations de profil pour chaque abonné
+    // Récupérer les informations de profil (public) pour chaque abonné via RPC sécurisé
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*')
-      .in('id', followerIds.map(item => item.follower_id));
+      .rpc('get_public_profiles_for_ids', { ids: followerIds.map((item) => item.follower_id) });
     
     if (profilesError) throw profilesError;
     
-    return profiles || [];
+    return (profiles as any[]) || [];
   } catch (error) {
     console.error("Error getting followers:", error);
     return [];
@@ -194,15 +192,13 @@ export async function getFollowing(userId: string): Promise<ProfileRecord[]> {
     
     if (!followingIds.length) return [];
     
-    // Récupérer les informations de profil pour chaque utilisateur suivi
+    // Récupérer les informations de profil (public) pour chaque utilisateur suivi via RPC sécurisé
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*')
-      .in('id', followingIds.map(item => item.following_id));
+      .rpc('get_public_profiles_for_ids', { ids: followingIds.map((item) => item.following_id) });
     
     if (profilesError) throw profilesError;
     
-    return profiles || [];
+    return (profiles as any[]) || [];
   } catch (error) {
     console.error("Error getting following:", error);
     return [];
@@ -217,14 +213,21 @@ export async function getFollowing(userId: string): Promise<ProfileRecord[]> {
 export async function getUserInfo(userId: string): Promise<ProfileRecord | null> {
   try {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .rpc('get_public_profile', { target_id: userId })
       .maybeSingle();
     
-    if (error) throw error;
+    if (!data) return null;
+    const mapped = {
+      id: data.id,
+      username: data.username ?? null,
+      avatar_url: data.avatar_url ?? null,
+      created_at: data.created_at ?? null,
+      updated_at: null,
+      email: null,
+      is_admin: null,
+    } as unknown as ProfileRecord;
     
-    return data;
+    return mapped;
   } catch (error) {
     console.error("Error fetching user info:", error);
     return null;

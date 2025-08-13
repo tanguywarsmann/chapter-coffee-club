@@ -21,7 +21,7 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
   try {
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id, username, email')
+      .select('id, username')
       .not('username', 'is', null)
       .limit(55);
 
@@ -38,7 +38,6 @@ export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
       return {
         id: profile.id,
         username: username,
-        email: profile.email,
         avatar: null, // Pas d'avatar par défaut, géré par EnhancedAvatar
         stats: {
           booksReading: Math.floor(Math.random() * 4) + 1,
