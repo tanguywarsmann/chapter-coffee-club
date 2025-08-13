@@ -11,7 +11,7 @@ interface SitemapUrl {
 }
 
 function generateSitemap() {
-  const baseUrl = 'https://vread.fr';
+  const baseUrl = 'https://www.vread.fr';
   const today = new Date().toISOString().split('T')[0];
   
   // Pages statiques

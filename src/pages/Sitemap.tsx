@@ -17,7 +17,7 @@ export default function Sitemap() {
         setSitemap(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://vread.fr/</loc>
+    <loc>https://www.vread.fr/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -56,7 +56,7 @@ export const getSitemapContent = async (): Promise<string> => {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://vread.fr/</loc>
+    <loc>https://www.vread.fr/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>

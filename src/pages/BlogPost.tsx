@@ -72,7 +72,7 @@ export default function BlogPost() {
         <meta property="og:title" content={`${post.title} - Blog VREAD`} />
         <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://vread.fr/blog/${post.slug}`} />
+        <meta property="og:url" content={`https://www.vread.fr/blog/${post.slug}`} />
         <meta property="article:published_time" content={post.created_at} />
         <meta property="article:modified_time" content={post.updated_at} />
         <meta property="article:author" content={post.author || 'VREAD'} />
@@ -82,7 +82,7 @@ export default function BlogPost() {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={`${post.title} - Blog VREAD`} />
         <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
-        <link rel="canonical" href={`https://vread.fr/blog/${post.slug}`} />
+        <link rel="canonical" href={`https://www.vread.fr/blog/${post.slug}`} />
         
         {/* Schema.org structured data for article */}
         <script type="application/ld+json">
@@ -98,14 +98,14 @@ export default function BlogPost() {
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
-              "url": "https://vread.fr"
+              "url": "https://www.vread.fr"
             },
             "datePublished": post.created_at,
             "dateModified": post.updated_at,
-            "url": `https://vread.fr/blog/${post.slug}`,
+            "url": `https://www.vread.fr/blog/${post.slug}`,
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": `https://vread.fr/blog/${post.slug}`
+              "@id": `https://www.vread.fr/blog/${post.slug}`
             },
             "keywords": post.tags?.join(", ") || "",
             "articleSection": "Littérature"

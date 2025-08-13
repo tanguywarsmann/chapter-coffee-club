@@ -35,21 +35,13 @@ export default defineConfig(({ command }) => ({
         ],
       },
       manifest: {
-        name: 'READ',
-        short_name: 'READ',
-        description: 'Reprends goût à la lecture, page après page',
+        name: 'VREAD',
+        short_name: 'VREAD',
+        description: "L'appli qui t'accompagne dans ta lecture, page après page",
         theme_color: '#B05F2C',
         icons: [
-          {
-            src: 'icons/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icons/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: 'branding/vread-logo-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'branding/vread-logo-512.png', sizes: '512x512', type: 'image/png' }
         ]
       }
     }),

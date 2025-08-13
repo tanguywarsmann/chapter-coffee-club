@@ -3,7 +3,7 @@ import { blogService } from '@/services/blogService';
 import { supabase } from '@/integrations/supabase/client';
 
 export async function generateCompleteSitemap(): Promise<string> {
-  const baseUrl = 'https://vread.fr';
+  const baseUrl = 'https://www.vread.fr';
   const today = new Date().toISOString().split('T')[0];
   
   try {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { blogService } from "@/services/blogService";
+import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
 
 export default function Blog() {
@@ -15,6 +16,8 @@ export default function Blog() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setCanonical('https://www.vread.fr/blog');
+    
     const loadPosts = async () => {
       try {
         const data = await blogService.getPublishedPosts();
@@ -58,11 +61,11 @@ export default function Blog() {
         <meta property="og:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
         <meta property="og:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://vread.fr/blog" />
+        <meta property="og:url" content="https://www.vread.fr/blog" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
         <meta name="twitter:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
-        <link rel="canonical" href="https://vread.fr/blog" />
+        <link rel="canonical" href="https://www.vread.fr/blog" />
         
         {/* Schema.org structured data for blog */}
         <script type="application/ld+json">
@@ -71,11 +74,11 @@ export default function Blog() {
             "@type": "Blog",
             "name": "Blog VREAD",
             "description": "Découvrez nos articles sur la lecture, les livres et la culture littéraire",
-            "url": "https://vread.fr/blog",
+            "url": "https://www.vread.fr/blog",
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
-              "url": "https://vread.fr"
+              "url": "https://www.vread.fr"
             },
             "mainEntity": posts.map(post => ({
               "@type": "BlogPosting",
@@ -87,7 +90,7 @@ export default function Blog() {
                 "@type": "Organization",
                 "name": post.author || "VREAD"
               },
-              "url": `https://vread.fr/blog/${post.slug}`
+              "url": `https://www.vread.fr/blog/${post.slug}`
             }))
           })}
         </script>

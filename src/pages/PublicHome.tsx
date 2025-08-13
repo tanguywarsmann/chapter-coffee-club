@@ -40,13 +40,13 @@ export default function PublicHome() {
         <meta property="og:title" content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page" />
         <meta property="og:description" content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://vread.fr/" />
+        <meta property="og:url" content="https://www.vread.fr/" />
         <meta property="og:image" content="/branding/vread-logo-512.png" />
         <meta property="og:site_name" content="VREAD" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page" />
         <meta name="twitter:description" content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive." />
-        <link rel="canonical" href="https://vread.fr/" />
+        <link rel="canonical" href="https://www.vread.fr/" />
         
         <script type="application/ld+json">
           {JSON.stringify({
@@ -54,7 +54,7 @@ export default function PublicHome() {
             "@type": "WebApplication",
             "name": "VREAD",
             "description": "Application pour reprendre goût à la lecture avec une approche progressive",
-            "url": "https://vread.fr",
+            "url": "https://www.vread.fr",
             "applicationCategory": "EducationalApplication",
             "operatingSystem": "Web",
             "offers": {

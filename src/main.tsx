@@ -25,7 +25,9 @@ if (import.meta.env.DEV) {
 }
 
 // Register service worker (PWA support) with forced update and cross-domain support
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+const isBot = /bot|crawl|spider|slurp|mediapartners/i.test(navigator.userAgent);
+
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isBot) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { 
       scope: '/',

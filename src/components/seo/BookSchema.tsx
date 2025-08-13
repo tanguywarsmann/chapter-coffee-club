@@ -15,7 +15,7 @@ export function BookSchema({ book }: BookSchemaProps) {
       "name": book.author
     },
     "description": book.description || "",
-    "url": `https://vread.fr/book/${book.slug}`,
+    "url": `https://www.vread.fr/book/${book.slug}`,
     "image": book.cover_url || "",
     "numberOfPages": book.total_pages || 0,
     "bookFormat": "EBook",
