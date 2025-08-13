@@ -1,20 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://xjumsrjuyzvsixvfwoiz.supabase.co wss://xjumsrjuyzvsixvfwoiz.supabase.co; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    
+
+    <!-- Security (les directives strictes sont servies via headers dans vercel.json) -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval';
+                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                   img-src 'self' data: https: blob:;
+                   font-src 'self' data: https://fonts.gstatic.com;
+                   connect-src 'self' https://xjumsrjuyzvsixvfwoiz.supabase.co wss://xjumsrjuyzvsixvfwoiz.supabase.co;
+                   media-src 'self';
+                   object-src 'none';
+                   base-uri 'self';
+                   form-action 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <title>VREAD - L'appli qui t'accompagne dans ta lecture, page après page</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta name="description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
     <meta name="author" content="VREAD" />
+
+    <!-- Open Graph -->
     <meta property="og:title" content="VREAD" />
     <meta property="og:description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
     <meta property="og:type" content="website" />
@@ -22,53 +31,57 @@
     <meta property="og:url" content="https://www.vread.fr/" />
     <meta property="og:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
     <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="VREAD" />
     <meta name="twitter:description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
     <meta name="twitter:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
     <meta name="twitter:url" content="https://www.vread.fr/" />
-    
+
+    <!-- Canonical -->
     <link rel="canonical" href="https://www.vread.fr/" />
 
-    <!-- Progressive Web App setup -->
+    <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#B05F2C" />
-    <link rel="apple-touch-icon" href="/branding/vread-logo-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="VREAD" />
-    
-    <!-- Google Fonts -->
+    <link rel="apple-touch-icon" href="/branding/vread-logo-192.png" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link 
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;500;700&display=swap" 
-      rel="stylesheet" 
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;500;700&display=swap"
+      rel="stylesheet"
     />
-    
-    <!-- Schema.org structured data for main application -->
+
+    <!-- JSON-LD -->
     <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","name":"VREAD","url":"https://www.vread.fr/"}
+      {"@context":"https://schema.org","@type":"WebSite","name":"VREAD","url":"https://www.vread.fr/"}
     </script>
     <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr/","logo":"https://www.vread.fr/branding/vread-logo-512.png","sameAs":["https://www.linkedin.com/company/vread","https://x.com/vread","https://github.com/vread","https://www.producthunt.com/products/vread"]}
+      {"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr/","logo":"https://www.vread.fr/branding/vread-logo-512.png","sameAs":["https://www.linkedin.com/company/vread","https://x.com/vread","https://github.com/vread","https://www.producthunt.com/products/vread"]}
     </script>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
+
     <!-- Offline fallback content -->
     <div id="offline-message" style="display: none; text-align: center; padding: 2rem; font-family: sans-serif;">
       <h2>VREAD est actuellement hors ligne</h2>
       <p>Vérifiez votre connexion internet et réessayez.</p>
     </div>
-    
+
     <script>
       // Simple offline detection
-      window.addEventListener('online', () => document.getElementById('offline-message').style.display = 'none');
-      window.addEventListener('offline', () => document.getElementById('offline-message').style.display = 'block');
+      window.addEventListener('online', () => (document.getElementById('offline-message').style.display = 'none'));
+      window.addEventListener('offline', () => (document.getElementById('offline-message').style.display = 'block'));
     </script>
   </body>
 </html>
