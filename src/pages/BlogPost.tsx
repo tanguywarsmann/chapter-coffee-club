@@ -7,6 +7,7 @@ import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { blogService } from "@/services/blogService";
+import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
 
 export default function BlogPost() {
@@ -16,6 +17,9 @@ export default function BlogPost() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const href = window.location.href.replace('http://', 'https://');
+    setCanonical(href);
+    
     const loadPost = async () => {
       if (!slug) {
         setError('Article non trouvé');
