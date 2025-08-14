@@ -71,3 +71,30 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## SEO Brand Guard
+
+This project includes an automated SEO monitoring system that validates brand consistency and critical SEO elements.
+
+### Running locally
+
+```bash
+BASE_URL=https://www.vread.fr ./scripts/brand-guard.sh
+```
+
+### Slack notifications (optional)
+
+To receive failure notifications in Slack, add the `SLACK_WEBHOOK_URL` secret in your GitHub repository settings.
+
+### What the monitor checks
+
+1. **HTTP Status 200** for key pages: `/`, `/blog`, `/a-propos`, `/presse`
+2. **Apex redirect**: `https://vread.fr/` redirects to `https://www.vread.fr/` in ≤1 hop
+3. **Sitemap validation**: 
+   - Accessible at `/sitemap.xml` with XML content-type
+   - All URLs start with `https://www.vread.fr/`
+   - All sitemap URLs return HTTP 200
+4. **Robots.txt**: References correct sitemap and contains `/blog-admin/` disallow
+5. **Home page SEO**: Canonical URL, Open Graph URL, JSON-LD WebSite/Organization schemas
+6. **Security headers**: CSP, X-Frame-Options, Referrer-Policy, X-Content-Type-Options, HSTS
+7. **Googlebot access**: Home page returns 200 for Googlebot user agent
