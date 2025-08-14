@@ -40,6 +40,16 @@ export const DesktopNav = ({ isAdmin }: DesktopNavProps) => {
           Blog
         </Button>
       </Link>
+      <Link to="/a-propos">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          À propos
+        </Button>
+      </Link>
+      <Link to="/presse">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          Presse
+        </Button>
+      </Link>
     </nav>
   );
 };

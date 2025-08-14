@@ -143,6 +143,34 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
                 {texts.discover}
               </Button>
             </li>
+            <li role="listitem">
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                onClick={() => handleNavigation("/a-propos")}
+                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/a-propos"))}
+                tabIndex={0}
+                role="button"
+                aria-label="Aller à À propos"
+              >
+                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
+                À propos
+              </Button>
+            </li>
+            <li role="listitem">
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                onClick={() => handleNavigation("/presse")}
+                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/presse"))}
+                tabIndex={0}
+                role="button"
+                aria-label="Aller à Presse"
+              >
+                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
+                Presse
+              </Button>
+            </li>
           </ul>
         </nav>
       </SheetContent>

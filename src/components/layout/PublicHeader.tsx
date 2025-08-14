@@ -30,6 +30,18 @@ export function PublicHeader() {
           >
             Blog
           </Link>
+          <Link 
+            to="/a-propos" 
+            className="text-white/80 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-logo-background rounded px-2 py-1"
+          >
+            À propos
+          </Link>
+          <Link 
+            to="/presse" 
+            className="text-white/80 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-logo-background rounded px-2 py-1"
+          >
+            Presse
+          </Link>
         </nav>
         
         <Button 
