@@ -82,6 +82,18 @@ This project includes an automated SEO monitoring system that validates brand co
 BASE_URL=https://www.vread.fr ./scripts/brand-guard.sh
 ```
 
+### SEO Brand Guard (local)
+macOS utilise un Bash 3.2 (sans `mapfile`). Le script inclut un fallback et peut être lancé :
+
+```bash
+./scripts/brand-guard.sh
+# ou, si vous préférez le Bash Homebrew :
+/opt/homebrew/bin/bash ./scripts/brand-guard.sh   # Apple Silicon
+/usr/local/bin/bash ./scripts/brand-guard.sh      # Intel
+```
+
+En CI (GitHub Actions), Bash ≥ 5 est disponible par défaut.
+
 ### Slack notifications (optional)
 
 To receive failure notifications in Slack, add the `SLACK_WEBHOOK_URL` secret in your GitHub repository settings.

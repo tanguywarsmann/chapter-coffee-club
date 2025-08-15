@@ -41,8 +41,21 @@ headers=$(header "$SITEMAP_URL" | tr -d '\r')
 echo "$headers" | grep -iq "content-type: .*xml" || fail "Sitemap sans Content-Type XML"
 sm=$(body "$SITEMAP_URL")
 echo "$sm" | grep -q "<urlset" || fail "Sitemap sans <urlset>"
-mapfile -t LOCS < <(echo "$sm" | sed -n 's:.*<loc>\(.*\)</loc>.*:\1:p')
-[ "${#LOCS[@]}" -gt 0 ] || fail "Aucune <loc> dans le sitemap"
+# Extraction robuste des <loc> compatible Bash 3.2 (macOS) et Bash 5+
+# - tolère espaces/retours ligne
+LOCS=()
+if command -v mapfile >/dev/null 2>&1; then
+  mapfile -t LOCS < <(echo "$sm" \
+    | tr -d '\r' \
+    | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
+else
+  while IFS= read -r line; do
+    LOCS+=("$line")
+  done < <(echo "$sm" \
+    | tr -d '\r' \
+    | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
+fi
+[ "${#LOCS[@]}" -gt 0 ] || fail "Aucune <loc> trouvée dans le sitemap"
 for u in "${LOCS[@]}"; do
   [[ "$u" == "$BASE_URL"* ]] || fail "URL sitemap hors www: $u"
   c=$(head_code "$u"); [ "$c" = "200" ] || fail "URL du sitemap non 200: $u (code $c)"
