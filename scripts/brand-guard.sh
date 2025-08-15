@@ -42,16 +42,16 @@ echo "$headers" | grep -iq "content-type: .*xml" || fail "Sitemap sans Content-T
 sm=$(body "$SITEMAP_URL")
 echo "$sm" | grep -q "<urlset" || fail "Sitemap sans <urlset>"
 # Extraction robuste des <loc> compatible Bash 3.2 (macOS) et Bash 5+
-# - tolère espaces/retours ligne
+# - tolère espaces/retours ligne et CRLF
 LOCS=()
 if command -v mapfile >/dev/null 2>&1; then
-  mapfile -t LOCS < <(echo "$sm" \
+  mapfile -t LOCS < <(printf "%s\n" "$sm" \
     | tr -d '\r' \
     | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
 else
   while IFS= read -r line; do
     LOCS+=("$line")
-  done < <(echo "$sm" \
+  done < <(printf "%s\n" "$sm" \
     | tr -d '\r' \
     | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
 fi
