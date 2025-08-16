@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -554,15 +554,15 @@ export type Database = {
     }
     Functions: {
       discover_feed: {
-        Args: { uid: string; lim?: number }
+        Args: { lim?: number; uid: string }
         Returns: Json
       }
       get_activity_feed: {
-        Args: { uid: string; lim?: number }
+        Args: { lim?: number; uid: string }
         Returns: {
+          actor_avatar: string
           actor_id: string
           actor_name: string
-          actor_avatar: string
           kind: string
           payload_id: string
           payload_title: string
@@ -576,40 +576,40 @@ export type Database = {
       get_public_profile: {
         Args: { target_id: string }
         Returns: {
-          id: string
-          username: string
           avatar_url: string
           created_at: string
+          id: string
+          username: string
         }[]
       }
       get_public_profiles_for_ids: {
         Args: { ids: string[] }
         Returns: {
-          id: string
-          username: string
           avatar_url: string
           created_at: string
+          id: string
+          username: string
         }[]
       }
       get_user_stats: {
         Args: { uid: string }
         Returns: {
-          books_read: number
-          pages_read: number
           badges_count: number
-          streak_current: number
-          streak_best: number
-          quests_done: number
-          xp: number
+          books_read: number
           lvl: number
+          pages_read: number
+          quests_done: number
+          streak_best: number
+          streak_current: number
+          xp: number
         }[]
       }
       use_joker: {
-        Args: { p_book_id: string; p_user_id: string; p_segment: number }
+        Args: { p_book_id: string; p_segment: number; p_user_id: string }
         Returns: {
           jokers_remaining: number
-          success: boolean
           message: string
+          success: boolean
         }[]
       }
     }
