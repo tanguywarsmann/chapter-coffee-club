@@ -397,6 +397,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_favorite_badges: {
@@ -550,7 +557,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       discover_feed: {
@@ -575,6 +602,15 @@ export type Database = {
       }
       get_public_profile: {
         Args: { target_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          id: string
+          username: string
+        }[]
+      }
+      get_public_profile_safe: {
+        Args: { target_user_id: string }
         Returns: {
           avatar_url: string
           created_at: string
