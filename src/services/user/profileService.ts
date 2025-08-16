@@ -244,14 +244,12 @@ export async function searchUsers(query: string, limit: number = 5): Promise<Pro
   try {
     // Use secure function to get public profiles only - no sensitive data exposed
     const { data, error } = await supabase
-      .rpc('get_public_profiles_for_ids', { 
-        ids: [] // Will get public profiles via the secure function
-      });
+      .rpc('get_all_public_profiles', { profile_limit: limit });
       
     if (error) throw error;
     
     // Convert the secure function result to ProfileRecord format
-    const profiles = (data || []).slice(0, limit).map((profile: any) => ({
+    const profiles = (data || []).map((profile: any) => ({
       id: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,

@@ -19,14 +19,11 @@ export interface DiscoverUser {
  */
 export async function getDiscoverUsers(): Promise<DiscoverUser[]> {
   try {
-    // Use secure function to get public profiles only
+    // Use secure function to get public profiles only - no sensitive data exposed
     const { data: profiles, error } = await supabase
-      .rpc('get_public_profiles_for_ids', { 
-        ids: [] // Will get all public profiles via the function
-      });
+      .rpc('get_all_public_profiles', { profile_limit: 55 });
 
     if (error) {
-      // If the function fails, fallback to an empty array
       console.error("Error fetching discover users:", error);
       return [];
     }

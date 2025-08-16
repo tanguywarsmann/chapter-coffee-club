@@ -569,6 +569,15 @@ export type Database = {
           posted_at: string
         }[]
       }
+      get_all_public_profiles: {
+        Args: { profile_limit?: number }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          id: string
+          username: string
+        }[]
+      }
       get_current_user_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean
