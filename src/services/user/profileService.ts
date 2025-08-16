@@ -242,16 +242,26 @@ export async function getUserInfo(userId: string): Promise<ProfileRecord | null>
  */
 export async function searchUsers(query: string, limit: number = 5): Promise<ProfileRecord[]> {
   try {
-    // Dans une application réelle, ceci rechercherait par nom ou d'autres champs
-    // Pour l'instant, nous récupérons simplement quelques profils récents
+    // Use secure function to get public profiles only - no sensitive data exposed
     const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .limit(limit);
+      .rpc('get_public_profiles_for_ids', { 
+        ids: [] // Will get public profiles via the secure function
+      });
       
     if (error) throw error;
     
-    return data || [];
+    // Convert the secure function result to ProfileRecord format
+    const profiles = (data || []).slice(0, limit).map((profile: any) => ({
+      id: profile.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      created_at: profile.created_at,
+      updated_at: null,
+      email: null, // Never expose email in search results
+      is_admin: null // Never expose admin status in search results
+    }));
+    
+    return profiles;
   } catch (error) {
     console.error("Error searching users:", error);
     return [];
