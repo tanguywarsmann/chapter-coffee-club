@@ -1,131 +1,129 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
+// src/pages/settings/DeleteAccount.tsx
+import * as React from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 import { requestAccountDeletion } from "@/services/accountDeletion";
+import { toast } from "sonner";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export function DeleteAccount() {
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleDeleteAccount = async () => {
+  const handleDelete = useCallback(async () => {
     try {
       setIsDeleting(true);
+
+      // 1) Supprime côté serveur (données + compte Auth via Edge Function)
       await requestAccountDeletion();
-      
+
+      // 2) Purge immédiate de la session locale (évite un état “fantôme” en WebView)
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        // L'utilisateur est déjà supprimé côté serveur, on ignore
+      }
+
+      // 3) Nettoyage du stockage local éventuel
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {}
+
+      // 4) Feedback + redirection
       toast.success("Compte supprimé avec succès");
-      
-      // Clear local storage and redirect to landing
-      localStorage.clear();
-      navigate("/", { replace: true });
-    } catch (error) {
-      toast.error("Erreur lors de la suppression du compte");
-      console.error("Account deletion error:", error);
+      navigate("/", { replace: true }); // ou window.location.replace("/")
+    } catch (e: any) {
+      const msg =
+        typeof e?.message === "string" && e.message.toLowerCase().includes("unauthorized")
+          ? "Session expirée. Reconnecte-toi pour confirmer la suppression."
+          : "Erreur lors de la suppression du compte";
+      toast.error(msg);
+      console.error("Account deletion error:", e);
     } finally {
       setIsDeleting(false);
+      setConfirmOpen(false);
     }
-  };
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Retour
-          </Button>
+    <div className="mx-auto w-full max-w-xl p-4 md:p-6">
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Retour
+      </button>
+
+      <h1 className="mb-2 text-2xl font-semibold">Supprimer mon compte</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
+        Cette action est <span className="font-semibold text-red-600">définitive</span> et{" "}
+        <span className="font-semibold">irréversible</span>.
+      </p>
+
+      <div className="rounded-2xl border p-4 md:p-6">
+        <div className="mb-4 flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 text-red-600" />
+          <div>
+            <p className="font-medium">Conséquences de la suppression</p>
+            <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
+              <li>Suppression de votre profil et de vos données de lecture</li>
+              <li>Perte de votre progression, historique et badges</li>
+              <li>Aucune récupération possible</li>
+            </ul>
+          </div>
         </div>
 
-        <Card className="border-destructive/20">
-          <CardHeader>
-            <CardTitle className="text-2xl font-serif text-destructive flex items-center gap-2">
-              <Trash2 className="h-6 w-6" />
-              Supprimer mon compte
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-destructive">
-                    Attention : Cette action est irréversible
-                  </h3>
-                  <ul className="text-sm text-coffee-darker/80 space-y-1">
-                    <li>• Toutes vos données de lecture seront définitivement supprimées</li>
-                    <li>• Votre progression et vos badges seront perdus</li>
-                    <li>• Votre compte ne pourra pas être récupéré</li>
-                    <li>• Vous devrez créer un nouveau compte pour utiliser VREAD</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setConfirmOpen(true)}
+            disabled={isDeleting}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+          >
+            {isDeleting ? "Suppression..." : "Supprimer définitivement mon compte"}
+          </button>
 
-            <div className="space-y-4">
-              <p className="text-coffee-darker/80">
-                Si vous souhaitez vraiment supprimer votre compte VREAD et toutes les données associées, 
-                cliquez sur le bouton ci-dessous. Cette action supprimera définitivement :
-              </p>
-              
-              <ul className="text-sm text-coffee-darker/80 space-y-1 pl-4">
-                <li>• Votre profil utilisateur</li>
-                <li>• Toute votre progression de lecture</li>
-                <li>• Vos validations et historique</li>
-                <li>• Vos badges et récompenses</li>
-                <li>• Vos préférences et paramètres</li>
-              </ul>
-            </div>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="destructive" 
-                  className="w-full"
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Supprimer définitivement mon compte
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-destructive">
-                    Confirmer la suppression du compte
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="space-y-2">
-                    <p>
-                      Êtes-vous absolument certain de vouloir supprimer votre compte VREAD ?
-                    </p>
-                    <p className="font-semibold text-destructive">
-                      Cette action est définitive et irréversible.
-                    </p>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    Annuler
-                  </AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleDeleteAccount}
-                    className="bg-destructive hover:bg-destructive/90"
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? "Suppression..." : "Oui, supprimer mon compte"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardContent>
-        </Card>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 items-center justify-center rounded-lg border px-4 text-sm font-medium hover:bg-accent"
+          >
+            Annuler
+          </button>
+        </div>
       </div>
+
+      {/* Confirmation minimaliste sans dépendance UI externe */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-background p-5 shadow-xl">
+            <p className="text-lg font-semibold">Confirmer la suppression</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Êtes-vous absolument certain de vouloir supprimer votre compte VREAD ? Cette action est
+              définitive.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="inline-flex h-9 items-center justify-center rounded-lg border px-4 text-sm font-medium hover:bg-accent"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {isDeleting ? "Suppression..." : "Oui, supprimer mon compte"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default DeleteAccount;
