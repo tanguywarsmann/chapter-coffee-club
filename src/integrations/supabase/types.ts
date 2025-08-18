@@ -53,12 +53,60 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_featured: {
+        Row: {
+          created_at: string
+          end_at: string | null
+          position: number
+          post_id: string
+          start_at: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          end_at?: string | null
+          position: number
+          post_id: string
+          start_at?: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          end_at?: string | null
+          position?: number
+          post_id?: string
+          start_at?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_featured_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_featured_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "v_featured_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author: string | null
           content: string
           created_at: string
           excerpt: string | null
+          featured: boolean
+          featured_at: string | null
+          featured_weight: number
           id: string
           image_alt: string | null
           image_url: string | null
@@ -74,6 +122,9 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          featured?: boolean
+          featured_at?: string | null
+          featured_weight?: number
           id?: string
           image_alt?: string | null
           image_url?: string | null
@@ -89,6 +140,9 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          featured?: boolean
+          featured_at?: string | null
+          featured_weight?: number
           id?: string
           image_alt?: string | null
           image_url?: string | null
@@ -550,9 +604,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_featured_posts: {
+        Row: {
+          author: string | null
+          content: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string | null
+          image_alt: string | null
+          image_url: string | null
+          position: number | null
+          published: boolean | null
+          published_at: string | null
+          slug: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      cleanup_user_data: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
       discover_feed: {
         Args: { lim?: number; uid: string }
         Returns: Json

@@ -4,18 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Security (les directives strictes sont servies via headers dans vercel.json) -->
-    <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self';
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval';
-                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                   img-src 'self' data: https: blob:;
-                   font-src 'self' data: https://fonts.gstatic.com;
-                   connect-src 'self' https://xjumsrjuyzvsixvfwoiz.supabase.co wss://xjumsrjuyzvsixvfwoiz.supabase.co;
-                   media-src 'self';
-                   object-src 'none';
-                   base-uri 'self';
-                   form-action 'self';">
+    <!-- Mobile WebView compatible CSP -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   base-uri 'self'; 
+                   form-action 'self'; 
+                   img-src 'self' data: blob: https: capacitor://* http://localhost; 
+                   media-src 'self' blob: https:; 
+                   font-src 'self' data:; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' capacitor://* http://localhost; 
+                   style-src 'self' 'unsafe-inline'; 
+                   connect-src 'self' https://*.supabase.co wss://*.supabase.co capacitor://* http://localhost ws://localhost:*; 
+                   frame-ancestors 'none';">
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <title>VREAD - L'appli qui t'accompagne dans ta lecture, page après page</title>
