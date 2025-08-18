@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import { requestAccountDeletion } from "@/services/accountDeletion";
 import { toast } from "sonner";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
