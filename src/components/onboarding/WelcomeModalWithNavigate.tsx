@@ -51,7 +51,7 @@ try {
                 id="welcome-title"
                 className="font-serif text-2xl md:text-3xl text-coffee-darker font-bold"
               >
-                Bienvenue sur READ
+                Bienvenue sur VREAD
               </DialogTitle>
             </div>
           </DialogHeader>
@@ -61,7 +61,7 @@ try {
             className="text-coffee-dark leading-relaxed space-y-6"
           >
             <p className="text-lg font-medium text-center text-coffee-darker">
-              READ t'aide à retrouver le plaisir de lire, challenge après challenge.
+              VREAD t'aide à retrouver le plaisir de lire, challenge après challenge.
             </p>
             
             <div>
