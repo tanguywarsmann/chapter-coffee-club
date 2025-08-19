@@ -84,16 +84,17 @@ export function BookGrid({
           const bookIdentifier = book.id || book.slug || '';
           
           return (
-            <BookCard 
-              key={bookIdentifier} 
-              book={book}
-              showProgress={showProgress}
-              showDate={showDate}
-              showAddButton={showAddButton}
-              showDeleteButton={showDeleteButton}
-              actionLabel={actionLabel}
-              onAction={() => onAction?.(bookIdentifier)}
-            />
+            <div key={bookIdentifier} className="h-full">
+              <BookCard 
+                book={book}
+                showProgress={showProgress}
+                showDate={showDate}
+                showAddButton={showAddButton}
+                showDeleteButton={showDeleteButton}
+                actionLabel={actionLabel}
+                onAction={() => onAction?.(bookIdentifier)}
+              />
+            </div>
           );
         })}
       </div>

@@ -11,6 +11,8 @@ interface BookCoverProps {
   image?: string;
   title?: string;
   priority?: boolean; // Réservé aux images critiques (lecture en cours)
+  className?: string;
+  fluid?: boolean;
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({ 
@@ -19,7 +21,9 @@ export const BookCover: React.FC<BookCoverProps> = ({
   size = "md",
   image,
   title,
-  priority = false // Par défaut: pas de priorité pour éviter de bloquer le chargement
+  priority = false, // Par défaut: pas de priorité pour éviter de bloquer le chargement
+  className,
+  fluid = false
 }) => {
   // Use either the passed image or get it from the book
   const coverImage = image || book?.coverImage;
@@ -43,18 +47,24 @@ export const BookCover: React.FC<BookCoverProps> = ({
   };
 
   return (
-    <div className={`book-cover bg-coffee-medium relative aspect-[2/3] ${sizeClasses[size]}`}>
+    <div
+      className={`book-cover bg-coffee-medium relative aspect-[2/3] ${
+        fluid ? "w-full" : sizeClasses[size]
+      } ${className || ""}`}
+    >
       {coverImage ? (
         <Image
           src={coverImage}
           alt={bookTitle}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           priority={priority}
-          sizes={responsiveSizes[size]}
+          sizes={fluid ? "(max-width: 768px) 50vw, 25vw" : responsiveSizes[size]}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
-          <span className="text-white font-serif italic text-h4">{bookTitle.substring(0, 1)}</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-coffee-medium">
+          <span className="text-white font-serif italic text-h4">
+            {bookTitle.substring(0, 1)}
+          </span>
         </div>
       )}
 

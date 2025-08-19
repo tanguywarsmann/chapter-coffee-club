@@ -148,28 +148,28 @@ export function BookCard({
   return (
     <Link 
       to={`/books/${bookIdentifier}`} 
-      className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
+      className="block h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
       aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}. Appuyez sur Entrée pour ouvrir.`}
       onKeyDown={handleKeyPress}
       tabIndex={0}
       role="link"
     >
-      <article className="book-card flex flex-col h-full bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-offset-2">
+      <article className="book-card flex flex-col h-full min-h-[520px] sm:min-h-[540px] bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-offset-2">
         <div className="relative">
-          <BookCover book={book} showProgress={showProgress} />
+          <BookCover book={book} showProgress={showProgress} fluid className="w-full" />
           {getBookStatusIcon()}
           <span className="sr-only">{getStatusLabel()}</span>
         </div>
         <div className="p-3 flex-grow flex flex-col">
-          <h3 className="font-medium text-coffee-darker mb-1 focus:outline-none">
+          <h3 className="font-medium text-coffee-darker mb-1 line-clamp-2 min-h-[3.25rem] focus:outline-none">
             {truncateTitle(book.title)}
           </h3>
-          <p className="text-body-sm text-muted-foreground">
+          <p className="text-body-sm text-muted-foreground line-clamp-1 min-h-[1.25rem]">
             {book.author || "Auteur inconnu"}
           </p>
 
-          <div className="mt-2 flex flex-wrap gap-1">
-            {(book.categories || []).slice(0, 2).map((category, index) => (
+          <div className="mt-2 flex flex-wrap gap-1 min-h-[36px] overflow-hidden">
+            {(book.categories || []).slice(0, 3).map((category, index) => (
               <Badge
                 key={index}
                 variant="outline"
@@ -181,16 +181,18 @@ export function BookCard({
             ))}
           </div>
 
-          <BookCardActions
-            book={book}
-            isAdding={isAdding}
-            showAddButton={showAddButton}
-            showDeleteButton={showDeleteButton}
-            actionLabel={actionLabel}
-            onAdd={handleAddToReadingList}
-            onDelete={handleDelete}
-            onAction={handleAction}
-          />
+          <div className="mt-auto pt-2">
+            <BookCardActions
+              book={book}
+              isAdding={isAdding}
+              showAddButton={showAddButton}
+              showDeleteButton={showDeleteButton}
+              actionLabel={actionLabel}
+              onAdd={handleAddToReadingList}
+              onDelete={handleDelete}
+              onAction={handleAction}
+            />
+          </div>
         </div>
       </article>
     </Link>

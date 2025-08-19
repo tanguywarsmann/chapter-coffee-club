@@ -26,6 +26,9 @@ export const BookGridSkeleton = ({ count = 8, showTitle = false }: BookGridSkele
             
             {/* Author skeleton */}
             <Skeleton className="h-3 w-3/4 bg-coffee-light/15" />
+            
+            {/* Bouton placeholder */}
+            <Skeleton className="h-12 w-full bg-coffee-light/20" />
           </div>
         ))}
       </div>
