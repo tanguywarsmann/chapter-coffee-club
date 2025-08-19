@@ -55,7 +55,7 @@ export const BookActions = ({
       </div>
     </div>
     <Button 
-      className="w-full bg-coffee-dark hover:bg-coffee-darker"
+      className="w-full bg-coffee-dark text-white hover:bg-coffee-darker"
       onClick={onStartReading} 
       disabled={isInitializing}
     >
