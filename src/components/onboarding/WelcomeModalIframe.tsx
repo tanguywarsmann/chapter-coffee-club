@@ -61,7 +61,7 @@ export function WelcomeModalIframe({ open, onClose }: WelcomeModalIframeProps) {
             className="text-coffee-dark leading-relaxed space-y-6"
           >
             <p className="text-lg font-medium text-center text-coffee-darker">
-              READ t'aide à retrouver le plaisir de lire, challenge après challenge.
+              VREAD t'aide à retrouver le plaisir de lire, challenge après challenge.
             </p>
             
             <div>
