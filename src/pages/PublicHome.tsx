@@ -150,7 +150,7 @@ export default function PublicHome() {
               Prêt à recommencer à lire ?
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
-              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
+              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec VREAD.
             </p>
             <Button 
               size="lg" 
