@@ -207,7 +207,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           <MemoizedComponent deps={[progressData.isBookCompleted]}>
             <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
               <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
-              <p className="text-body-sm text-green-600 mt-1">Ce livre contient {currentBook.totalSegments} segments de lecture.</p>
             </div>
           </MemoizedComponent>
         ) : progressData.showValidationButton && (
@@ -223,9 +222,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                   {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
                 </span>
               </Button>
-              <p className="text-body-sm text-muted-foreground text-center">
-                Ce livre contient {currentBook.totalSegments} segments de lecture.
-              </p>
             </>
           </MemoizedComponent>
         )}
