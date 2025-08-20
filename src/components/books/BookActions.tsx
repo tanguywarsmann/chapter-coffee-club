@@ -55,19 +55,20 @@ export const BookActions = ({
       </div>
     </div>
     <Button 
-      className="w-full bg-coffee-dark text-white hover:bg-coffee-darker"
+      variant="bookCta"
+      className="w-full"
       onClick={onStartReading} 
       disabled={isInitializing}
     >
       {isInitializing ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Initialisation...
+          <span className="!text-white">Initialisation...</span>
         </>
       ) : (
         <>
           <BookIcon className="h-4 w-4 mr-2" />
-          Commencer ma lecture
+          <span className="!text-white">Commencer ma lecture</span>
         </>
       )}
     </Button>

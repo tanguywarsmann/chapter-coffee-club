@@ -214,11 +214,14 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
           <MemoizedComponent deps={[progressData.chaptersRead, isValidating]}>
             <>
               <Button
+                variant="bookCta"
                 disabled={isValidating}
                 onClick={handleOpenValidationModal}
-                className="w-full bg-coffee-dark text-white hover:bg-coffee-darker py-3 text-h4 font-serif my-4"
+                className="w-full py-3 text-h4 font-serif my-4"
               >
-                {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+                <span className="!text-white">
+                  {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+                </span>
               </Button>
               <p className="text-body-sm text-muted-foreground text-center">
                 Ce livre contient {currentBook.totalSegments} segments de lecture.
