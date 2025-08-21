@@ -3,6 +3,9 @@
     { "source": "/a-propos/index.html", "destination": "/a-propos", "permanent": true },
     { "source": "/presse/index.html", "destination": "/presse", "permanent": true },
     { "source": "/à-propos", "destination": "/a-propos", "permanent": true },
+    { "source": "/apropos", "destination": "/a-propos", "permanent": true },
+    { "source": "/about", "destination": "/a-propos", "permanent": true },
+    { "source": "/press", "destination": "/presse", "permanent": true },
     {
       "source": "/(.*)",
       "destination": "https://www.vread.fr/$1",
