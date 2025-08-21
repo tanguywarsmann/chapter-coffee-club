@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/blog", "destination": "/" },
-    { "source": "/blog/:path*", "destination": "/" }
+    { "source": "/blog/:path*", "destination": "/" },
+    { "source": "/((?!api|.*\\..*).*)", "destination": "/" }
   ],
   "redirects": [
     {

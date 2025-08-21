@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Landing from '@/pages/Landing';
 import Home from '@/pages/Home';
 import Auth from '@/pages/Auth';
@@ -16,6 +16,9 @@ import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 import FinishedChatPage from '@/pages/FinishedChatPage';
+import About from '@/pages/About';
+import Press from '@/pages/Press';
+import NotFound from '@/pages/NotFound';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 // Legal pages
@@ -49,6 +52,15 @@ const AppRouter = () => {
       <Route path="/followers/:type/:userId" element={<Followers />} />
       <Route path="/finished-chat/:slug" element={<FinishedChatPage />} />
       
+      {/* Public Pages */}
+      <Route path="/a-propos" element={<About />} />
+      <Route path="/presse" element={<Press />} />
+
+      {/* Aliases with redirects */}
+      <Route path="/apropos" element={<Navigate to="/a-propos" replace />} />
+      <Route path="/about" element={<Navigate to="/a-propos" replace />} />
+      <Route path="/press" element={<Navigate to="/presse" replace />} />
+      
       {/* Legal Pages */}
       <Route path="/legal/privacy" element={<PrivacyPolicy />} />
       <Route path="/legal/terms" element={<Terms />} />
@@ -64,6 +76,9 @@ const AppRouter = () => {
         path="/sitemap.xml" 
         element={<SitemapRoute />} 
       />
+
+      {/* Catch-all 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
