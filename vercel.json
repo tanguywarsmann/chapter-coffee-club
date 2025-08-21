@@ -1,10 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/blog", "destination": "/" },
-    { "source": "/blog/:path*", "destination": "/" },
-    { "source": "/((?!api|.*\\..*).*)", "destination": "/" }
-  ],
   "redirects": [
+    { "source": "/a-propos/index.html", "destination": "/a-propos", "permanent": true },
+    { "source": "/presse/index.html", "destination": "/presse", "permanent": true },
+    { "source": "/à-propos", "destination": "/a-propos", "permanent": true },
     {
       "source": "/(.*)",
       "destination": "https://www.vread.fr/$1",
@@ -17,6 +15,11 @@
       "permanent": true,
       "has": [{ "type": "host", "value": "vread.blog" }]
     }
+  ],
+  "rewrites": [
+    { "source": "/blog", "destination": "/" },
+    { "source": "/blog/:path*", "destination": "/" },
+    { "source": "/((?!api|.*\\..*).*)", "destination": "/" }
   ],
   "headers": [
     {

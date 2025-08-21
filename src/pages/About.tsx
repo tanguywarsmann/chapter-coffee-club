@@ -6,24 +6,19 @@ export default function About() {
   return (
     <PublicLayout>
       <Helmet>
-        <title>VREAD - À propos de l'application de lecture</title>
-        <meta name="description" content="VREAD est l'application qui t'accompagne dans ta lecture, page après page. Découvrez notre mission et notre équipe." />
+        <title>À propos | VREAD</title>
+        <meta name="description" content="Présentation de VREAD, mission, équipe et contact." />
         <link rel="canonical" href="https://www.vread.fr/a-propos" />
-        
-        <meta property="og:title" content="VREAD - À propos" />
-        <meta property="og:description" content="VREAD est l'application qui t'accompagne dans ta lecture, page après page." />
+        <meta property="og:title" content="À propos | VREAD" />
         <meta property="og:url" content="https://www.vread.fr/a-propos" />
-        <meta property="og:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
-        <meta property="og:locale" content="fr_FR" />
-        
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="VREAD - À propos" />
-        <meta name="twitter:description" content="VREAD est l'application qui t'accompagne dans ta lecture, page après page." />
-        <meta name="twitter:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
-        <meta name="twitter:url" content="https://www.vread.fr/a-propos" />
-        
+        <meta property="og:type" content="website" />
         <script type="application/ld+json">
-          {`{"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr/"}`}
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "VREAD",
+            "url": "https://www.vread.fr/"
+          })}
         </script>
       </Helmet>
 
