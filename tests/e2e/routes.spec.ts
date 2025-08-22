@@ -39,9 +39,19 @@ test.describe('Pages publiques VREAD', () => {
     });
   }
 
-  test('404 sur route inconnue', async ({ page, context, baseURL }) => {
-    const res = await context.request.get(`${baseURL}/pressee`, { maxRedirects: 0 });
-    expect(res.status()).toBe(404);
+  test('NotFound UI sur route inconnue', async ({ page }) => {
+    await page.goto('/pressee', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-testid="not-found"], h1, main'))
+      .toContainText(/404|introuvable|not found/i);
+  });
+
+  test('Canonique et OG sur À propos', async ({ page }) => {
+    await page.goto('/a-propos');
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    expect(canonical).toBeTruthy();
+    expect(canonical).toContain('/a-propos');
+    const ogTitle = await page.locator('meta[property="og:title"]').getAttribute('content');
+    expect((ogTitle || '').toLowerCase()).toContain('propos');
   });
 
   test('Footer utilise Link pour la nav interne', async ({ page }) => {

@@ -15,7 +15,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Run E2E
+      - name: Run E2E (local preview)
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:4173
+          PLAYWRIGHT_BASE_URL: ""
         run: npm run test:e2e:ci
