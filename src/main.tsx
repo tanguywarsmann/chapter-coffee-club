@@ -7,11 +7,7 @@ performance.mark("read-app-start");
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
 
-// Reset path if not on allowed routes
-const allowedStart = ["/", "/auth", "/home", "/blog", "/a-propos", "/presse"];
-if (!allowedStart.some(route => window.location.pathname.startsWith(route))) {
-  history.replaceState(null, "", "/");
-}
+// Ne pas réécrire l'URL ici : React Router + rewrites Vercel gèrent les routes.
 
 // Clear any saved navigation state
 localStorage.removeItem("lastVisitedPath");
