@@ -8,7 +8,7 @@ performance.mark("read-app-start");
 localStorage.removeItem("read_app_books_cache");
 
 // Reset path if not on allowed routes
-const allowedStart = ["/", "/auth", "/home", "/blog"];
+const allowedStart = ["/", "/auth", "/home", "/blog", "/a-propos", "/presse"];
 if (!allowedStart.some(route => window.location.pathname.startsWith(route))) {
   history.replaceState(null, "", "/");
 }
