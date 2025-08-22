@@ -60,6 +60,8 @@ const AppRouter = () => {
       <Route path="/apropos" element={<Navigate to="/a-propos" replace />} />
       <Route path="/about" element={<Navigate to="/a-propos" replace />} />
       <Route path="/press" element={<Navigate to="/presse" replace />} />
+      <Route path="/a-propos/index.html" element={<Navigate to="/a-propos" replace />} />
+      <Route path="/presse/index.html" element={<Navigate to="/presse" replace />} />
       
       {/* Legal Pages */}
       <Route path="/legal/privacy" element={<PrivacyPolicy />} />
