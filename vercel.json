@@ -26,6 +26,18 @@
   ],
   "headers": [
     {
+      "source": "/favicon.ico",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/branding/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=600" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {

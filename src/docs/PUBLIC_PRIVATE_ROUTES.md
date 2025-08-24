@@ -17,7 +17,7 @@ Cette documentation explique la séparation entre les zones publiques et privée
 - `/sitemap.xml`
 - `/robots.txt`
 - `/favicon.ico`
-- `/manifest.json`
+- `/manifest.webmanifest`
 - `/googlee0450f4f037a2935.html`
 
 ## Routes Privées (Authentification requise)

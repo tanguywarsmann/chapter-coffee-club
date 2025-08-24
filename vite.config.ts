@@ -17,6 +17,12 @@ export default defineConfig(({ command }) => ({
     ...(command === 'serve' ? [componentTagger()] : []),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: [
+        'branding/vread-favicon.svg',
+        'branding/vread-favicon-32.png',
+        'branding/vread-favicon-16.png',
+        'branding/vread-apple-touch-icon.png'
+      ],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}'],
         maximumFileSizeToCacheInBytes: 3000000, // 3MB max par fichier
@@ -37,11 +43,13 @@ export default defineConfig(({ command }) => ({
       manifest: {
         name: 'VREAD',
         short_name: 'VREAD',
-        description: "L'appli qui t'accompagne dans ta lecture, page après page",
-        theme_color: '#B05F2C',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#B05F2C',
+        theme_color: '#E9CBA4',
         icons: [
-          { src: 'branding/vread-logo-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'branding/vread-logo-512.png', sizes: '512x512', type: 'image/png' }
+          { src: '/branding/vread-logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/branding/vread-logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       }
     }),

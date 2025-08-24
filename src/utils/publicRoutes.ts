@@ -23,7 +23,7 @@ export const STATIC_ASSETS = [
   '/sitemap.xml',
   '/robots.txt',
   '/favicon.ico',
-  '/manifest.json',
+  '/manifest.webmanifest',
   '/googlee0450f4f037a2935.html'
 ] as const;
 
