@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export default function Press() {
-  // JSON-LD non requis par les tests ici, on peut s’en passer
   return (
     <PublicLayout>
       <Helmet>
@@ -12,17 +11,24 @@ export default function Press() {
           name="description"
           content="Espace presse VREAD : kit média, logos, visuels, contacts et communiqués."
         />
-        {/* Canonical RELATIF pour passer en local/preview */}
-        <link rel="canonical" href="/presse" />
+        <link rel="canonical" href="https://www.vread.fr/presse" />
         <meta property="og:title" content="Presse | VREAD" />
+        <meta property="og:url" content="https://www.vread.fr/presse" />
         <meta property="og:type" content="website" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "VREAD",
+            "url": "https://www.vread.fr/"
+          })}
+        </script>
       </Helmet>
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="prose prose-neutral max-w-none">
-          {/* H1 contenant “presse” pour matcher le test */}
           <h1 className="text-h1 text-logo-accent mb-6">
-            VREAD — Espace presse et médias
+            VREAD - Espace presse et médias
           </h1>
 
           <p className="text-body-lg mb-8">
