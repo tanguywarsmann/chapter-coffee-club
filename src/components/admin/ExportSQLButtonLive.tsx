@@ -24,7 +24,7 @@ export default function ExportSQLButtonLive() {
       return;
     }
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const;
-    let fullSQL = "-- Export SQL pour READ\n\n";
+    let fullSQL = "-- Export SQL pour VREAD\n\n";
 
     for (const table of tables) {
       const { data, error } = await supabase.from(table as any).select("*");
@@ -64,7 +64,7 @@ export default function ExportSQLButtonLive() {
   return (
     <Button onClick={exportData} variant="outline" className="gap-2">
       <Database className="h-4 w-4" />
-      Exporter la base READ (SQL)
+      Exporter la base VREAD (SQL)
     </Button>
   )
 }

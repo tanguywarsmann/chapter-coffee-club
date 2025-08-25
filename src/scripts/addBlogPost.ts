@@ -52,7 +52,7 @@ const createClassicsArticle = async () => {
 
 <p>Ces dix livres ne sont pas là pour vous impressionner, mais pour <em>vous accueillir</em>. Ce sont des portes ouvertes. Commencez par celui qui vous attire, sans pression. Lisez cinq pages. Puis dix. Puis laissez venir le reste.</p>
 
-<p>Sur READ, chaque livre est découpé en segments simples, avec une petite question pour valider votre lecture. Pas de performance, juste un accompagnement.</p>
+<p>Sur VREAD, chaque livre est découpé en segments simples, avec une petite question pour valider votre lecture. Pas de performance, juste un accompagnement.</p>
 
 <p>📚 <em>Et si c'était le moment de relire lentement, mais vraiment ?</em></p>`,
       excerpt: "Vous souhaitez reprendre la lecture sans savoir par où commencer ? Voici dix romans classiques, accessibles, profonds et inoubliables, pour redécouvrir le plaisir de lire.",

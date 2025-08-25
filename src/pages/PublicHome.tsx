@@ -75,7 +75,7 @@ export default function PublicHome() {
         {/* Hero Section avec Logo */}
         <section className="relative py-16 px-4">
           <div className="mx-auto w-full px-4 max-w-none text-center">
-            {/* Logo READ mis en avant */}
+            {/* Logo VREAD mis en avant */}
             <div className="mb-8 flex justify-center">
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
                 <Image 

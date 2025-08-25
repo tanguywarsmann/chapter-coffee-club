@@ -19,6 +19,7 @@ import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
 import NotFound from '@/pages/NotFound';
+import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 // Legal pages
@@ -48,6 +49,7 @@ const AppRouter = () => {
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/explore" element={<AuthGuard><Explore /></AuthGuard>} />
+      <Route path="/search" element={<Search />} />
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/followers/:type/:userId" element={<Followers />} />
       <Route path="/finished-chat/:slug" element={<FinishedChatPage />} />
