@@ -22,8 +22,11 @@ if (import.meta.env.DEV) {
 
 // Register service worker (PWA support) with forced update and cross-domain support
 const isBot = /bot|crawl|spider|slurp|mediapartners/i.test(navigator.userAgent);
+const isE2E =
+  /HeadlessChrome|Playwright|puppeteer/i.test(navigator.userAgent) ||
+  (navigator as any).webdriver === true;
 
-if ('serviceWorker' in navigator && import.meta.env.PROD && !isBot) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isBot && !isE2E) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { 
       scope: '/',
@@ -163,5 +166,5 @@ window.addEventListener("load", () => {
   }
 });
 
-// Defer React app loading
-import("@/bootstrap");
+// Load React app
+import "./bootstrap";
