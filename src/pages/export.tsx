@@ -48,7 +48,7 @@ export default function ExportPage() {
       return
     }
     const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const
-    let fullSQL = "-- Export SQL pour READ\n\n"
+    let fullSQL = "-- Export SQL pour VREAD\n\n"
 
     for (const table of tables) {
       const { data, error } = await supabase.from(table as any).select("*")
@@ -105,8 +105,8 @@ export default function ExportPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-white text-black">
-      <h1 className="text-2xl font-bold">Export de la base READ</h1>
-      <Button onClick={exportData}>Exporter la base READ (SQL)</Button>
+      <h1 className="text-2xl font-bold">Export de la base VREAD</h1>
+      <Button onClick={exportData}>Exporter la base VREAD (SQL)</Button>
     </div>
   )
 }

@@ -108,7 +108,7 @@ export default function Landing() {
                 className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/auth" aria-label="Commencer votre parcours de lecture avec read">
+                <Link to="/auth" aria-label="Commencer votre parcours de lecture avec VREAD">
                   Commencer
                 </Link>
               </Button>
@@ -182,7 +182,7 @@ export default function Landing() {
                 Prêt à recommencer à lire ?
               </h2>
               <p className="mx-auto max-w-2xl text-xl font-light leading-relaxed text-white/95 md:text-2xl">
-                Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
+                Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec VREAD.
               </p>
             </div>
 

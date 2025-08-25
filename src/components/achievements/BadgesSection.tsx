@@ -34,7 +34,7 @@ export function BadgesSection() {
       id: "premier-livre",
       slug: "premier-livre",
       name: "Premier livre terminé",
-      description: "Félicitations ! Vous avez terminé votre premier livre sur READ.",
+      description: "Félicitations ! Vous avez terminé votre premier livre sur VREAD.",
       icon: "🎉",
       color: "green-500",
       rarity: "common",

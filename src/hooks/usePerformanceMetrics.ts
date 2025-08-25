@@ -1,7 +1,7 @@
 
 /**
  * Hook pour mesurer les Core Web Vitals et métriques de performance
- * READ APP v0.15
+ * VREAD APP v0.15
  */
 
 import { useEffect, useState } from 'react';

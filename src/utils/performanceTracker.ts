@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * TRACKER DE PERFORMANCE - READ APP v0.15
+ * TRACKER DE PERFORMANCE - VREAD APP v0.15
  * 
  * Surveille les re-rendus, temps de réponse API et métriques Core Web Vitals
  */

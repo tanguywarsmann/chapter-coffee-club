@@ -22,7 +22,7 @@ export function BookSchema({ book }: BookSchemaProps) {
     "inLanguage": "fr",
     "publisher": {
       "@type": "Organization",
-      "name": "READ"
+      "name": "VREAD"
     },
     "genre": book.tags?.join(", ") || "",
     "aggregateRating": {

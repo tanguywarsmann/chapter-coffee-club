@@ -2,7 +2,7 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// Service Worker personnalisé pour READ avec détection automatique des mises à jour
+// Service Worker personnalisé pour VREAD avec détection automatique des mises à jour
 // Version forcée pour invalidation du cache PWA
 const CACHE_VERSION = 'read-cache-v3-' + Date.now();
 const STATIC_CACHE = `${CACHE_VERSION}-static`;

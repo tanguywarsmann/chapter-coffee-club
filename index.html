@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="application-name" content="VREAD" />
 
     <!-- Security (les directives strictes sont servies via headers dans vercel.json) -->
     <meta http-equiv="Content-Security-Policy"
@@ -61,7 +62,21 @@
 
     <!-- JSON-LD -->
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"WebSite","name":"VREAD","url":"https://www.vread.fr/"}
+      {"@context":"https://schema.org","<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://www.vread.fr/",
+  "name": "VREAD",
+  "alternateName": ["Vread", "V Read"],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.vread.fr/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+@type":"WebSite","name":"VREAD","url":"https://www.vread.fr/"}
     </script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr/","logo":"https://www.vread.fr/branding/vread-logo-512.png","sameAs":["https://www.linkedin.com/company/vread","https://x.com/vread","https://github.com/vread","https://www.producthunt.com/products/vread"]}
@@ -85,3 +100,4 @@
     </script>
   </body>
 </html>
+

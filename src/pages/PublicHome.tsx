@@ -75,7 +75,7 @@ export default function PublicHome() {
         {/* Hero Section avec Logo */}
         <section className="relative py-16 px-4">
           <div className="mx-auto w-full px-4 max-w-none text-center">
-            {/* Logo READ mis en avant */}
+            {/* Logo VREAD mis en avant */}
             <div className="mb-8 flex justify-center">
               <div className="bg-reed-primary p-6 rounded-2xl shadow-lg">
                 <Image 
@@ -150,7 +150,7 @@ export default function PublicHome() {
               Prêt à recommencer à lire ?
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
-              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec read.
+              Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec VREAD.
             </p>
             <Button 
               size="lg" 

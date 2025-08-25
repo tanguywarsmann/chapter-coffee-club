@@ -39,7 +39,7 @@ export default function Admin() {
   const handleExportFullData = async () => {
     try {
       const tables = ["books", "reading_progress", "reading_questions", "reading_validations"] as const;
-      let fullSQL = "-- Export SQL pour READ\n\n";
+      let fullSQL = "-- Export SQL pour VREAD\n\n";
 
       for (const table of tables) {
         const { data, error } = await supabase.from(table as any).select("*");

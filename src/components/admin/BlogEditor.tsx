@@ -33,7 +33,7 @@ title: "${post.title}"
 date: "${post.date}"
 slug: "${post.slug}"
 description: "${post.description || ''}"
-author: "${post.author || 'READ'}"
+author: "${post.author || 'VREAD'}"
 tags: [${post.tags?.map(tag => `"${tag}"`).join(', ') || ''}]
 published: true
 ---
@@ -65,7 +65,7 @@ title: "Nouvel article"
 date: "${now}"
 slug: "nouvel-article-${now}"
 description: "Description de l'article"
-author: "READ"
+author: "VREAD"
 tags: ["tag1", "tag2"]
 published: true
 ---
