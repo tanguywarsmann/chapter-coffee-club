@@ -20,9 +20,12 @@ export const AppFooter = () => {
               Blog
             </Link>
           </div>
-          <span className="text-caption text-muted-foreground italic">
-            {APP_VERSION}
-          </span>
+          <div className="flex items-center gap-2 text-caption text-muted-foreground italic">
+            <span>{APP_VERSION}</span>
+            <span data-build className="text-xs opacity-60">
+              {__VREAD_BUILD__}
+            </span>
+          </div>
         </div>
       </div>
     </footer>

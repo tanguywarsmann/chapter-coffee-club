@@ -11,6 +11,9 @@ export default defineConfig(({ command }) => ({
     host: "::",
     port: 8080,
   },
+  define: {
+    __VREAD_BUILD__: JSON.stringify(new Date().toISOString())
+  },
   plugins: [
     react(),
     // Activer le composant tagger seulement en développement
