@@ -1,10 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export default function About() {
   return (
-    <PublicLayout>
+    <>
       <Helmet>
         <title>À propos | VREAD</title>
         <meta name="description" content="Présentation de VREAD, mission, équipe et contact." />
@@ -27,12 +26,15 @@ export default function About() {
           <h1 className="text-h1 text-logo-accent mb-6">VREAD - À propos de notre mission</h1>
 
           <p className="text-body-lg mb-8">
-            VREAD est l'application innovante qui révolutionne votre expérience de lecture en vous accompagnant page après page dans votre parcours littéraire. Notre plateforme combine passion pour la lecture et technologie moderne pour créer une communauté de lecteurs engagés.
+            VREAD est l'application innovante qui révolutionne votre expérience de lecture en vous accompagnant
+            page après page dans votre parcours littéraire. Notre plateforme combine passion pour la lecture et
+            technologie moderne pour créer une communauté de lecteurs engagés.
           </p>
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">Notre mission</h2>
           <p className="text-body mb-6">
-            Nous croyons que la lecture doit être accessible, motivante et sociale. VREAD transforme la lecture solitaire en une aventure collective où chaque page tournée devient une victoire partagée.
+            Nous croyons que la lecture doit être accessible, motivante et sociale. VREAD transforme la lecture
+            solitaire en une aventure collective où chaque page tournée devient une victoire partagée.
           </p>
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">Nos valeurs</h2>
@@ -45,14 +47,18 @@ export default function About() {
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">L'équipe VREAD</h2>
           <p className="text-body mb-8">
-            Notre équipe est composée de passionnés de littérature et d'experts en technologie, unis par la vision commune de démocratiser la lecture et de créer la plus belle communauté de lecteurs francophones.
+            Notre équipe est composée de passionnés de littérature et d'experts en technologie, unis par la vision
+            commune de démocratiser la lecture et de créer la plus belle communauté de lecteurs francophones.
           </p>
 
-          <Link to="/auth" className="inline-block bg-logo-accent hover:bg-logo-accent-dark text-white px-6 py-3 rounded-lg font-medium transition-colors">
+          <Link
+            to="/auth"
+            className="inline-block bg-logo-accent hover:bg-logo-accent-dark text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
             Rejoindre VREAD
           </Link>
         </div>
       </main>
-    </PublicLayout>
+    </>
   );
 }
