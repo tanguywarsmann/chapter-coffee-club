@@ -1,16 +1,12 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export default function Press() {
   return (
-    <PublicLayout>
+    <>
       <Helmet>
         <title>Presse | VREAD</title>
-        <meta
-          name="description"
-          content="Espace presse VREAD : kit média, logos, visuels, contacts et communiqués."
-        />
+        <meta name="description" content="Espace presse VREAD : kit média, logos, visuels, contacts et communiqués." />
         <link rel="canonical" href="https://www.vread.fr/presse" />
         <meta property="og:title" content="Presse | VREAD" />
         <meta property="og:url" content="https://www.vread.fr/presse" />
@@ -27,14 +23,11 @@ export default function Press() {
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="prose prose-neutral max-w-none">
-          <h1 className="text-h1 text-logo-accent mb-6">
-            VREAD - Espace presse et médias
-          </h1>
+          <h1 className="text-h1 text-logo-accent mb-6">VREAD - Espace presse et médias</h1>
 
           <p className="text-body-lg mb-8">
-            VREAD est l'application française qui accompagne les lecteurs page
-            après page dans leur parcours littéraire. Nous transformons la
-            lecture en une expérience sociale et motivante grâce à notre
+            VREAD est l'application française qui accompagne les lecteurs page après page dans leur parcours
+            littéraire. Nous transformons la lecture en une expérience sociale et motivante grâce à notre
             plateforme innovante de gamification de la lecture.
           </p>
 
@@ -56,22 +49,10 @@ export default function Press() {
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">Notre proposition unique</h2>
           <ul className="list-disc list-inside space-y-2 mb-6">
-            <li>
-              <strong>Gamification de la lecture :</strong> Badges, défis et
-              progression pour motiver les lecteurs
-            </li>
-            <li>
-              <strong>Communauté engagée :</strong> Partage d'expériences et
-              découvertes entre lecteurs
-            </li>
-            <li>
-              <strong>Accompagnement personnalisé :</strong> Suivi des progrès
-              et recommandations adaptées
-            </li>
-            <li>
-              <strong>Accessibilité :</strong> Interface simple et intuitive
-              pour tous les niveaux de lecture
-            </li>
+            <li><strong>Gamification de la lecture :</strong> Badges, défis et progression pour motiver les lecteurs</li>
+            <li><strong>Communauté engagée :</strong> Partage d'expériences et découvertes entre lecteurs</li>
+            <li><strong>Accompagnement personnalisé :</strong> Suivi des progrès et recommandations adaptées</li>
+            <li><strong>Accessibilité :</strong> Interface simple et intuitive pour tous les niveaux de lecture</li>
           </ul>
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">Kit média</h2>
@@ -103,11 +84,7 @@ export default function Press() {
 
           <h2 className="text-h2 text-foreground mb-4 mt-8">Communiqués récents</h2>
           <p className="text-body mb-8">
-            Consultez notre{" "}
-            <Link to="/blog" className="text-logo-accent hover:underline">
-              blog
-            </Link>{" "}
-            pour les dernières actualités et annonces de VREAD.
+            Consultez notre <Link to="/blog" className="text-logo-accent hover:underline">blog</Link> pour les dernières actualités et annonces de VREAD.
           </p>
 
           <Link
@@ -118,6 +95,6 @@ export default function Press() {
           </Link>
         </div>
       </main>
-    </PublicLayout>
+    </>
   );
 }
