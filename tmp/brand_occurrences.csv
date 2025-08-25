@@ -1,0 +1,22 @@
+chemin,ligne,extrait
+src/components/seo/BookSchema.tsx,25,"name": "READ"
+src/components/admin/BlogEditor.tsx,68,author: "READ"
+src/pages/PublicHome.tsx,45,<meta property="og:site_name" content="VREAD" />
+src/pages/PublicHome.tsx,55,"name": "VREAD"
+src/pages/Blog.tsx,80,"name": "VREAD"
+src/pages/Blog.tsx,81,"url": "https://www.vread.fr"
+src/pages/BlogPost.tsx,104,"name": "VREAD"
+src/pages/About.tsx,19,"name": "VREAD"
+src/pages/Press.tsx,19,"name": "VREAD"
+src/components/brand/LogoVreadPng.tsx,12,alt="VREAD logo"
+src/components/layout/PublicHeader.tsx,19,<span className="text-h4 font-serif text-logo-text">VREAD</span>
+src/components/layout/header/HeaderLogo.tsx,13,<span className="text-xl font-medium text-logo-text">VREAD</span>
+vite.config.ts,44,name: 'VREAD'
+vite.config.ts,45,short_name: 'VREAD'
+index.html,21,<title>VREAD - L'appli qui t'accompagne dans ta lecture, page après page</title>
+index.html,26,<meta name="description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
+index.html,30,<meta property="og:title" content="VREAD" />
+index.html,31,<meta property="og:description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
+index.html,40,<meta name="twitter:title" content="VREAD" />
+index.html,66,{"@context":"https://schema.org","@type":"WebSite","name":"VREAD","url":"https://www.vread.fr/"}
+index.html,69,{"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr/","logo":"https://www.vread.fr/branding/vread-logo-512.png"}

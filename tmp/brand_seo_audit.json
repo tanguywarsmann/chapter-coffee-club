@@ -1,0 +1,113 @@
+{
+  "brandCanonical": "VREAD",
+  "brandVariantsFound": ["READ", "read"],
+  "titlesSample": [
+    {"file": "src/pages/PublicHome.tsx", "title": "VREAD — L'appli qui t'accompagne dans ta lecture, page après page"},
+    {"file": "src/pages/Blog.tsx", "title": "Blog VREAD — Découvrez nos articles sur la lecture"},
+    {"file": "src/pages/BlogPost.tsx", "title": "{post.title} - Blog VREAD"},
+    {"file": "src/pages/About.tsx", "title": "À propos | VREAD"},
+    {"file": "src/pages/Press.tsx", "title": "Presse | VREAD"},
+    {"file": "src/pages/Landing.tsx", "title": "VREAD — L'appli qui t'accompagne dans ta lecture, page après page"}
+  ],
+  "ogSiteName": [
+    {"file": "src/pages/PublicHome.tsx", "value": "VREAD"}
+  ],
+  "applicationName": [],
+  "canonicals": [
+    {"file": "src/pages/PublicHome.tsx", "href": "https://www.vread.fr/"},
+    {"file": "src/pages/Blog.tsx", "href": "https://www.vread.fr/blog"},
+    {"file": "src/pages/BlogPost.tsx", "href": "https://www.vread.fr/blog/{slug}"},
+    {"file": "src/pages/About.tsx", "href": "https://www.vread.fr/a-propos"},
+    {"file": "src/pages/Press.tsx", "href": "https://www.vread.fr/presse"},
+    {"file": "src/pages/Landing.tsx", "href": "https://www.vread.fr/landing"}
+  ],
+  "jsonLD": {
+    "Organization": {
+      "present": true,
+      "name": "VREAD",
+      "alternateName": [],
+      "url": "https://www.vread.fr/",
+      "logo": "",
+      "sameAs": []
+    },
+    "WebSite": {
+      "present": false,
+      "name": null,
+      "alternateName": [],
+      "searchAction": null
+    },
+    "WebApplication": {
+      "present": true,
+      "name": "VREAD", 
+      "url": "https://www.vread.fr",
+      "category": "EducationalApplication"
+    },
+    "Blog": {
+      "present": true,
+      "name": "Blog VREAD",
+      "url": "https://www.vread.fr/blog"
+    },
+    "Article": {
+      "present": true,
+      "publisher": "VREAD"
+    }
+  },
+  "manifest": {
+    "name": "VREAD",
+    "short_name": "VREAD", 
+    "icons": [
+      {"src": "/branding/vread-logo-192.png", "sizes": "192x192", "purpose": "any"},
+      {"src": "/branding/vread-logo-512.png", "sizes": "512x512", "purpose": "any maskable"}
+    ],
+    "hasMaskable": true
+  },
+  "favicons": [
+    {"rel": "icon", "href": "/branding/vread-favicon.svg"},
+    {"rel": "icon", "href": "/branding/vread-favicon-32.png"},
+    {"rel": "icon", "href": "/branding/vread-favicon-16.png"},
+    {"rel": "apple-touch-icon", "href": "/branding/vread-apple-touch-icon.png"}
+  ],
+  "vitePWA": {
+    "present": true,
+    "configFile": "vite.config.ts",
+    "injectRegister": "autoUpdate"
+  },
+  "domainCanonicalChoice": "www.vread.fr",
+  "vercelRedirects": [
+    "vread.fr → www.vread.fr",
+    "vread.blog → www.vread.fr/blog"
+  ],
+  "robots": {
+    "sitemaps": ["https://www.vread.fr/sitemap.xml"],
+    "disallow": ["/blog-admin/"]
+  },
+  "sitemaps": [
+    {
+      "file": "public/sitemap.xml",
+      "locs": [
+        "https://www.vread.fr/",
+        "https://www.vread.fr/blog", 
+        "https://www.vread.fr/a-propos",
+        "https://www.vread.fr/presse"
+      ]
+    }
+  ],
+  "searchRoute": {
+    "exists": false,
+    "path": null,
+    "param": null
+  },
+  "hardcodedUrls": [
+    "https://www.vread.fr/",
+    "https://www.vread.fr/blog",
+    "https://www.vread.fr/blog/{slug}",
+    "https://www.vread.fr/a-propos", 
+    "https://www.vread.fr/presse",
+    "https://www.vread.fr/landing",
+    "https://www.vread.fr/book/{slug}"
+  ],
+  "residualREAD": [
+    {"file": "src/components/seo/BookSchema.tsx", "line": 25, "excerpt": "\"name\": \"READ\""},
+    {"file": "src/components/admin/BlogEditor.tsx", "line": 68, "excerpt": "author: \"READ\""}
+  ]
+}
