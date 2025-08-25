@@ -17,6 +17,7 @@ export default defineConfig(({ command }) => ({
     ...(command === 'serve' ? [componentTagger()] : []),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: { enabled: true },
       includeAssets: [
         'branding/vread-favicon.svg',
         'branding/vread-favicon-32.png',

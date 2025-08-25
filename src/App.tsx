@@ -27,6 +27,11 @@ const UserOnboarding = lazy(() =>
     default: mod.UserOnboarding
   }))
 );
+const ServiceWorkerUpdater = lazy(() => 
+  import("./components/ServiceWorkerUpdater").then(mod => ({
+    default: mod.ServiceWorkerUpdater
+  }))
+);
 const AppRouter = lazy(() => import("./components/navigation/AppRouter"));
 
 const AppContent = () => {
@@ -49,6 +54,10 @@ const AppContent = () => {
       
       <Suspense fallback={null}>
         <UserOnboarding />
+      </Suspense>
+      
+      <Suspense fallback={null}>
+        <ServiceWorkerUpdater />
       </Suspense>
       
       <Suspense fallback={
