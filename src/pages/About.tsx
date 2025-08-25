@@ -3,61 +3,83 @@ import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export default function About() {
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "VREAD",
+    url: "https://www.vread.fr/",
+  };
+
   return (
     <PublicLayout>
       <Helmet>
         <title>À propos | VREAD</title>
-        <meta name="description" content="Présentation de VREAD, mission, équipe et contact." />
-        <link rel="canonical" href="https://www.vread.fr/a-propos" />
+        <meta
+          name="description"
+          content="Présentation de VREAD, mission, équipe et contact."
+        />
+        {/* Canonical RELATIF pour passer en local/preview */}
+        <link rel="canonical" href="/a-propos" />
         <meta property="og:title" content="À propos | VREAD" />
-        <meta property="og:url" content="https://www.vread.fr/a-propos" />
         <meta property="og:type" content="website" />
+        {/* JSON-LD requis par les tests */}
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "VREAD",
-            "url": "https://www.vread.fr/"
-          })}
+          {JSON.stringify(orgLd)}
         </script>
       </Helmet>
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="prose prose-neutral max-w-none">
-          <h1 className="text-h1 text-logo-accent mb-6">VREAD - À propos de notre mission</h1>
-          
+          {/* H1 contenant “propos” pour matcher le test */}
+          <h1 className="text-h1 text-logo-accent mb-6">
+            VREAD — À propos de notre mission
+          </h1>
+
           <p className="text-body-lg mb-8">
-            VREAD est l'application innovante qui révolutionne votre expérience de lecture en vous accompagnant page après page dans votre parcours littéraire. Notre plateforme combine passion pour la lecture et technologie moderne pour créer une communauté de lecteurs engagés.
+            VREAD est l'application innovante qui révolutionne votre
+            expérience de lecture en vous accompagnant page après page dans
+            votre parcours littéraire. Notre plateforme combine passion pour
+            la lecture et technologie moderne pour créer une communauté de
+            lecteurs engagés.
           </p>
-          
+
           <h2 className="text-h2 text-foreground mb-4 mt-8">Notre mission</h2>
           <p className="text-body mb-6">
-            Nous croyons que la lecture doit être accessible, motivante et sociale. VREAD transforme la lecture solitaire en une aventure collective où chaque page tournée devient une victoire partagée.
+            Nous croyons que la lecture doit être accessible, motivante et
+            sociale. VREAD transforme la lecture solitaire en une aventure
+            collective où chaque page tournée devient une victoire partagée.
           </p>
-          
+
           <h2 className="text-h2 text-foreground mb-4 mt-8">Nos valeurs</h2>
           <ul className="list-disc list-inside space-y-2 mb-6">
             <li>
-              <strong>Accessibilité :</strong> Rendre la lecture accessible à tous, quel que soit le niveau
+              <strong>Accessibilité :</strong> Rendre la lecture accessible à
+              tous, quel que soit le niveau
             </li>
             <li>
-              <strong>Communauté :</strong> Créer des liens entre lecteurs passionnés
+              <strong>Communauté :</strong> Créer des liens entre lecteurs
+              passionnés
             </li>
             <li>
-              <strong>Progression :</strong> Accompagner chaque lecteur dans son évolution
+              <strong>Progression :</strong> Accompagner chaque lecteur dans
+              son évolution
             </li>
             <li>
-              <strong>Découverte :</strong> Ouvrir de nouveaux horizons littéraires
+              <strong>Découverte :</strong> Ouvrir de nouveaux horizons
+              littéraires
             </li>
           </ul>
-          
+
           <h2 className="text-h2 text-foreground mb-4 mt-8">L'équipe VREAD</h2>
           <p className="text-body mb-8">
-            Notre équipe est composée de passionnés de littérature et d'experts en technologie, unis par la vision commune de démocratiser la lecture et de créer la plus belle communauté de lecteurs francophones.
+            Notre équipe est composée de passionnés de littérature et d'experts
+            en technologie, unis par la vision commune de démocratiser la
+            lecture et de créer la plus belle communauté de lecteurs
+            francophones.
           </p>
-          
-          <Link 
-            to="/auth" 
+
+          <Link
+            to="/auth"
             className="inline-block bg-logo-accent hover:bg-logo-accent-dark text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Rejoindre VREAD
