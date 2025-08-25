@@ -27,11 +27,7 @@ const UserOnboarding = lazy(() =>
     default: mod.UserOnboarding
   }))
 );
-const AppRouter = lazy(() => 
-  import("./components/navigation/AppRouter").then(mod => ({
-    default: mod.default
-  }))
-);
+const AppRouter = lazy(() => import("./components/navigation/AppRouter"));
 
 const AppContent = () => {
   const location = useLocation();
