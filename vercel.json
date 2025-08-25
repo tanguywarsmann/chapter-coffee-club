@@ -26,6 +26,12 @@
   ],
   "headers": [
     {
+      "source": "/search",
+      "headers": [
+        { "key": "x-robots-tag", "value": "noindex, follow" }
+      ]
+    },
+    {
       "source": "/favicon.ico",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }

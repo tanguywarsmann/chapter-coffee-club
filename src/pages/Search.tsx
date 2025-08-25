@@ -13,6 +13,7 @@ const Search = () => {
       <Helmet>
         <title>{query ? `Recherche: ${query} | VREAD` : 'Recherche | VREAD'}</title>
         <meta name="description" content="Recherchez vos livres et contenus préférés sur VREAD" />
+        <meta name="robots" content="noindex,follow" />
         <meta name="application-name" content="VREAD" />
         <meta property="og:site_name" content="VREAD" />
         <link rel="canonical" href={`https://www.vread.fr/search${query ? `?q=${encodeURIComponent(query)}` : ''}`} />
