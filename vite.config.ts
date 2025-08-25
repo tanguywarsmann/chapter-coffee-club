@@ -25,6 +25,8 @@ export default defineConfig(({ command }) => ({
         'branding/vread-apple-touch-icon.png'
       ],
       workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}'],
         maximumFileSizeToCacheInBytes: 3000000, // 3MB max par fichier
         runtimeCaching: [
