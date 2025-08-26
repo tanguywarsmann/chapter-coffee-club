@@ -1,6 +1,6 @@
 
 /**
- * CACHE PERSISTANT - READ APP v0.15
+ * CACHE PERSISTANT - VREAD APP v0.15
  * 
  * Cache IndexedDB pour données critiques (liste de lecture, livres)
  * Survit aux rechargements et améliore les temps de chargement

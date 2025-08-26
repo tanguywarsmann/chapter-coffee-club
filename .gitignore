@@ -28,3 +28,4 @@ registerSW.js
 *.njsproj
 *.sln
 *.sw?
+.env*

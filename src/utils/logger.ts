@@ -1,6 +1,6 @@
 
 /**
- * SYSTÈME DE LOGS CENTRALISÉ - READ APP
+ * SYSTÈME DE LOGS CENTRALISÉ - VREAD APP
  * 
  * Remplace tous les console.log/error/warn éparpillés
  * Permet un contrôle centralisé des logs avec niveaux

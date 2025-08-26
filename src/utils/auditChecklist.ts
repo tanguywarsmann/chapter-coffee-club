@@ -1,6 +1,6 @@
 
 /**
- * CHECKLIST D'AUDIT - READ APP
+ * CHECKLIST D'AUDIT - VREAD APP
  * 
  * Points à vérifier régulièrement pour maintenir la qualité
  */

@@ -1,0 +1,6 @@
+{
+  "appId": "com.vread.app",
+  "appName": "VREAD",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" }
+}

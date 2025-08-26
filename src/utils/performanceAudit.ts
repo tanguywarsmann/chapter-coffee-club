@@ -1,6 +1,6 @@
 
 /**
- * AUDIT DE PERFORMANCE - READ APP
+ * AUDIT DE PERFORMANCE - VREAD APP
  * 
  * Ce fichier centralise les optimisations de performance identifiées
  * lors de l'audit de janvier 2025.
