@@ -15,7 +15,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-logo-background text-logo-text">
+    <div className="min-h-screen flex items-center justify-center bg-logo-background text-logo-text" data-testid="not-found">
       <div className="text-center p-8 max-w-none">
         <AlertTriangle className="h-16 w-16 mx-auto mb-4 text-amber-500" />
         <h1 className="text-4xl font-serif font-bold mb-4 text-coffee-darker">404</h1>

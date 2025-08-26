@@ -19,7 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Brand Guard
-        run: ./scripts/brand-guard.sh
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/brand-guard.sh
+          ./scripts/brand-guard.sh
       - name: Notify Slack on failure (optional)
         if: failure() && env.SLACK_WEBHOOK_URL != ''
         run: |

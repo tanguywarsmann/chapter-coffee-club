@@ -7,11 +7,7 @@ performance.mark("read-app-start");
 // Clean up potentially corrupted data
 localStorage.removeItem("read_app_books_cache");
 
-// Reset path if not on allowed routes
-const allowedStart = ["/", "/auth", "/home", "/blog"];
-if (!allowedStart.some(route => window.location.pathname.startsWith(route))) {
-  history.replaceState(null, "", "/");
-}
+// Ne pas réécrire l'URL ici : React Router + rewrites Vercel gèrent les routes.
 
 // Clear any saved navigation state
 localStorage.removeItem("lastVisitedPath");
@@ -26,8 +22,11 @@ if (import.meta.env.DEV) {
 
 // Register service worker (PWA support) with forced update and cross-domain support
 const isBot = /bot|crawl|spider|slurp|mediapartners/i.test(navigator.userAgent);
+const isE2E =
+  /HeadlessChrome|Playwright|puppeteer/i.test(navigator.userAgent) ||
+  (navigator as any).webdriver === true;
 
-if ('serviceWorker' in navigator && import.meta.env.PROD && !isBot) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isBot && !isE2E) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { 
       scope: '/',
@@ -167,5 +166,5 @@ window.addEventListener("load", () => {
   }
 });
 
-// Defer React app loading
-import("@/bootstrap");
+// Load React app
+import "./bootstrap";

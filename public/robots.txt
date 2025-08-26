@@ -5,3 +5,4 @@ Allow: /
 Sitemap: https://www.vread.fr/sitemap.xml
 
 Disallow: /blog-admin/
+Disallow: /search

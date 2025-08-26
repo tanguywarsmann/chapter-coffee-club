@@ -1,0 +1,10 @@
+{
+  "ORG_SLUG": "vread",
+  "SITE_URL": "https://www.vread.fr",
+  "X_URL": "https://x.com/VREAD",
+  "LINKEDIN_URL": "https://www.linkedin.com/company/vread",
+  "GITHUB_URL": "https://github.com/vread",
+  "PRODUCTHUNT_URL": "https://www.producthunt.com/products/vread",
+  "DESCRIPTION": "VREAD — L'appli qui t'accompagne dans ta lecture, page après page.",
+  "TOPICS": ["reading","books","education","pwa","react","vite","supabase"]
+}

@@ -56,7 +56,7 @@ self.addEventListener("install", (event) => {
         return cache.addAll([
           '/',
           '/offline.html',
-          '/manifest.json'
+          '/manifest.webmanifest'
         ]);
       }),
       checkForUpdates()
@@ -189,7 +189,7 @@ self.addEventListener('message', (event) => {
     const urlsToCache = [
       '/',
       '/offline.html',
-      '/manifest.json'
+      '/manifest.webmanifest'
     ];
     
     caches.open(STATIC_CACHE).then((cache) => {

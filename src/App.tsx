@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, useLocation } from "react-router-dom";
+import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
 
 console.info("[APP] App component loading");
 
@@ -27,11 +28,7 @@ const UserOnboarding = lazy(() =>
     default: mod.UserOnboarding
   }))
 );
-const AppRouter = lazy(() => 
-  import("./components/navigation/AppRouter").then(mod => ({
-    default: mod.default
-  }))
-);
+import AppRouter from "./components/navigation/AppRouter";
 
 const AppContent = () => {
   const location = useLocation();
@@ -55,16 +52,9 @@ const AppContent = () => {
         <UserOnboarding />
       </Suspense>
       
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
-            <p className="mt-2 text-coffee-dark">Chargement de VREAD...</p>
-          </div>
-        </div>
-      }>
-        <AppRouter />
-      </Suspense>
+      <ServiceWorkerUpdater />
+      
+      <AppRouter />
     </>
   );
 };

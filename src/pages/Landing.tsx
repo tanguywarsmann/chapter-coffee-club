@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
+import AppFooter from "@/components/layout/AppFooter";
 
 export default function Landing() {
   const features = [
@@ -198,6 +199,7 @@ export default function Landing() {
           </div>
         </section>
       </div>
+      <AppFooter />
     </>
   );
 }
