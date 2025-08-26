@@ -27,7 +27,7 @@ test.describe('Pages publiques VREAD', () => {
     await expect(ogType).toHaveAttribute('content', 'website');
     
     // Vérifier JSON-LD
-    const jsonLd = page.locator('script[type="application/ld+json"]');
+const jsonLd = page.locator('script[type="application/ld+json"][data-rh="true"]').first();
     await expect(jsonLd).toBeVisible();
     const jsonContent = await jsonLd.textContent();
     expect(jsonContent).toContain('"@type":"Organization"');
