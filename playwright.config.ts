@@ -1,25 +1,21 @@
-// playwright.config.ts
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
+
+const external = process.env.PLAYWRIGHT_BASE_URL || '';
 
 export default defineConfig({
-  testDir: './tests',
-  timeout: 30 * 1000,
-  expect: { timeout: 5 * 1000 },
-
-  // Serveur SPA avec fallback (toutes les routes renvoient index.html)
-  webServer: {
-    command: 'npm run preview:e2e',
-    url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000
-  },
-
+  testDir: 'tests/e2e',
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 1 : undefined,
   use: {
-    baseURL: 'http://localhost:4173',
-    trace: 'on-first-retry'
+    baseURL: external || 'http://localhost:4173'
   },
-
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-  ],
+  reporter: [['list']],
+  webServer: external
+    ? undefined
+    : {
+        command: 'npm run preview',
+        url: 'http://localhost:4173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000
+      }
 });
