@@ -1,4 +1,3 @@
-cat > playwright.config.ts <<'TS'
 // playwright.config.ts
 import { defineConfig, devices } from '@playwright/test';
 
@@ -7,7 +6,7 @@ export default defineConfig({
   timeout: 30 * 1000,
   expect: { timeout: 5 * 1000 },
 
-  // Lance un serveur statique AVEC fallback SPA pour toutes les routes
+  // Serveur SPA avec fallback (toutes les routes renvoient index.html)
   webServer: {
     command: 'npm run preview:e2e',
     url: 'http://localhost:4173',
@@ -24,5 +23,3 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
 });
-TS
-git add playwright.config.ts && git commit -m "test: use SPA server + baseURL for e2e"
