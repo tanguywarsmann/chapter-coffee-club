@@ -18,7 +18,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ci": "playwright test --reporter=list",
     "prepare:e2e": "playwright install --with-deps || playwright install",
-    "preview:e2e": "vite preview --port 4173 --strictPort"
+    "preview:e2e": "npx -y serve -s dist -l 4173"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
