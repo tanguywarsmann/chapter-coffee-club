@@ -10,7 +10,7 @@ export default function Press() {
           name="description"
           content="Espace presse VREAD : kit média, logos, visuels, contacts et communiqués."
         />
-        
+        <link rel="canonical" href="https://www.vread.fr/presse" />
         <meta property="og:title" content="Presse | VREAD" />
         <meta property="og:description" content="Kit média, logos, visuels et contact presse VREAD." />
         <meta property="og:type" content="website" />
