@@ -65,7 +65,7 @@ export default function Landing() {
           content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.vread.fr/landing" />
+        <meta property="og:url" content="https://www.vread.fr/" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
@@ -75,7 +75,6 @@ export default function Landing() {
           name="twitter:description"
           content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive."
         />
-        <link rel="canonical" href="https://www.vread.fr/landing" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">

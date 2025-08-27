@@ -10,7 +10,7 @@ export default function About() {
           name="description"
           content="Présentation de VREAD : mission, valeurs, équipe et contact."
         />
-        <link rel="canonical" href="https://www.vread.fr/a-propos" />
+        
         <meta property="og:title" content="À propos | VREAD" />
         <meta property="og:description" content="VREAD accompagne la lecture, page après page." />
         <meta property="og:type" content="website" />
