@@ -10,7 +10,9 @@ test.describe('Pages publiques VREAD', () => {
     // Vérifier la présence d'un H1 contenant "propos"
     const h1 = page.locator('h1');
     await expect(h1).toBeVisible();
-    await expect(h1).toContainText(/propos/i);
+    const h1Text = (await h1.innerText()).toLowerCase();
+    // Accepte soit "à propos" soit "vread" (tu as mis VREAD en H1)
+    expect(h1Text).toMatch(/(propos|vread)/);
     
     // Vérifier SEO - canonical
     const canonical = page.locator('link[rel="canonical"]');
@@ -63,7 +65,7 @@ test.describe('Pages publiques VREAD', () => {
     const jsonLd2 = page.locator('#jsonld-org');
     await expect(jsonLd2).toHaveCount(1);
     const jsonContent2 = await jsonLd2.textContent();
-    expect(jsonContent2 ?? '').toContain('"@type":"Organization"');
+    expect((jsonContent2 ?? '').replace(/\s/g, '')).toContain('"@type":"Organization"');
     expect(jsonContent2 ?? '').toContain('https://www.vread.fr');
   });
 
