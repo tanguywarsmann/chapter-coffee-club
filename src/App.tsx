@@ -1,80 +1,71 @@
+import React, { useEffect } from 'react';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import About from './pages/About';
+import Press from './pages/Press';
 
-import { Suspense, lazy } from "react";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/query";
-import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter, useLocation } from "react-router-dom";
-import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
+function NotFound() {
+  return (
+    <main className="max-w-3xl mx-auto p-6 text-center">
+      <Helmet>
+        <title>404 | VREAD</title>
+        <meta name="robots" content="noindex" />
+        <link rel="canonical" href="https://www.vread.fr/404" />
+      </Helmet>
+      <h1 className="text-4xl font-semibold mb-4">404</h1>
+      <p className="mb-8">La page demandée est introuvable.</p>
+      <div data-testid="not-found" />
+      <Link to="/" className="underline">Retour à l’accueil</Link>
+    </main>
+  );
+}
 
-console.info("[APP] App component loading");
+function Home() {
+  return (
+    <main className="max-w-3xl mx-auto p-6">
+      <Helmet>
+        <title>VREAD — Lire mieux, plus souvent</title>
+        <meta name="description" content="VREAD aide à lire mieux et plus souvent grâce à des checkpoints et des questions de validation." />
+        <link rel="canonical" href="https://www.vread.fr/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="VREAD — Lire mieux, plus souvent" />
+        <meta property="og:url" content="https://www.vread.fr/" />
+      </Helmet>
+      <h1 className="text-4xl font-semibold mb-6">VREAD</h1>
+      <p className="text-lg mb-8">L’appli qui t’accompagne dans ta lecture, page après page.</p>
+    </main>
+  );
+}
 
-// Lazy load toast components for better code splitting
-const Toaster = lazy(() => 
-  import("@/components/ui/toaster").then(mod => ({
-    default: mod.Toaster
-  }))
-);
-const Sonner = lazy(() => 
-  import("@/components/ui/sonner").then(mod => ({
-    default: mod.Sonner
-  }))
-);
+function IndexHtmlRedirect() {
+  const loc = useLocation();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (loc.pathname.endsWith('/index.html')) {
+      const target = loc.pathname.replace(/\/index\.html$/, '') || '/';
+      nav(target || '/', { replace: true });
+    }
+  }, [loc.pathname, nav]);
+  return null;
+}
 
-// Lazy load non-critical components
-const UserOnboarding = lazy(() => 
-  import("./components/onboarding/UserOnboarding").then(mod => ({
-    default: mod.UserOnboarding
-  }))
-);
-import AppRouter from "./components/navigation/AppRouter";
-
-const AppContent = () => {
-  const location = useLocation();
-  const isLanding = location.pathname === '/landing';
-
+export default function App() {
   return (
     <>
-      <Suspense fallback={null}>
-        <Toaster />
-      </Suspense>
-      <Suspense fallback={null}>
-        <Sonner
-          richColors={false}
-          position="top-right"
-          visibleToasts={isLanding ? 0 : undefined}
-          className="w-full max-w-sm sm:max-w-sm"
-        />
-      </Suspense>
-      
-      <Suspense fallback={null}>
-        <UserOnboarding />
-      </Suspense>
-      
-      <ServiceWorkerUpdater />
-      
-      <AppRouter />
+      <IndexHtmlRedirect />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/a-propos" element={<About />} />
+        <Route path="/presse" element={<Press />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      <footer className="max-w-3xl mx-auto p-6 border-t mt-12">
+        <nav className="flex gap-6">
+          <Link to="/a-propos">À propos</Link>
+          <Link to="/presse">Presse</Link>
+        </nav>
+      </footer>
     </>
   );
-};
-
-const App = () => {
-  console.info("[APP] App component rendering");
-  
-  return (
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </HelmetProvider>
-    </QueryClientProvider>
-  );
-};
-
-export default App;
+}
