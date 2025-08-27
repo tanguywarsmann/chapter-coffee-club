@@ -13,7 +13,7 @@
     "clean:build": "rm -rf dist node_modules/.vite && vite build",
     "brand:check": "node scripts/dev/brand-check.cjs",
     "test:e2e": "playwright test",
-    "test:e2e:ci": "playwright test --reporter=list",
+    "test:e2e:ci": "playwright test --reporter=dot --retries=1",
     "prepare:e2e": "playwright install --with-deps || playwright install"
   },
   "dependencies": {
