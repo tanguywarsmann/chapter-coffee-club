@@ -1,19 +1,28 @@
-import { defineConfig } from '@playwright/test';
-
-const external = process.env.PLAYWRIGHT_BASE_URL || '';
+cat > playwright.config.ts <<'TS'
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: 'tests/e2e',
-  use: {
-    baseURL: external || 'http://localhost:4173'
+  testDir: './tests',
+  timeout: 30 * 1000,
+  expect: { timeout: 5 * 1000 },
+
+  // Lance un serveur statique AVEC fallback SPA pour toutes les routes
+  webServer: {
+    command: 'npm run preview:e2e',
+    url: 'http://localhost:4173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000
   },
-  reporter: [['list']],
-  webServer: external
-    ? undefined
-    : {
-        command: 'npm run preview',
-        url: 'http://localhost:4173',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000
-      }
+
+  use: {
+    baseURL: 'http://localhost:4173',
+    trace: 'on-first-retry'
+  },
+
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+  ],
 });
+TS
+git add playwright.config.ts && git commit -m "test: use SPA server + baseURL for e2e"
