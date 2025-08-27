@@ -30,6 +30,7 @@ const UserOnboarding = lazy(() =>
 );
 import AppRouter from "./components/navigation/AppRouter";
 import { CanonicalManager } from "@/components/seo/CanonicalManager";
+import { OGUrlManager } from "@/components/seo/OGUrlManager";
 
 const AppContent = () => {
   const location = useLocation();
@@ -91,6 +92,7 @@ const AppContent = () => {
       <ServiceWorkerUpdater />
       
       <CanonicalManager />
+      <OGUrlManager />
       <AppRouter />
     </>
   );
