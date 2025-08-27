@@ -3,7 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": { "node": ">=20", "npm": ">=10" },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +17,8 @@
     "brand:check": "node scripts/dev/brand-check.cjs",
     "test:e2e": "playwright test",
     "test:e2e:ci": "playwright test --reporter=list",
-    "prepare:e2e": "playwright install --with-deps || playwright install"
+    "prepare:e2e": "playwright install --with-deps || playwright install",
+    "preview:e2e": "vite preview --port 4173 --strictPort"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
