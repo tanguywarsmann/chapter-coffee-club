@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
 
@@ -36,6 +36,41 @@ const AppContent = () => {
 
   return (
     <>
+      {/* Global JSON-LD in body for visibility */}
+      <Helmet>
+        <style>{`script[type="application/ld+json"]{display:block !important;min-height:1px;width:1px;margin:0;padding:0;border:0}`}</style>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "VREAD",
+              "alternateName": ["Vread","V Read"],
+              "url": "https://www.vread.fr/",
+              "logo": "https://www.vread.fr/branding/vread-logo-512.png"
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "url": "https://www.vread.fr/",
+              "name": "VREAD",
+              "alternateName": ["Vread","V Read"],
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.vread.fr/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+      </Helmet>
+      
       <Suspense fallback={null}>
         <Toaster />
       </Suspense>

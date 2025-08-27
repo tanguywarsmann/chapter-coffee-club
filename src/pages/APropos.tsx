@@ -8,12 +8,12 @@ export default function APropos() {
         <link rel="canonical" href="https://www.vread.fr/a-propos" />
       </Helmet>
 
+      <h1 className="text-3xl font-bold mb-6">À propos</h1>
+      
       <Helmet>
         <style>{`script[type="application/ld+json"]{display:block !important;min-height:1px;width:1px;margin:0;padding:0;border:0}`}</style>
       </Helmet>
 
-      <h1 className="text-3xl font-bold mb-6">À propos</h1>
-      
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
