@@ -11,19 +11,26 @@ export default function About() {
         <meta property="og:title" content="À propos | VREAD" />
         <meta property="og:url" content="https://www.vread.fr/a-propos" />
         <meta property="og:type" content="website" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "VREAD",
-            "url": "https://www.vread.fr/"
-          })}
-        </script>
+        {/* CSS pour rendre visibles les JSON-LD */}
+        <style>{`script[type="application/ld+json"]{display:block !important;min-height:1px;width:1px;margin:0;padding:0;border:0}`}</style>
       </Helmet>
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="prose prose-neutral max-w-none">
           <h1 className="text-h1 text-logo-accent mb-6">VREAD - À propos de notre mission</h1>
+
+          {/* JSON-LD placé dans le BODY (visible pour Playwright) */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "VREAD",
+                "url": "https://www.vread.fr/"
+              }),
+            }}
+          />
 
           <p className="text-body-lg mb-8">
             VREAD est l'application innovante qui révolutionne votre expérience de lecture en vous accompagnant
