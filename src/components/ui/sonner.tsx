@@ -33,6 +33,8 @@ export function Sonner(
         theme={theme as ToasterProps["theme"]}
         /* position, réglable bien sûr */
         position="bottom-right"
+        /* classe pour les E2E tests */
+        className="toaster"
         /* palette douce harmonisée */
         toastOptions={{
           classNames: {

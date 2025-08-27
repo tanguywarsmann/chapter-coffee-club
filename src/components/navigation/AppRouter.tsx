@@ -16,8 +16,8 @@ import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 import FinishedChatPage from '@/pages/FinishedChatPage';
-import About from '../../pages/About';
-import Press from '../../pages/Press';
+import APropos from '@/pages/APropos';
+import Presse from '@/pages/Presse';
 import NotFound from '@/pages/NotFound';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -55,8 +55,8 @@ const AppRouter = () => {
       <Route path="/finished-chat/:slug" element={<FinishedChatPage />} />
       
       {/* Public Pages */}
-      <Route path="/a-propos" element={<About />} />
-      <Route path="/presse" element={<Press />} />
+      <Route path="/a-propos" element={<APropos />} />
+      <Route path="/presse" element={<Presse />} />
 
       {/* Aliases with redirects */}
       <Route path="/apropos" element={<Navigate to="/a-propos" replace />} />

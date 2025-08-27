@@ -1,34 +1,19 @@
 
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
+export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-logo-background text-logo-text" data-testid="not-found">
-      <div className="text-center p-8 max-w-none">
-        <AlertTriangle className="h-16 w-16 mx-auto mb-4 text-amber-500" />
-        <h1 className="text-4xl font-serif font-bold mb-4 text-coffee-darker">404</h1>
-        <p className="text-xl text-coffee-dark mb-6">Cette page n'existe pas</p>
-        <p className="mb-8 text-muted-foreground">
-          La page que vous recherchez n'a pas été trouvée ou n'est pas accessible.
-        </p>
-        <Button asChild className="bg-coffee-dark hover:bg-coffee-darker text-white">
-          <Link to="/home">Retour à l'accueil</Link>
-        </Button>
-      </div>
-    </div>
-  );
-};
+    <main className="container mx-auto max-w-3xl px-4 py-16 text-center">
+      <Helmet>
+        <title>404 – Page introuvable | VREAD</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
 
-export default NotFound;
+      <div data-testid="not-found">
+        <div className="text-6xl font-extrabold mb-4">404</div>
+        <h1 className="text-2xl font-bold mb-2">Page introuvable</h1>
+        <p className="text-base">La page que tu cherches n'existe pas.</p>
+      </div>
+    </main>
+  );
+}
