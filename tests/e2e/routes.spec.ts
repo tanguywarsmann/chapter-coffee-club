@@ -26,12 +26,10 @@ test.describe('Pages publiques VREAD', () => {
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
     
-    // Vérifier JSON-LD Organization: unique et présent
-    const jsonLd = page
-      .locator('script[type="application/ld+json"]')
-      .filter({ hasText: '"@type":"Organization"' });
+    // Vérifier JSON-LD Organization global (unique)
+    const jsonLd = page.locator('#jsonld-org');
     await expect(jsonLd).toHaveCount(1);
-    const jsonContent = await jsonLd.first().textContent();
+    const jsonContent = await jsonLd.textContent();
     expect(jsonContent ?? '').toContain('"@type":"Organization"');
     expect(jsonContent ?? '').toContain('https://www.vread.fr');
   });
@@ -61,14 +59,12 @@ test.describe('Pages publiques VREAD', () => {
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
     
-    // Vérifier JSON-LD Organization: unique et présent
-    const jsonLd = page
-      .locator('script[type="application/ld+json"]')
-      .filter({ hasText: '"@type":"Organization"' });
-    await expect(jsonLd).toHaveCount(1);
-    const jsonContent = await jsonLd.first().textContent();
-    expect(jsonContent ?? '').toContain('"@type":"Organization"');
-    expect(jsonContent ?? '').toContain('https://www.vread.fr');
+    // Vérifier JSON-LD Organization global (unique)
+    const jsonLd2 = page.locator('#jsonld-org');
+    await expect(jsonLd2).toHaveCount(1);
+    const jsonContent2 = await jsonLd2.textContent();
+    expect(jsonContent2 ?? '').toContain('"@type":"Organization"');
+    expect(jsonContent2 ?? '').toContain('https://www.vread.fr');
   });
 
   test('Redirections d\'alias fonctionnent', async ({ page }) => {
