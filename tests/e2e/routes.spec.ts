@@ -26,12 +26,14 @@ test.describe('Pages publiques VREAD', () => {
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
     
-    // Vérifier JSON-LD
-    const jsonLd = page.locator('script[type="application/ld+json"]');
-    await expect(jsonLd).toBeVisible();
-    const jsonContent = await jsonLd.textContent();
-    expect(jsonContent).toContain('"@type":"Organization"');
-    expect(jsonContent).toContain('https://www.vread.fr');
+    // Vérifier JSON-LD Organization: unique et présent
+    const jsonLd = page
+      .locator('script[type="application/ld+json"]')
+      .filter({ hasText: '"@type":"Organization"' });
+    await expect(jsonLd).toHaveCount(1);
+    const jsonContent = await jsonLd.first().textContent();
+    expect(jsonContent ?? '').toContain('"@type":"Organization"');
+    expect(jsonContent ?? '').toContain('https://www.vread.fr');
   });
 
   test('Presse rend 200 et un h1', async ({ page }) => {
@@ -59,12 +61,14 @@ test.describe('Pages publiques VREAD', () => {
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
     
-    // Vérifier JSON-LD
-    const jsonLd = page.locator('script[type="application/ld+json"]');
-    await expect(jsonLd).toBeVisible();
-    const jsonContent = await jsonLd.textContent();
-    expect(jsonContent).toContain('"@type":"Organization"');
-    expect(jsonContent).toContain('https://www.vread.fr');
+    // Vérifier JSON-LD Organization: unique et présent
+    const jsonLd = page
+      .locator('script[type="application/ld+json"]')
+      .filter({ hasText: '"@type":"Organization"' });
+    await expect(jsonLd).toHaveCount(1);
+    const jsonContent = await jsonLd.first().textContent();
+    expect(jsonContent ?? '').toContain('"@type":"Organization"');
+    expect(jsonContent ?? '').toContain('https://www.vread.fr');
   });
 
   test('Redirections d\'alias fonctionnent', async ({ page }) => {
