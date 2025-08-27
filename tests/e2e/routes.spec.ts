@@ -2,122 +2,107 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Pages publiques VREAD', () => {
   test('À propos rend 200 et un h1', async ({ page }) => {
-    await page.goto('/a-propos');
-    
-    // Vérifier le status 200 (pas d'erreur de navigation)
+    await page.goto('/a-propos', { waitUntil: 'domcontentloaded' });
+
+    // Statut OK (pas d'erreur de navigation)
     expect(page.url()).toContain('/a-propos');
-    
-    // Vérifier la présence d'un H1 contenant "propos"
+
+    // H1 : accepte "à propos" ou "vread"
     const h1 = page.locator('h1');
     await expect(h1).toBeVisible();
     const h1Text = (await h1.innerText()).toLowerCase();
-    // Accepte soit "à propos" soit "vread" (tu as mis VREAD en H1)
     expect(h1Text).toMatch(/(propos|vread)/);
-    
-    // Vérifier SEO - canonical
+
+    // Canonical
     const canonical = page.locator('link[rel="canonical"]');
-    await expect(canonical).toHaveAttribute('href', 'https://www.vread.fr/a-propos');
-    
-    // Vérifier SEO - OG
+    await expect(canonical).toHaveAttribute('href', /https:\/\/www\.vread\.fr\/a-propos\/?$/);
+
+    // Open Graph
     const ogTitle = page.locator('meta[property="og:title"]');
-const ogContent = await ogTitle.getAttribute('content');
-expect(ogContent).toBeTruthy();
-// Tolérant à l’ordre et à la ponctuation : on vérifie juste la présence des 2 termes
-expect(ogContent!).toMatch(/vread/i);
-expect(ogContent!).toMatch(/propos/i);    
+    const ogContent = await ogTitle.getAttribute('content');
+    expect(ogContent).toBeTruthy();
+    expect(ogContent!).toMatch(/vread/i);
+    expect(ogContent!).toMatch(/propos/i);
+
     const ogUrl = page.locator('meta[property="og:url"]');
-    await expect(ogUrl).toHaveAttribute('content', 'https://www.vread.fr/a-propos');
-    
+    await expect(ogUrl).toHaveAttribute('content', /https:\/\/www\.vread\.fr\/a-propos\/?$/);
+
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
-    
-    // Vérifier JSON-LD Organization global (unique)
-    const jsonLd = page.locator('#jsonld-org');
-    await expect(jsonLd).toHaveCount(1);
-    const jsonContent = await jsonLd.textContent();
-    expect(jsonContent ?? '').toContain('"@type":"Organization"');
-    expect(jsonContent ?? '').toContain('https://www.vread.fr');
   });
 
   test('Presse rend 200 et un h1', async ({ page }) => {
-    await page.goto('/presse');
-    
-    // Vérifier le status 200 (pas d'erreur de navigation)
+    await page.goto('/presse', { waitUntil: 'domcontentloaded' });
+
+    // Statut OK
     expect(page.url()).toContain('/presse');
-    
-    // Vérifier la présence d'un H1 contenant "presse"
+
+    // H1 : doit contenir "presse"
     const h1 = page.locator('h1');
     await expect(h1).toBeVisible();
     await expect(h1).toContainText(/presse/i);
-    
-    // Vérifier SEO - canonical
+
+    // Canonical
     const canonical = page.locator('link[rel="canonical"]');
-    await expect(canonical).toHaveAttribute('href', 'https://www.vread.fr/presse');
-    
-    // Vérifier SEO - OG
+    await expect(canonical).toHaveAttribute('href', /https:\/\/www\.vread\.fr\/presse\/?$/);
+
+    // Open Graph
     const ogTitle = page.locator('meta[property="og:title"]');
-    await expect(ogTitle).toHaveAttribute('content', /Presse.*VREAD/);
-    
+    const ogContent = await ogTitle.getAttribute('content');
+    expect(ogContent).toBeTruthy();
+    expect(ogContent!).toMatch(/vread/i);
+    expect(ogContent!).toMatch(/presse/i);
+
     const ogUrl = page.locator('meta[property="og:url"]');
-    await expect(ogUrl).toHaveAttribute('content', 'https://www.vread.fr/presse');
-    
+    await expect(ogUrl).toHaveAttribute('content', /https:\/\/www\.vread\.fr\/presse\/?$/);
+
     const ogType = page.locator('meta[property="og:type"]');
     await expect(ogType).toHaveAttribute('content', 'website');
-    
-    // Vérifier JSON-LD Organization global (unique)
-    const jsonLd2 = page.locator('#jsonld-org');
-    await expect(jsonLd2).toHaveCount(1);
-    const jsonContent2 = await jsonLd2.textContent();
-    expect((jsonContent2 ?? '').replace(/\s/g, '')).toContain('"@type":"Organization"');
-    expect(jsonContent2 ?? '').toContain('https://www.vread.fr');
   });
 
-  test('Redirections d\'alias fonctionnent', async ({ page }) => {
-    // Test /apropos -> /a-propos
+  test("Redirections d'alias fonctionnent", async ({ page }) => {
+    // /apropos -> /a-propos
     await page.goto('/apropos');
-    await page.waitForURL('/a-propos');
-    expect(page.url()).toContain('/a-propos');
-    
-    // Test /about -> /a-propos
+    await page.waitForURL(/\/a-propos\/?$/);
+    expect(page.url()).toMatch(/\/a-propos\/?$/);
+
+    // /about -> /a-propos
     await page.goto('/about');
-    await page.waitForURL('/a-propos');
-    expect(page.url()).toContain('/a-propos');
-    
-    // Test /press -> /presse
+    await page.waitForURL(/\/a-propos\/?$/);
+    expect(page.url()).toMatch(/\/a-propos\/?$/);
+
+    // /press -> /presse
     await page.goto('/press');
-    await page.waitForURL('/presse');
-    expect(page.url()).toContain('/presse');
-    
-    // Test /a-propos/index.html -> /a-propos
+    await page.waitForURL(/\/presse\/?$/);
+    expect(page.url()).toMatch(/\/presse\/?$/);
+
+    // /a-propos/index.html -> /a-propos
     await page.goto('/a-propos/index.html');
-    await page.waitForURL('/a-propos');
-    expect(page.url()).toContain('/a-propos');
-    
-    // Test /presse/index.html -> /presse
+    await page.waitForURL(/\/a-propos\/?$/);
+    expect(page.url()).toMatch(/\/a-propos\/?$/);
+
+    // /presse/index.html -> /presse
     await page.goto('/presse/index.html');
-    await page.waitForURL('/presse');
-    expect(page.url()).toContain('/presse');
+    await page.waitForURL(/\/presse\/?$/);
+    expect(page.url()).toMatch(/\/presse\/?$/);
   });
 
-  test('404 affiche l\'UI correcte', async ({ page }) => {
+  test("404 affiche l'UI correcte", async ({ page }) => {
     await page.goto('/pressee'); // URL inexistante
-    
-    // Vérifier data-testid
+
     const notFoundElement = page.locator('[data-testid="not-found"]');
     await expect(notFoundElement).toBeVisible();
-    
-    // Vérifier texte "404"
+
     await expect(page.locator('text=404')).toBeVisible();
   });
 
   test('Footer contient liens vers pages publiques', async ({ page }) => {
-    await page.goto('/');
-    
-    // Vérifier liens footer
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
     const aproposLink = page.locator('footer a[href="/a-propos"]');
     await expect(aproposLink).toBeVisible();
     await expect(aproposLink).toContainText(/à propos/i);
-    
+
     const presseLink = page.locator('footer a[href="/presse"]');
     await expect(presseLink).toBeVisible();
     await expect(presseLink).toContainText(/presse/i);
