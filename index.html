@@ -2,72 +2,29 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="application-name" content="VREAD" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VREAD</title>
 
-    <!-- Mobile WebView compatible CSP -->
-    <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self';
-                   base-uri 'self';
-                   form-action 'self';
-                   img-src 'self' data: blob: https: capacitor://* http://localhost;
-                   media-src 'self' blob: https:;
-                   font-src 'self' data:;
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval' capacitor://* http://localhost;
-                   style-src 'self' 'unsafe-inline';
-                   connect-src 'self' https://*.supabase.co wss://*.supabase.co capacitor://* http://localhost ws://localhost:*;
-                   frame-ancestors 'none';">
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-
-    <title>VREAD | L'appli qui t'accompagne dans ta lecture, page après page</title>
-
-    <link rel="icon" href="/branding/vread-favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/branding/vread-favicon-32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="/branding/vread-favicon-16.png" sizes="16x16" type="image/png">
-    <link rel="apple-touch-icon" href="/branding/vread-apple-touch-icon.png">
-    <link rel="canonical" href="https://www.vread.fr/">
-
-    <meta name="description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
-    <meta name="author" content="VREAD" />
-    <meta property="og:site_name" content="VREAD" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="VREAD" />
-    <meta property="og:description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.vread.fr/" />
-    <meta property="og:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
-    <meta property="og:locale" content="fr_FR" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="VREAD" />
-    <meta name="twitter:description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
-    <meta name="twitter:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
-    <meta name="twitter:url" content="https://www.vread.fr/" />
-
-    <!-- PWA -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#B05F2C" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="VREAD" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;500;700&display=swap" rel="stylesheet" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="VREAD — Lire mieux, plus souvent" />
+    <meta property="og:url" content="https://www.vread.fr/" />
 
-    <!-- JSON-LD: Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "VREAD",
-      "alternateName": ["Vread", "V Read"],
       "url": "https://www.vread.fr/",
-      "logo": "https://www.vread.fr/branding/vread-logo-512.png",
-      "sameAs": [
-        "https://x.com/VREAD",
-        "https://www.linkedin.com/company
+      "logo": "https://www.vread.fr/branding/vread-logo-512.png"
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
