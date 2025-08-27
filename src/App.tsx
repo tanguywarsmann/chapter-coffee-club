@@ -44,7 +44,7 @@ const AppContent = () => {
           richColors={false}
           position="top-right"
           visibleToasts={isLanding ? 0 : undefined}
-          className="w-full max-w-sm sm:max-w-sm"
+          className="toaster w-full max-w-sm sm:max-w-sm"
         />
       </Suspense>
       

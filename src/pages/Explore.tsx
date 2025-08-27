@@ -10,7 +10,7 @@ import { Book } from "@/types/book";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Sparkles } from "lucide-react";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
-import { AuthGuard } from "@/components/auth/AuthGuard";
+
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
 import { TagSlider } from "@/components/books/TagSlider";
 
@@ -121,8 +121,7 @@ export default function Explore() {
   const suggestedBook = books.length > 0 ? books[Math.floor(Math.random() * books.length)] : null;
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
         <AppHeader />
         <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
         <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
@@ -217,6 +216,5 @@ export default function Explore() {
           )}
         </main>
       </div>
-    </AuthGuard>
   );
 }

@@ -48,7 +48,7 @@ const AppRouter = () => {
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />
-      <Route path="/explore" element={<AuthGuard><Explore /></AuthGuard>} />
+      <Route path="/explore" element={<Explore />} />
       <Route path="/search" element={<Search />} />
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/followers/:type/:userId" element={<Followers />} />

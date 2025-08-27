@@ -147,6 +147,7 @@ export function BookCard({
 
   return (
     <Link 
+      data-testid="book-card"
       to={`/books/${bookIdentifier}`} 
       className="block h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
       aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}. Appuyez sur Entrée pour ouvrir.`}

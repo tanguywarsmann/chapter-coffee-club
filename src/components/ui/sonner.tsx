@@ -36,7 +36,7 @@ export function Sonner(
         /* palette douce harmonisée */
         toastOptions={{
           classNames: {
-            toast: "w-full max-w-[384px] bg-coffee-light/90 text-coffee-dark border border-coffee-medium/50 shadow-sm",
+            toast: "toast w-full max-w-[384px] bg-coffee-light/90 text-coffee-dark border border-coffee-medium/50 shadow-sm",
             success: "bg-reed-light text-coffee-darker border border-coffee-medium",
             error: "bg-coffee-light text-coffee-darker border border-coffee-medium",
             info: "bg-coffee-light text-coffee-dark border border-coffee-medium",

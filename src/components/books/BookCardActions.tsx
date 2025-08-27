@@ -44,6 +44,7 @@ export const BookCardActions: React.FC<BookCardActionsProps> = ({
     )}
     {showAddButton && (
       <Button
+        data-testid="add-to-reading-list-button"
         size="sm"
         variant="outline"
         className="mt-3 w-full border-coffee-medium text-coffee-darker hover:bg-coffee-light/20"

@@ -144,6 +144,7 @@ export default function Auth() {
                     </label>
                     <Input
                       id="email"
+                      data-testid="email-input"
                       type="email"
                       placeholder="votre@email.com"
                       value={email}
@@ -168,6 +169,7 @@ export default function Auth() {
                     <div className="relative">
                       <Input
                         id="password"
+                        data-testid="password-input"
                         type={showPassword ? "text" : "password"}
                         placeholder="Votre mot de passe"
                         value={password}
@@ -201,6 +203,7 @@ export default function Auth() {
 
             <CardFooter className="flex flex-col gap-3">
               <Button
+                data-testid="login-button"
                 onClick={handleLogin}
                 className="w-full bg-coffee-dark hover:bg-coffee-darker text-white transition-colors duration-300 focus:ring-2 focus:ring-coffee-dark focus:ring-offset-2"
                 disabled={isLoading}
