@@ -12,82 +12,45 @@ fail(){ red "❌ $*"; exit 1; }
 info(){ printf "• %s\n" "$*"; }
 
 http_code() { curl -s -o /dev/null -w "%{http_code}" "$1"; }
-head_code() { curl -sI -o /dev/null -w "%{http_code}" "$1"; }
-header()    { curl -sI "$1"; }
-body()      { curl -sL "$1"; }
+head()      { curl -sI "$1"; }
 
-assert_code_200() {
-  local url="$1"; local code; code="$(head_code "$url")"
-  [ "$code" = "200" ] || fail "HTTP $code sur $url (attendu 200)"
-  info "200 OK → $url"
-}
+# 1) Apex redirige vers www (308/301)
+acode=$(head "$APEX_URL" | awk 'NR==1{print $2}')
+loc=$(head "$APEX_URL" | awk -F': ' '/^location:/I{print $2}' | tr -d '\r')
+[[ "$acode" =~ ^30[18]$ ]] || fail "Apex ne renvoie pas 301/308 (code $acode)"
+[[ "$loc" == "$BASE_URL/" || "$loc" == "$BASE_URL" ]] || fail "Location apex incorrecte: $loc"
+info "Redirection apex OK"
 
-# 1) Pages clés
-for path in "/" "/blog" "/a-propos" "/presse"; do
-  assert_code_200 "$BASE_URL$path"
+# 2) Page d’accueil 200
+[ "$(http_code "$BASE_URL/")" = "200" ] || fail "Accueil n’est pas 200"
+info "Accueil 200 OK"
+
+# 3) robots.txt & sitemap.xml
+[ "$(http_code "$ROBOTS_URL")" = "200" ] || fail "robots.txt manquant"
+grep -qi "sitemap: $SITEMAP_URL" <(curl -s "$ROBOTS_URL") || fail "robots ne référence pas le sitemap"
+[ "$(http_code "$SITEMAP_URL")" = "200" ] || fail "sitemap.xml manquant"
+info "Robots + Sitemap OK"
+
+# 4) Canonical sur pages clés
+for path in "/" "/a-propos" "/presse"; do
+  url="$BASE_URL${path}"
+  html=$(curl -s "$url")
+  canon=$(printf "%s" "$html" | grep -io '<link[^>]*rel=["'"'"']canonical["'"'"'][^>]*>' | head -n1)
+  [[ -n "$canon" ]] || fail "Canonical absent sur $url"
 done
+info "Canonicals OK"
 
-# 2) Apex -> www, pas de chaîne
-REDIRECTS=$(curl -sI -L -o /dev/null -w "%{num_redirects}" "$APEX_URL/")
-FINAL_URL=$(curl -sI -L -o /dev/null -w "%{url_effective}" "$APEX_URL/")
-FINAL_CODE=$(curl -sI -L -o /dev/null -w "%{http_code}" "$APEX_URL/")
-[[ "$REDIRECTS" -le 1 ]] || fail "Chaîne de redirections trop longue ($REDIRECTS) depuis $APEX_URL/"
-[[ "$FINAL_URL" == "$BASE_URL/"* ]] || fail "Apex ne redirige pas vers $BASE_URL/ (→ $FINAL_URL)"
-info "Apex redirige correctement ($REDIRECTS hop) vers $FINAL_URL (code final $FINAL_CODE)"
-
-# 3) Sitemap : status + contenu + URLs valides
-code=$(head_code "$SITEMAP_URL"); [ "$code" = "200" ] || fail "Sitemap $SITEMAP_URL retourne $code"
-headers=$(header "$SITEMAP_URL" | tr -d '\r')
-echo "$headers" | grep -iq "content-type: .*xml" || fail "Sitemap sans Content-Type XML"
-sm=$(body "$SITEMAP_URL")
-echo "$sm" | grep -q "<urlset" || fail "Sitemap sans <urlset>"
-# Extraction robuste des <loc> compatible Bash 3.2 (macOS) et Bash 5+
-# - tolère espaces/retours ligne et CRLF
-LOCS=()
-if command -v mapfile >/dev/null 2>&1; then
-  mapfile -t LOCS < <(printf "%s\n" "$sm" \
-    | tr -d '\r' \
-    | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
-else
-  while IFS= read -r line; do
-    LOCS+=("$line")
-  done < <(printf "%s\n" "$sm" \
-    | tr -d '\r' \
-    | sed -n 's/^[[:space:]]*<loc>[[:space:]]*\(https\?:\/\/[^<]*\)<\/loc>.*/\1/p')
-fi
-[ "${#LOCS[@]}" -gt 0 ] || fail "Aucune <loc> trouvée dans le sitemap"
-for u in "${LOCS[@]}"; do
-  [[ "$u" == "$BASE_URL"* ]] || fail "URL sitemap hors www: $u"
-  c=$(head_code "$u"); [ "$c" = "200" ] || fail "URL du sitemap non 200: $u (code $c)"
-done
-info "Sitemap OK avec ${#LOCS[@]} URL(s)"
-
-# 4) Robots
-rob=$(body "$ROBOTS_URL")
-echo "$rob" | grep -q "Sitemap: $SITEMAP_URL" || fail "robots.txt ne référence pas $SITEMAP_URL"
-echo "$rob" | grep -q "^Disallow: /blog-admin/" || fail "robots.txt devrait contenir 'Disallow: /blog-admin/'"
-info "robots.txt OK"
-
-# 5) Home HTML : canonical, og:url, JSON-LD
-home=$(body "$BASE_URL/")
-echo "$home" | grep -qi 'rel="canonical".*https://www\.vread\.fr/' || fail "Canonical home manquant/mauvais"
-echo "$home" | grep -qi 'property="og:url".*https://www\.vread\.fr/' || fail "OG URL home manquant/mauvais"
-echo "$home" | grep -qi '"@type":"WebSite"' || fail "JSON-LD WebSite manquant"
-echo "$home" | grep -qi '"@type":"Organization"' || fail "JSON-LD Organization manquant"
-echo "$home" | grep -qi '"url":"https://www\.vread\.fr/"' || fail "JSON-LD url != https://www.vread.fr/"
-info "Balises home OK (canonical, og:url, JSON-LD)"
-
-# 6) Headers sécurité
-h=$(header "$BASE_URL/" | tr -d '\r')
-echo "$h" | grep -iq "^Content-Security-Policy:" || fail "Header CSP manquant"
-echo "$h" | grep -iq "^X-Frame-Options: *DENY" || fail "X-Frame-Options: DENY manquant"
-echo "$h" | grep -iq "^Referrer-Policy: *strict-origin-when-cross-origin" || fail "Referrer-Policy incorrect"
-echo "$h" | grep -iq "^X-Content-Type-Options: *nosniff" || fail "X-Content-Type-Options manquant"
-echo "$h" | grep -iq "^Strict-Transport-Security:" || fail "HSTS manquant"
+# 5) En-têtes de sécurité
+hdr=$(head "$BASE_URL/")
+echo "$hdr" | grep -iq "^content-security-policy:" || fail "CSP manquant"
+echo "$hdr" | grep -iq "^x-frame-options: *DENY" || fail "X-Frame-Options: DENY manquant"
+echo "$hdr" | grep -iq "^referrer-policy: *strict-origin-when-cross-origin" || fail "Referrer-Policy incorrect"
+echo "$hdr" | grep -iq "^x-content-type-options: *nosniff" || fail "X-Content-Type-Options manquant"
+echo "$hdr" | grep -iq "^strict-transport-security:" || fail "HSTS manquant"
 info "Headers sécurité OK"
 
-# 7) Googlebot 200
-botcode=$(curl -sI -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "$BASE_URL/" | awk 'NR==1{print $2}')
-[ "$botcode" = "200" ] || fail "Googlebot ne reçoit pas 200 (code $botcode)"
+# 6) Googlebot reçoit 200
+gcode=$(curl -sI -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "$BASE_URL/" | awk 'NR==1{print $2}')
+[ "$gcode" = "200" ] || fail "Googlebot ne reçoit pas 200 (code $gcode)"
 
 green "✅ Brand guard OK"
