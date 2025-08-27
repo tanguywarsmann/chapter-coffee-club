@@ -29,3 +29,7 @@ registerSW.js
 *.sln
 *.sw?
 .env*
+
+# Playwright
+playwright-report/
+test-results/
