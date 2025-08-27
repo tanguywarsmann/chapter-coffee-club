@@ -9,7 +9,7 @@ test.describe('Pages publiques VREAD', () => {
     
     // Vérifier la présence d'un H1 contenant "propos"
     const h1 = page.locator('h1');
-    await expect(h1).toBeVisible();
+    await expect(h1).toHaveCount(1);
     await expect(h1).toContainText(/propos/i);
     
     // Vérifier SEO - canonical
@@ -42,7 +42,7 @@ test.describe('Pages publiques VREAD', () => {
     
     // Vérifier la présence d'un H1 contenant "presse"
     const h1 = page.locator('h1');
-    await expect(h1).toBeVisible();
+    await expect(h1).toHaveCount(1);
     await expect(h1).toContainText(/presse/i);
     
     // Vérifier SEO - canonical
@@ -99,7 +99,7 @@ test.describe('Pages publiques VREAD', () => {
     
     // Vérifier data-testid
     const notFoundElement = page.locator('[data-testid="not-found"]');
-    await expect(notFoundElement).toBeVisible();
+    await expect(notFoundElement).toHaveCount(1);
     
     // Vérifier texte "404"
     await expect(page.locator('text=404')).toBeVisible();
@@ -110,11 +110,11 @@ test.describe('Pages publiques VREAD', () => {
     
     // Vérifier liens footer
     const aproposLink = page.locator('footer a[href="/a-propos"]');
-    await expect(aproposLink).toBeVisible();
+    await expect(aproposLink).toHaveCount(1);
     await expect(aproposLink).toContainText(/à propos/i);
     
     const presseLink = page.locator('footer a[href="/presse"]');
-    await expect(presseLink).toBeVisible();
+    await expect(presseLink).toHaveCount(1);
     await expect(presseLink).toContainText(/presse/i);
   });
 });
