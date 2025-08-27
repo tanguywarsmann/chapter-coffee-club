@@ -4,18 +4,43 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: npm run build
-      - run: npx playwright install --with-deps chromium
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npm run prepare:e2e
+        # équivalent à: npx playwright install --with-deps
+        # si tu veux installer uniquement Chromium : 
+        # run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      # Si ton playwright.config.ts a un webServer défini, laisse BASE_URL vide
       - name: Run E2E (local preview)
         env:
           PLAYWRIGHT_BASE_URL: ""
         run: npm run test:e2e:ci
+
+      # Optionnel: récupère le rapport en cas d’échec
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
