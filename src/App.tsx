@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
-import { HelmetProvider, Helmet } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
 
@@ -99,15 +99,13 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </HelmetProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };
