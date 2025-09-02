@@ -134,7 +134,19 @@ export function QuizModal({
       // Trace after call
       console.info('[JOKER] after-call', { ok: true, payload: result });
 
-      // Track analytics
+      const answer = (result?.correctAnswer ?? "").trim();
+      if (!answer) {
+        console.error("[JOKER] empty correctAnswer", result);
+        toast.error("Impossible d'afficher la bonne réponse (données manquantes).");
+        return;
+      }
+
+      // 1) État d'abord
+      setRevealedAnswer(answer);
+      setAnswerRevealedAt(result?.revealedAt ?? new Date().toISOString());
+      setShowAnswerReveal(true);
+
+      // 2) Analytics ensuite (protégées)
       if (jokerStartTime) {
         trackJokerUsed({
           bookId: question.book_slug || '',
@@ -147,20 +159,14 @@ export function QuizModal({
       trackAnswerRevealed({
         bookId: question.book_slug || '',
         segment: chapterNumber,
-        correctAnswerLength: result.correctAnswer.length
+        correctAnswerLength: answer.length
       });
-
-      // Set revealed answer state
-      setRevealedAnswer(result.correctAnswer);
-      setAnswerRevealedAt(result.revealedAt);
-      setShowAnswerReveal(true);
 
       toast.success("Joker utilisé ! La bonne réponse est révélée.");
     } catch (error) {
       console.error('Joker reveal error:', error);
       toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
-      // Fallback to normal joker completion
-      onComplete(false, true);
+      // Ne pas fermer le flux ici : permettre de réessayer
     } finally {
       setIsRevealing(false);
     }
@@ -227,7 +233,7 @@ export function QuizModal({
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={!answer.trim()}
+              disabled={!answer.trim() || showAnswerReveal || isRevealing}
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
               aria-label="Valider ma réponse au quiz"
               aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
