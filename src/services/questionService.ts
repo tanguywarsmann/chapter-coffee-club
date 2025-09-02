@@ -1,168 +1,81 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingQuestion } from "@/types/reading";
-import { toast } from "@/hooks/use-toast";
-import { Database } from "@/integrations/supabase/types";
 
-type ReadingQuestionRecord = Database['public']['Tables']['reading_questions']['Row'];
+export interface CorrectAnswerResult {
+  correctAnswer: string;
+  revealedAt: string;
+  segment: number;
+  bookId: string;
+}
 
-/**
- * Convertit un UUID de livre en slug
- * @param bookId UUID du livre
- * @returns Slug du livre ou null
- */
-const convertBookIdToSlug = async (bookId: string): Promise<string | null> => {
-  if (!bookId) {
-    console.error('BookId est nul ou non défini');
-    return null;
+export async function getCorrectAnswerAfterJoker(params: {
+  bookId?: string;
+  bookSlug?: string;
+  segment: number;
+  questionId?: string;
+  consume?: boolean; // default true
+}): Promise<CorrectAnswerResult> {
+  const { data, error } = await supabase.functions.invoke('joker-reveal', {
+    body: {
+      bookId: params.bookId,
+      bookSlug: params.bookSlug,
+      segment: params.segment,
+      questionId: params.questionId,
+      consume: params.consume ?? true
+    }
+  });
+
+  if (error) {
+    console.error('Joker reveal error:', error);
+    throw new Error(error.message || 'Failed to reveal correct answer');
   }
-  
-  console.log(`Converting book ID ${bookId} to slug`);
-  
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return data as CorrectAnswerResult;
+}
+
+export async function getQuestionForBookSegment(bookId: string, segment: number): Promise<ReadingQuestion | null> {
   try {
-    // Récupérer le livre depuis la table books pour obtenir son slug
-    const { data, error } = await supabase
-      .from('books')
-      .select('slug')
-      .eq('id', bookId)
-      .maybeSingle();
-    
-    if (error) {
-      console.error('Error fetching book slug:', error);
-      return null;
-    }
-    
-    if (!data || !data.slug) {
-      console.warn(`No slug found for book ID ${bookId}`);
-      return null;
-    }
-    
-    console.log(`Book ID ${bookId} converted to slug: ${data.slug}`);
-    return data.slug;
-  } catch (error) {
-    console.error('Exception fetching book slug:', error);
-    return null;
-  }
-};
-
-/**
- * Récupère une question pour un segment de livre spécifique
- * @param bookId ID du livre
- * @param segment Numéro du segment
- * @returns Question ou null
- */
-export const getQuestionForBookSegment = async (
-  bookId: string, 
-  segment: number
-): Promise<ReadingQuestion | null> => {
-  if (!bookId) {
-    console.error('BookId est nul ou non défini');
-    return null;
-  }
-
-  console.log(`Fetching question for book ID ${bookId}, segment ${segment}`);
-  
-  try {
-    // Convertir l'UUID du livre en slug
-    const bookSlug = await convertBookIdToSlug(bookId);
-    
-    if (!bookSlug) {
-      console.error(`Unable to convert book ID ${bookId} to slug`);
-      return null;
-    }
-    
-    // S'assurer que segment est au moins 1
-    const validSegment = Math.max(1, segment);
-    
-    console.log(`Querying Supabase for book slug ${bookSlug}, segment ${validSegment}`);
-    
-    // Utiliser le slug pour interroger la table reading_questions
     const { data, error } = await supabase
       .from('reading_questions')
       .select('*')
-      .eq('book_slug', bookSlug)
-      .eq('segment', validSegment);
+      .eq('book_slug', bookId)
+      .eq('segment', segment)
+      .maybeSingle();
 
     if (error) {
-      console.error('Error fetching question from Supabase:', error);
-      toast({
-        title: "Erreur de chargement : Impossible de charger la question pour ce segment",
-        variant: "destructive",
-      });
+      console.error('Error fetching question:', error);
       return null;
     }
 
-    // Si nous avons trouvé des questions, retourner la première
-    if (data && data.length > 0) {
-      console.log(`Found ${data.length} questions, returning the first one:`, data[0]);
-      return data[0] as ReadingQuestion;
-    }
-
-    // Si aucune question n'a été trouvée, journaliser et retourner null
-    console.warn(`No question found in Supabase for book slug ${bookSlug}, segment ${validSegment}`);
-    return null;
+    return data;
   } catch (error) {
-    console.error('Exception fetching question from Supabase:', error);
-    toast({
-      title: "Erreur inattendue lors du chargement de la question",
-      variant: "destructive",
-    });
+    console.error('Error in getQuestionForBookSegment:', error);
     return null;
   }
-};
+}
 
-/**
- * Question de secours utilisée lorsqu'aucune question n'est trouvée
- */
-export const getFallbackQuestion = (): ReadingQuestion => ({
-  id: 'fallback',
-  book_slug: '',
-  segment: 1,
-  question: "Quel est l'élément principal de ce passage ?",
-  answer: "libre" // Cela signifie que n'importe quelle réponse sera acceptée
-});
-
-/**
- * Vérifie si un segment a déjà été validé
- * @param userId ID de l'utilisateur
- * @param bookId ID du livre
- * @param segment Numéro du segment
- * @returns Vrai si le segment a déjà été validé
- */
-export const isSegmentAlreadyValidated = async (
-  userId: string, 
-  bookId: string, 
-  segment: number
-): Promise<boolean> => {
-  if (!userId || !bookId) {
-    console.error('UserId ou BookId est nul ou non défini');
-    return false;
-  }
-
-  console.log(`Checking if segment ${segment} is already validated for book ${bookId} by user ${userId}`);
-  
+export async function isSegmentAlreadyValidated(userId: string, bookId: string, segment: number): Promise<boolean> {
   try {
-    // S'assurer que segment est au moins 1
-    const validSegment = Math.max(1, segment);
-    
     const { data, error } = await supabase
       .from('reading_validations')
       .select('id')
       .eq('user_id', userId)
       .eq('book_id', bookId)
-      .eq('segment', validSegment)
+      .eq('segment', segment)
       .maybeSingle();
-      
+
     if (error) {
-      console.error('Error checking segment validation:', error);
+      console.error('Error checking validation:', error);
       return false;
     }
-    
-    const isValidated = !!data;
-    console.log(`Segment ${validSegment} validation status:`, isValidated ? 'already validated' : 'not validated yet');
-    return isValidated;
+
+    return !!data;
   } catch (error) {
-    console.error('Exception checking segment validation:', error);
+    console.error('Error in isSegmentAlreadyValidated:', error);
     return false;
   }
-};
+}
