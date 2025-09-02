@@ -67,7 +67,7 @@ export const validateReading = async (
     // Get book info
     const { data: bookData, error: bookError } = await supabase
       .from('books')
-      .select('total_pages, total_chapters, expected_segments, slug')
+      .select('total_pages, total_chapters, expected_segments')
       .eq('id', request.book_id)
       .maybeSingle();
     if (bookError || !bookData) throw new Error("❌ Impossible de récupérer les informations du livre");
@@ -100,8 +100,8 @@ export const validateReading = async (
       progressRow = await updateReadingProgress(progressId, clampedPage, newStatus);
     }
 
-    // Get question for segment using book slug
-    const question = await getQuestionForBookSegment(bookData.slug || request.book_id, request.segment);
+    // Get question for segment
+    const question = await getQuestionForBookSegment(request.book_id, request.segment);
 
     // The correct answer and joker logic are now handled by the calling code
     // We accept the used_joker parameter directly

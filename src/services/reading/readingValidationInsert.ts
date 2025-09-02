@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { PublicReadingQuestion } from "@/types/reading";
+import { ReadingQuestion } from "@/types/reading";
 
 type ReadingValidationRecord = Database['public']['Tables']['reading_validations']['Insert'];
 
@@ -9,7 +9,7 @@ export async function insertReadingValidation(
   user_id: string, 
   book_id: string,
   segment: number,
-  question: PublicReadingQuestion | null,
+  question: ReadingQuestion | null,
   progressId: string,
   usedJoker: boolean = false
 ) {
@@ -20,7 +20,7 @@ export async function insertReadingValidation(
     question_id: question?.id ?? null,
     correct: true,
     validated_at: new Date().toISOString(),
-    answer: null, // La réponse n'est plus stockée ici, elle est accessible uniquement via joker
+    answer: question?.answer ?? undefined,
     progress_id: progressId,
     used_joker: usedJoker
   };

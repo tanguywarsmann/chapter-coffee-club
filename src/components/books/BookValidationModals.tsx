@@ -2,7 +2,7 @@
 import { Book } from "@/types/book";
 import { ValidationModal } from "./ValidationModal";
 import { QuizModal } from "./QuizModal";
-import { PublicReadingQuestion } from "@/types/reading";
+import { ReadingQuestion } from "@/types/reading";
 import { SuccessMessage } from "./SuccessMessage";
 import { LockTimer } from "./LockTimer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,7 +15,7 @@ interface BookValidationModalsProps {
   showQuizModal: boolean;
   showSuccessMessage?: boolean;
   validationSegment: number | null;
-  currentQuestion: PublicReadingQuestion | null;
+  currentQuestion: ReadingQuestion | null;
   isValidating: boolean;
   isLocked?: boolean;
   remainingLockTime?: number | null;

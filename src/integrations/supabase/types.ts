@@ -96,13 +96,6 @@ export type Database = {
             referencedRelation: "v_featured_posts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "blog_featured_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: true
-            referencedRelation: "v_featured_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       blog_posts: {
@@ -327,13 +320,6 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "reading_progress_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       reading_questions: {
@@ -371,7 +357,6 @@ export type Database = {
           id: string
           progress_id: string | null
           question_id: string | null
-          revealed_answer_at: string | null
           segment: number
           used_joker: boolean
           user_id: string
@@ -384,7 +369,6 @@ export type Database = {
           id?: string
           progress_id?: string | null
           question_id?: string | null
-          revealed_answer_at?: string | null
           segment: number
           used_joker?: boolean
           user_id: string
@@ -397,7 +381,6 @@ export type Database = {
           id?: string
           progress_id?: string | null
           question_id?: string | null
-          revealed_answer_at?: string | null
           segment?: number
           used_joker?: boolean
           user_id?: string
@@ -426,24 +409,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_reading_validations_question"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "reading_questions_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reading_validations_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
         ]
@@ -631,80 +600,10 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "validation_locks_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      books_public: {
-        Row: {
-          author: string | null
-          cover_url: string | null
-          description: string | null
-          expected_segments: number | null
-          id: string | null
-          slug: string | null
-          tags: string[] | null
-          title: string | null
-          total_chapters: number | null
-          total_pages: number | null
-        }
-        Insert: {
-          author?: string | null
-          cover_url?: string | null
-          description?: string | null
-          expected_segments?: number | null
-          id?: string | null
-          slug?: string | null
-          tags?: string[] | null
-          title?: string | null
-          total_chapters?: number | null
-          total_pages?: number | null
-        }
-        Update: {
-          author?: string | null
-          cover_url?: string | null
-          description?: string | null
-          expected_segments?: number | null
-          id?: string | null
-          slug?: string | null
-          tags?: string[] | null
-          title?: string | null
-          total_chapters?: number | null
-          total_pages?: number | null
-        }
-        Relationships: []
-      }
-      reading_questions_public: {
-        Row: {
-          book_id: string | null
-          book_slug: string | null
-          id: string | null
-          question: string | null
-          segment: number | null
-        }
-        Insert: {
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Update: {
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Relationships: []
-      }
       v_featured_posts: {
         Row: {
           author: string | null
@@ -722,36 +621,6 @@ export type Database = {
           title: string | null
           updated_at: string | null
           weight: number | null
-        }
-        Relationships: []
-      }
-      v_featured_public: {
-        Row: {
-          excerpt: string | null
-          id: string | null
-          image_alt: string | null
-          image_url: string | null
-          published_at: string | null
-          slug: string | null
-          title: string | null
-        }
-        Insert: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Update: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
         }
         Relationships: []
       }
