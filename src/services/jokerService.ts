@@ -1,10 +1,27 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getCorrectAnswerAfterJoker, CorrectAnswerResult } from "./questionService";
 
 export interface JokerUsageResult {
   jokersRemaining: number;
   success: boolean;
   message: string;
+}
+
+export async function useJokerAndReveal(params: {
+  bookId?: string;
+  bookSlug?: string;
+  segment: number;
+  questionId?: string;
+}): Promise<CorrectAnswerResult> {
+  // Single call - Edge Function consumes joker and returns answer
+  return getCorrectAnswerAfterJoker({
+    bookId: params.bookId,
+    bookSlug: params.bookSlug,
+    segment: params.segment,
+    questionId: params.questionId,
+    consume: true
+  });
 }
 
 /**

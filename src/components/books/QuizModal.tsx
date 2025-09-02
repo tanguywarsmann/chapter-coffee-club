@@ -4,17 +4,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { QuizContent } from "./QuizContent";
-import { ReadingQuestion } from "@/types/reading";
+import { PublicReadingQuestion } from "@/types/reading";
 import { JokerConfirmationModal } from "./JokerConfirmationModal";
+import { CorrectAnswerReveal } from "./CorrectAnswerReveal";
 import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { supabase } from "@/integrations/supabase/client";
+import { useJokerAndReveal } from "@/services/jokerService";
+import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
 
 interface QuizModalProps {
   bookTitle: string;
   chapterNumber: number;
   onComplete: (passed: boolean, useJoker?: boolean) => void;
   onClose: () => void;
-  question: ReadingQuestion;
+  question: PublicReadingQuestion;
   expectedSegments?: number;
   progressId?: string;
   jokersRemaining?: number;
@@ -35,6 +38,11 @@ export function QuizModal({
   const [answer, setAnswer] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [showJokerConfirmation, setShowJokerConfirmation] = useState(false);
+  const [showAnswerReveal, setShowAnswerReveal] = useState(false);
+  const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
+  const [answerRevealedAt, setAnswerRevealedAt] = useState<string | null>(null);
+  const [jokerStartTime, setJokerStartTime] = useState<number | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
   const maxAttempts = 3;
 
   // Récupérer les informations de jokers via le hook dédié
@@ -86,6 +94,7 @@ export function QuizModal({
         // Check if joker can be used immediately after first wrong answer
         const canUseJoker = jokersRemaining > 0 && !isUsingJoker;
         if (canUseJoker) {
+          setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
         } else if (newAttempts >= maxAttempts) {
           toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
@@ -100,20 +109,84 @@ export function QuizModal({
     }
   };
 
-  const handleJokerConfirm = () => {
+  const handleJokerConfirm = async () => {
     setShowJokerConfirmation(false);
-    onComplete(false, true); // false for incorrect answer, true for use joker
+    
+    // Prevent double-click during revelation
+    if (isRevealing) return;
+    setIsRevealing(true);
+    
+    try {
+      // Trace before call
+      console.info('[JOKER] before-call', {
+        bookSlug: question?.book_slug,
+        segment: chapterNumber,
+        questionId: question?.id
+      });
+
+      // Use joker and reveal correct answer
+      const result = await useJokerAndReveal({
+        bookSlug: question.book_slug,
+        segment: chapterNumber,
+        questionId: question.id
+      });
+
+      // Trace after call
+      console.info('[JOKER] after-call', { ok: true, payload: result });
+
+      const answer = (result?.correctAnswer ?? "").trim();
+      if (!answer) {
+        console.error("[JOKER] empty correctAnswer", result);
+        toast.error("Impossible d'afficher la bonne réponse (données manquantes).");
+        return;
+      }
+
+      // 1) État d'abord
+      setRevealedAnswer(answer);
+      setAnswerRevealedAt(result?.revealedAt ?? new Date().toISOString());
+      setShowAnswerReveal(true);
+
+      // 2) Analytics ensuite (protégées)
+      if (jokerStartTime) {
+        trackJokerUsed({
+          bookId: question.book_slug || '',
+          segment: chapterNumber,
+          attemptsBefore: attempts,
+          timeToJokerMs: Date.now() - jokerStartTime
+        });
+      }
+
+      trackAnswerRevealed({
+        bookId: question.book_slug || '',
+        segment: chapterNumber,
+        correctAnswerLength: answer.length
+      });
+
+      toast.success("Joker utilisé ! La bonne réponse est révélée.");
+    } catch (error) {
+      console.error('Joker reveal error:', error);
+      toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
+      // Ne pas fermer le flux ici : permettre de réessayer
+    } finally {
+      setIsRevealing(false);
+    }
+  };
+
+  const handleAnswerRevealContinue = () => {
+    setShowAnswerReveal(false);
+    onComplete(true); // Answer was validated with joker
   };
 
   const handleJokerCancel = () => {
     setShowJokerConfirmation(false);
+    setJokerStartTime(null);
     onComplete(false); // Just fail normally
   };
 
   return (
     <>
       <Dialog 
-        open={!showJokerConfirmation} 
+        open={!showJokerConfirmation && !showAnswerReveal} 
         onOpenChange={onClose}
         aria-labelledby="quiz-modal-title"
         aria-describedby="quiz-modal-description"
@@ -146,6 +219,7 @@ export function QuizModal({
             attempts={attempts}
             maxAttempts={maxAttempts}
             setAnswer={setAnswer}
+            data-testid="quiz-answer-input"
           />
           
           <DialogFooter className="sm:justify-center gap-2">
@@ -159,10 +233,11 @@ export function QuizModal({
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={!answer.trim()}
+              disabled={!answer.trim() || showAnswerReveal || isRevealing}
               className="bg-coffee-dark hover:bg-coffee-darker text-white"
               aria-label="Valider ma réponse au quiz"
               aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
+              data-testid="submit-answer-button"
             >
               Valider ma réponse
             </Button>
@@ -176,6 +251,26 @@ export function QuizModal({
               </div>
             )}
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Answer Reveal Dialog */}
+      <Dialog open={showAnswerReveal} onOpenChange={() => setShowAnswerReveal(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center font-serif">
+              Segment {chapterNumber} validé
+            </DialogTitle>
+          </DialogHeader>
+          
+          {revealedAnswer && (
+            <CorrectAnswerReveal
+              correctAnswer={revealedAnswer}
+              segment={chapterNumber}
+              revealedAt={answerRevealedAt ?? new Date().toISOString()}
+              onContinue={handleAnswerRevealContinue}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
