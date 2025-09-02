@@ -53,7 +53,7 @@ test.describe("Joker Answer Reveal", () => {
       }
     });
     
-    // Should return 400 Bad Request or 401 Unauthorized
-    expect(res.status()).toBeGreaterThanOrEqual(400);
+    // Should return bad request for missing parameters (accept 401/403/404 for CI)
+    expect([400, 401, 403, 404]).toContain(res.status());
   });
 });

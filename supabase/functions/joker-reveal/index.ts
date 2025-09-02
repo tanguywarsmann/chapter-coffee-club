@@ -66,11 +66,17 @@ serve(async (req) => {
         });
       }
       
-      // Check if joker usage was successful
-      if (!jokerResult || !jokerResult[0]?.success) {
+      // Check if joker usage was successful - handle multiple return formats
+      const jr = jokerResult;
+      const success = 
+        jr === true ||
+        (typeof jr === 'object' && jr?.success === true) ||
+        (Array.isArray(jr) && (jr[0] === true || jr[0]?.success === true));
+
+      if (!success) {
         return new Response(JSON.stringify({ 
           error: "Joker usage failed", 
-          message: jokerResult?.[0]?.message || "Unknown error" 
+          message: JSON.stringify(jr)
         }), { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -149,12 +155,13 @@ serve(async (req) => {
 
     // 3) Mark answer as revealed and set correct to true
     const now = new Date().toISOString();
-    const { error: updErr } = await supabase
+    const { data: updatedRows, error: updErr } = await supabase
       .from("reading_validations")
-      .update({ revealed_answer_at: now, correct: true })
+      .update({ revealed_answer_at: now, correct: true, validated_at: now })
       .eq("user_id", uid)
       .eq("segment", segment)
-      .eq("book_id", bookId ?? bookSlug);
+      .eq("book_id", bookId ?? bookSlug)
+      .select("id");
       
     if (updErr) {
       console.error('Update revealed_answer_at error:', updErr);
@@ -162,6 +169,32 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
+    }
+
+    // If no rows affected, create the validation record
+    if (!updatedRows || updatedRows.length === 0) {
+      console.log('No existing validation found, creating new record');
+      const { error: insErr } = await supabase
+        .from("reading_validations")
+        .insert([{
+          user_id: uid,
+          book_id: bookId ?? bookSlug,
+          segment: segment,
+          correct: true,
+          used_joker: true,
+          validated_at: now,
+          revealed_answer_at: now
+        }])
+        .select("id")
+        .maybeSingle();
+        
+      if (insErr) {
+        console.error('Insert validation record error:', insErr);
+        return new Response(JSON.stringify({ error: "Failed to create validation record", details: insErr.message }), { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${bookId ?? bookSlug}`);

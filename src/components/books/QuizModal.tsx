@@ -114,7 +114,7 @@ export function QuizModal({
     try {
       // Use joker and reveal correct answer
       const result = await useJokerAndReveal({
-        bookId: question.book_slug,
+        bookSlug: question.book_slug,
         segment: chapterNumber,
         questionId: question.id
       });

@@ -26,11 +26,12 @@ export async function getCorrectAnswerAfterJoker(params: {
   });
 
   if (error) {
-    console.error('Joker reveal error:', error);
+    console.error('joker-reveal invoke error', error);
     throw new Error(error.message || 'Failed to reveal correct answer');
   }
 
   if (data?.error) {
+    console.error('joker-reveal payload error', data);
     throw new Error(data.error);
   }
 
