@@ -6,7 +6,7 @@ import { ReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
 import { validateReading } from "@/services/reading/validationService";
 import { checkValidationLock } from "@/services/validation/lockService";
-import { getRemainingJokers, useJokerAtomically } from "@/services/jokerService";
+import { useJokerAtomically, getRemainingJokers } from "@/services/jokerService";
 
 export const useBookQuiz = (
   book: Book | null,

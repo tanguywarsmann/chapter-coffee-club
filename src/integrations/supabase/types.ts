@@ -96,13 +96,6 @@ export type Database = {
             referencedRelation: "v_featured_posts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "blog_featured_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: true
-            referencedRelation: "v_featured_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       blog_posts: {
@@ -364,7 +357,6 @@ export type Database = {
           id: string
           progress_id: string | null
           question_id: string | null
-          revealed_answer_at: string | null
           segment: number
           used_joker: boolean
           user_id: string
@@ -377,7 +369,6 @@ export type Database = {
           id?: string
           progress_id?: string | null
           question_id?: string | null
-          revealed_answer_at?: string | null
           segment: number
           used_joker?: boolean
           user_id: string
@@ -390,7 +381,6 @@ export type Database = {
           id?: string
           progress_id?: string | null
           question_id?: string | null
-          revealed_answer_at?: string | null
           segment?: number
           used_joker?: boolean
           user_id?: string
@@ -631,36 +621,6 @@ export type Database = {
           title: string | null
           updated_at: string | null
           weight: number | null
-        }
-        Relationships: []
-      }
-      v_featured_public: {
-        Row: {
-          excerpt: string | null
-          id: string | null
-          image_alt: string | null
-          image_url: string | null
-          published_at: string | null
-          slug: string | null
-          title: string | null
-        }
-        Insert: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Update: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
         }
         Relationships: []
       }
