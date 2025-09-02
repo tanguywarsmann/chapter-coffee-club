@@ -32,15 +32,14 @@ export async function generateCompleteSitemap(): Promise<string> {
       priority: '0.8'
     }));
 
-    // Livres publics depuis Supabase (using correct column names)
+    // Livres publics depuis Supabase
     const { data: books } = await supabase
-      .from('books')
-      .select('id, slug, created_at')
-      .eq('is_published', true);
+      .from('books_public')
+      .select('id, slug');
 
     const bookUrls = (books || []).map(book => ({
       loc: `${baseUrl}/books/${book.id}`,
-      lastmod: book.created_at ? new Date(book.created_at).toISOString().split('T')[0] : today,
+      lastmod: today,
       changefreq: 'monthly',
       priority: '0.7'
     }));

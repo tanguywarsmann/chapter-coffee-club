@@ -41,7 +41,7 @@ export const useHomeSearch = () => {
     try {
       // Recherche dans la base de données Supabase
       const { data, error } = await supabase
-        .from('books')
+        .from('books_public')
         .select('*')
         .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
       
