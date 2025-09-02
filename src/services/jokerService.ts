@@ -92,9 +92,9 @@ export async function getRemainingJokers(
   userId: string
 ): Promise<number> {
   try {
-    // Récupérer les informations du livre
+    // Récupérer les informations du livre depuis la vue publique
     const { data: bookData, error: bookError } = await supabase
-      .from('books')
+      .from('books_public')
       .select('expected_segments')
       .eq('id', bookId)
       .single();
