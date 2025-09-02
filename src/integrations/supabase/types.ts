@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      _backup_reading_questions: {
+        Row: {
+          answer: string | null
+          book_id: string | null
+          book_slug: string | null
+          id: string | null
+          question: string | null
+          segment: number | null
+        }
+        Insert: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Update: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           color: string | null
