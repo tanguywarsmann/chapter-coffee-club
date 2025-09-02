@@ -327,6 +327,13 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reading_progress_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reading_questions: {
@@ -430,6 +437,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_validations_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
         ]
@@ -617,10 +631,56 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "validation_locks_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
+      books_public: {
+        Row: {
+          author: string | null
+          cover_url: string | null
+          description: string | null
+          expected_segments: number | null
+          id: string | null
+          slug: string | null
+          tags: string[] | null
+          title: string | null
+          total_chapters: number | null
+          total_pages: number | null
+        }
+        Insert: {
+          author?: string | null
+          cover_url?: string | null
+          description?: string | null
+          expected_segments?: number | null
+          id?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          total_chapters?: number | null
+          total_pages?: number | null
+        }
+        Update: {
+          author?: string | null
+          cover_url?: string | null
+          description?: string | null
+          expected_segments?: number | null
+          id?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          total_chapters?: number | null
+          total_pages?: number | null
+        }
+        Relationships: []
+      }
       reading_questions_public: {
         Row: {
           book_id: string | null
