@@ -44,7 +44,7 @@ export function CorrectAnswerReveal({
           className="text-lg font-semibold text-foreground" 
           data-testid="revealed-answer-text"
         >
-          {correctAnswer}
+          {correctAnswer || "Réponse introuvable (vérifier answer en base et questionId/slug/segment)."}
         </p>
       </div>
 

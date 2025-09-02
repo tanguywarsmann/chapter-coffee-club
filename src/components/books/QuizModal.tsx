@@ -42,6 +42,7 @@ export function QuizModal({
   const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
   const [answerRevealedAt, setAnswerRevealedAt] = useState<string | null>(null);
   const [jokerStartTime, setJokerStartTime] = useState<number | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
   const maxAttempts = 3;
 
   // Récupérer les informations de jokers via le hook dédié
@@ -111,13 +112,27 @@ export function QuizModal({
   const handleJokerConfirm = async () => {
     setShowJokerConfirmation(false);
     
+    // Prevent double-click during revelation
+    if (isRevealing) return;
+    setIsRevealing(true);
+    
     try {
+      // Trace before call
+      console.info('[JOKER] before-call', {
+        bookSlug: question?.book_slug,
+        segment: chapterNumber,
+        questionId: question?.id
+      });
+
       // Use joker and reveal correct answer
       const result = await useJokerAndReveal({
         bookSlug: question.book_slug,
         segment: chapterNumber,
         questionId: question.id
       });
+
+      // Trace after call
+      console.info('[JOKER] after-call', { ok: true, payload: result });
 
       // Track analytics
       if (jokerStartTime) {
@@ -146,6 +161,8 @@ export function QuizModal({
       toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
       // Fallback to normal joker completion
       onComplete(false, true);
+    } finally {
+      setIsRevealing(false);
     }
   };
 
@@ -240,11 +257,11 @@ export function QuizModal({
             </DialogTitle>
           </DialogHeader>
           
-          {revealedAnswer && answerRevealedAt && (
+          {revealedAnswer && (
             <CorrectAnswerReveal
               correctAnswer={revealedAnswer}
               segment={chapterNumber}
-              revealedAt={answerRevealedAt}
+              revealedAt={answerRevealedAt ?? new Date().toISOString()}
               onContinue={handleAnswerRevealContinue}
             />
           )}

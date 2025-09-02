@@ -146,8 +146,10 @@ serve(async (req) => {
       answer = q2?.answer ?? null;
     }
 
+    // Trim & guard the answer before return (avoid empty string due to spaces)
+    answer = String(answer ?? '').trim();
     if (!answer) {
-      return new Response(JSON.stringify({ error: "No correct answer found" }), { 
+      return new Response(JSON.stringify({ error: "No correct answer found (empty)" }), { 
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -205,6 +207,7 @@ serve(async (req) => {
         revealedAt: now,
         segment,
         bookId: bookId ?? bookSlug,
+        _debug: { usedQuestionId: !!questionId }
       }),
       { 
         status: 200, 
