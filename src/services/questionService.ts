@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ReadingQuestion } from "@/types/reading";
+import { ReadingQuestion, PublicReadingQuestion } from "@/types/reading";
 
 export interface CorrectAnswerResult {
   correctAnswer: string;
@@ -37,12 +37,12 @@ export async function getCorrectAnswerAfterJoker(params: {
   return data as CorrectAnswerResult;
 }
 
-export async function getQuestionForBookSegment(bookId: string, segment: number): Promise<ReadingQuestion | null> {
+export async function getQuestionForBookSegment(bookSlug: string, segment: number): Promise<PublicReadingQuestion | null> {
   try {
     const { data, error } = await supabase
-      .from('reading_questions')
-      .select('*')
-      .eq('book_slug', bookId)
+      .from('reading_questions_public')
+      .select('id, book_slug, segment, question, book_id')
+      .eq('book_slug', bookSlug)
       .eq('segment', segment)
       .maybeSingle();
 

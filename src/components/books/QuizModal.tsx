@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { QuizContent } from "./QuizContent";
-import { ReadingQuestion } from "@/types/reading";
+import { PublicReadingQuestion } from "@/types/reading";
 import { JokerConfirmationModal } from "./JokerConfirmationModal";
 import { CorrectAnswerReveal } from "./CorrectAnswerReveal";
 import { useJokersInfo } from "@/hooks/useJokersInfo";
@@ -17,7 +17,7 @@ interface QuizModalProps {
   chapterNumber: number;
   onComplete: (passed: boolean, useJoker?: boolean) => void;
   onClose: () => void;
-  question: ReadingQuestion;
+  question: PublicReadingQuestion;
   expectedSegments?: number;
   progressId?: string;
   jokersRemaining?: number;

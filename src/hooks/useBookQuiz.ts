@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { Book } from "@/types/book";
-import { ReadingQuestion } from "@/types/reading";
+import { PublicReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
 import { validateReading } from "@/services/reading/validationService";
 import { checkValidationLock } from "@/services/validation/lockService";
@@ -17,7 +17,7 @@ export const useBookQuiz = (
 ) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
-  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<PublicReadingQuestion | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
@@ -62,8 +62,8 @@ export const useBookQuiz = (
       const remainingJokersCount = await getRemainingJokers(book.id, userId);
       setJokersRemaining(remainingJokersCount);
 
-      // Get question for this segment
-      const question = await getQuestionForBookSegment(book.id, segment);
+      // Get question for this segment using book slug
+      const question = await getQuestionForBookSegment(book.slug || book.id, segment);
 
       if (question) {
         setCurrentQuestion(question);
@@ -71,10 +71,9 @@ export const useBookQuiz = (
         // Fallback for when no question exists
         setCurrentQuestion({
           id: `fallback-${book.id}-${segment}`,
-          book_slug: book.slug,
+          book_slug: book.slug || book.id,
           segment: segment,
-          question: "Avez-vous bien lu ce segment ?",
-          answer: "oui"
+          question: "Avez-vous bien lu ce segment ?"
         });
       }
 

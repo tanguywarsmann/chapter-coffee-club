@@ -419,6 +419,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_reading_validations_question"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "reading_questions_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
@@ -614,6 +621,30 @@ export type Database = {
       }
     }
     Views: {
+      reading_questions_public: {
+        Row: {
+          book_id: string | null
+          book_slug: string | null
+          id: string | null
+          question: string | null
+          segment: number | null
+        }
+        Insert: {
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Update: {
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Relationships: []
+      }
       v_featured_posts: {
         Row: {
           author: string | null
