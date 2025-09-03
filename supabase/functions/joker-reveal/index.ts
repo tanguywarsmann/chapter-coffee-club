@@ -237,7 +237,7 @@ serve(async (req) => {
         correctAnswer: answer,
         revealedAt: now,
         segment,
-        bookId: bookId ?? bookSlug,
+        bookId: actualBookId,
         _debug: { usedQuestionId: !!questionId }
       }),
       { 
