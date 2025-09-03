@@ -130,6 +130,13 @@ export type Database = {
             referencedRelation: "v_featured_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "blog_featured_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "v_news_recent"
+            referencedColumns: ["id"]
+          },
         ]
       }
       blog_posts: {
@@ -144,8 +151,10 @@ export type Database = {
           id: string
           image_alt: string | null
           image_url: string | null
+          is_news: boolean
           published: boolean
           published_at: string | null
+          section: string | null
           slug: string
           tags: string[] | null
           title: string
@@ -162,8 +171,10 @@ export type Database = {
           id?: string
           image_alt?: string | null
           image_url?: string | null
+          is_news?: boolean
           published?: boolean
           published_at?: string | null
+          section?: string | null
           slug: string
           tags?: string[] | null
           title: string
@@ -180,8 +191,10 @@ export type Database = {
           id?: string
           image_alt?: string | null
           image_url?: string | null
+          is_news?: boolean
           published?: boolean
           published_at?: string | null
+          section?: string | null
           slug?: string
           tags?: string[] | null
           title?: string
@@ -772,6 +785,39 @@ export type Database = {
           title?: string | null
         }
         Update: {
+          excerpt?: string | null
+          id?: string | null
+          image_alt?: string | null
+          image_url?: string | null
+          published_at?: string | null
+          slug?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
+      v_news_recent: {
+        Row: {
+          author: string | null
+          excerpt: string | null
+          id: string | null
+          image_alt: string | null
+          image_url: string | null
+          published_at: string | null
+          slug: string | null
+          title: string | null
+        }
+        Insert: {
+          author?: string | null
+          excerpt?: string | null
+          id?: string | null
+          image_alt?: string | null
+          image_url?: string | null
+          published_at?: string | null
+          slug?: string | null
+          title?: string | null
+        }
+        Update: {
+          author?: string | null
           excerpt?: string | null
           id?: string | null
           image_alt?: string | null
