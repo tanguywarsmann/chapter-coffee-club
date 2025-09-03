@@ -171,17 +171,27 @@ export const fetchBooksForStatus = async (readingListData: any, status: string, 
     const items = statusMap[status as keyof typeof statusMap] || [];
     
     return Promise.all(items.map(async (item: any) => {
+      // Debug détaillé pour identifier le problème
+      console.log("🔍 ReadingList item debug:", {
+        item: item,
+        userId: userId,
+        book_id: item.book_id,
+        books: item.books
+      });
+      
       // Calculer correctement les segments validés comme sur la page d'accueil
       const validatedSegments = await getValidatedSegmentCount(userId, item.book_id);
       const expectedSegments = item.books?.expected_segments || item.books?.total_chapters || 10;
       const progressPercent = Math.round((validatedSegments / (expectedSegments || 1)) * 100);
       
-      console.log("📋 ReadingList book:", {
+      console.log("📋 ReadingList book calculation:", {
         title: item.books?.title,
         book_id: item.book_id,
+        userId: userId,
         validatedSegments,
         expectedSegments,
-        progressPercent
+        progressPercent,
+        status: item.status
       });
       
       return {
