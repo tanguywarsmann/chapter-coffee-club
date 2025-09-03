@@ -41,9 +41,16 @@ export const useReadingListPage = () => {
 
   // Effect to track data state and update isDataReady
   useEffect(() => {
+    console.log('[useReadingListPage] Data ready check:', {
+      isLoadingReadingList,
+      isFetching,
+      hasInitialFetch,
+      isDataReady
+    });
+    
     try {
       if (!isLoadingReadingList && !isFetching && hasInitialFetch) {
-        // Mark data as ready when loading is complete (even if no books)
+        console.log('[useReadingListPage] Setting data as ready');
         setIsDataReady(true);
       }
     } catch (e) {
