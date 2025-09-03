@@ -53,33 +53,62 @@ export const useReadingListPage = () => {
 
         if (cancelled) return;
 
-        // Convert to Book format for display
-        const convertToBooks = (rows: any[]): Book[] => rows.map((row: any) => ({
-          id: row.books?.id || row.book_id,
-          title: row.books?.title || 'Titre inconnu',
-          author: row.books?.author || 'Auteur inconnu',
-          description: row.books?.description || '',
-          coverImage: row.books?.cover_url || '',
-          cover_url: row.books?.cover_url || '',
-          pages: row.books?.total_pages || 0,
-          categories: row.books?.tags || [],
-          tags: row.books?.tags || [],
-          totalChapters: row.books?.expected_segments || 0,
-          language: 'fr',
-          publicationYear: new Date().getFullYear(),
-          slug: row.books?.slug || row.books?.id || row.book_id,
-          isCompleted: row.is_completed || false,
-          expectedSegments: row.books?.expected_segments || 0,
-        }));
+        // Convert to Book format for display avec calcul des segments validés
+        const convertToBooks = async (rows: any[]): Promise<Book[]> => {
+          return Promise.all(rows.map(async (row: any) => {
+            // Calculer les segments validés comme sur la page d'accueil
+            const { getValidatedSegmentCount } = await import("@/services/reading/validatedSegmentCount");
+            const validatedSegments = await getValidatedSegmentCount(user.id, row.book_id);
+            const expectedSegments = row.books?.expected_segments || row.books?.total_chapters || 10;
+            const progressPercent = Math.round((validatedSegments / (expectedSegments || 1)) * 100);
+            
+            console.log("📋 ReadingList progress calculation:", {
+              title: row.books?.title,
+              book_id: row.book_id,
+              userId: user.id,
+              validatedSegments,
+              expectedSegments,
+              progressPercent
+            });
+            
+            return {
+              id: row.books?.id || row.book_id,
+              title: row.books?.title || 'Titre inconnu',
+              author: row.books?.author || 'Auteur inconnu',
+              description: row.books?.description || '',
+              coverImage: row.books?.cover_url || '',
+              cover_url: row.books?.cover_url || '',
+              pages: row.books?.total_pages || 0,
+              categories: row.books?.tags || [],
+              tags: row.books?.tags || [],
+              totalChapters: expectedSegments,
+              chaptersRead: validatedSegments, // Ajouter les segments validés
+              currentSegment: validatedSegments,
+              progressPercent: progressPercent, // Ajouter le pourcentage calculé
+              language: 'fr',
+              publicationYear: new Date().getFullYear(),
+              slug: row.books?.slug || row.books?.id || row.book_id,
+              isCompleted: row.is_completed || false,
+              expectedSegments: expectedSegments,
+            };
+          }));
+        };
+
+        // Attendre les résultats des conversions asynchrones
+        const [toReadBooks, inProgressBooks, completedBooks] = await Promise.all([
+          convertToBooks(payload.toRead),
+          convertToBooks(payload.inProgress),
+          convertToBooks(payload.completed)
+        ]);
 
         setState(s => ({
           ...s,
           toReadCount: payload.toReadCount,
           inProgressCount: payload.inProgressCount,
           completedCount: payload.completedCount,
-          toRead: convertToBooks(payload.toRead),
-          inProgress: convertToBooks(payload.inProgress),
-          completed: convertToBooks(payload.completed),
+          toRead: toReadBooks,
+          inProgress: inProgressBooks,
+          completed: completedBooks,
           isLoading: false,
           isLoadingReadingList: false,
           hasInitialFetch: true,
