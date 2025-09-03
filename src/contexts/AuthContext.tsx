@@ -65,16 +65,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // First set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
+      console.info("[AUTH CONTEXT] Session object:", currentSession);
+      console.info("[AUTH CONTEXT] Access token:", currentSession?.access_token ? "Present" : "Missing");
+      console.info("[AUTH CONTEXT] User ID:", currentSession?.user?.id);
       
       // Update state with current session data
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
-      // If user exists, sync their profile
+      // Test Supabase auth immediately after setting session
       if (currentSession?.user) {
-        // Use setTimeout to avoid potential deadlock with Supabase auth
         setTimeout(async () => {
           try {
+            console.info("[AUTH CONTEXT] Testing Supabase auth...");
+            const { data: { user: testUser }, error: testError } = await supabase.auth.getUser();
+            console.info("[AUTH CONTEXT] Supabase getUser test:", { user: testUser, error: testError });
+            
             await syncUserProfile(currentSession.user.id, currentSession.user.email);
             await fetchAdminStatus(currentSession.user.id);
           } catch (err) {
