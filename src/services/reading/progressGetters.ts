@@ -23,7 +23,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     // Advanced fetch with join
     const { data, error } = await supabase
       .from("reading_progress")
-      .select(`*, books:book_id (*)`)
+      .select(`
+        *,
+        books:books_public!reading_progress_book_id_fkey(
+          id, slug, title, author, cover_url, total_chapters, expected_segments
+        )
+      `)
       .eq("user_id", userId);
     if (error) {
       console.error("Erreur dans getUserReadingProgress (jointure):", error);
@@ -34,12 +39,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       const book = item.books;
       const baseProgress = {
         ...item,
-        ...book,
-        total_chapters: book?.total_chapters ?? book?.expectedSegments ?? 1,
-        book_title: book?.title ?? "Titre inconnu",
-        book_author: book?.author ?? "Auteur inconnu",
-        book_slug: book?.slug ?? "slug inconnu",
-        book_cover: book?.cover_url ?? "",
+        ...(book as any),
+        total_chapters: (book as any)?.total_chapters ?? (book as any)?.expected_segments ?? 1,
+        book_title: (book as any)?.title ?? "Titre inconnu",
+        book_author: (book as any)?.author ?? "Auteur inconnu",
+        book_slug: (book as any)?.slug ?? "slug inconnu",
+        book_cover: (book as any)?.cover_url ?? "",
         validations: [],
       };
       return await addDerivedFields(baseProgress);
@@ -90,7 +95,12 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   try {
     const { data, error } = await supabase
       .from("reading_progress")
-      .select(`*, books:book_id (*)`)
+      .select(`
+        *,
+        books:books_public!reading_progress_book_id_fkey(
+          id, slug, title, author, cover_url, total_chapters, expected_segments
+        )
+      `)
       .eq("user_id", userId)
       .eq("book_id", bookId)
       .maybeSingle();
@@ -116,12 +126,12 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
     }
     const baseProgress = {
       ...data,
-      ...book,
-      total_chapters: book?.total_chapters ?? book?.expected_segments ?? 1,
-      book_title: book?.title ?? "Titre inconnu",
-      book_author: book?.author ?? "Auteur inconnu",
-      book_slug: book?.slug ?? "slug inconnu",
-      book_cover: book?.cover_url ?? "",
+      ...(book as any),
+      total_chapters: (book as any)?.total_chapters ?? (book as any)?.expected_segments ?? 1,
+      book_title: (book as any)?.title ?? "Titre inconnu",
+      book_author: (book as any)?.author ?? "Auteur inconnu",
+      book_slug: (book as any)?.slug ?? "slug inconnu",
+      book_cover: (book as any)?.cover_url ?? "",
       validations: [],
     };
     return await addDerivedFields(baseProgress);
@@ -191,7 +201,12 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
   try {
     const { data, error } = await supabase
       .from("reading_progress")
-      .select(`*, books:book_id (*)`)
+      .select(`
+        *,
+        books:books_public!reading_progress_book_id_fkey(
+          id, slug, title, author, cover_url, total_chapters, expected_segments
+        )
+      `)
       .eq("user_id", userId)
       .eq("status", status);
     if (error) {
@@ -210,12 +225,12 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
       
       const baseProgress = {
         ...item,
-        ...book,
-        total_chapters: book?.total_chapters ?? book?.expectedSegments ?? 1,
-        book_title: book?.title ?? "Titre inconnu",
-        book_author: book?.author ?? "Auteur inconnu",
-        book_slug: book?.slug ?? "slug inconnu",
-        book_cover: book?.cover_url ?? "",
+        ...(book as any),
+        total_chapters: (book as any)?.total_chapters ?? (book as any)?.expected_segments ?? 1,
+        book_title: (book as any)?.title ?? "Titre inconnu",
+        book_author: (book as any)?.author ?? "Auteur inconnu",
+        book_slug: (book as any)?.slug ?? "slug inconnu",
+        book_cover: (book as any)?.cover_url ?? "",
         completed_at: completionDate,
       };
       return await addDerivedFields(baseProgress);
