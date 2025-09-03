@@ -11,6 +11,15 @@ export interface ReadingQuestion {
   created_at?: string
 }
 
+// Type pour les questions publiques (sans la réponse)
+export interface PublicReadingQuestion {
+  id: string
+  book_slug: string
+  segment: number
+  question: string
+  book_id?: string
+}
+
 export interface ReadingValidation {
   id: string
   user_id: string

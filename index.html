@@ -1,12 +1,83 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","url":"https://www.vread.fr/","name":"VREAD","potentialAction":{"@type":"SearchAction","target":"https://www.vread.fr/search?q={search_term_string}","query-input":"required name=search_term_string"}}
-</script>
+    <!-- JSON-LD: WebSite -->
+    <script type="application/ld+json" id="jsonld-website">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://www.vread.fr/#jsonld-website",
+      "url": "https://www.vread.fr/",
+      "name": "VREAD",
+      "alternateName": ["Vread", "V Read", "V-READ"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.vread.fr/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
     <!-- JSON-LD: Organization -->
-    <script id="jsonld-org" type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"VREAD","url":"https://www.vread.fr","logo":"https://www.vread.fr/branding/vread-logo-512.png","sameAs":["https://x.com/VREAD","https://www.linkedin.com/company/vread/"]}</script>
+    <script type="application/ld+json" id="jsonld-org">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://www.vread.fr/#jsonld-org",
+      "name": "VREAD",
+      "url": "https://www.vread.fr/",
+      "logo": "https://www.vread.fr/branding/vread-logo-512.png",
+      "sameAs": [
+        "https://twitter.com/VREAD",
+        "https://www.linkedin.com/company/vread",
+        "https://github.com/vread",
+        "https://www.producthunt.com/products/vread",
+        "https://www.crunchbase.com/organization/vread"
+      ]
+    }
+    </script>
+
+    <!-- JSON-LD: SoftwareApplication -->
+    <script type="application/ld+json" id="jsonld-app">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "@id": "https://www.vread.fr/#jsonld-app",
+      "name": "VREAD",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "url": "https://www.vread.fr/",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "publisher": { "@type": "Organization", "@id": "https://www.vread.fr/#jsonld-org" }
+    }
+    </script>
+
+    <!-- JSON-LD: FAQPage -->
+    <script type="application/ld+json" id="jsonld-faq">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": "https://www.vread.fr/#jsonld-faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Qu'est-ce que VREAD ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "VREAD est une application qui accompagne la lecture avec des checkpoints, des questions et un suivi de progression."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment s'écrit VREAD ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Le nom s'écrit VREAD, en un seul mot."
+          }
+        }
+      ]
+    }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="application-name" content="VREAD" />
@@ -25,7 +96,7 @@
                    frame-ancestors 'none';">
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <title>VREAD | L'appli qui t'accompagne dans ta lecture, page après page</title>
+    <title>VREAD · Lire mieux et plus souvent</title>
     <link rel="icon" href="/branding/vread-favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/branding/vread-favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/branding/vread-favicon-16.png" sizes="16x16" type="image/png">
@@ -34,22 +105,9 @@
     <meta name="description" content="VREAD - L'appli qui t'accompagne dans ta lecture, page après page" />
     <meta name="author" content="VREAD" />
     <meta property="og:site_name" content="VREAD" />
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "url": "https://www.vread.fr/",
-    "name": "VREAD",
-    "alternateName": ["Vread","V Read"],
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://www.vread.fr/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
-  </script>
-  <meta property="og:url" content="https://www.vread.fr/" />
-  <meta property="og:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
+    <meta property="og:url" content="https://www.vread.fr/" />
+    <meta property="og:image" content="https://www.vread.fr/branding/vread-logo-512.png" />
+    <meta name="twitter:site" content="@VREAD" />
     <meta property="og:locale" content="fr_FR" />
 
     <!-- Twitter -->
