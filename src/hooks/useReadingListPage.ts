@@ -14,6 +14,8 @@ export const useReadingListPage = () => {
   const userId = user?.id;
   const isMobile = useIsMobile();
   
+  console.log('[useReadingListPage] User:', user, 'UserId:', userId);
+  
   const { 
     getBooksByStatus, 
     isLoadingReadingList, 
