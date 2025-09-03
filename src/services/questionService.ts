@@ -27,7 +27,7 @@ export async function getCorrectAnswerAfterJoker(params: {
     }
   });
 
-  console.log('[JOKER SERVICE] Response:', { data, error });
+  console.log('[JOKER SERVICE] Response from edge function:', { data, error });
 
   if (error) {
     console.error('joker-reveal invoke error', error);
@@ -37,6 +37,17 @@ export async function getCorrectAnswerAfterJoker(params: {
   if (data?.error) {
     console.error('joker-reveal payload error', data);
     throw new Error(data.error);
+  }
+
+  // Log the joker recording status
+  if (data?.validationSaved && data?.jokerRecorded) {
+    console.log('✅ Joker successfully recorded in database');
+  } else {
+    console.warn('⚠️ Joker may not have been recorded properly:', {
+      validationSaved: data?.validationSaved,
+      jokerRecorded: data?.jokerRecorded,
+      debugInfo: data?._debug
+    });
   }
 
   return data as CorrectAnswerResult;

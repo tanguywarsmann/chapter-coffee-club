@@ -244,6 +244,23 @@ serve(async (req) => {
     } else {
       // Create new record
       console.log('Creating new validation record');
+      
+      // First get the progress_id
+      const { data: progressData, error: progressErr } = await supabase
+        .from("reading_progress")
+        .select("id")
+        .eq("user_id", uid)
+        .eq("book_id", actualBookId)
+        .maybeSingle();
+        
+      if (progressErr || !progressData) {
+        console.error('Failed to get progress_id:', progressErr);
+        return new Response(JSON.stringify({ error: "Reading progress not found", details: progressErr?.message }), { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
       const { error: insertErr } = await supabase
         .from("reading_validations")
         .insert({
@@ -254,7 +271,8 @@ serve(async (req) => {
           used_joker: true,
           validated_at: now,
           revealed_answer_at: now,
-          question_id: questionId || null
+          question_id: questionId || null,
+          progress_id: progressData.id
         });
         
       if (insertErr) {
