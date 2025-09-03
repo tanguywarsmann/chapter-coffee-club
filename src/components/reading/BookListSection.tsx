@@ -100,22 +100,25 @@ export function BookListSection({
             <div key={bookIdentifier} className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 bg-background rounded-lg border border-border">
               {/* Book cover */}
               <div className="book-cover w-20 h-28 sm:w-20 sm:h-28 mx-auto sm:mx-0 overflow-hidden flex-shrink-0 relative">
-                {book.coverImage ? (
-                  <img 
-                    src={book.coverImage} 
-                    alt={book.title || "Couverture"} 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
-                    }}
-                  />
-                ) : (
+                {(() => {
+                  const imageSrc = (book as any)?.coverImage || (book as any)?.cover_url || (book as any)?.book_cover;
+                  return imageSrc ? (
+                    <img 
+                      src={imageSrc as string} 
+                      alt={book.title || "Couverture"} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                      }}
+                    />
+                  ) : (
                   <div className={`w-full h-full flex items-center justify-center ${book.isUnavailable ? "bg-gray-300" : "bg-chocolate-medium"}`}>
                     <span className={`font-serif text-xl italic ${book.isUnavailable ? "text-gray-500" : "text-white"}`}>
                       {(book.title || "?").substring(0, 1)}
                     </span>
                   </div>
-                )}
+                  );
+                })()}
                 {/* Add unavailable badge for fallback books */}
                 {book.isUnavailable && (
                   <div className="absolute top-0 right-0 bg-amber-500 p-0.5 rounded-bl">

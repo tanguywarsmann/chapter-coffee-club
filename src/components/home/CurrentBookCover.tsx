@@ -7,10 +7,13 @@ interface CurrentBookCoverProps {
 }
 
 export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
+  const imageSrc = (book as any)?.coverImage || (book as any)?.cover_url || (book as any)?.book_cover;
+  
   console.log("🔍 CurrentBookCover debug:", {
     book: book?.title,
     coverImage: book?.coverImage,
-    hasCoverImage: !!book?.coverImage
+    hasCoverImage: !!book?.coverImage,
+    imageSrc
   });
 
   if (!book) {
@@ -19,15 +22,15 @@ export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
 
   return (
     <div className="book-cover w-20 h-30 flex-shrink-0">
-      {book.coverImage ? (
+      {imageSrc ? (
         <Image 
-          src={book.coverImage} 
+          src={imageSrc as string} 
           alt={book.title} 
           className="w-full h-full object-cover rounded border-chocolate-light"
           priority={true} // Image critique pour la lecture en cours
           sizes="(max-width: 768px) 72px, 80px"
           onError={(e) => {
-            console.error("❌ Image failed to load:", book.coverImage);
+            console.error("❌ Image failed to load:", imageSrc);
           }}
         />
       ) : (
