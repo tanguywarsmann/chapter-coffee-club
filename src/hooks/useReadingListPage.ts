@@ -10,6 +10,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useReadingListPage = () => {
+  console.log('[useReadingListPage] Hook called');
+  
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id;
@@ -17,16 +19,15 @@ export const useReadingListPage = () => {
   
   console.log('[useReadingListPage] User:', user, 'UserId:', userId);
   
-  // Debug auth status
+  // Diagnostic auth simplifié
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-      console.log('[DEBUG] Supabase auth user:', supabaseUser);
-      console.log('[DEBUG] Context user:', user);
-      console.log('[DEBUG] Match:', supabaseUser?.id === userId);
-    };
-    checkAuth();
-  }, [user, userId]);
+    console.log('[useReadingListPage] useEffect triggered');
+    if (user) {
+      console.log('[AUTH] User is authenticated:', user.id);
+    } else {
+      console.log('[AUTH] No user found');
+    }
+  }, [user]);
   
   const { 
     getBooksByStatus, 
