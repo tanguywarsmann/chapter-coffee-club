@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('[JOKER-REVEAL] Request received:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -17,6 +19,12 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    console.log('[JOKER-REVEAL] Environment variables check:', {
+      hasUrl: !!supabaseUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasServiceKey: !!supabaseServiceKey
+    });
 
     // Client for user authentication
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
@@ -28,6 +36,8 @@ serve(async (req) => {
       error: userErr,
     } = await supabaseAuth.auth.getUser();
     
+    console.log('[JOKER-REVEAL] Auth check:', { hasUser: !!user, userErr });
+    
     if (userErr || !user) {
       console.error('Authentication error:', userErr);
       return new Response(JSON.stringify({ error: "Unauthorized" }), { 
@@ -38,10 +48,16 @@ serve(async (req) => {
     
     const uid = user.id;
 
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json().catch((e) => {
+      console.error('[JOKER-REVEAL] JSON parse error:', e);
+      return {};
+    });
+    console.log('[JOKER-REVEAL] Request body:', body);
+    
     const { bookId, bookSlug, segment, questionId, consume = true } = body;
 
     if ((!bookId && !bookSlug) || typeof segment !== "number") {
+      console.error('[JOKER-REVEAL] Missing required params:', { bookId, bookSlug, segment });
       return new Response(JSON.stringify({ error: "Missing bookId/bookSlug or segment" }), { 
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
