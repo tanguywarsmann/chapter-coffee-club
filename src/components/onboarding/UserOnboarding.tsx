@@ -20,11 +20,12 @@ export function UserOnboarding() {
         console.warn("UserOnboarding failed to initialize properly, attempting recovery");
         try {
           const onboardingDone = localStorage.getItem("onboardingDone");
-          setShowWelcomeModal(!onboardingDone);
+          // Never show onboarding if user is already connected
+          setShowWelcomeModal(!onboardingDone && !user);
         } catch (e) {
           console.error("Failed localStorage recovery in UserOnboarding:", e);
-          // Default to showing welcome modal if we can't determine state
-          setShowWelcomeModal(true);
+          // Default to showing welcome modal only if user is not connected
+          setShowWelcomeModal(!user);
         }
         setInitAttempted(true);
       }
@@ -34,18 +35,19 @@ export function UserOnboarding() {
     if (isInitialized) {
       try {
         const onboardingDone = localStorage.getItem("onboardingDone");
-        setShowWelcomeModal(!onboardingDone);
+        // Never show onboarding if user is already connected
+        setShowWelcomeModal(!onboardingDone && !user);
         setInitAttempted(true);
       } catch (e) {
         console.error("Error checking onboarding status:", e);
-        // Default to showing welcome modal on error
-        setShowWelcomeModal(true);
+        // Default to showing welcome modal only if user is not connected
+        setShowWelcomeModal(!user);
         setInitAttempted(true);
       }
     }
     
     return () => clearTimeout(safetyTimer);
-  }, [isInitialized, initAttempted]);
+  }, [isInitialized, initAttempted, user]);
 
   const handleClose = (skip?: boolean) => {
     try {
