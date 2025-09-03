@@ -14,34 +14,39 @@ export function UserOnboarding() {
   const [initAttempted, setInitAttempted] = useState(false);
 
   useEffect(() => {
+    // If user is already connected, never show onboarding
+    if (user) {
+      setShowWelcomeModal(false);
+      setInitAttempted(true);
+      return;
+    }
+
     // Safety mechanism to make sure this doesn't permanently fail
     const safetyTimer = setTimeout(() => {
-      if (!initAttempted) {
+      if (!initAttempted && !user) {
         console.warn("UserOnboarding failed to initialize properly, attempting recovery");
         try {
           const onboardingDone = localStorage.getItem("onboardingDone");
-          // Never show onboarding if user is already connected
-          setShowWelcomeModal(!onboardingDone && !user);
+          setShowWelcomeModal(!onboardingDone);
         } catch (e) {
           console.error("Failed localStorage recovery in UserOnboarding:", e);
-          // Default to showing welcome modal only if user is not connected
-          setShowWelcomeModal(!user);
+          // Default to showing welcome modal if we can't determine state
+          setShowWelcomeModal(true);
         }
         setInitAttempted(true);
       }
     }, 3000);
     
     // Check if onboarding is required when auth is initialized
-    if (isInitialized) {
+    if (isInitialized && !user) {
       try {
         const onboardingDone = localStorage.getItem("onboardingDone");
-        // Never show onboarding if user is already connected
-        setShowWelcomeModal(!onboardingDone && !user);
+        setShowWelcomeModal(!onboardingDone);
         setInitAttempted(true);
       } catch (e) {
         console.error("Error checking onboarding status:", e);
-        // Default to showing welcome modal only if user is not connected
-        setShowWelcomeModal(!user);
+        // Default to showing welcome modal on error
+        setShowWelcomeModal(true);
         setInitAttempted(true);
       }
     }
