@@ -1,7 +1,7 @@
 
 import { Suspense, lazy } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query";
 import { BrowserRouter, useLocation } from "react-router-dom";
@@ -34,6 +34,7 @@ import { OGUrlManager } from "@/components/seo/OGUrlManager";
 const AppContent = () => {
   const location = useLocation();
   const isLanding = location.pathname === '/landing';
+  const { user, isInitialized } = useAuth();
 
   return (
     <>
@@ -49,9 +50,12 @@ const AppContent = () => {
         />
       </Suspense>
       
-      <Suspense fallback={null}>
-        <UserOnboarding />
-      </Suspense>
+      {/* Only show onboarding if user is not authenticated and auth is initialized */}
+      {isInitialized && !user && (
+        <Suspense fallback={null}>
+          <UserOnboarding />
+        </Suspense>
+      )}
       
       <ServiceWorkerUpdater />
       
