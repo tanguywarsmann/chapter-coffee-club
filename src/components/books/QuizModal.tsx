@@ -156,19 +156,6 @@ export function QuizModal({
         
         Promise.allSettled(trackingPromises).catch(console.error);
       }
-        trackJokerUsed({
-          bookId: question.book_slug || '',
-          segment: chapterNumber,
-          attemptsBefore: attempts,
-          timeToJokerMs: Date.now() - jokerStartTime
-        });
-      }
-
-      trackAnswerRevealed({
-        bookId: question.book_slug || '',
-        segment: chapterNumber,
-        correctAnswerLength: answer.length
-      });
 
       toast.success("Joker utilisé ! La bonne réponse est révélée.");
     } catch (error) {
