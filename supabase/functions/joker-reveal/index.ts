@@ -120,7 +120,7 @@ serve(async (req) => {
         .select("id")
         .eq("user_id", uid)
         .eq("segment", segment)
-        .eq("book_id", bookId ?? bookSlug)
+        .eq("book_id", actualBookId)
         .eq("used_joker", true)
         .maybeSingle();
         
@@ -162,7 +162,7 @@ serve(async (req) => {
       const { data: q2, error: q2Err } = await supabase
         .from("reading_questions")
         .select("answer")
-        .eq(bookId ? "book_id" : "book_slug", bookId ?? bookSlug)
+        .eq("book_id", actualBookId)
         .eq("segment", segment)
         .limit(1)
         .maybeSingle();
@@ -193,7 +193,7 @@ serve(async (req) => {
       .update({ revealed_answer_at: now, correct: true, validated_at: now })
       .eq("user_id", uid)
       .eq("segment", segment)
-      .eq("book_id", bookId ?? bookSlug)
+      .eq("book_id", actualBookId)
       .select("id");
       
     if (updErr) {
@@ -211,7 +211,7 @@ serve(async (req) => {
         .from("reading_validations")
         .insert([{
           user_id: uid,
-          book_id: bookId ?? bookSlug,
+          book_id: actualBookId,
           segment: segment,
           correct: true,
           used_joker: true,
@@ -230,7 +230,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${bookId ?? bookSlug}`);
+    console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${actualBookId}`);
 
     return new Response(
       JSON.stringify({
