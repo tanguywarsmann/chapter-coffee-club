@@ -9,13 +9,23 @@ import { ReadingListHeader } from "@/components/reading/ReadingListHeader";
 import { FetchingStatus } from "@/components/reading/FetchingStatus";
 import { useReadingListPage } from "@/hooks/useReadingListPage";
 import { useLogger } from "@/utils/logger";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ReadingList() {
   const logger = useLogger('ReadingList');
+  const { user, session } = useAuth();
+  const navigate = useNavigate();
   
+  // Rediriger si pas authentifié
   useEffect(() => {
-    logger.info("ReadingList component mounted");
-  }, [logger]);
+    if (!user || !session) {
+      console.log('[ReadingList] User not authenticated, redirecting to auth');
+      navigate('/auth');
+      return;
+    }
+    logger.info("ReadingList component mounted for user:", user.id);
+  }, [user, session, navigate, logger]);
   
   const {
     books,
