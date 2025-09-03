@@ -149,12 +149,22 @@ export function QuizModal({
       // 2) Analytics ensuite (protégées)
       if (jokerStartTime) {
         console.log("📊 Tracking joker analytics");
-        const trackingPromises = [
-          trackJokerUsed(question.book_slug, chapterNumber, (Date.now() - jokerStartTime) / 1000).catch(console.error),
-          trackAnswerRevealed(question.book_slug, chapterNumber, answer).catch(console.error)
-        ];
-        
-        Promise.allSettled(trackingPromises).catch(console.error);
+        try {
+          await trackJokerUsed({
+            bookId: question.book_slug || '',
+            segment: chapterNumber,
+            attemptsBefore: attempts,
+            timeToJokerMs: Date.now() - jokerStartTime
+          });
+          
+          await trackAnswerRevealed({
+            bookId: question.book_slug || '',
+            segment: chapterNumber,
+            correctAnswerLength: answer.length
+          });
+        } catch (analyticsError) {
+          console.error('Analytics error:', analyticsError);
+        }
       }
 
       toast.success("Joker utilisé ! La bonne réponse est révélée.");

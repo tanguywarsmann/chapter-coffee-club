@@ -23,12 +23,15 @@ export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
         <Image 
           src={book.coverImage} 
           alt={book.title} 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded border-chocolate-light"
           priority={true} // Image critique pour la lecture en cours
           sizes="(max-width: 768px) 72px, 80px"
+          onError={(e) => {
+            console.error("❌ Image failed to load:", book.coverImage);
+          }}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-chocolate-medium">
+        <div className="w-full h-full flex items-center justify-center bg-coffee-medium rounded border border-coffee-light">
           <span className="text-white font-serif italic text-h4">{book.title.substring(0, 1)}</span>
         </div>
       )}
