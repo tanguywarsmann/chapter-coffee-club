@@ -1,4 +1,3 @@
-
 import { BookRecord, BookPublicRecord } from "./types";
 import { Book } from "@/types/book";
 
@@ -8,6 +7,13 @@ import { Book } from "@/types/book";
  * @returns Objet Book formaté pour l'application
  */
 export const mapBookFromRecord = (record: BookRecord | BookPublicRecord): Book => {
+  console.log("🔍 mapBookFromRecord debug:", {
+    id: record.id,
+    title: record.title,
+    cover_url: record.cover_url,
+    cover_url_type: typeof record.cover_url
+  });
+
   return {
     id: record.id || "",
     title: record.title || "",

@@ -192,7 +192,9 @@ export const useBookValidation = ({
       const result = await handleQuizComplete(correct, useJoker);
 
       if (correct) {
-        showConfetti();
+// Debug: vérifier que les confettis sont bien appelés
+console.log("🎉 Calling showConfetti from handleQuizCompleteWrapper");
+showConfetti();
         
         if (refreshProgressData) {
           await refreshProgressData();

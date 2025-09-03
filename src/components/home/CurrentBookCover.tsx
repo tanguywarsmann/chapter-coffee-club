@@ -7,6 +7,12 @@ interface CurrentBookCoverProps {
 }
 
 export const CurrentBookCover = ({ book }: CurrentBookCoverProps) => {
+  console.log("🔍 CurrentBookCover debug:", {
+    book: book?.title,
+    coverImage: book?.coverImage,
+    hasCoverImage: !!book?.coverImage
+  });
+
   if (!book) {
     return null;
   }

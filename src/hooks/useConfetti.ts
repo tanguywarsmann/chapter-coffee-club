@@ -6,6 +6,7 @@ export function useConfetti() {
   const [isActive, setIsActive] = useState(false);
 
   const showConfetti = useCallback(() => {
+    console.log("🎉 Confetti called!");
     setIsActive(true);
     
     // Configuration discrète et élégante pour les confettis

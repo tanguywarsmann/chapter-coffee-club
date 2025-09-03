@@ -148,6 +148,14 @@ export function QuizModal({
 
       // 2) Analytics ensuite (protégées)
       if (jokerStartTime) {
+        console.log("📊 Tracking joker analytics");
+        const trackingPromises = [
+          trackJokerUsed(question.book_slug, chapterNumber, (Date.now() - jokerStartTime) / 1000).catch(console.error),
+          trackAnswerRevealed(question.book_slug, chapterNumber, answer).catch(console.error)
+        ];
+        
+        Promise.allSettled(trackingPromises).catch(console.error);
+      }
         trackJokerUsed({
           bookId: question.book_slug || '',
           segment: chapterNumber,
