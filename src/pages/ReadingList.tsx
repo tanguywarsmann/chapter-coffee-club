@@ -30,12 +30,10 @@ export default function ReadingList() {
   const {
     books,
     loading,
-    error,
-    sortBy,
-    setSortBy,
     navigateToBook,
-    fetchBooks
   } = useReadingListPage();
+  
+  const error = null; // No error handling needed with new structure
 
   // Log spécifique pour le débogage des listes de livres
   logger.debug("Reading list state", {
@@ -127,11 +125,6 @@ export default function ReadingList() {
         <AppHeader />
         
         <main className="mx-auto w-full px-4 max-w-none px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-          <ReadingListHeader 
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-          />
-          
           <FetchingStatus isFetching={loading.isFetching} />
 
           {renderContent()}

@@ -155,67 +155,40 @@ export async function fetchReadingProgress(userId: string): Promise<ReadingListP
 }
 
 /**
- * Récupère les livres selon leur statut avec calcul correct basé sur les segments validés
+ * Récupère les livres selon leur statut - compatible avec la nouvelle structure
  */
-export const fetchBooksForStatus = async (readingList: any, status: string, userId: string): Promise<Book[]> => {
-  if (!readingList || !userId) return [];
+export const fetchBooksForStatus = async (readingListData: any, status: string, userId: string): Promise<Book[]> => {
+  if (!readingListData || !userId) return [];
 
-  // Calculer le statut réel basé sur les segments validés
-  const booksWithRealStatus = await Promise.all(
-    readingList.map(async (progress: any) => {
-      const bookId = progress.books?.id || progress.book_id;
-      const expectedSegments = progress.books?.expected_segments || progress.books?.total_chapters || 1;
-      
-      // Récupérer le nombre de segments validés
-      const validatedSegments = await getValidatedSegmentCount(userId, bookId);
-      
-      // Calculer le statut réel
-      let realStatus: string;
-      if (validatedSegments >= expectedSegments) {
-        realStatus = 'completed';
-      } else if (validatedSegments > 0) {
-        realStatus = 'in_progress';
-      } else {
-        realStatus = 'to_read';
-      }
+  // Si readingListData est déjà le résultat de fetchReadingProgress
+  if (readingListData.toRead && readingListData.inProgress && readingListData.completed) {
+    const statusMap = {
+      'to_read': readingListData.toRead,
+      'in_progress': readingListData.inProgress,
+      'completed': readingListData.completed
+    };
+    
+    const items = statusMap[status as keyof typeof statusMap] || [];
+    
+    return items.map((item: any) => ({
+      id: item.books?.id || item.book_id,
+      title: item.books?.title || 'Titre inconnu',
+      author: item.books?.author || 'Auteur inconnu',
+      description: item.books?.description || '',
+      coverImage: item.books?.cover_url || '',
+      cover_url: item.books?.cover_url || '',
+      pages: item.books?.total_pages || 0,
+      categories: item.books?.tags || [],
+      tags: item.books?.tags || [],
+      totalChapters: item.books?.expected_segments || 0,
+      language: 'fr',
+      publicationYear: new Date().getFullYear(),
+      slug: item.books?.slug || item.books?.id || item.book_id,
+      isCompleted: status === 'completed',
+      expectedSegments: item.books?.expected_segments || 0,
+    }));
+  }
 
-      return {
-        ...progress,
-        realStatus,
-        validatedSegments,
-        expectedSegments,
-        books: progress.books
-      };
-    })
-  );
-
-  // Filtrer par le statut demandé (utiliser le statut réel)
-  const filteredProgress = booksWithRealStatus.filter((item: any) => item.realStatus === status);
-  
-  return filteredProgress.map((progress: any) => ({
-    id: progress.books?.id || progress.book_id,
-    title: progress.books?.title || 'Titre inconnu',
-    author: progress.books?.author || 'Auteur inconnu',
-    description: progress.books?.description || '',
-    coverImage: progress.books?.cover_url || '',
-    pages: progress.books?.total_pages || 0,
-    categories: progress.books?.tags || [],
-    tags: progress.books?.tags || [],
-    totalChapters: progress.expectedSegments || 0,
-    chaptersRead: progress.validatedSegments || 0,
-    isCompleted: progress.realStatus === 'completed',
-    language: 'fr',
-    publicationYear: new Date().getFullYear(),
-    slug: progress.books?.id || progress.book_id,
-    book_author: progress.books?.author || 'Auteur inconnu',
-    book_slug: progress.books?.id || progress.book_id,
-    book_cover: progress.books?.cover_url || null,
-    total_chapters: progress.expectedSegments || 0,
-    created_at: progress.started_at || new Date().toISOString(),
-    is_published: true,
-    // Ajouter les champs pour le progrès correct
-    progressPercent: Math.round((progress.validatedSegments / (progress.expectedSegments || 1)) * 100),
-    expectedSegments: progress.expectedSegments || 0,
-    totalSegments: progress.expectedSegments || 0,
-  }));
+  // Fallback pour l'ancien format si nécessaire
+  return [];
 };
