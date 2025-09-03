@@ -69,11 +69,19 @@ serve(async (req) => {
 
     // 1) Consume joker via existing RPC if requested
     if (consume) {
+      console.log('[JOKER-REVEAL] Calling use_joker RPC with params:', {
+        p_user_id: uid,
+        p_book_id: bookId ?? bookSlug,
+        p_segment: segment,
+      });
+      
       const { data: jokerResult, error: rpcErr } = await supabase.rpc("use_joker", {
         p_user_id: uid,
         p_book_id: bookId ?? bookSlug,
         p_segment: segment,
       });
+      
+      console.log('[JOKER-REVEAL] RPC use_joker result:', { jokerResult, rpcErr });
       
       if (rpcErr) {
         console.error('Joker RPC error:', rpcErr);
@@ -85,15 +93,21 @@ serve(async (req) => {
       
       // Check if joker usage was successful - handle multiple return formats
       const jr = jokerResult;
+      console.log('[JOKER-REVEAL] Analyzing joker result:', { jr, type: typeof jr, isArray: Array.isArray(jr) });
+      
       const success = 
         jr === true ||
         (typeof jr === 'object' && jr?.success === true) ||
         (Array.isArray(jr) && (jr[0] === true || jr[0]?.success === true));
 
+      console.log('[JOKER-REVEAL] Joker usage success check:', { success });
+
       if (!success) {
+        console.error('[JOKER-REVEAL] Joker usage failed:', jr);
         return new Response(JSON.stringify({ 
           error: "Joker usage failed", 
-          message: JSON.stringify(jr)
+          message: JSON.stringify(jr),
+          debug: { jr, type: typeof jr }
         }), { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
