@@ -762,6 +762,24 @@ export type Database = {
           slug: string | null
           title: string | null
         }
+        Insert: {
+          excerpt?: string | null
+          id?: string | null
+          image_alt?: string | null
+          image_url?: string | null
+          published_at?: string | null
+          slug?: string | null
+          title?: string | null
+        }
+        Update: {
+          excerpt?: string | null
+          id?: string | null
+          image_alt?: string | null
+          image_url?: string | null
+          published_at?: string | null
+          slug?: string | null
+          title?: string | null
+        }
         Relationships: []
       }
     }
