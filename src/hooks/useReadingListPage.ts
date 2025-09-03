@@ -21,41 +21,6 @@ export const useReadingListPage = () => {
   console.log('[useReadingListPage] Session:', session);
   console.log('[useReadingListPage] Session access token:', session?.access_token);
   
-  // Diagnostic auth détaillé
-  useEffect(() => {
-    const checkAuth = async () => {
-      console.log('[useReadingListPage] useEffect triggered');
-      console.log('[AUTH] Context user:', user);
-      console.log('[AUTH] Context session:', session);
-      
-      // Vérifier directement avec Supabase au moment des requêtes
-      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
-      console.log('[AUTH] Supabase getUser result:', supabaseUser);
-      console.log('[AUTH] Supabase getUser error:', error);
-      
-      // Vérifier la session Supabase
-      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-      console.log('[AUTH] Supabase session:', supabaseSession);
-      console.log('[AUTH] Supabase session access_token:', supabaseSession?.access_token ? 'Present' : 'Missing');
-      
-      // Test direct d'une requête simple pour voir les headers
-      if (supabaseSession?.access_token) {
-        console.log('[AUTH] Testing simple query with current session...');
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .eq('id', supabaseUser?.id)
-            .maybeSingle();
-          console.log('[AUTH] Profile query result:', { data: profileData, error: profileError });
-        } catch (err) {
-          console.error('[AUTH] Profile query failed:', err);
-        }
-      }
-    };
-    
-    checkAuth();
-  }, [user, session]);
   
   const { 
     getBooksByStatus, 
