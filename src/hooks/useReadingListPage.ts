@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBookSorting } from "@/hooks/useBookSorting";
 import { useBookFetching } from "./useBookFetching";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useReadingListPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,17 @@ export const useReadingListPage = () => {
   const isMobile = useIsMobile();
   
   console.log('[useReadingListPage] User:', user, 'UserId:', userId);
+  
+  // Debug auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      console.log('[DEBUG] Supabase auth user:', supabaseUser);
+      console.log('[DEBUG] Context user:', user);
+      console.log('[DEBUG] Match:', supabaseUser?.id === userId);
+    };
+    checkAuth();
+  }, [user, userId]);
   
   const { 
     getBooksByStatus, 

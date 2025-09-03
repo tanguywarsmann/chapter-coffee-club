@@ -89,6 +89,15 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 export const fetchReadingProgress = async (userId: string) => {
   if (!userId) return null;
 
+  // Vérifier l'authentification avant la requête
+  const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+  console.log('[fetchReadingProgress] Auth check - UserId:', userId, 'Supabase user:', supabaseUser?.id);
+  
+  if (!supabaseUser || supabaseUser.id !== userId) {
+    console.error('[fetchReadingProgress] Auth mismatch or no user');
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('reading_progress')
     .select(`
