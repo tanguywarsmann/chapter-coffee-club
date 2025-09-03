@@ -15,6 +15,8 @@ export async function getCorrectAnswerAfterJoker(params: {
   questionId?: string;
   consume?: boolean; // default true
 }): Promise<CorrectAnswerResult> {
+  console.log('[JOKER SERVICE] Calling joker-reveal with params:', params);
+  
   const { data, error } = await supabase.functions.invoke('joker-reveal', {
     body: {
       bookId: params.bookId,
@@ -24,6 +26,8 @@ export async function getCorrectAnswerAfterJoker(params: {
       consume: params.consume ?? true
     }
   });
+
+  console.log('[JOKER SERVICE] Response:', { data, error });
 
   if (error) {
     console.error('joker-reveal invoke error', error);

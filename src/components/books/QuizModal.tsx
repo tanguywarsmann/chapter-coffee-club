@@ -124,6 +124,12 @@ export function QuizModal({
     setIsRevealing(true);
     
     try {
+      console.log('[JOKER DEBUG] Starting joker confirmation');
+      console.log('[JOKER DEBUG] User:', user?.id);
+      console.log('[JOKER DEBUG] Question:', question);
+      console.log('[JOKER DEBUG] Chapter:', chapterNumber);
+      console.log('[JOKER DEBUG] Actual jokers remaining:', actualJokersRemaining);
+      
       // Trace before call
       console.info('[JOKER] before-call', {
         bookSlug: question?.book_slug,
@@ -137,6 +143,8 @@ export function QuizModal({
         segment: chapterNumber,
         questionId: question.id
       });
+      
+      console.log('[JOKER DEBUG] Result received:', result);
 
       // Trace after call
       console.info('[JOKER] after-call', { ok: true, payload: result });
