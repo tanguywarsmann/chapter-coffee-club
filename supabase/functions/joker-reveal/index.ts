@@ -67,17 +67,38 @@ serve(async (req) => {
     // Service Role client for secure operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Resolve book slug to UUID if needed
+    let actualBookId = bookId;
+    if (!bookId && bookSlug) {
+      console.log('[JOKER-REVEAL] Resolving book slug to UUID:', bookSlug);
+      const { data: bookData, error: bookErr } = await supabase
+        .from("books_public")
+        .select("id")
+        .eq("slug", bookSlug)
+        .maybeSingle();
+        
+      if (bookErr || !bookData) {
+        console.error('[JOKER-REVEAL] Failed to resolve book slug:', { bookSlug, bookErr });
+        return new Response(JSON.stringify({ error: "Book not found" }), { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      actualBookId = bookData.id;
+      console.log('[JOKER-REVEAL] Resolved book slug to UUID:', { bookSlug, actualBookId });
+    }
+
     // 1) Consume joker via existing RPC if requested
     if (consume) {
       console.log('[JOKER-REVEAL] Calling use_joker RPC with params:', {
         p_user_id: uid,
-        p_book_id: bookId ?? bookSlug,
+        p_book_id: actualBookId,
         p_segment: segment,
       });
       
       const { data: jokerResult, error: rpcErr } = await supabase.rpc("use_joker", {
         p_user_id: uid,
-        p_book_id: bookId ?? bookSlug,
+        p_book_id: actualBookId,
         p_segment: segment,
       });
       
