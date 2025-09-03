@@ -1,9 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Book } from "@/types/book";
 import { mapBookFromRecord } from "./bookMapper";
-import { Database } from "@/integrations/supabase/types";
-
-type BookRecord = Database['public']['Tables']['books']['Row'];
+import { BookPublicRecord } from "./types";
 
 // Cache local pour les livres fréquemment consultés
 const bookCache = new Map<string, { data: Book, timestamp: number }>();
@@ -77,7 +75,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
     
     if (slugData) {
       console.log(`[DEBUG] Livre trouvé par slug: ${slugData.title} (${slugData.id})`);
-      const book = mapBookFromRecord(slugData as BookRecord);
+      const book = mapBookFromRecord(slugData as BookPublicRecord);
       
       // Mettre en cache avec les deux clés possibles
       bookCache.set(cleanId, { data: book, timestamp: Date.now() });
@@ -102,7 +100,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       
       if (idData) {
         console.log(`[DEBUG] Livre trouvé par ID: ${idData.title} (${idData.id})`);
-        const book = mapBookFromRecord(idData as BookRecord);
+        const book = mapBookFromRecord(idData as BookPublicRecord);
         
         // Mettre en cache
         bookCache.set(cleanId, { data: book, timestamp: Date.now() });
@@ -127,7 +125,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       
       if (anySlugData) {
         console.log(`[DEBUG] Livre trouvé par slug sans filtre: ${anySlugData.title} (${anySlugData.id})`);
-        const book = mapBookFromRecord(anySlugData as BookRecord);
+        const book = mapBookFromRecord(anySlugData as BookPublicRecord);
         
         // Mettre en cache
         bookCache.set(cleanId, { data: book, timestamp: Date.now() });

@@ -66,7 +66,7 @@ export const validateReading = async (
 
     // Get book info
     const { data: bookData, error: bookError } = await supabase
-      .from('books')
+      .from('books_public')
       .select('total_pages, total_chapters, expected_segments, slug')
       .eq('id', request.book_id)
       .maybeSingle();

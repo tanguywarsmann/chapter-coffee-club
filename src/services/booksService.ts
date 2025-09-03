@@ -44,7 +44,31 @@ export class BooksService {
         return null;
       }
 
-      return data;
+      if (!data) {
+        return null;
+      }
+
+      // Transform the public book data to match Book interface
+      return {
+        id: data.id || "",
+        title: data.title || "",
+        author: data.author || "",
+        coverImage: data.cover_url || undefined,
+        description: data.description || "",
+        totalChapters: 1,
+        chaptersRead: 0,
+        isCompleted: false,
+        language: "fr",
+        categories: data.tags || [],
+        tags: data.tags || [],
+        pages: 0,
+        total_pages: 0,
+        publicationYear: new Date().getFullYear(),
+        isPublished: true,
+        slug: data.slug || "",
+        expectedSegments: data.expected_segments || 1,
+        totalSegments: data.expected_segments || 1
+      } as Book;
     } catch (error) {
       console.error('Error in getBookBySlug:', error);
       return null;
@@ -67,7 +91,26 @@ export class BooksService {
         return [];
       }
 
-      return data || [];
+      return (data || []).map(book => ({
+        id: book.id || "",
+        title: book.title || "",
+        author: book.author || "",
+        coverImage: book.cover_url || undefined,
+        description: book.description || "",
+        totalChapters: 1,
+        chaptersRead: 0,
+        isCompleted: false,
+        language: "fr",
+        categories: book.tags || [],
+        tags: book.tags || [],
+        pages: 0,
+        total_pages: 0,
+        publicationYear: new Date().getFullYear(),
+        isPublished: true,
+        slug: book.slug || "",
+        expectedSegments: book.expected_segments || 1,
+        totalSegments: book.expected_segments || 1
+      } as Book));
     } catch (error) {
       console.error('Error in searchBooks:', error);
       return [];
@@ -90,7 +133,26 @@ export class BooksService {
         return [];
       }
 
-      return data || [];
+      return (data || []).map(book => ({
+        id: book.id || "",
+        title: book.title || "",
+        author: book.author || "",
+        coverImage: book.cover_url || undefined,
+        description: book.description || "",
+        totalChapters: 1,
+        chaptersRead: 0,
+        isCompleted: false,
+        language: "fr",
+        categories: book.tags || [],
+        tags: book.tags || [],
+        pages: 0,
+        total_pages: 0,
+        publicationYear: new Date().getFullYear(),
+        isPublished: true,
+        slug: book.slug || "",
+        expectedSegments: book.expected_segments || 1,
+        totalSegments: book.expected_segments || 1
+      } as Book));
     } catch (error) {
       console.error('Error in getBooksByCategory:', error);
       return [];
