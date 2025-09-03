@@ -13,21 +13,33 @@ export const useReadingListPage = () => {
   console.log('[useReadingListPage] Hook called');
   
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const userId = user?.id;
   const isMobile = useIsMobile();
   
   console.log('[useReadingListPage] User:', user, 'UserId:', userId);
+  console.log('[useReadingListPage] Session:', session);
+  console.log('[useReadingListPage] Session access token:', session?.access_token);
   
-  // Diagnostic auth simplifié
+  // Diagnostic auth détaillé
   useEffect(() => {
-    console.log('[useReadingListPage] useEffect triggered');
-    if (user) {
-      console.log('[AUTH] User is authenticated:', user.id);
-    } else {
-      console.log('[AUTH] No user found');
-    }
-  }, [user]);
+    const checkAuth = async () => {
+      console.log('[useReadingListPage] useEffect triggered');
+      console.log('[AUTH] Context user:', user);
+      console.log('[AUTH] Context session:', session);
+      
+      // Vérifier directement avec Supabase
+      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
+      console.log('[AUTH] Supabase getUser result:', supabaseUser);
+      console.log('[AUTH] Supabase getUser error:', error);
+      
+      // Vérifier la session Supabase
+      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+      console.log('[AUTH] Supabase session:', supabaseSession);
+    };
+    
+    checkAuth();
+  }, [user, session]);
   
   const { 
     getBooksByStatus, 
