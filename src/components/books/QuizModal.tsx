@@ -11,6 +11,7 @@ import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { supabase } from "@/integrations/supabase/client";
 import { useJokerAndReveal } from "@/services/jokerService";
 import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface QuizModalProps {
   bookTitle: string;
@@ -45,12 +46,18 @@ export function QuizModal({
   const [isRevealing, setIsRevealing] = useState(false);
   const maxAttempts = 3;
 
-  // Récupérer les informations de jokers via le hook dédié
-  const { jokersAllowed, jokersUsed } = useJokersInfo({
+  // Récupérer l'utilisateur authentifié
+  const { user } = useAuth();
+
+  // Récupérer les informations de jokers via le hook dédié avec le bon userId
+  const { jokersAllowed, jokersUsed, jokersRemaining: hookJokersRemaining, updateJokersInfo } = useJokersInfo({
     bookId: question.book_slug || progressId || null,
-    userId: null, // Pas accès direct au userId ici
+    userId: user?.id || null,
     expectedSegments
   });
+
+  // Utiliser les jokers du hook si pas fournis en props
+  const actualJokersRemaining = jokersRemaining ?? hookJokersRemaining;
 
   const handleSubmit = async () => {
     if (!answer.trim()) {
@@ -92,7 +99,7 @@ export function QuizModal({
         setAttempts(newAttempts);
         
         // Check if joker can be used immediately after first wrong answer
-        const canUseJoker = jokersRemaining > 0 && !isUsingJoker;
+        const canUseJoker = actualJokersRemaining > 0 && !isUsingJoker;
         if (canUseJoker) {
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
@@ -166,6 +173,9 @@ export function QuizModal({
           console.error('Analytics error:', analyticsError);
         }
       }
+
+      // Mettre à jour les informations de jokers après utilisation
+      await updateJokersInfo();
 
       toast.success("Joker utilisé ! La bonne réponse est révélée.");
     } catch (error) {
@@ -284,7 +294,7 @@ export function QuizModal({
         segment={chapterNumber}
         jokersUsed={jokersUsed}
         jokersAllowed={jokersAllowed}
-        jokersRemaining={jokersRemaining}
+        jokersRemaining={actualJokersRemaining}
         isUsingJoker={isUsingJoker}
         onConfirm={handleJokerConfirm}
         onCancel={handleJokerCancel}
