@@ -210,34 +210,62 @@ serve(async (req) => {
     // 3) Mark answer as revealed and set correct to true
     const now = new Date().toISOString();
     
-    // Use upsert to handle both insert and update cases safely
-    const { data: validationData, error: upsertErr } = await supabase
+    // First, check if validation already exists
+    const { data: existingValidation } = await supabase
       .from("reading_validations")
-      .upsert({
-        user_id: uid,
-        book_id: actualBookId,
-        segment: segment,
-        correct: true,
-        used_joker: true,
-        validated_at: now,
-        revealed_answer_at: now,
-        question_id: questionId || null
-      }, {
-        onConflict: 'user_id,book_id,segment',
-        ignoreDuplicates: false
-      })
       .select("id")
+      .eq("user_id", uid)
+      .eq("book_id", actualBookId)
+      .eq("segment", segment)
       .maybeSingle();
-      
-    if (upsertErr) {
-      console.error('Upsert validation record error:', upsertErr);
-      return new Response(JSON.stringify({ error: "Failed to save validation record", details: upsertErr.message }), { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+
+    if (existingValidation) {
+      // Update existing record
+      console.log('Updating existing validation record:', existingValidation.id);
+      const { error: updateErr } = await supabase
+        .from("reading_validations")
+        .update({
+          correct: true,
+          used_joker: true,
+          validated_at: now,
+          revealed_answer_at: now,
+          question_id: questionId || null
+        })
+        .eq("id", existingValidation.id);
+        
+      if (updateErr) {
+        console.error('Update validation record error:', updateErr);
+        return new Response(JSON.stringify({ error: "Failed to update validation record", details: updateErr.message }), { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      console.log('Validation record updated successfully');
+    } else {
+      // Create new record
+      console.log('Creating new validation record');
+      const { error: insertErr } = await supabase
+        .from("reading_validations")
+        .insert({
+          user_id: uid,
+          book_id: actualBookId,
+          segment: segment,
+          correct: true,
+          used_joker: true,
+          validated_at: now,
+          revealed_answer_at: now,
+          question_id: questionId || null
+        });
+        
+      if (insertErr) {
+        console.error('Insert validation record error:', insertErr);
+        return new Response(JSON.stringify({ error: "Failed to create validation record", details: insertErr.message }), { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      console.log('Validation record created successfully');
     }
-    
-    console.log('Validation record saved successfully:', validationData?.id);
 
     console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${actualBookId}`);
 
