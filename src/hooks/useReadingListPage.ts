@@ -87,34 +87,65 @@ export const useReadingListPage = () => {
     try {
       console.log("[DEBUG] Fetching books for userId:", userId);
       
-      // Fetch all categories
-      const [toRead, inProgress, completed] = await Promise.all([
-        getBooksByStatus('to_read'),
-        getBooksByStatus('in_progress'),
-        getBooksByStatus('completed')
-      ]);
+      // Use the new fetchReadingProgress service
+      const { fetchReadingProgress } = await import("@/services/reading/readingListService");
+      const payload = await fetchReadingProgress(userId);
       
       console.log("[DEBUG] Fetched books:", {
-        toRead: toRead?.length || 0,
-        inProgress: inProgress?.length || 0,
-        completed: completed?.length || 0
+        toRead: payload.toReadCount,
+        inProgress: payload.inProgressCount,
+        completed: payload.completedCount
       });
       
+      // Convert to the expected Book format and apply sorting
+      const convertToBooks = (rows: any[]) => rows.map((row: any) => ({
+        id: row.books?.id || row.book_id,
+        title: row.books?.title || 'Titre inconnu',
+        author: row.books?.author || 'Auteur inconnu',
+        description: row.books?.description || '',
+        coverImage: row.books?.cover_url || '',
+        cover_url: row.books?.cover_url || '',
+        pages: row.books?.total_pages || 0,
+        categories: row.books?.tags || [],
+        tags: row.books?.tags || [],
+        totalChapters: row.books?.expected_segments || 0,
+        language: 'fr',
+        publicationYear: new Date().getFullYear(),
+        slug: row.books?.slug || row.books?.id || row.book_id,
+        isCompleted: row.status === 'completed',
+        expectedSegments: row.books?.expected_segments || 0,
+      }));
+      
+      const toReadBooks = convertToBooks(payload.toRead);
+      const inProgressBooks = convertToBooks(payload.inProgress);
+      const completedBooks = convertToBooks(payload.completed);
+      
       // Apply sorting and update state
-      setToReadBooks(sortBooks(toRead || [], sortBy));
-      setInProgressBooks(sortBooks(inProgress || [], sortBy));
-      setCompletedBooks(sortBooks(completed || [], sortBy));
+      setToReadBooks(sortBooks(toReadBooks, sortBy));
+      setInProgressBooks(sortBooks(inProgressBooks, sortBy));
+      setCompletedBooks(sortBooks(completedBooks, sortBy));
       setHasInitialFetch(true);
     } catch (error) {
       console.error("Error fetching books:", error);
       setHasInitialFetch(true); // Mark as fetched even on error to avoid infinite loops
     }
-  }, [getBooksByStatus, userId, hasInitialFetch, sortBooks, sortBy]);
+  }, [userId, hasInitialFetch, sortBooks, sortBy]);
 
-  // Single effect to handle initial fetch
+  // Single effect to handle initial fetch with proper completion handling
   useEffect(() => {
+    if (!userId) {
+      console.log("⚪ [ReadingListPage] no user, finishing empty");
+      setIsDataReady(true);
+      setHasInitialFetch(true);
+      return;
+    }
+
     if (userId && readingList && !hasInitialFetch && !isLoadingReadingList && !isFetching) {
-      handleFetchBooks();
+      handleFetchBooks().finally(() => {
+        // Always mark as complete even if fetch fails
+        setIsDataReady(true);
+        setHasInitialFetch(true);
+      });
     }
   }, [userId, readingList, hasInitialFetch, isLoadingReadingList, isFetching, handleFetchBooks]);
 
