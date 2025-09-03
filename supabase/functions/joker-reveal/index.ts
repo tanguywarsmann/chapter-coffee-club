@@ -209,47 +209,35 @@ serve(async (req) => {
 
     // 3) Mark answer as revealed and set correct to true
     const now = new Date().toISOString();
-    const { data: updatedRows, error: updErr } = await supabase
+    
+    // Use upsert to handle both insert and update cases safely
+    const { data: validationData, error: upsertErr } = await supabase
       .from("reading_validations")
-      .update({ revealed_answer_at: now, correct: true, validated_at: now })
-      .eq("user_id", uid)
-      .eq("segment", segment)
-      .eq("book_id", actualBookId)
-      .select("id");
+      .upsert({
+        user_id: uid,
+        book_id: actualBookId,
+        segment: segment,
+        correct: true,
+        used_joker: true,
+        validated_at: now,
+        revealed_answer_at: now,
+        question_id: questionId || null
+      }, {
+        onConflict: 'user_id,book_id,segment',
+        ignoreDuplicates: false
+      })
+      .select("id")
+      .maybeSingle();
       
-    if (updErr) {
-      console.error('Update revealed_answer_at error:', updErr);
-      return new Response(JSON.stringify({ error: "Failed to update revealed_answer_at", details: updErr.message }), { 
+    if (upsertErr) {
+      console.error('Upsert validation record error:', upsertErr);
+      return new Response(JSON.stringify({ error: "Failed to save validation record", details: upsertErr.message }), { 
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-
-    // If no rows affected, create the validation record
-    if (!updatedRows || updatedRows.length === 0) {
-      console.log('No existing validation found, creating new record');
-      const { error: insErr } = await supabase
-        .from("reading_validations")
-        .insert([{
-          user_id: uid,
-          book_id: actualBookId,
-          segment: segment,
-          correct: true,
-          used_joker: true,
-          validated_at: now,
-          revealed_answer_at: now
-        }])
-        .select("id")
-        .maybeSingle();
-        
-      if (insErr) {
-        console.error('Insert validation record error:', insErr);
-        return new Response(JSON.stringify({ error: "Failed to create validation record", details: insErr.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-    }
+    
+    console.log('Validation record saved successfully:', validationData?.id);
 
     console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${actualBookId}`);
 
