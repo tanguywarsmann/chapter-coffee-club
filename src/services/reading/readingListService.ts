@@ -170,22 +170,40 @@ export const fetchBooksForStatus = async (readingListData: any, status: string, 
     
     const items = statusMap[status as keyof typeof statusMap] || [];
     
-    return items.map((item: any) => ({
-      id: item.books?.id || item.book_id,
-      title: item.books?.title || 'Titre inconnu',
-      author: item.books?.author || 'Auteur inconnu',
-      description: item.books?.description || '',
-      coverImage: item.books?.cover_url || '',
-      cover_url: item.books?.cover_url || '',
-      pages: item.books?.total_pages || 0,
-      categories: item.books?.tags || [],
-      tags: item.books?.tags || [],
-      totalChapters: item.books?.expected_segments || 0,
-      language: 'fr',
-      publicationYear: new Date().getFullYear(),
-      slug: item.books?.slug || item.books?.id || item.book_id,
-      isCompleted: status === 'completed',
-      expectedSegments: item.books?.expected_segments || 0,
+    return Promise.all(items.map(async (item: any) => {
+      // Calculer correctement les segments validés comme sur la page d'accueil
+      const validatedSegments = await getValidatedSegmentCount(userId, item.book_id);
+      const expectedSegments = item.books?.expected_segments || item.books?.total_chapters || 10;
+      const progressPercent = Math.round((validatedSegments / (expectedSegments || 1)) * 100);
+      
+      console.log("📋 ReadingList book:", {
+        title: item.books?.title,
+        book_id: item.book_id,
+        validatedSegments,
+        expectedSegments,
+        progressPercent
+      });
+      
+      return {
+        id: item.books?.id || item.book_id,
+        title: item.books?.title || 'Titre inconnu',
+        author: item.books?.author || 'Auteur inconnu',
+        description: item.books?.description || '',
+        coverImage: item.books?.cover_url || '',
+        cover_url: item.books?.cover_url || '',
+        pages: item.books?.total_pages || 0,
+        categories: item.books?.tags || [],
+        tags: item.books?.tags || [],
+        totalChapters: expectedSegments,
+        chaptersRead: validatedSegments, // Ajouter les segments validés
+        currentSegment: validatedSegments,
+        progressPercent: progressPercent,
+        expectedSegments: expectedSegments,
+        language: 'fr',
+        publicationYear: new Date().getFullYear(),
+        slug: item.books?.slug || item.books?.id || item.book_id,
+        isCompleted: status === 'completed',
+      };
     }));
   }
 
