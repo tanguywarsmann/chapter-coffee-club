@@ -9,6 +9,7 @@ import Profile from '@/pages/Profile';
 import BookPage from '@/pages/BookPage';
 import Blog from '@/pages/Blog';
 import BlogPost from '@/pages/BlogPost';
+import BlogPage from '@/pages/BlogPage';
 import ReadingList from '@/pages/ReadingList';
 import Discover from '@/pages/Discover';
 import Explore from '@/pages/Explore';
@@ -45,6 +46,7 @@ const AppRouter = () => {
       <Route path="/book/:id" element={<BookPage />} />
       <Route path="/books/:id" element={<BookPage />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/page/:page" element={<BlogPage />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />

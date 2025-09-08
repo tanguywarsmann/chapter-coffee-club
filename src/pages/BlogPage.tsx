@@ -1,6 +1,4 @@
-
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useParams, Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -8,13 +6,32 @@ import { setCanonical } from "@/utils/seo";
 import { usePaginatedPosts } from "@/hooks/usePaginatedPosts";
 import BlogList from "@/components/blog/BlogList";
 import BlogPagination from "@/components/blog/BlogPagination";
+import { useEffect } from "react";
 
-export default function Blog() {
-  const { posts, totalPages, isLoading, error } = usePaginatedPosts(1, 20);
+export default function BlogPage() {
+  const { page: pageParam } = useParams<{ page: string }>();
+  const page = parseInt(pageParam || '1', 10);
+  
+  // Rediriger la page 1 vers /blog
+  if (page === 1) {
+    return <Navigate to="/blog" replace />;
+  }
+
+  // Vérifier que le numéro de page est valide
+  if (isNaN(page) || page < 1) {
+    return <Navigate to="/blog" replace />;
+  }
+
+  const { posts, total, totalPages, isLoading, error } = usePaginatedPosts(page, 20);
 
   useEffect(() => {
-    setCanonical('https://www.vread.fr/blog');
-  }, []);
+    setCanonical(`https://www.vread.fr/blog/page/${page}`);
+  }, [page]);
+
+  // Si la page demandée dépasse le nombre total de pages, rediriger vers /blog
+  if (!isLoading && totalPages > 0 && page > totalPages) {
+    return <Navigate to="/blog" replace />;
+  }
 
   if (isLoading) {
     return (
@@ -39,25 +56,25 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog VREAD — Conseils lecture, méthodes et nouveautés</title>
-        <meta name="description" content="Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" />
-        <meta property="og:title" content="Blog VREAD — Conseils lecture, méthodes et nouveautés" />
-        <meta property="og:description" content="Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" />
+        <title>Blog VREAD — Page {page}</title>
+        <meta name="description" content={`Suite des articles VREAD – Page ${page}.`} />
+        <meta property="og:title" content={`Blog VREAD — Page ${page}`} />
+        <meta property="og:description" content={`Suite des articles VREAD – Page ${page}.`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.vread.fr/blog" />
+        <meta property="og:url" content={`https://www.vread.fr/blog/page/${page}`} />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Blog VREAD — Conseils lecture, méthodes et nouveautés" />
-        <meta name="twitter:description" content="Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" />
-        <link rel="canonical" href="https://www.vread.fr/blog" />
+        <meta name="twitter:title" content={`Blog VREAD — Page ${page}`} />
+        <meta name="twitter:description" content={`Suite des articles VREAD – Page ${page}.`} />
+        <link rel="canonical" href={`https://www.vread.fr/blog/page/${page}`} />
         
         {/* Schema.org structured data for ItemList */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ItemList",
-            "name": "Blog VREAD",
-            "description": "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…",
-            "url": "https://www.vread.fr/blog",
+            "name": `Blog VREAD - Page ${page}`,
+            "description": `Articles du blog VREAD - Page ${page}`,
+            "url": `https://www.vread.fr/blog/page/${page}`,
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
@@ -65,7 +82,7 @@ export default function Blog() {
             },
             "itemListElement": posts.map((post, i) => ({
               "@type": "ListItem",
-              "position": i + 1,
+              "position": (page - 1) * 20 + i + 1,
               "url": `https://www.vread.fr/blog/${post.slug}`
             }))
           })}
@@ -89,11 +106,12 @@ export default function Blog() {
             <p className="text-lg text-white/90 max-w-none mx-auto">
               Découvrez nos articles sur la lecture, les livres et la culture littéraire
             </p>
+            <p className="text-sm text-white/70 mt-2">Page {page}</p>
           </header>
 
           <div className="max-w-none mx-auto">
             <BlogList posts={posts} />
-            <BlogPagination currentPage={1} totalPages={totalPages} />
+            <BlogPagination currentPage={page} totalPages={totalPages} />
           </div>
         </div>
       </div>
