@@ -173,6 +173,39 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
 };
 
 /**
+ * Récupère les livres par catégorie spécifique (Religion, Essai, Littérature)
+ */
+export const getBooksBySpecificCategory = async (category: 'religion' | 'essai' | 'litterature'): Promise<Book[]> => {
+  try {
+    let query = supabase
+      .from('books_public')
+      .select('*')
+      .order('title');
+
+    if (category === 'religion') {
+      query = query.contains('tags', ['Religion']);
+    } else if (category === 'essai') {
+      query = query.contains('tags', ['Essai']);
+    } else {
+      // Littérature = tout ce qui n'est ni Religion ni Essai
+      query = query.not('tags', 'cs', ['Religion']).not('tags', 'cs', ['Essai']);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching books by specific category:', error);
+      return [];
+    }
+
+    return data ? data.map(mapBookFromRecord) : [];
+  } catch (error) {
+    console.error(`Exception fetching books for specific category ${category}:`, error);
+    return [];
+  }
+};
+
+/**
  * Récupère les catégories disponibles
  */
 export const getAvailableCategories = async (): Promise<string[]> => {

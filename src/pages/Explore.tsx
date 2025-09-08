@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { BookGrid } from "@/components/books/BookGrid";
-import { getAllBooks, getBooksByCategory, getAvailableCategories } from "@/services/books/bookQueries";
+import { getBooksBySpecificCategory } from "@/services/books/bookQueries";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,45 +11,52 @@ import { Loader2, Sparkles } from "lucide-react";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
-import { TagSlider } from "@/components/books/TagSlider";
+
+type Category = 'litterature' | 'religion' | 'essai';
 
 export default function Explore() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const initialCat = (searchParams.get('cat') as Category) || 'litterature';
+  
+  const [category, setCategory] = useState<Category>(initialCat);
   const [books, setBooks] = useState<Book[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
   const isMounted = useRef(true);
   const [showWelcome, setShowWelcome] = useState(() => {
     const onboardingFlag = localStorage.getItem("onboardingDone");
     return !onboardingFlag;
   });
 
-  const fetchBooksAndCategories = useCallback(async () => {
+  const getCategoryLabel = (cat: Category) => {
+    switch (cat) {
+      case 'litterature': return 'Littérature';
+      case 'religion': return 'Religion';
+      case 'essai': return 'Essai';
+      default: return 'Littérature';
+    }
+  };
+
+  const fetchBooks = useCallback(async () => {
     if (!isMounted.current) return;
     
     setLoading(true);
     setError(null);
 
     try {
-      const [allBooks, availableCategories] = await Promise.all([
-        getAllBooks(),
-        getAvailableCategories()
-      ]);
+      const booksData = await getBooksBySpecificCategory(category);
       
       if (!isMounted.current) return;
 
-      if (allBooks.length === 0) {
-        setError("Aucun livre disponible pour le moment");
+      if (booksData.length === 0) {
+        setError(`Aucun livre disponible dans la catégorie ${getCategoryLabel(category)}`);
       }
       
-      setBooks(allBooks);
-      setFilteredBooks(allBooks);
-      setCategories(availableCategories);
+      setBooks(booksData);
     } catch (error) {
-      console.error("Error loading books or categories:", error);
+      console.error("Error loading books:", error);
       if (isMounted.current) {
         setError("Erreur lors du chargement des livres");
         toast.error("Erreur lors du chargement des livres");
@@ -60,65 +66,56 @@ export default function Explore() {
         setLoading(false);
       }
     }
-  }, []);
+  }, [category, getCategoryLabel]);
 
   useEffect(() => {
     isMounted.current = true;
-    fetchBooksAndCategories();
+    fetchBooks();
     return () => {
       isMounted.current = false;
     };
-  }, [fetchBooksAndCategories]);
+  }, [fetchBooks]);
 
-  const handleCategoryFilter = async (category: string | null) => {
-    if (!isMounted.current) return;
-    
-    setSelectedCategory(category);
-    setLoading(true);
-    
-    try {
-      if (category) {
-        const filteredBooks = await getBooksByCategory(category);
-        if (!isMounted.current) return;
-        setFilteredBooks(filteredBooks);
-        if (filteredBooks.length === 0) {
-          toast.info(`Aucun livre trouvé dans la catégorie "${category}"`);
-        }
-      } else {
-        setFilteredBooks(books);
-      }
-    } catch (error) {
-      console.error("Error filtering by category:", error);
-      if (isMounted.current) {
-        toast.error(`Erreur lors du filtrage par catégorie "${category}"`);
-      }
-    } finally {
-      if (isMounted.current) {
-        setLoading(false);
-      }
-    }
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    params.set('cat', category);
+    navigate({ search: params.toString() }, { replace: true });
+  }, [category, navigate, searchParams]);
+
+  const handleCategoryChange = (newCategory: Category) => {
+    setCategory(newCategory);
   };
 
   const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setFilteredBooks(books);
-      return;
-    }
-
-    const results = books.filter(book => 
-      book.title.toLowerCase().includes(query.toLowerCase()) ||
-      book.author.toLowerCase().includes(query.toLowerCase()) ||
-      book.categories.some(category => category.toLowerCase().includes(query.toLowerCase()))
-    );
-
-    setFilteredBooks(results);
-
-    if (results.length === 0) {
-      toast.info("Aucun livre trouvé pour cette recherche.");
-    }
+    setSearchQuery(query);
   };
 
+  const filteredBooks = searchQuery.trim() 
+    ? books.filter(book => 
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : books;
+
   const suggestedBook = books.length > 0 ? books[Math.floor(Math.random() * books.length)] : null;
+
+  const Tab = ({ value, label }: { value: Category; label: string }) => {
+    const active = category === value;
+    return (
+      <button
+        onClick={() => handleCategoryChange(value)}
+        className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+          active 
+            ? 'bg-neutral text-neutral-foreground font-medium' 
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        }`}
+        aria-pressed={active}
+      >
+        {label}
+      </button>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,7 +123,13 @@ export default function Explore() {
         <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
         <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
           <div className="space-y-4">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
+            <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
+
+            <div className="inline-flex items-center gap-1 rounded-xl border border-border p-1 mb-6">
+              <Tab value="litterature" label="Littérature" />
+              <Tab value="religion" label="Religion" />
+              <Tab value="essai" label="Essai" />
+            </div>
 
             <div className="max-w-none">
               <SearchBar 
@@ -134,12 +137,6 @@ export default function Explore() {
                 placeholder="Rechercher par titre, auteur ou thématique..."
               />
             </div>
-
-            <TagSlider
-              tags={categories}
-              selectedTag={selectedCategory}
-              onSelectTag={handleCategoryFilter}
-            />
           </div>
 
           {loading ? (
@@ -152,14 +149,20 @@ export default function Explore() {
           ) : error ? (
             <BookEmptyState 
               hasError={true}
-              title="Erreur"
+              title="Aucun livre"
               description={error}
+            />
+          ) : filteredBooks.length === 0 && searchQuery ? (
+            <BookEmptyState 
+              hasError={false}
+              title="Aucun résultat"
+              description="Aucun livre trouvé pour cette recherche."
             />
           ) : (
             <div className="space-y-12">
               <BookGrid 
                 books={filteredBooks} 
-                title="Livres disponibles" 
+                title={`${getCategoryLabel(category)} ${filteredBooks.length > 0 ? `(${filteredBooks.length})` : ''}`}
                 showAddButton={true}
                 enablePagination={true}
                 initialPageSize={12}
