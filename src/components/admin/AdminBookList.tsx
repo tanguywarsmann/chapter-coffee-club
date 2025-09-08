@@ -9,6 +9,7 @@ import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 import { AddBookForm } from "@/components/admin/AddBookForm";
 import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
 import { toast } from "@/hooks/use-toast";
+import { generateAndSaveCover } from "@/utils/generateCover";
 import { Book } from "@/types/book";
 
 // Define BookValidationStatus as an extension of the Book type
@@ -20,6 +21,7 @@ interface BookValidationStatus extends Book {
   segments: number[]; // Available segments
   missingSegments: number[]; // Missing segments
   status: 'complete' | 'incomplete' | 'missing'; // Validation status
+  cover_url?: string; // Cover URL
 }
 
 export function AdminBookList() {
@@ -30,6 +32,7 @@ export function AdminBookList() {
   const [isFixingSegments, setIsFixingSegments] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+  const [generatingCovers, setGeneratingCovers] = useState<Set<string>>(new Set());
 
   // Fonction pour calculer le nombre de segments basé sur le nombre de pages
   const calculateExpectedSegments = (totalPages: number): number => {
@@ -132,7 +135,7 @@ export function AdminBookList() {
       // Récupérer tous les livres
       const { data: booksData, error: booksError } = await supabase
         .from('books')
-        .select('id, title, slug, total_pages');
+        .select('id, title, slug, total_pages, cover_url');
       
       if (booksError) throw booksError;
       
@@ -181,6 +184,7 @@ export function AdminBookList() {
           segments: uniqueSegments,
           missingSegments: missingSegments,
           status: status,
+          cover_url: book.cover_url,
           // Add required fields from Book
           author: "", // Default value since it might not be available
           description: "", // Default value
@@ -265,6 +269,32 @@ export function AdminBookList() {
   // Handler pour ouvrir la boîte de dialogue de suppression
   const handleDeleteClick = (book: {id: string; title: string}) => {
     setBookToDelete(book);
+  };
+
+  // Handler pour générer une couverture
+  const handleGenerateCover = async (book: BookValidationStatus) => {
+    setGeneratingCovers(prev => new Set(prev).add(book.id));
+    
+    try {
+      const url = await generateAndSaveCover(book);
+      toast({
+        title: `Couverture générée pour "${book.title}"`,
+        description: `URL: ${url}`,
+      });
+      handleBookUpdate();
+    } catch (error: any) {
+      toast({
+        title: "Erreur lors de la génération de la couverture",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingCovers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(book.id);
+        return newSet;
+      });
+    }
   };
 
   // Composant pour afficher les segments manquants
@@ -393,6 +423,7 @@ export function AdminBookList() {
               <TableHead className="text-right">Segments attendus</TableHead>
               <TableHead className="text-right">Questions disponibles</TableHead>
               <TableHead className="text-right">Couverture</TableHead>
+              <TableHead className="text-center">Cover</TableHead>
               <TableHead className="text-right">État</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -406,6 +437,27 @@ export function AdminBookList() {
                 <TableCell className="text-right">{book.availableQuestions}</TableCell>
                 <TableCell className="text-right">
                   {Math.round((book.availableQuestions / book.expectedSegments) * 100)}%
+                </TableCell>
+                <TableCell className="text-center">
+                  {book.cover_url ? (
+                    <div className="flex items-center justify-center text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateCover(book)}
+                      disabled={generatingCovers.has(book.id)}
+                      className="text-xs px-2 py-1 h-6"
+                    >
+                      {generatingCovers.has(book.id) ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        "📕 Générer"
+                      )}
+                    </Button>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   {renderStatus(book.status)}
@@ -429,7 +481,7 @@ export function AdminBookList() {
             ))}
             {books.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   Aucun livre trouvé
                 </TableCell>
               </TableRow>
