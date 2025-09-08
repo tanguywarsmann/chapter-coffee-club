@@ -47,29 +47,11 @@ export default function Explore() {
 
     try {
       let q = supabase
-        .from('books')
+        .from('books_explore')
         .select('*')
-        .eq('is_published', true)
+        .eq('category', category)
         .order('created_at', { ascending: false })
         .range(from, to)
-
-      if (category === 'religion') {
-        q = q.contains('tags', ['Religion'])
-      } else if (category === 'essai') {
-        q = q.contains('tags', ['Essai'])
-      } else if (category === 'bio') {
-        // Version supabase-js v2
-        q = q.overlaps('tags', ['Biographie', 'Autobiographie'])
-        // Fallback si overlaps n'est pas supporté dans ton bundle:
-        // q = q.or('tags.ov.{Biographie,Autobiographie}')
-      } else {
-        // Littérature par défaut: exclure explicitement Religion, Essai, Bio
-        q = q
-          .not('tags','cs',['Religion'])
-          .not('tags','cs',['Essai'])
-          .not('tags','cs',['Biographie'])
-          .not('tags','cs',['Autobiographie'])
-      }
 
       const { data, error } = await q
       console.debug('[Explore] cat=', category, 'page=', page, 'rows=', data?.length, 'error=', error)

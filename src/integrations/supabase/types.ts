@@ -371,6 +371,13 @@ export type Database = {
             foreignKeyName: "reading_progress_book_fk"
             columns: ["book_id"]
             isOneToOne: false
+            referencedRelation: "books_explore"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_progress_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
             referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
@@ -477,6 +484,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_validations_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_explore"
             referencedColumns: ["id"]
           },
           {
@@ -675,6 +689,13 @@ export type Database = {
             foreignKeyName: "validation_locks_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
+            referencedRelation: "books_explore"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validation_locks_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
             referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
@@ -682,6 +703,54 @@ export type Database = {
       }
     }
     Views: {
+      books_explore: {
+        Row: {
+          author: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          expected_segments: number | null
+          id: string | null
+          is_published: boolean | null
+          slug: string | null
+          tags: string[] | null
+          title: string | null
+          total_chapters: number | null
+          total_pages: number | null
+        }
+        Insert: {
+          author?: string | null
+          category?: never
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          expected_segments?: number | null
+          id?: string | null
+          is_published?: boolean | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          total_chapters?: number | null
+          total_pages?: number | null
+        }
+        Update: {
+          author?: string | null
+          category?: never
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          expected_segments?: number | null
+          id?: string | null
+          is_published?: boolean | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          total_chapters?: number | null
+          total_pages?: number | null
+        }
+        Relationships: []
+      }
       books_public: {
         Row: {
           author: string | null
