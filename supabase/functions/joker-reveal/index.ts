@@ -67,25 +67,57 @@ serve(async (req) => {
     // Service Role client for secure operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Feature flag configuration (no blocking for now, just logging)
+    const EF_MIN_ENABLED = Deno.env.get('JOKER_MIN_SEGMENTS_ENABLED') === 'true';
+    const EF_MIN = parseInt(Deno.env.get('JOKER_MIN_SEGMENTS') || '3', 10);
+
     // Resolve book slug to UUID if needed
     let actualBookId = bookId;
+    let bookData: any = null;
     if (!bookId && bookSlug) {
       console.log('[JOKER-REVEAL] Resolving book slug to UUID:', bookSlug);
-      const { data: bookData, error: bookErr } = await supabase
+      const { data: resolvedBookData, error: bookErr } = await supabase
         .from("books_public")
-        .select("id")
+        .select("id, expected_segments")
         .eq("slug", bookSlug)
         .maybeSingle();
         
-      if (bookErr || !bookData) {
+      if (bookErr || !resolvedBookData) {
         console.error('[JOKER-REVEAL] Failed to resolve book slug:', { bookSlug, bookErr });
         return new Response(JSON.stringify({ error: "Book not found" }), { 
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
-      actualBookId = bookData.id;
+      actualBookId = resolvedBookData.id;
+      bookData = resolvedBookData;
       console.log('[JOKER-REVEAL] Resolved book slug to UUID:', { bookSlug, actualBookId });
+    } else if (bookId) {
+      // Get book data for existing bookId to check expected_segments
+      const { data: resolvedBookData } = await supabase
+        .from("books_public")
+        .select("id, expected_segments")
+        .eq("id", bookId)
+        .maybeSingle();
+      bookData = resolvedBookData;
+    }
+
+    // Feature flag check: log if joker would be blocked (no blocking yet)
+    if (EF_MIN_ENABLED && bookData?.expected_segments != null && bookData.expected_segments < EF_MIN) {
+      console.warn('[JOKER-REVEAL] Joker would be blocked by min segments constraint', {
+        bookId: actualBookId,
+        expected: bookData.expected_segments,
+        min: EF_MIN,
+        enabled: EF_MIN_ENABLED
+      });
+      // For Phase 1: just log, don't block
+      // For Phase 2: uncomment the return below to actually block
+      // return new Response(JSON.stringify({ 
+      //   error: `Jokers non disponibles pour les livres de moins de ${EF_MIN} segments` 
+      // }), { 
+      //   status: 400,
+      //   headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      // });
     }
 
     // 1) Consume joker via existing RPC if requested

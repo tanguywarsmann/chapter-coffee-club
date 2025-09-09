@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getRemainingJokers } from "@/services/jokerService";
-import { debugLog, auditJokerState } from "@/utils/jokerConstraints";
+import { debugLog, auditJokerState, calculateJokersAllowed } from "@/utils/jokerConstraints";
 import { collectJokerAuditData } from "@/utils/jokerAudit";
 
 interface UseJokersInfoProps {
@@ -27,7 +27,7 @@ export function useJokersInfo({ bookId, userId, expectedSegments = 0 }: UseJoker
       setIsLoading(true);
       try {
         const remaining = await getRemainingJokers(bookId, userId);
-        const allowed = Math.floor(expectedSegments / 10) + 1;
+        const allowed = calculateJokersAllowed(expectedSegments);
         const used = Math.max(0, allowed - remaining);
 
         // AUDIT: Log des calculs joker (non intrusif)
@@ -74,7 +74,7 @@ export function useJokersInfo({ bookId, userId, expectedSegments = 0 }: UseJoker
     
     try {
       const remaining = await getRemainingJokers(bookId, userId);
-      const allowed = Math.floor(expectedSegments / 10) + 1;
+      const allowed = calculateJokersAllowed(expectedSegments);
       const used = Math.max(0, allowed - remaining);
 
       // AUDIT: Log des mises à jour joker

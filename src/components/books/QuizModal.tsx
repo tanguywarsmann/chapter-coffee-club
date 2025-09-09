@@ -11,7 +11,7 @@ import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { supabase } from "@/integrations/supabase/client";
 import { useJokerAndReveal } from "@/services/jokerService";
 import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
-import { debugLog, auditJokerState } from "@/utils/jokerConstraints";
+import { debugLog, auditJokerState, canUseJokers } from "@/utils/jokerConstraints";
 import { collectJokerAuditData } from "@/utils/jokerAudit";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -101,7 +101,7 @@ export function QuizModal({
         setAttempts(newAttempts);
         
         // Check if joker can be used immediately after first wrong answer
-        const canUseJoker = actualJokersRemaining > 0 && !isUsingJoker;
+        const canUseJoker = canUseJokers(expectedSegments) && actualJokersRemaining > 0 && !isUsingJoker;
         if (canUseJoker) {
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
@@ -334,6 +334,7 @@ export function QuizModal({
         jokersAllowed={jokersAllowed}
         jokersRemaining={actualJokersRemaining}
         isUsingJoker={isUsingJoker}
+        expectedSegments={expectedSegments}
         onConfirm={handleJokerConfirm}
         onCancel={handleJokerCancel}
       />

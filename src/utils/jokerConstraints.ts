@@ -1,19 +1,17 @@
 /**
  * Joker Constraints - Configuration et logique des contraintes joker
- * AUDIT MODE: Ne pas modifier la logique applicative existante
+ * FEATURE FLAG MODE: Contrainte "≥ 3 segments" avec déploiement en phases
  */
 
 // Configuration par défaut (peut être overridée par variables d'environnement)
 export const JOKER_MIN_SEGMENTS_DEFAULT = 3;
 
-// Feature flag pour activer la nouvelle contrainte (AUDIT: désactivé par défaut)
+// Feature flag pour activer la nouvelle contrainte (UI gating)
 export const JOKER_MIN_SEGMENTS_ENABLED = 
   import.meta.env.VITE_JOKER_MIN_SEGMENTS_ENABLED === 'true';
 
 // Valeur minimum de segments (configurable via env)
-export const JOKER_MIN_SEGMENTS = parseInt(
-  import.meta.env.VITE_JOKER_MIN_SEGMENTS || String(JOKER_MIN_SEGMENTS_DEFAULT)
-);
+export const JOKER_MIN_SEGMENTS = Number(import.meta.env.VITE_JOKER_MIN_SEGMENTS ?? JOKER_MIN_SEGMENTS_DEFAULT);
 
 // Debug mode pour logs non intrusifs
 export const JOKER_DEBUG_ENABLED = 
@@ -30,9 +28,12 @@ export function debugLog(message: string, data?: any) {
 
 /**
  * NOUVELLE LOGIQUE: Vérifie si les jokers peuvent être utilisés
- * AUDIT: Cette fonction n'est PAS utilisée dans la logique existante
+ * Prend en compte le feature flag pour l'activation progressive
  */
-export function canUseJokers(expectedSegments: number): boolean {
+export function canUseJokers(expectedSegments: number = 0): boolean {
+  if (!Number.isFinite(expectedSegments)) return false;
+  if (!JOKER_MIN_SEGMENTS_ENABLED) return true; // soft-launch UI gating
+  
   const canUse = expectedSegments >= JOKER_MIN_SEGMENTS;
   
   debugLog(`canUseJokers check: ${expectedSegments} segments >= ${JOKER_MIN_SEGMENTS}`, {
@@ -47,26 +48,36 @@ export function canUseJokers(expectedSegments: number): boolean {
 
 /**
  * NOUVELLE LOGIQUE: Calcul des jokers autorisés avec contrainte minimum
- * AUDIT: Cette fonction n'est PAS utilisée dans la logique existante
+ * Remplace la logique existante avec support du feature flag
  */
-export function calculateJokersAllowedWithConstraint(expectedSegments: number): number {
-  // Si la contrainte est activée et pas assez de segments
-  if (JOKER_MIN_SEGMENTS_ENABLED && !canUseJokers(expectedSegments)) {
+export function calculateJokersAllowed(expectedSegments: number = 0): number {
+  // Si la contrainte est activée et non respectée → 0
+  if (JOKER_MIN_SEGMENTS_ENABLED && expectedSegments < JOKER_MIN_SEGMENTS) {
     debugLog(`Jokers blocked by constraint: ${expectedSegments} < ${JOKER_MIN_SEGMENTS}`);
     return 0;
   }
   
   // Logique existante (inchangée)
-  const allowed = Math.floor(expectedSegments / 10) + 1;
+  const allowed = Math.floor((expectedSegments || 0) / 10) + 1;
   
-  debugLog(`calculateJokersAllowedWithConstraint result`, {
+  debugLog(`calculateJokersAllowed result`, {
     expectedSegments,
     calculated: allowed,
     constraintEnabled: JOKER_MIN_SEGMENTS_ENABLED,
-    constraintActive: JOKER_MIN_SEGMENTS_ENABLED && !canUseJokers(expectedSegments)
+    constraintActive: JOKER_MIN_SEGMENTS_ENABLED && expectedSegments < JOKER_MIN_SEGMENTS
   });
   
   return allowed;
+}
+
+/**
+ * Helper pour obtenir le message d'erreur approprié
+ */
+export function getJokerDisabledMessage(expectedSegments: number = 0): string {
+  if (JOKER_MIN_SEGMENTS_ENABLED && expectedSegments < JOKER_MIN_SEGMENTS) {
+    return `Les jokers sont disponibles à partir de ${JOKER_MIN_SEGMENTS} segments.`;
+  }
+  return '';
 }
 
 /**
@@ -85,15 +96,6 @@ export function calculateJokersAllowedLegacy(expectedSegments: number): number {
   return allowed;
 }
 
-/**
- * Helper pour obtenir le message d'erreur approprié
- */
-export function getJokerDisabledMessage(expectedSegments: number): string {
-  if (expectedSegments < JOKER_MIN_SEGMENTS) {
-    return `Les jokers ne sont disponibles qu'à partir de ${JOKER_MIN_SEGMENTS} segments (livre actuel: ${expectedSegments} segments)`;
-  }
-  return '';
-}
 
 /**
  * Audit helper: Log de l'état actuel d'un livre concernant les jokers
@@ -102,7 +104,7 @@ export function auditJokerState(bookId: string, expectedSegments: number, contex
   if (!JOKER_DEBUG_ENABLED) return;
   
   const currentAllowed = calculateJokersAllowedLegacy(expectedSegments);
-  const newAllowed = calculateJokersAllowedWithConstraint(expectedSegments);
+  const newAllowed = calculateJokersAllowed(expectedSegments);
   const wouldBeBlocked = JOKER_MIN_SEGMENTS_ENABLED && !canUseJokers(expectedSegments);
   
   console.debug(`[JOKER AUDIT] ${context}`, {
