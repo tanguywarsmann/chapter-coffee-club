@@ -16,6 +16,7 @@ import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 import { texts } from "@/i18n/texts";
 import { supabase } from "@/integrations/supabase/client";
 import { VercelWebhook } from "@/components/admin/VercelWebhook";
+import BackgroundCoverBatcher from "@/components/BackgroundCoverBatcher";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("books");
@@ -177,6 +178,15 @@ export default function Admin() {
               </CardContent>
             </Card>
           </main>
+          
+          {/* Batch auto-cover generator - runs in background for admins */}
+          <BackgroundCoverBatcher
+            enabled={true}
+            batchSize={20}
+            concurrency={3}
+            delayBetweenBatchesMs={2000}
+            variant="all"
+          />
         </div>
       </AdminGuard>
     </AuthGuard>
