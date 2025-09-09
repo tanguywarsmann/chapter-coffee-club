@@ -20,6 +20,8 @@ import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { ValidationHistory } from "./ValidationHistory";
 import { getValidationHistory } from "@/services/reading/validationHistoryService";
 import { ReadingValidation } from "@/types/reading";
+import { useExpectedSegments } from "@/hooks/useExpectedSegments";
+import { uiJokersAllowed } from "@/utils/jokerUiGate";
 
 interface BookDetailProps {
   book: Book;
@@ -81,12 +83,19 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationHistory, setValidationHistory] = useState<ReadingValidation[]>([]);
 
-  // Hook pour récupérer les informations de jokers
-  const { jokersAllowed, jokersUsed } = useJokersInfo({
+  // UI gating pour les jokers
+  const expectedSegments = useExpectedSegments(currentBook);
+  const uiJokersAllowedCount = uiJokersAllowed(expectedSegments);
+  
+  // Hook pour récupérer les informations de jokers (mais override avec UI gating)
+  const { jokersAllowed: originalJokersAllowed, jokersUsed } = useJokersInfo({
     bookId: currentBook?.id || null,
     userId: user?.id || null,
-    expectedSegments: currentBook?.expectedSegments || currentBook?.total_chapters || 0
+    expectedSegments: expectedSegments
   });
+  
+  // Force le gating UI
+  const jokersAllowed = uiJokersAllowedCount;
 
   // Mémoriser les calculs de progression pour éviter les re-calculs
   const progressData = useMemo(() => {
