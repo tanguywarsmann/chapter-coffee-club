@@ -101,7 +101,8 @@ export function QuizModal({
         setAttempts(newAttempts);
         
         // Check if joker can be used immediately after first wrong answer
-        const canUseJoker = canUseJokers(expectedSegments) && actualJokersRemaining > 0 && !isUsingJoker;
+        const canUseJokerFlag = canUseJokers(expectedSegments);
+        const canUseJoker = canUseJokerFlag && actualJokersRemaining > 0 && !isUsingJoker;
         if (canUseJoker) {
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
@@ -171,7 +172,8 @@ export function QuizModal({
       const result = await useJokerAndReveal({
         bookSlug: question.book_slug,
         segment: chapterNumber,
-        questionId: question.id
+        questionId: question.id,
+        expectedSegments
       });
       
       console.log('[JOKER DEBUG] Result received:', result);
@@ -274,6 +276,13 @@ export function QuizModal({
             setAnswer={setAnswer}
             data-testid="quiz-answer-input"
           />
+          
+          {/* Log des expected_segments pour debug */}
+          {import.meta.env.VITE_DEBUG_JOKER && (
+            <>
+              {console.info("[JOKER expectedSegments]", expectedSegments, bookTitle)}
+            </>
+          )}
           
           <DialogFooter className="sm:justify-center gap-2">
             <Button 

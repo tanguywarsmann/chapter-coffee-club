@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getCorrectAnswerAfterJoker, CorrectAnswerResult } from "./questionService";
+import { canUseJokers, calculateJokersAllowed } from "@/utils/jokerConstraints";
 
 export interface JokerUsageResult {
   jokersRemaining: number;
@@ -13,7 +14,13 @@ export async function useJokerAndReveal(params: {
   bookSlug?: string;
   segment: number;
   questionId?: string;
+  expectedSegments?: number;
 }): Promise<CorrectAnswerResult> {
+  // Garde-fou service: vérifier la contrainte avant l'appel
+  if (!canUseJokers(params.expectedSegments ?? 0)) {
+    throw new Error("Joker indisponible: nécessite au moins 3 segments.");
+  }
+  
   // Single call - Edge Function consumes joker and returns answer
   return getCorrectAnswerAfterJoker({
     bookId: params.bookId,
@@ -34,8 +41,13 @@ export async function useJokerAndReveal(params: {
 export async function useJokerAtomically(
   bookId: string,
   userId: string,
-  segment: number
+  segment: number,
+  expectedSegments?: number
 ): Promise<JokerUsageResult> {
+  // Garde-fou service: vérifier la contrainte avant l'appel
+  if (!canUseJokers(expectedSegments ?? 0)) {
+    throw new Error("Joker indisponible: nécessite au moins 3 segments.");
+  }
   try {
     const { data, error } = await supabase.rpc('use_joker', {
       p_book_id: bookId,
@@ -117,8 +129,8 @@ export async function getRemainingJokers(
       return 0;
     }
 
-    // Calculer les jokers autorisés
-    const jokersAllowed = Math.floor(bookData.expected_segments / 10) + 1;
+    // Calculer les jokers autorisés via l'utilitaire centralisé
+    const jokersAllowed = calculateJokersAllowed(bookData.expected_segments);
 
     // Compter les jokers utilisés
     const { data: validationsData, error: validationsError } = await supabase
