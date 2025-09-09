@@ -53,6 +53,15 @@ export const BookValidationModals = memo(({
   onSuccessClose,
   onLockExpire
 }: BookValidationModalsProps) => {
+  // Fallback robuste pour expectedSegments
+  const expectedSegmentsSafe = Number(
+    book?.expectedSegments ??
+    book?.expected_segments ??
+    book?.totalSegments ??
+    book?.total_chapters ??
+    0
+  );
+  
   // N'effectuer le rendu que si une des modales est visible
   if (!showValidationModal && !showQuizModal && !showSuccessMessage) {
     return null;
@@ -98,7 +107,7 @@ export const BookValidationModals = memo(({
           onComplete={onQuizComplete}
           onClose={onQuizClose}
           question={currentQuestion}
-          expectedSegments={book.expected_segments || book.total_chapters}
+          expectedSegments={expectedSegmentsSafe}
           progressId={book.id}
           jokersRemaining={jokersRemaining}
           isUsingJoker={isUsingJoker}

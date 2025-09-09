@@ -106,6 +106,14 @@ export function QuizModal({
         if (canUseJoker) {
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
+        } else if (!canUseJokerFlag) {
+          // Joker not available due to constraint - show appropriate message
+          toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
+          if (newAttempts >= maxAttempts) {
+            onComplete(false);
+          } else {
+            toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+          }
         } else if (newAttempts >= maxAttempts) {
           toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
           onComplete(false);

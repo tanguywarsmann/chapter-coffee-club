@@ -102,22 +102,22 @@ serve(async (req) => {
       bookData = resolvedBookData;
     }
 
-    // Feature flag check: log if joker would be blocked (no blocking yet)
+    // Feature flag enforcement: block if enabled and < min segments
     if (EF_MIN_ENABLED && bookData?.expected_segments != null && bookData.expected_segments < EF_MIN) {
-      console.warn('[JOKER-REVEAL] Joker would be blocked by min segments constraint', {
+      console.warn('[JOKER-REVEAL] Joker blocked by min segments constraint', {
         bookId: actualBookId,
         expected: bookData.expected_segments,
         min: EF_MIN,
         enabled: EF_MIN_ENABLED
       });
-      // For Phase 1: just log, don't block
-      // For Phase 2: uncomment the return below to actually block
-      // return new Response(JSON.stringify({ 
-      //   error: `Jokers non disponibles pour les livres de moins de ${EF_MIN} segments` 
-      // }), { 
-      //   status: 400,
-      //   headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      // });
+      return new Response(JSON.stringify({
+        error: `Jokers non disponibles pour les livres de moins de ${EF_MIN} segments`,
+        expectedSegments: bookData.expected_segments,
+        minimumRequired: EF_MIN
+      }), { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // 1) Consume joker via existing RPC if requested

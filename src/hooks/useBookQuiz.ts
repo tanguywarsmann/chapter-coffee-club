@@ -98,6 +98,15 @@ export const useBookQuiz = (
       return;
     }
 
+    // Calcul robuste d'expectedSegments
+    const expectedSegmentsSafe = Number(
+      book?.expectedSegments ??
+      book?.expected_segments ??
+      book?.totalSegments ??
+      book?.total_chapters ??
+      0
+    );
+
     try {
       if (setIsValidating) setIsValidating(true);
 
@@ -107,8 +116,8 @@ export const useBookQuiz = (
         }
         setIsUsingJoker(true);
         
-        // Utiliser la fonction RPC atomique
-        const jokerResult = await useJokerAtomically(book.id, userId, quizChapter);
+        // Utiliser la fonction RPC atomique avec expectedSegments
+        const jokerResult = await useJokerAtomically(book.id, userId, quizChapter, expectedSegmentsSafe);
         
         if (!jokerResult.success) {
           setShowQuiz(false);
