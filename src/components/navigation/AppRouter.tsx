@@ -16,12 +16,14 @@ import Explore from '@/pages/Explore';
 import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
+import AdminAutoCovers from '@/pages/AdminAutoCovers';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
 import NotFound from '@/pages/NotFound';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AdminGuard } from '@/components/admin/AdminGuard';
 
 // Legal pages
 import { PrivacyPolicy } from '@/pages/legal/PrivacyPolicy';
@@ -76,6 +78,11 @@ const AppRouter = () => {
       
       {/* Admin Panel */}
       <Route path="/admin" element={<Admin />} />
+      <Route path="/admin/auto-covers" element={
+        <AdminGuard>
+          <AdminAutoCovers />
+        </AdminGuard>
+      } />
       
       {/* Route pour le sitemap dynamique */}
       <Route 
