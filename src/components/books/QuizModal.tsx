@@ -11,6 +11,8 @@ import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { supabase } from "@/integrations/supabase/client";
 import { useJokerAndReveal } from "@/services/jokerService";
 import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
+import { debugLog, auditJokerState } from "@/utils/jokerConstraints";
+import { collectJokerAuditData } from "@/utils/jokerAudit";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface QuizModalProps {
@@ -124,6 +126,34 @@ export function QuizModal({
     setIsRevealing(true);
     
     try {
+      // AUDIT: Log détaillé de l'utilisation du joker (non intrusif)
+      debugLog(`Joker confirmation started`, {
+        userId: user?.id,
+        questionId: question?.id,
+        bookTitle: bookTitle,
+        segment: chapterNumber,
+        expectedSegments,
+        jokersRemaining: actualJokersRemaining,
+        jokersAllowed,
+        jokersUsed
+      });
+
+      // AUDIT: État du livre avant utilisation joker
+      if (question?.book_id) {
+        const bookId = question.book_id;
+        auditJokerState(bookId, expectedSegments, 'QuizModal.handleJokerConfirm');
+        
+        collectJokerAuditData({
+          bookId,
+          expectedSegments,
+          currentJokersAllowed: jokersAllowed,
+          currentJokersUsed: jokersUsed,
+          currentJokersRemaining: actualJokersRemaining,
+          wouldBeBlockedByNewRule: expectedSegments < 3,
+          context: 'QuizModal.handleJokerConfirm'
+        });
+      }
+      
       console.log('[JOKER DEBUG] Starting joker confirmation');
       console.log('[JOKER DEBUG] User:', user?.id);
       console.log('[JOKER DEBUG] Question:', question);

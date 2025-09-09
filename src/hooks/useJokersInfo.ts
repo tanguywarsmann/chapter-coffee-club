@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getRemainingJokers } from "@/services/jokerService";
+import { debugLog, auditJokerState } from "@/utils/jokerConstraints";
+import { collectJokerAuditData } from "@/utils/jokerAudit";
 
 interface UseJokersInfoProps {
   bookId: string | null;
@@ -28,6 +30,29 @@ export function useJokersInfo({ bookId, userId, expectedSegments = 0 }: UseJoker
         const allowed = Math.floor(expectedSegments / 10) + 1;
         const used = Math.max(0, allowed - remaining);
 
+        // AUDIT: Log des calculs joker (non intrusif)
+        debugLog(`useJokersInfo calculation`, {
+          bookId,
+          userId,
+          expectedSegments,
+          calculated: { allowed, used, remaining },
+          formula: 'Math.floor(expectedSegments / 10) + 1'
+        });
+
+        // AUDIT: État des jokers pour ce livre
+        auditJokerState(bookId, expectedSegments, 'useJokersInfo.loadJokersInfo');
+
+        // AUDIT: Collecte des données
+        collectJokerAuditData({
+          bookId,
+          expectedSegments,
+          currentJokersAllowed: allowed,
+          currentJokersUsed: used,
+          currentJokersRemaining: remaining,
+          wouldBeBlockedByNewRule: expectedSegments < 3,
+          context: 'useJokersInfo.loadJokersInfo'
+        });
+
         setJokersRemaining(remaining);
         setJokersAllowed(allowed);
         setJokersUsed(used);
@@ -51,6 +76,14 @@ export function useJokersInfo({ bookId, userId, expectedSegments = 0 }: UseJoker
       const remaining = await getRemainingJokers(bookId, userId);
       const allowed = Math.floor(expectedSegments / 10) + 1;
       const used = Math.max(0, allowed - remaining);
+
+      // AUDIT: Log des mises à jour joker
+      debugLog(`useJokersInfo update`, {
+        bookId,
+        userId,
+        expectedSegments,
+        updated: { allowed, used, remaining }
+      });
 
       setJokersRemaining(remaining);
       setJokersUsed(used);
