@@ -69,17 +69,21 @@ export default function AdminAudit() {
 
     const steps: Step[] = [
       {
-        key: 'auth',
-        label: 'Vérification session admin',
-        run: async () => {
-          const { data: { user }, error } = await supabase.auth.getUser()
-          if (error) throw error
-          if (!user) throw new Error('Pas de session')
-          const isAdmin = user.user_metadata?.is_admin === true
-          if (!isAdmin) throw new Error('Utilisateur non admin (is_admin=false)')
-          log(`OK admin: ${user.email || user.id}`)
-        }
-      },
+  key: 'auth',
+  label: 'Vérification session admin',
+  run: async () => {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) throw error
+    if (!user) throw new Error('Pas de session')
+
+    // ✅ Vérifie côté serveur via la fonction SQL (lit aussi profiles.is_admin)
+    const { data: isAdmin, error: rpcErr } = await supabase.rpc('get_current_user_admin_status')
+    if (rpcErr) throw rpcErr
+    if (!isAdmin) throw new Error('Utilisateur non admin (is_admin=false)')
+    log(`OK admin: ${user.email || user.id}`)
+  }
+}
+,
       {
         key: 'select_books',
         label: 'Lecture books (RLS SELECT)',
