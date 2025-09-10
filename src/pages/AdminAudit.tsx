@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { Link } from 'react-router-dom'
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { AdminGuard } from "@/components/admin/AdminGuard";
+import AdminLayout from '@/components/admin/AdminLayout';
 
 type Step = {
   key: string
@@ -169,33 +171,38 @@ export default function AdminAudit() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-2">Audit Supabase (Admin)</h1>
-      <p className="text-sm text-muted-foreground mb-4">
-        Vérifie RLS (lecture), génération JPEG, Storage (upload/remove) et update DB (avec rollback).
-      </p>
+    <AuthGuard>
+      <AdminGuard>
+        <AdminLayout>
+          <div className="max-w-3xl mx-auto p-6">
+            <h1 className="text-2xl font-semibold mb-2">Audit Supabase (Admin)</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              Vérifie RLS (lecture), génération JPEG, Storage (upload/remove) et update DB (avec rollback).
+            </p>
 
-      <div className="flex items-center gap-2 mb-4">
-        <button
-          className="border rounded px-3 py-2 text-sm"
-          onClick={runAudit}
-          disabled={status === 'running'}
-        >
-          {status === 'running' ? 'Audit en cours...' : 'Lancer l\'audit'}
-        </button>
-        <Link to="/admin" className="text-sm underline">Retour admin</Link>
-      </div>
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                className="border rounded px-3 py-2 text-sm"
+                onClick={runAudit}
+                disabled={status === 'running'}
+              >
+                {status === 'running' ? 'Audit en cours...' : 'Lancer l\'audit'}
+              </button>
+            </div>
 
-      <div className="text-sm p-3 rounded border bg-muted/50 whitespace-pre-wrap">
-        {logs.length ? logs.join('\n') : '—'}
-      </div>
+            <div className="text-sm p-3 rounded border bg-muted/50 whitespace-pre-wrap">
+              {logs.length ? logs.join('\n') : '—'}
+            </div>
 
-      {status === 'ok' && (
-        <div className="mt-3 text-green-700 text-sm">Tout est opérationnel ✅</div>
-      )}
-      {status === 'fail' && (
-        <div className="mt-3 text-red-700 text-sm">Audit en échec. Regarde les logs ci-dessus.</div>
-      )}
-    </div>
+            {status === 'ok' && (
+              <div className="mt-3 text-green-700 text-sm">Tout est opérationnel ✅</div>
+            )}
+            {status === 'fail' && (
+              <div className="mt-3 text-red-700 text-sm">Audit en échec. Regarde les logs ci-dessus.</div>
+            )}
+          </div>
+        </AdminLayout>
+      </AdminGuard>
+    </AuthGuard>
   )
 }

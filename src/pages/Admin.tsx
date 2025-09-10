@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import AdminLayout from "@/components/admin/AdminLayout";
 import { AdminBookList } from "@/components/admin/AdminBookList";
 import { AdminDebugPanel } from "@/components/admin/AdminDebugPanel";
 import { BlogAdminPanel } from "@/components/admin/BlogAdminPanel";
@@ -91,9 +91,9 @@ export default function Admin() {
   return (
     <AuthGuard>
       <AdminGuard>
-        <div className="min-h-screen bg-logo-background text-logo-text">
-          <AppHeader />
-          <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
+        <AdminLayout>
+          <div className="min-h-screen bg-logo-background text-logo-text">
+            <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h1 className="text-3xl font-serif font-medium text-coffee-darker">{texts.admin}</h1>
               
@@ -177,17 +177,18 @@ export default function Admin() {
                 </Tabs>
               </CardContent>
             </Card>
-          </main>
-          
-          {/* Batch auto-cover generator - runs in background for admins */}
-          <BackgroundCoverBatcher
-            enabled={true}
-            batchSize={20}
-            concurrency={3}
-            delayBetweenBatchesMs={2000}
-            variant="all"
-          />
-        </div>
+            </main>
+            
+            {/* Batch auto-cover generator - runs in background for admins */}
+            <BackgroundCoverBatcher
+              enabled={true}
+              batchSize={20}
+              concurrency={3}
+              delayBetweenBatchesMs={2000}
+              variant="all"
+            />
+          </div>
+        </AdminLayout>
       </AdminGuard>
     </AuthGuard>
   );
