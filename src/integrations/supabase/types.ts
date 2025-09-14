@@ -335,6 +335,7 @@ export type Database = {
           book_title: string | null
           created_at: string
           id: string
+          meta: Json | null
           progress_id: string | null
           read_at: string | null
           recipient_id: string
@@ -346,6 +347,7 @@ export type Database = {
           book_title?: string | null
           created_at?: string
           id?: string
+          meta?: Json | null
           progress_id?: string | null
           read_at?: string | null
           recipient_id: string
@@ -357,6 +359,7 @@ export type Database = {
           book_title?: string | null
           created_at?: string
           id?: string
+          meta?: Json | null
           progress_id?: string | null
           read_at?: string | null
           recipient_id?: string
@@ -746,6 +749,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          daily_push_cap: number | null
+          enable_digest: boolean | null
+          enable_social: boolean | null
+          enable_streak: boolean | null
+          nudge_hour: number | null
+          quiet_end: number | null
+          quiet_start: number | null
+          tz: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          daily_push_cap?: number | null
+          enable_digest?: boolean | null
+          enable_social?: boolean | null
+          enable_streak?: boolean | null
+          nudge_hour?: number | null
+          quiet_end?: number | null
+          quiet_start?: number | null
+          tz?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          daily_push_cap?: number | null
+          enable_digest?: boolean | null
+          enable_social?: boolean | null
+          enable_streak?: boolean | null
+          nudge_hour?: number | null
+          quiet_end?: number | null
+          quiet_start?: number | null
+          tz?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       validation_locks: {
         Row: {
           book_id: string
@@ -1076,7 +1126,13 @@ export type Database = {
       }
     }
     Enums: {
-      notification_type: "friend_finished" | "laurier_received"
+      notification_type:
+        | "friend_finished"
+        | "laurier_received"
+        | "streak_nudge"
+        | "streak_kept"
+        | "streak_lost"
+        | "weekly_digest"
       reading_status: "to_read" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1205,7 +1261,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      notification_type: ["friend_finished", "laurier_received"],
+      notification_type: [
+        "friend_finished",
+        "laurier_received",
+        "streak_nudge",
+        "streak_kept",
+        "streak_lost",
+        "weekly_digest",
+      ],
       reading_status: ["to_read", "in_progress", "completed"],
     },
   },
