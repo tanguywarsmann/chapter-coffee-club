@@ -2,9 +2,22 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
+
+function dayBoundsUTC(nowUTC: Date, tz: string) {
+  const local = new Date(nowUTC.toLocaleString("en-CA", { timeZone: tz }));
+  const tzOffsetMs = local.getTime() - nowUTC.getTime();
+  const startLocal = new Date(local); startLocal.setHours(0,0,0,0);
+  const nextLocal  = new Date(startLocal); nextLocal.setDate(nextLocal.getDate()+1);
+  return {
+    startUTC: new Date(startLocal.getTime() - tzOffsetMs).toISOString(),
+    nextUTC:  new Date(nextLocal.getTime()  - tzOffsetMs).toISOString(),
+    hour: local.getHours(),
+  };
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -40,22 +53,17 @@ serve(async (req) => {
       const tz = userSetting.tz || "Europe/Paris";
       
       try {
-        // Get local time for user's timezone
-        const localTime = new Date(nowUTC.toLocaleString("en-CA", { timeZone: tz }));
-        const currentHour = localTime.getHours();
-        
-        // Get day strings for today and yesterday in local timezone
-        const today = localTime.toISOString().slice(0, 10);
-        const yesterday = new Date(localTime);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        // Get local time bounds and hour
+        const { startUTC, nextUTC, hour } = dayBoundsUTC(nowUTC, tz);
+        const yStartUTC = new Date(new Date(startUTC).getTime() - 24*3600e3).toISOString();
 
         // Check daily notification cap
         const { count: dailyCount } = await supabase
           .from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("recipient_id", userSetting.user_id)
-          .gte("created_at", `${today}T00:00:00Z`);
+          .gte("created_at", startUTC)
+          .lt("created_at", nextUTC);
 
         const dailyCap = userSetting.daily_push_cap || 3;
         if ((dailyCount || 0) >= dailyCap) {
@@ -67,8 +75,8 @@ serve(async (req) => {
         const quietStart = userSetting.quiet_start || 22;
         const quietEnd = userSetting.quiet_end || 8;
         const isQuietTime = (quietStart > quietEnd) 
-          ? (currentHour >= quietStart || currentHour < quietEnd)
-          : (currentHour >= quietStart && currentHour < quietEnd);
+          ? (hour >= quietStart || hour < quietEnd)
+          : (hour >= quietStart && hour < quietEnd);
 
         if (isQuietTime) {
           console.log(`User ${userSetting.user_id} in quiet hours (${quietStart}-${quietEnd})`);
@@ -76,14 +84,14 @@ serve(async (req) => {
         }
 
         // Morning check at 8:00 - streak status
-        if (currentHour === 8) {
+        if (hour === 8) {
           // Check yesterday's validations
           const { count: yesterdayValidations } = await supabase
             .from("reading_validations")
             .select("*", { count: "exact", head: true })
             .eq("user_id", userSetting.user_id)
-            .gte("validated_at", `${yesterdayStr}T00:00:00Z`)
-            .lt("validated_at", `${today}T00:00:00Z`);
+            .gte("validated_at", yStartUTC)
+            .lt("validated_at", startUTC);
 
           const hasYesterdayValidation = (yesterdayValidations || 0) > 0;
           const notificationType = hasYesterdayValidation ? "streak_kept" : "streak_lost";
@@ -94,7 +102,8 @@ serve(async (req) => {
             .select("*", { count: "exact", head: true })
             .eq("recipient_id", userSetting.user_id)
             .eq("type", notificationType)
-            .gte("created_at", `${today}T00:00:00Z`);
+            .gte("created_at", startUTC)
+            .lt("created_at", nextUTC);
 
           if ((existingMorningNotif || 0) === 0) {
             await supabase.from("notifications").insert({
@@ -112,13 +121,14 @@ serve(async (req) => {
 
         // Evening nudge at configured hour
         const nudgeHour = userSetting.nudge_hour || 20;
-        if (currentHour === nudgeHour) {
+        if (hour === nudgeHour) {
           // Check today's validations
           const { count: todayValidations } = await supabase
             .from("reading_validations")
             .select("*", { count: "exact", head: true })
             .eq("user_id", userSetting.user_id)
-            .gte("validated_at", `${today}T00:00:00Z`);
+            .gte("validated_at", startUTC)
+            .lt("validated_at", nextUTC);
 
           const hasTodayValidation = (todayValidations || 0) > 0;
 
@@ -129,7 +139,8 @@ serve(async (req) => {
               .select("*", { count: "exact", head: true })
               .eq("recipient_id", userSetting.user_id)
               .eq("type", "streak_nudge")
-              .gte("created_at", `${today}T00:00:00Z`);
+              .gte("created_at", startUTC)
+              .lt("created_at", nextUTC);
 
             if ((existingNudge || 0) === 0) {
               await supabase.from("notifications").insert({

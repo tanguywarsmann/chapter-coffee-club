@@ -32,15 +32,19 @@ export async function markAsRead(id: string) {
   if (error) throw error;
 }
 
-export function subscribeToNotifications(onNew: (n: VreadNotification) => void) {
-  const channel = supabase.channel("notifications")
-    .on("postgres_changes", {
-      event: "INSERT", 
-      schema: "public", 
-      table: "notifications"
-    }, (payload) => onNew(payload.new as VreadNotification));
+export async function subscribeToNotifications(onNew: (n: VreadNotification) => void) {
+  const { data: session } = await supabase.auth.getSession();
+  const uid = session?.session?.user?.id;
+  if (!uid) return { unsubscribe: () => {} };
 
-  channel.subscribe();
-  
+  const channel = supabase
+    .channel("notif-" + uid)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${uid}` },
+      (payload) => onNew(payload.new as VreadNotification)
+    )
+    .subscribe();
+
   return { unsubscribe: () => supabase.removeChannel(channel) };
 }

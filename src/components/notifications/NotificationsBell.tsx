@@ -41,47 +41,28 @@ export function NotificationsBell() {
 
   // Subscribe to real-time notifications
   useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
-    
-    const setupSubscription = () => {
-      const subscription = subscribeToNotifications((newNotification) => {
-        setNotifications(prev => [newNotification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+    let unsub: (() => void) | null = null;
 
-        // Show toast for new notification
-        const getNotificationMessage = (notif: VreadNotification) => {
-          switch (notif.type) {
-            case "laurier_received":
-              return `${notif.actor?.username || "Quelqu'un"} t'a donné un Laurier pour ${notif.book_title}`;
-            case "friend_finished":
-              return `${notif.actor?.username || "Quelqu'un"} a terminé ${notif.book_title}`;
-            case "streak_nudge":
-              return notif.meta?.msg || "Tu n'as pas validé aujourd'hui. Garde ta série.";
-            case "streak_kept":
-              return notif.meta?.msg || "Série maintenue. Continue.";
-            case "streak_lost":
-              return notif.meta?.msg || "Série interrompue. On relance ce soir.";
-            case "weekly_digest":
-              return notif.meta?.msg || "Ton résumé hebdomadaire est prêt";
-            default:
-              return "Nouvelle notification";
-          }
-        };
+    (async () => {
+      const { unsubscribe } = await subscribeToNotifications((n) => {
+        setNotifications((prev) => [n, ...prev]);
+        setUnreadCount((prev) => prev + 1);
 
-        toast({
-          title: "📢 Notification",
-          description: getNotificationMessage(newNotification),
-        });
+        const msg =
+          n.type === "laurier_received" ? `${n.actor?.username ?? "Quelqu'un"} t'a donné un Laurier pour ${n.book_title}` :
+          n.type === "friend_finished" ? `${n.actor?.username ?? "Quelqu'un"} a terminé ${n.book_title}` :
+          n.type === "streak_nudge"   ? (n.meta?.msg ?? "Tu n'as pas validé aujourd'hui. Garde ta série.") :
+          n.type === "streak_kept"    ? (n.meta?.msg ?? "Série maintenue. Continue.") :
+          n.type === "streak_lost"    ? (n.meta?.msg ?? "Série interrompue. On relance ce soir.") :
+          n.type === "weekly_digest"  ? (n.meta?.msg ?? "Ton résumé hebdomadaire est prêt") :
+          "Nouvelle notification";
+
+        toast({ title: "📢 Notification", description: msg });
       });
-      
-      unsubscribe = subscription.unsubscribe;
-    };
+      unsub = unsubscribe;
+    })();
 
-    setupSubscription();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    return () => { if (unsub) unsub(); };
   }, [toast]);
 
   const handleMarkAsRead = (notificationId: string) => {
