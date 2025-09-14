@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_likes: {
+        Row: {
+          created_at: string
+          id: string
+          liker_id: string
+          progress_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          liker_id: string
+          progress_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          liker_id?: string
+          progress_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_likes_liker_id_fkey"
+            columns: ["liker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_likes_progress_id_fkey"
+            columns: ["progress_id"]
+            isOneToOne: false
+            referencedRelation: "reading_progress"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           color: string | null
@@ -291,6 +327,64 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string
+          book_id: string | null
+          book_title: string | null
+          created_at: string
+          id: string
+          progress_id: string | null
+          read_at: string | null
+          recipient_id: string
+          type: Database["public"]["Enums"]["notification_type"]
+        }
+        Insert: {
+          actor_id: string
+          book_id?: string | null
+          book_title?: string | null
+          created_at?: string
+          id?: string
+          progress_id?: string | null
+          read_at?: string | null
+          recipient_id: string
+          type: Database["public"]["Enums"]["notification_type"]
+        }
+        Update: {
+          actor_id?: string
+          book_id?: string | null
+          book_title?: string | null
+          created_at?: string
+          id?: string
+          progress_id?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_progress_id_fkey"
+            columns: ["progress_id"]
+            isOneToOne: false
+            referencedRelation: "reading_progress"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -982,6 +1076,7 @@ export type Database = {
       }
     }
     Enums: {
+      notification_type: "friend_finished" | "laurier_received"
       reading_status: "to_read" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1110,6 +1205,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      notification_type: ["friend_finished", "laurier_received"],
       reading_status: ["to_read", "in_progress", "completed"],
     },
   },
