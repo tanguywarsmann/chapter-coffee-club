@@ -51,7 +51,7 @@ export function NotificationsInbox({
       await markAsRead(notification.id);
       onMarkAsRead(notification.id);
     } catch (error) {
-      console.error("Error marking as read:", error);
+      console.error("Erreur lors du marquage en lu :", error);
     } finally {
       setProcessingRead(null);
     }
