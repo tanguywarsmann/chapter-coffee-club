@@ -53,15 +53,16 @@ export function UserOnboarding() {
         // Cookie de secours 1 an contre les environnements agressifs
         document.cookie = `${ONBOARDING_KEY}=1; max-age=31536000; samesite=lax; path=/`;
         
-        // Optionnel: persister côté Supabase pour multi-device
+        // Optionnel: persister côté Supabase pour multi-device (fire-and-forget)
         if (user) {
           supabase.from("profiles")
             .update({ 
               onboarding_seen_at: new Date().toISOString(), 
               onboarding_version: 2 
-            })
+            } as any)
             .eq("id", user.id)
-            .then(() => {}).catch(() => {});
+            .select()
+            .then(() => {});
         }
       }
     } catch {}

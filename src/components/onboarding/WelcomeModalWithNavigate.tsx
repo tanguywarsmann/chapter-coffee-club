@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ONBOARDING_KEY } from "@/constants/onboarding";
+import { Check } from "lucide-react";
 
 interface WelcomeModalWithNavigateProps {
   open: boolean;

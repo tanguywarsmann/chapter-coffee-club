@@ -396,6 +396,8 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean | null
+          onboarding_seen_at: string | null
+          onboarding_version: number | null
           updated_at: string | null
           username: string | null
         }
@@ -405,6 +407,8 @@ export type Database = {
           email?: string | null
           id: string
           is_admin?: boolean | null
+          onboarding_seen_at?: string | null
+          onboarding_version?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -414,6 +418,8 @@ export type Database = {
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          onboarding_seen_at?: string | null
+          onboarding_version?: number | null
           updated_at?: string | null
           username?: string | null
         }
