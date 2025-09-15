@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { BookCard } from '@/components/books/BookCard'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
-import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+
 import { SearchBar } from "@/components/books/SearchBar";
 
 type Category = 'litterature' | 'religion' | 'essai' | 'bio'
@@ -23,10 +23,6 @@ export default function Explore() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [showWelcome, setShowWelcome] = useState(() => {
-    const onboardingFlag = localStorage.getItem("onboardingDone");
-    return !onboardingFlag;
-  });
   const pageSize = 24
 
   // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
@@ -105,7 +101,7 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
+      
       <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
         <div className="space-y-4">
           <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
