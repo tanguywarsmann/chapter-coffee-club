@@ -488,6 +488,13 @@ export type Database = {
             foreignKeyName: "reading_progress_book_fk"
             columns: ["book_id"]
             isOneToOne: false
+            referencedRelation: "book_segment_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_progress_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
@@ -601,6 +608,13 @@ export type Database = {
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "reading_questions_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_validations_book_fk"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "book_segment_status"
             referencedColumns: ["id"]
           },
           {
@@ -867,6 +881,13 @@ export type Database = {
             foreignKeyName: "validation_locks_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
+            referencedRelation: "book_segment_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validation_locks_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
@@ -888,6 +909,18 @@ export type Database = {
       }
     }
     Views: {
+      book_segment_status: {
+        Row: {
+          available_questions: number | null
+          expected_segments: number | null
+          id: string | null
+          missing_segments: number[] | null
+          slug: string | null
+          status: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
       books_explore: {
         Row: {
           author: string | null
