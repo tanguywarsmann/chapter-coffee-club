@@ -1180,7 +1180,7 @@ export type Database = {
             }
         Returns: {
           progress_id: string
-          segment: number
+          validated_segment: number
           validation_id: string
         }[]
       }

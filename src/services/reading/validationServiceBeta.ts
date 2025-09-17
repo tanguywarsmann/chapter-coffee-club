@@ -14,7 +14,6 @@ type RpcRow = {
   validation_id: string;
   progress_id: string | null;
   validated_segment: number;
-  action: "inserted" | "updated";
 };
 
 /**
@@ -35,22 +34,14 @@ export async function validateReadingSegmentBeta(args: ValidateArgs) {
 
   if (error) {
     console.error("[force_validate_segment_beta] error", error);
+    // 🔎 Log complet pour 400: message + details + hint
+    console.error("RPC error raw:", { message: error.message, details: (error as any).details, hint: (error as any).hint });
     throw new Error(error.message || "Échec validation (RPC beta)");
   }
 
-  const row = data?.[0] as any;
+  const row = (data?.[0] ?? null) as RpcRow | null;
   console.info("[force_validate_segment_beta] result", row);
-  
-  // Map the response to our expected type
-  if (row) {
-    return {
-      validation_id: row.validation_id,
-      progress_id: row.progress_id,
-      validated_segment: row.validated_segment,
-      action: row.action
-    } as RpcRow;
-  }
-  return null;
+  return row;
 }
 
 /**

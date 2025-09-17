@@ -113,8 +113,7 @@ export function QuizModal({
       const isCorrect = true;
       
       if (isCorrect) {
-        const actionMessage = result?.action === "updated" ? "Déjà validé — mise à jour" : "Segment validé !";
-        toast.success(actionMessage);
+        toast.success("Segment validé !");
         // Fixed: Always pass boolean for useJoker
         onComplete({ correct: true, useJoker: false });
       } else {
