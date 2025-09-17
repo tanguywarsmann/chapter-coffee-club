@@ -1167,10 +1167,11 @@ export type Database = {
           p_answer: string
           p_book_id: string
           p_question_id: string
-          p_user_id?: string
+          p_user_id: string
         }
         Returns: {
           progress_id: string
+          segment: number
           validation_id: string
         }[]
       }

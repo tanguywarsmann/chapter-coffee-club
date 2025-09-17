@@ -14,6 +14,7 @@ import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerA
 import { debugLog, auditJokerState, canUseJokers } from "@/utils/jokerConstraints";
 import { collectJokerAuditData } from "@/utils/jokerAudit";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateReadingSegmentBeta } from "@/services/reading/validationServiceBeta";
 
 // Fixed: useJoker is always boolean, never undefined
 type OnCompleteArgs = { correct: boolean; useJoker: boolean };
@@ -87,25 +88,24 @@ export function QuizModal({
         return;
       }
 
-      console.log("[QuizModal] Calling force_validate_segment_beta RPC", {
+      console.log("[QuizModal] Calling validateReadingSegmentBeta", {
         bookId: bookData.id,
         questionId: question.id,
-        answer: answer.trim()
+        answer: answer.trim(),
+        userId: user?.id
       });
 
-      const { data, error } = await supabase.rpc('force_validate_segment_beta', {
-        p_book_id: bookData.id,
-        p_question_id: question.id,
-        p_answer: answer.trim()
-      });
-
-      if (error) {
-        console.error('Validation error:', error);
-        toast.error("Erreur lors de la validation. Veuillez réessayer.");
+      if (!user?.id) {
+        toast.error("Vous devez être connecté pour valider");
         return;
       }
 
-      console.log("[QuizModal] RPC success", data);
+      const result = await validateReadingSegmentBeta({
+        bookId: bookData.id,
+        questionId: question.id,
+        answer: answer.trim(),
+        userId: user.id
+      });
       
       // In BETA mode, assume validation is always successful  
       const isCorrect = true;
