@@ -129,18 +129,24 @@ export function QuizModal({
         onComplete({ correct: true, useJoker: false });
       } else {
         // Réponse incorrecte - gérer les tentatives et jokers
-        setAttempts(prev => prev + 1);
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
         toast.error("Réponse incorrecte. Essayez encore !");
         
-        // Si pas de jokers disponibles et trop de tentatives, on ne peut pas continuer
-        if (attempts >= 2 && actualJokersRemaining === 0) {
-          toast.error("Nombre de tentatives épuisé et aucun joker disponible.");
-          return;
-        }
-        
-        // Proposer un joker si disponible après 2 tentatives
-        if (attempts >= 1 && actualJokersRemaining > 0) {
+        // Proposer le joker dès la 1ère mauvaise réponse
+        const canUseJokerFlag = canUseJokers(expectedSegments);
+        if (newAttempts >= 1 && actualJokersRemaining > 0 && canUseJokerFlag && !isUsingJoker) {
+          setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
+        } else if (!canUseJokerFlag) {
+          // Joker not available due to constraint
+          toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
+          if (newAttempts >= maxAttempts) {
+            onComplete({ correct: false, useJoker: false });
+          }
+        } else if (newAttempts >= maxAttempts) {
+          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+          onComplete({ correct: false, useJoker: false });
         }
       }
       
@@ -159,10 +165,11 @@ export function QuizModal({
         canUseJokerFlag,
         actualJokersRemaining,
         isUsingJoker,
-        canUseJoker
+        canUseJoker,
+        newAttempts
       });
       
-      if (canUseJoker) {
+      if (canUseJoker && newAttempts >= 1) {
         setJokerStartTime(Date.now());
         setShowJokerConfirmation(true);
       } else if (!canUseJokerFlag) {

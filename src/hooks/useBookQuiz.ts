@@ -102,7 +102,7 @@ export const useBookQuiz = (
         setShowQuiz(false);
         setShowSuccessMessage(true);
         
-        // Force cache refresh for all relevant data
+        // Force cache refresh for all relevant data (no duplicate validation calls)
         mutate(['jokers-info', book.id]);
         mutate(['book-progress', book.id]);
         mutate((key) => typeof key === 'string' && key.includes('reading-progress'), undefined, { revalidate: true });
@@ -114,13 +114,13 @@ export const useBookQuiz = (
         
         return { success: true, newBadges: [] };
       } else {
-        console.log("❌ Quiz failed");
+        console.log("❌ Quiz failed - no additional validation needed");
         setShowQuiz(false);
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
       console.error("❌ Error in quiz completion:", error);
-      throw error;
+      return { canUseJoker: jokersRemaining > 0 };
     } finally {
       if (setIsValidating) setIsValidating(false);
       setIsUsingJoker(false);

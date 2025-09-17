@@ -16,6 +16,7 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
   
   useEffect(() => {
     if (isOpen) {
+      console.log("🎉 Success modal opened - triggering confetti");
       showConfetti();
     }
   }, [isOpen, showConfetti]);
