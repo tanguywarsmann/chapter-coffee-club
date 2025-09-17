@@ -16,7 +16,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
-  // Check if user is admin from database or JWT metadata
+  // Check if user is admin from database
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user?.id) {
@@ -25,18 +25,6 @@ export function AdminGuard({ children }: AdminGuardProps) {
         return;
       }
 
-      // First check JWT metadata (faster)
-      const isAdminFromMetadata = 
-        user?.user_metadata?.is_admin === true ||
-        user?.app_metadata?.is_admin === true;
-
-      if (isAdminFromMetadata) {
-        setIsAdmin(true);
-        setCheckingAdmin(false);
-        return;
-      }
-
-      // Fallback to database check
       try {
         const { data: profile, error } = await supabase
           .from('profiles')

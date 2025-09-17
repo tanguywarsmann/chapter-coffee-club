@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ export function UserProfile() {
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
   const [loading, setLoading] = useState(true);
-  
+  const [showWelcome, setShowWelcome] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState(() => {
     const savedUser = localStorage.getItem("user");
@@ -100,7 +100,12 @@ export function UserProfile() {
   const displayName = getDisplayName(username, profileData?.email, profileData?.id || 'U');
 
   return (
-    <div>
+    <>
+      <WelcomeModal
+        open={showWelcome}
+        onClose={() => setShowWelcome(false)}
+      />
+      <div>
         <Card className="border-coffee-light">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="text-xl font-serif text-coffee-darker flex items-center gap-2">
@@ -197,6 +202,18 @@ export function UserProfile() {
             )}
           </CardContent>
         </Card>
+        {isOwnProfile && (
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowWelcome(true)}
+              className="text-xs text-coffee-medium underline underline-offset-2 hover:text-coffee-darker transition-colors"
+              type="button"
+            >
+              Revoir le guide de démarrage
+            </button>
+          </div>
+        )}
       </div>
-    );
-  }
+    </>
+  );
+}

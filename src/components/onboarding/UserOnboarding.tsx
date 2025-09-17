@@ -2,8 +2,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
-import { ONBOARDING_KEY, ONBOARDING_SESSION_LOCK } from "@/constants/onboarding";
-import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load the WelcomeModal
 const WelcomeModal = lazy(() => import("./WelcomeModal").then(module => ({
@@ -16,59 +14,56 @@ export function UserOnboarding() {
   const [initAttempted, setInitAttempted] = useState(false);
 
   useEffect(() => {
-    if (!isInitialized || user) {
+    // If user is already connected, never show onboarding
+    if (user) {
       setShowWelcomeModal(false);
       setInitAttempted(true);
       return;
     }
 
-    try {
-      const lock = (globalThis as any)[ONBOARDING_SESSION_LOCK];
-      const seen = localStorage.getItem(ONBOARDING_KEY) === "true";
-
-      if (!lock && !seen) {
-        // Première ouverture garantie pour la session
-        (globalThis as any)[ONBOARDING_SESSION_LOCK] = true;
-        setShowWelcomeModal(true);
-      } else {
-        setShowWelcomeModal(false);
+    // Safety mechanism to make sure this doesn't permanently fail
+    const safetyTimer = setTimeout(() => {
+      if (!initAttempted && !user) {
+        console.warn("UserOnboarding failed to initialize properly, attempting recovery");
+        try {
+          const onboardingDone = localStorage.getItem("onboardingDone");
+          setShowWelcomeModal(!onboardingDone);
+        } catch (e) {
+          console.error("Failed localStorage recovery in UserOnboarding:", e);
+          // Default to showing welcome modal if we can't determine state
+          setShowWelcomeModal(true);
+        }
+        setInitAttempted(true);
       }
-      setInitAttempted(true);
-    } catch {
-      // En cas d'erreur de storage, ouvrir une seule fois grâce au lock mémoire
-      if (!(globalThis as any)[ONBOARDING_SESSION_LOCK]) {
-        (globalThis as any)[ONBOARDING_SESSION_LOCK] = true;
+    }, 3000);
+    
+    // Check if onboarding is required when auth is initialized
+    if (isInitialized && !user) {
+      try {
+        const onboardingDone = localStorage.getItem("onboardingDone");
+        setShowWelcomeModal(!onboardingDone);
+        setInitAttempted(true);
+      } catch (e) {
+        console.error("Error checking onboarding status:", e);
+        // Default to showing welcome modal on error
         setShowWelcomeModal(true);
-      } else {
-        setShowWelcomeModal(false);
+        setInitAttempted(true);
       }
-      setInitAttempted(true);
     }
-  }, [isInitialized, user]);
+    
+    return () => clearTimeout(safetyTimer);
+  }, [isInitialized, initAttempted, user]);
 
   const handleClose = (skip?: boolean) => {
     try {
       if (!skip) {
-        localStorage.setItem(ONBOARDING_KEY, "true");
-        // Cookie de secours 1 an contre les environnements agressifs
-        document.cookie = `${ONBOARDING_KEY}=1; max-age=31536000; samesite=lax; path=/`;
-        
-        // Optionnel: persister côté Supabase pour multi-device (fire-and-forget)
-        if (user) {
-          supabase.from("profiles")
-            .update({ 
-              onboarding_seen_at: new Date().toISOString(), 
-              onboarding_version: 2 
-            } as any)
-            .eq("id", user.id)
-            .select()
-            .then(() => {});
-        }
+        localStorage.setItem("onboardingDone", "true");
       }
-    } catch {}
-    finally {
       setShowWelcomeModal(false);
-      (globalThis as any)[ONBOARDING_SESSION_LOCK] = true;
+    } catch (e) {
+      console.error("Error saving onboarding status:", e);
+      // Still close the modal even if storage fails
+      setShowWelcomeModal(false);
     }
   };
 

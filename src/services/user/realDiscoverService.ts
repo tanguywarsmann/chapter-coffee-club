@@ -9,9 +9,6 @@ export type DiscoverFeedItem = {
   book_id?: string;
   payload_title: string;
   ts: string;
-  activity_id?: string;
-  likes_count?: number;
-  liked_by_me?: boolean;
 };
 
 export type DiscoverReader = {

@@ -1,15 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, BookOpen, Award, ThumbsUp } from "lucide-react";
+import { Sparkles, BookOpen, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DiscoverFeedItem } from "@/services/user/realDiscoverService";
 import { EnhancedAvatar } from "@/components/ui/avatar";
-import { useState, useCallback } from "react";
-import { useDoubleTap } from "@/hooks/useDoubleTap";
-import { LaurierOverlay } from "./LaurierOverlay";
-import { giveLaurier, removeLaurier } from "@/services/social/lauriersService";
 
 interface RealActivityFeedProps {
   activities: DiscoverFeedItem[];
@@ -79,10 +75,6 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
     locale: fr 
   });
 
-  if (activity.kind === 'finished') {
-    return <FinishedActivityItem activity={activity} timeAgo={timeAgo} />;
-  }
-
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors">
       {/* Avatar */}
@@ -104,6 +96,9 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
         </div>
         
         <p className="text-coffee-dark text-body-sm">
+          {activity.kind === 'finished' && (
+            <>a terminé la lecture de <span className="font-medium">{activity.payload_title}</span></>
+          )}
           {activity.kind === 'badge' && (
             <>a débloqué le badge <Badge variant="secondary" className="inline-flex items-center text-caption bg-coffee-light/20 text-coffee-darker border-coffee-light/30">{activity.payload_title}</Badge></>
           )}
@@ -112,91 +107,14 @@ function ActivityItem({ activity }: { activity: DiscoverFeedItem }) {
         <p className="text-coffee-dark/60 text-caption mt-1">{timeAgo}</p>
       </div>
 
-      {/* Icône badge à droite */}
+      {/* Icône livre à droite */}
       <div className="flex-shrink-0">
-        <Award className="h-4 w-4 text-yellow-500" />
-      </div>
-    </div>
-  );
-}
-
-function FinishedActivityItem({ activity, timeAgo }: { activity: DiscoverFeedItem; timeAgo: string }) {
-  const [liked, setLiked] = useState<boolean>(!!activity.liked_by_me);
-  const [count, setCount] = useState<number>(activity.likes_count ?? 0);
-  const [showOverlay, setShowOverlay] = useState(false);
-
-  const toggleLaurier = useCallback(async () => {
-    if (!activity.activity_id) return;
-    const prevLiked = liked;
-    const prevCount = count;
-    setLiked(!prevLiked);
-    setCount(prevLiked ? Math.max(0, prevCount - 1) : prevCount + 1);
-    setShowOverlay(true);
-    setTimeout(() => setShowOverlay(false), 450);
-
-    try {
-      if (prevLiked) await removeLaurier(activity.activity_id as string);
-      else await giveLaurier(activity.activity_id as string);
-    } catch (e) {
-      setLiked(prevLiked);
-      setCount(prevCount);
-      setShowOverlay(false);
-      console.error(e);
-    }
-  }, [liked, count, activity.activity_id]);
-
-  const dtHandlers = useDoubleTap(toggleLaurier);
-
-  return (
-    <div className="relative rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors overflow-hidden" {...dtHandlers}>
-      <LaurierOverlay show={showOverlay} />
-      
-      <div className="flex items-start gap-3 p-3">
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          <EnhancedAvatar
-            src={activity.avatar_url ?? undefined}
-            alt={activity.actor_name}
-            fallbackText={activity.actor_name}
-            size="sm"
-            className="border border-coffee-light/20"
-          />
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-coffee-darker text-body-sm">
-              {activity.actor_name}
-            </span>
-          </div>
-          
-          <p className="text-coffee-dark text-body-sm mb-2">
-            a terminé la lecture de <span className="font-medium">{activity.payload_title}</span>
-          </p>
-          
-          <div className="flex items-center justify-between">
-            <p className="text-coffee-dark/60 text-caption">{timeAgo}</p>
-            
-            <button
-              aria-label={liked ? "Retirer le Laurier" : "Donner un Laurier"}
-              className={`flex items-center gap-1 text-sm transition-colors ${
-                liked ? "text-[#AE6841]" : "text-coffee-dark/70 hover:text-[#AE6841]"
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleLaurier();
-              }}
-            >
-              <ThumbsUp className="h-4 w-4" />
-              <span>{count} Laurier{count > 1 ? "s" : ""}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Icône livre à droite */}
-        <div className="flex-shrink-0">
+        {activity.kind === 'finished' && (
           <BookOpen className="h-4 w-4 text-green-600" />
-        </div>
+        )}
+        {activity.kind === 'badge' && (
+          <Award className="h-4 w-4 text-yellow-500" />
+        )}
       </div>
     </div>
   );

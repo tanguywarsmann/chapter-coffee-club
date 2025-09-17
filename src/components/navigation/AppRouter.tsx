@@ -17,7 +17,6 @@ import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 import AdminAutoCovers from '@/pages/AdminAutoCovers';
-import AdminAudit from '@/pages/AdminAudit';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
@@ -82,11 +81,6 @@ const AppRouter = () => {
       <Route path="/admin/auto-covers" element={
         <AdminGuard>
           <AdminAutoCovers />
-        </AdminGuard>
-      } />
-      <Route path="/admin/audit" element={
-        <AdminGuard>
-          <AdminAudit />
         </AdminGuard>
       } />
       

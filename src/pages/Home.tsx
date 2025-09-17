@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
-
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MainContent } from "@/components/home/MainContent";
@@ -28,6 +28,10 @@ export default function Home() {
     };
   }, [logger]);
   
+  // Memoized state for welcome message - only show if not seen before
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return !localStorage.getItem("onboardingDone");
+  });
 
   const { 
     searchResults, 
@@ -125,6 +129,12 @@ export default function Home() {
       {/* Section héros - s'étend sur toute la largeur */}
       <section className="relative isolate w-screen left-1/2 right-1/2 -translate-x-1/2 min-h-screen bg-logo-background text-logo-text transition-all duration-300">
         <AppHeader />
+        {showWelcome && (
+          <WelcomeModal 
+            open={showWelcome} 
+            onClose={() => setShowWelcome(false)}
+          />
+        )}
         
         <main className={`mx-auto w-full px-4 max-w-none mobile-optimized ${isMobile ? 'py-4' : 'py-4 sm:py-6'} animate-fade-in focus:outline-none`} tabIndex={-1}>
           <div className="max-w-none mx-auto px-2 sm:px-0 mb-6 sm:mb-8">

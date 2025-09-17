@@ -7,7 +7,6 @@ import { MobileMenu } from "./header/MobileMenu";
 import { DesktopNav } from "./header/DesktopNav";
 import { AvatarDropdown } from "./header/AvatarDropdown";
 import { HeaderLogo } from "./header/HeaderLogo";
-import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 
 export function AppHeader() {
   const isMobile = useIsMobile();
@@ -32,8 +31,7 @@ export function AppHeader() {
         </nav>
         
         {user ? (
-          <div role="navigation" aria-label="Menu utilisateur" className="flex items-center gap-2">
-            <NotificationsBell />
+          <div role="navigation" aria-label="Menu utilisateur">
             <AvatarDropdown />
           </div>
         ) : (
