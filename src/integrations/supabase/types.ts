@@ -1178,11 +1178,7 @@ export type Database = {
               p_question_id: string
               p_user_id: string
             }
-        Returns: {
-          progress_id: string
-          validated_segment: number
-          validation_id: string
-        }[]
+        Returns: Json
       }
       get_activity_feed: {
         Args: { lim?: number; uid: string }
