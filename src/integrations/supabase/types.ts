@@ -1179,7 +1179,6 @@ export type Database = {
               p_user_id: string
             }
         Returns: {
-          action: string
           progress_id: string
           segment: number
           validation_id: string

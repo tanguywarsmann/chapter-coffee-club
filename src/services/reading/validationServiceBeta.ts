@@ -10,6 +10,13 @@ type ValidateArgs = {
   correct?: boolean;
 };
 
+type RpcRow = {
+  validation_id: string;
+  progress_id: string | null;
+  validated_segment: number;
+  action: "inserted" | "updated";
+};
+
 /**
  * Beta validation service with UPSERT - no more 409 conflicts
  * Uses force_validate_segment_beta RPC for robust validation
@@ -31,9 +38,19 @@ export async function validateReadingSegmentBeta(args: ValidateArgs) {
     throw new Error(error.message || "Échec validation (RPC beta)");
   }
 
-  const row = data?.[0];
-  console.info(`[force_validate_segment_beta] ${row?.action} validation`, row);
-  return row as { validation_id: string; progress_id: string | null; segment: number; action: "inserted" | "updated" };
+  const row = data?.[0] as any;
+  console.info("[force_validate_segment_beta] result", row);
+  
+  // Map the response to our expected type
+  if (row) {
+    return {
+      validation_id: row.validation_id,
+      progress_id: row.progress_id,
+      validated_segment: row.validated_segment,
+      action: row.action
+    } as RpcRow;
+  }
+  return null;
 }
 
 /**
@@ -64,8 +81,8 @@ export async function forceValidateSegment(args: {
       current_page: (args.segment + 1) * 20,
       already_validated: false,
       next_segment_question: null,
-      validation_id: result.validation_id,
-      progress_id: result.progress_id
+      validation_id: result?.validation_id || null,
+      progress_id: result?.progress_id || null
     };
   } catch (error) {
     console.error("[forceValidateSegment] error:", error);
