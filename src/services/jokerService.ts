@@ -95,7 +95,7 @@ export async function useJokerAtomically(
 
 /**
  * Récupère le nombre de jokers restants pour un livre
- * @param bookId - ID du livre
+ * @param bookId - ID du livre (peut être UUID ou slug)
  * @param userId - ID de l'utilisateur
  * @returns Nombre de jokers restants
  */
@@ -104,12 +104,37 @@ export async function getRemainingJokers(
   userId: string
 ): Promise<number> {
   try {
-    // Récupérer les informations du livre depuis la vue publique
-    const { data: bookData, error: bookError } = await supabase
+    // Try to get book info - handle both UUID and slug cases
+    let bookData, bookError;
+    
+    // First try by id (UUID)
+    const uuidResult = await supabase
       .from('books_public')
       .select('expected_segments')
       .eq('id', bookId)
-      .single();
+      .maybeSingle();
+    
+    if (!uuidResult.error && uuidResult.data) {
+      bookData = uuidResult.data;
+      bookError = null;
+    } else {
+      // If not found by UUID, try by slug using the main books table
+      const slugResult = await supabase
+        .from('books')
+        .select('expected_segments, id')
+        .eq('slug', bookId)
+        .eq('is_published', true)
+        .maybeSingle();
+      
+      if (!slugResult.error && slugResult.data) {
+        bookData = slugResult.data;
+        bookError = null;
+        // Update bookId to the actual UUID for progress queries
+        bookId = slugResult.data.id;
+      } else {
+        bookError = slugResult.error || new Error('Book not found');
+      }
+    }
 
     if (bookError || !bookData) {
       console.error('Erreur lors de la récupération du livre:', bookError);
