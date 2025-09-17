@@ -74,8 +74,7 @@ export async function getCurrentUser() {
 }
 
 /**
- * Legacy function for backward compatibility
- * Uses the new robust RPC underneath
+ * Legacy function - DÉSACTIVÉ pour éviter les doubles appels
  */
 export async function forceValidateSegment(args: {
   bookId: string;
@@ -83,36 +82,8 @@ export async function forceValidateSegment(args: {
   userId: string;
   useJoker?: boolean;
 }) {
-  try {
-    // Nettoyer le bookId du préfixe "fallback-" s'il existe
-    let cleanBookId = args.bookId;
-    if (cleanBookId.startsWith('fallback-')) {
-      cleanBookId = cleanBookId.replace('fallback-', '');
-    }
-    
-    // Create a fallback question if needed - SANS le préfixe fallback sur le bookId
-    const questionId = `fallback-${cleanBookId}-${args.segment}`;
-    
-    const result = await validateReadingSegmentBeta({
-      bookId: cleanBookId, // Utiliser l'ID nettoyé
-      questionId,
-      answer: "validated",
-      userId: args.userId,
-      usedJoker: args.useJoker
-    });
-    
-    return {
-      message: "Segment validé avec succès",
-      current_page: (args.segment + 1) * 20,
-      already_validated: false,
-      next_segment_question: null,
-      validation_id: result.validation_id || result.progress_id,
-      progress_id: result.progress_id
-    };
-  } catch (error) {
-    console.error("[forceValidateSegment] error:", error);
-    throw error;
-  }
+  console.log("❌ forceValidateSegment called - THIS SHOULD NOT HAPPEN");
+  throw new Error("forceValidateSegment is disabled - use validateReadingSegmentBeta directly");
 }
 
 export async function getUserProfile() {

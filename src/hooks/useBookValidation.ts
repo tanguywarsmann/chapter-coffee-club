@@ -183,95 +183,67 @@ export const useBookValidation = ({
     }, 'useBookValidation.handleValidationConfirm')
   );
 
-  // Handler consolidé pour la complétion du quiz
+  // Handler consolidé pour la complétion du quiz - SIMPLIFIÉ
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
-    }
-    try {
-      const result = await handleQuizComplete(correct, useJoker);
-      // ... rest of existing logic
-      if (correct) {
-console.log("🎉 Calling showConfetti from handleQuizCompleteWrapper");
-showConfetti();
-        
-        if (refreshProgressData) {
-          await refreshProgressData();
-        }
-        forceRefresh();
-
-        // Refreshs en cascade pour assurer la cohérence
-        setTimeout(async () => {
-          if (refreshProgressData) {
-            await refreshProgressData();
-          }
-          if (refreshReadingProgress) {
-            refreshReadingProgress(true);
-          }
-        }, 100);
-        
-        setTimeout(async () => {
-          if (refreshProgressData) {
-            await refreshProgressData();
-          }
-          if (refreshReadingProgress) {
-            refreshReadingProgress(true);
-          }
-          if (setCurrentBook && currentBook) {
-            setCurrentBook(currentBook);
-          }
-        }, 500);
-
-        if (userId) {
-          if (result?.newBadges && result.newBadges.length > 0) {
-            setUnlockedBadges(result.newBadges);
-            setShowBadgeDialog(true);
-          }
-          
-          if ((currentBook || book)?.isCompleted) {
-            const completedBooks = localStorage.getItem(`completed_books_${userId}`)
-              ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
-              : [];
-            if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
-              completedBooks.push(currentBook || book);
-              localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
-            }
-          }
-          
-          if (sessionStartTimeRef.current) {
-            const endTime = new Date();
-            recordReadingSession(userId, sessionStartTimeRef.current, endTime);
-            sessionStartTimeRef.current = null;
-          }
-          
-          // Monthly reward dialog
-          const monthlyBadge = await checkAndGrantMonthlyReward(userId);
-          if (monthlyBadge) {
-            setTimeout(() => {
-              setShowMonthlyReward(true);
-            }, 1000);
-          }
-        }
-        toast.success("Segment validé avec succès !");
-      } else {
-        if (refreshProgressData) {
-          await refreshProgressData();
-        }
-        forceRefresh();
-      }
-    } catch (error) {
-      toast.error("Une erreur est survenue lors de la validation");
+    console.log("📞 handleQuizCompleteWrapper called - SIMPLIFIED VERSION");
+    
+    if (correct) {
+      console.log("🎉 Showing confetti immediately");
+      showConfetti();
+      
+      // Un seul refresh immédiat
       if (refreshProgressData) {
         await refreshProgressData();
       }
       forceRefresh();
     }
+    
+    // Appel du handler original
+    const result = await handleQuizComplete(correct, useJoker);
+    
+    if (correct && result) {
+      // Handle badges and rewards
+      if (userId) {
+        if (result?.newBadges && result.newBadges.length > 0) {
+          setUnlockedBadges(result.newBadges);
+          setShowBadgeDialog(true);
+        }
+        
+        if ((currentBook || book)?.isCompleted) {
+          const completedBooks = localStorage.getItem(`completed_books_${userId}`)
+            ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
+            : [];
+          if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
+            completedBooks.push(currentBook || book);
+            localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
+          }
+        }
+        
+        if (sessionStartTimeRef.current) {
+          const endTime = new Date();
+          recordReadingSession(userId, sessionStartTimeRef.current, endTime);
+          sessionStartTimeRef.current = null;
+        }
+        
+        // Monthly reward dialog
+        const monthlyBadge = await checkAndGrantMonthlyReward(userId);
+        if (monthlyBadge) {
+          setTimeout(() => {
+            setShowMonthlyReward(true);
+          }, 1000);
+        }
+      }
+      toast.success("Segment validé avec succès !");
+    }
+    
+    return result;
+    
+    return result;
   }, [
     handleQuizComplete,
     showConfetti,
     refreshProgressData,
     forceRefresh,
-    refreshReadingProgress,
     userId,
     setCurrentBook,
     currentBook,

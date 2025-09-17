@@ -67,11 +67,7 @@ export function QuizModal({
   const actualJokersRemaining = jokersRemaining ?? hookJokersRemaining;
 
   const handleSubmit = async () => {
-    console.log("=== VALIDATION DEBUG START ===");
-    console.log("Raw answer:", answer);
-    console.log("Raw bookTitle:", bookTitle);
-    console.log("Raw question:", question);
-    console.log("User:", user?.id);
+    console.log("=== SINGLE VALIDATION CALL ===");
     
     if (!answer.trim()) {
       toast.error("Veuillez entrer une réponse");
@@ -79,10 +75,18 @@ export function QuizModal({
     }
 
     // Prevent double submissions
-    if (inFlightRef.current) return;
+    if (inFlightRef.current) {
+      console.log("❌ Prevented double submission");
+      return;
+    }
     inFlightRef.current = true;
 
     try {
+      if (!user?.id) {
+        toast.error("Vous devez être connecté pour valider");
+        return;
+      }
+
       // Get book UUID from slug first
       const { data: bookData, error: bookError } = await supabase
         .from('books')
@@ -90,7 +94,7 @@ export function QuizModal({
         .eq('slug', question.book_slug)
         .maybeSingle();
       
-      console.log("Book lookup result:", { bookData, bookError });
+      console.log("📚 Book lookup:", { bookData, bookError });
       
       if (bookError || !bookData) {
         console.error('Book lookup error:', bookError);
@@ -98,75 +102,35 @@ export function QuizModal({
         return;
       }
 
-      if (!user?.id) {
-        toast.error("Vous devez être connecté pour valider");
-        return;
-      }
-
-      // Nettoyer les IDs avant validation
-      const cleanBookId = bookData.id?.replace('fallback-', '') || bookData.id;
-      const cleanQuestionId = question.id?.replace('fallback-', '') || question.id;
-
-      console.log("[QuizModal] Raw IDs:", { 
-        rawBookId: bookData.id, 
-        rawQuestionId: question.id,
-        questionBookSlug: question.book_slug
+      console.log("✅ Calling validateReadingSegmentBeta ONCE with:", {
+        bookId: bookData.id,
+        questionId: question.id,
+        answer: answer.trim(),
+        userId: user.id
       });
-      console.log("[QuizModal] Clean IDs:", { cleanBookId, cleanQuestionId });
 
-      // Tester d'abord avec des valeurs hardcodées pour isoler le problème
-      console.log("=== TESTING WITH HARDCODED VALUES ===");
-      const testResult = await supabase.rpc("force_validate_segment_beta", {
-        p_book_id: "1d6511a2-e109-4d87-b3a5-0970b9f18b07",
-        p_question_id: "7149d6d5-899c-4bf1-b7ae-2157105fc3ce",
-        p_answer: "test",
-        p_user_id: user.id,
-        p_used_joker: false,
-        p_correct: true
-      });
-      
-      console.log("Test RPC result:", testResult);
-      
-      if (testResult.error) {
-        console.error("TEST RPC FAILED:", testResult.error);
-        toast.error(`Test RPC Error: ${testResult.error.message}`);
-        return;
-      }
-
-      // Si le test marche, essayer avec les vraies valeurs
-      console.log("=== TESTING WITH REAL VALUES ===");
+      // UN SEUL appel de validation
       const result = await validateReadingSegmentBeta({
-        bookId: cleanBookId,
-        questionId: cleanQuestionId,
+        bookId: bookData.id,
+        questionId: question.id,
         answer: answer.trim(),
         userId: user.id,
         usedJoker: false,
         correct: true
       });
-      
-      console.log("Real validation result:", result);
-      
-      // ✅ Immediate success feedback and animations
-      toast.success("Segment validé !");
-      
-      // Trigger success animations immediately
-      // The parent component should handle the animation logic
-      onComplete({ correct: true, useJoker: false });
-      
-      // Silent background refresh (no error toasts)
-      setTimeout(async () => {
-        try {
-          await supabase.from("reading_progress")
-            .select("current_page")
-            .eq("id", result.progress_id)
-            .maybeSingle();
-        } catch {
-          // Silent fail
-        }
-      }, 100);
+
+      console.log("✅ Validation result:", result);
+
+      if (result) {
+        toast.success("Segment validé !");
+        
+        // Call onComplete ONCE - this should trigger all necessary updates
+        console.log("📞 Calling onComplete ONCE");
+        onComplete({ correct: true, useJoker: false });
+      }
       
     } catch (error) {
-      console.error('=== VALIDATION ERROR ===', error);
+      console.error('❌ Single validation error:', error);
       
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -193,7 +157,7 @@ export function QuizModal({
       }
     } finally {
       inFlightRef.current = false;
-      console.log("=== VALIDATION DEBUG END ===");
+      console.log("=== END SINGLE VALIDATION ===");
     }
   };
 

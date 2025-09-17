@@ -68,13 +68,9 @@ export const useBookQuiz = (
       if (question) {
         setCurrentQuestion(question);
       } else {
-        // Fallback for when no question exists
-        setCurrentQuestion({
-          id: `fallback-${book.id}-${segment}`,
-          book_slug: book.slug || book.id,
-          segment: segment,
-          question: "Avez-vous bien lu ce segment ?"
-        });
+        console.log("❌ No question found for segment", segment);
+        toast.error("Aucune question trouvée pour ce segment");
+        return;
       }
 
       setQuizChapter(segment);
