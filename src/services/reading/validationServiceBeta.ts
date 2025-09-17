@@ -12,40 +12,41 @@ type ValidateArgs = {
 
 type RpcRow = {
   validation_id: string;
-  progress_id: string | null;
+  progress_id: string;
   validated_segment: number;
 };
 
 /**
- * Beta validation service with UPSERT - no more 409 conflicts
- * Uses force_validate_segment_beta RPC for robust validation
+ * Atomic validation service - handles both progress and validation in one RPC
+ * No more 409 conflicts, immediate success feedback
  */
-export async function validateReadingSegmentBeta(args: ValidateArgs) {
-  console.log("[validateReadingSegmentBeta] call", args);
-
+export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<RpcRow> {
   const { data, error } = await supabase.rpc("force_validate_segment_beta", {
     p_book_id: args.bookId,
     p_question_id: args.questionId,
     p_answer: args.answer ?? "",
-    p_user_id: args.userId,          // ⚠️ obligatoire
+    p_user_id: args.userId,
     p_used_joker: !!args.usedJoker,
     p_correct: args.correct ?? true,
   });
 
   if (error) {
-    console.error("[force_validate_segment_beta] error", error);
-    // 🔎 Log complet pour 400: message + details + hint
-    console.error("RPC error raw:", { message: error.message, details: (error as any).details, hint: (error as any).hint });
-    throw new Error(error.message || "Échec validation (RPC beta)");
+    console.error("[force_validate_segment_beta] RPC error:", error);
+    throw new Error(error.message || "Échec validation (RPC)");
   }
 
-  const row = (data?.[0] ?? null) as RpcRow | null;
-  console.info("[force_validate_segment_beta] result", row);
+  const row = (data?.[0] as RpcRow) ?? null;
+  if (!row?.progress_id) {
+    throw new Error("RPC ok mais progress_id manquant");
+  }
+  
+  console.info("[force_validate_segment_beta] success:", row);
   return row;
 }
 
 /**
  * Beta validation that always succeeds regardless of reading_progress issues
+ * DEPRECATED: Use validateReadingSegmentBeta for atomic operations
  */
 export async function forceValidateSegment(args: {
   bookId: string;
@@ -54,7 +55,7 @@ export async function forceValidateSegment(args: {
   useJoker?: boolean;
 }) {
   try {
-    console.log("🎯 forceValidateSegment called with:", args);
+    console.log("🎯 forceValidateSegment (deprecated) called with:", args);
     
     // Create a fallback question if needed
     const questionId = `fallback-${args.bookId}-${args.segment}`;

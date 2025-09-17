@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -51,6 +51,7 @@ export function QuizModal({
   const [jokerStartTime, setJokerStartTime] = useState<number | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const maxAttempts = 3;
+  const inFlightRef = useRef(false);
 
   // Récupérer l'utilisateur authentifié
   const { user } = useAuth();
@@ -71,10 +72,11 @@ export function QuizModal({
       return;
     }
 
+    // Prevent double submissions
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
     try {
-      // Use secure server-side answer validation
-      console.log("[QuizModal] Getting book UUID from slug:", question.book_slug);
-      
       // Get book UUID from slug first
       const { data: bookData, error: bookError } = await supabase
         .from('books')
@@ -88,18 +90,12 @@ export function QuizModal({
         return;
       }
 
-      console.log("[QuizModal] Calling validateReadingSegmentBeta", {
-        bookId: bookData.id,
-        questionId: question.id,
-        answer: answer.trim(),
-        userId: user?.id
-      });
-
       if (!user?.id) {
         toast.error("Vous devez être connecté pour valider");
         return;
       }
 
+      // Atomic validation using the new RPC
       const result = await validateReadingSegmentBeta({
         bookId: bookData.id,
         questionId: question.id,
@@ -109,41 +105,38 @@ export function QuizModal({
         correct: true
       });
       
-      // In BETA mode, assume validation is always successful  
-      const isCorrect = true;
+      // ✅ Immediate success feedback - no more progress update toasts
+      toast.success("Segment validé !");
+      onComplete({ correct: true, useJoker: false });
       
-      if (isCorrect) {
-        toast.success("Segment validé !");
-        // Fixed: Always pass boolean for useJoker
-        onComplete({ correct: true, useJoker: false });
-      } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        
-        // Check if joker can be used immediately after first wrong answer
-        const canUseJokerFlag = canUseJokers(expectedSegments);
-        const canUseJoker = canUseJokerFlag && actualJokersRemaining > 0 && !isUsingJoker;
-        if (canUseJoker) {
-          setJokerStartTime(Date.now());
-          setShowJokerConfirmation(true);
-        } else if (!canUseJokerFlag) {
-          // Joker not available due to constraint - show appropriate message
-          toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
-          if (newAttempts >= maxAttempts) {
-            onComplete({ correct: false, useJoker: false });
-          } else {
-            toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
-          }
-        } else if (newAttempts >= maxAttempts) {
-          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+    } catch (error) {
+      console.error('Submit error:', error);
+      
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      
+      // Check if joker can be used immediately after first wrong answer
+      const canUseJokerFlag = canUseJokers(expectedSegments);
+      const canUseJoker = canUseJokerFlag && actualJokersRemaining > 0 && !isUsingJoker;
+      if (canUseJoker) {
+        setJokerStartTime(Date.now());
+        setShowJokerConfirmation(true);
+      } else if (!canUseJokerFlag) {
+        // Joker not available due to constraint - show appropriate message
+        toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
+        if (newAttempts >= maxAttempts) {
           onComplete({ correct: false, useJoker: false });
         } else {
           toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
         }
+      } else if (newAttempts >= maxAttempts) {
+        toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+        onComplete({ correct: false, useJoker: false });
+      } else {
+        toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
       }
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error("Erreur lors de la soumission. Veuillez réessayer.");
+    } finally {
+      inFlightRef.current = false;
     }
   };
 
