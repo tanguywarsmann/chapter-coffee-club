@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { fetchReadingProgress } from "@/services/reading/readingListService";
+import { fetchReadingProgress, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Book } from "@/types/book";
@@ -49,37 +49,25 @@ export const useReadingListPage = () => {
       try {
         setState(s => ({ ...s, isLoading: true, isLoadingReadingList: true }));
         console.log("[useReadingListPage] User:", user, " Session:", session);
+        
+        // Récupérer les données brutes de progression
         const payload = await fetchReadingProgress(user.id);
 
         if (cancelled) return;
 
-        // Convert to Book format for display
-        const convertToBooks = (rows: any[]): Book[] => rows.map((row: any) => ({
-          id: row.books?.id || row.book_id,
-          title: row.books?.title || 'Titre inconnu',
-          author: row.books?.author || 'Auteur inconnu',
-          description: row.books?.description || '',
-          coverImage: row.books?.cover_url || '',
-          cover_url: row.books?.cover_url || '',
-          pages: row.books?.total_pages || 0,
-          categories: row.books?.tags || [],
-          tags: row.books?.tags || [],
-          totalChapters: row.books?.expected_segments || 0,
-          language: 'fr',
-          publicationYear: new Date().getFullYear(),
-          slug: row.books?.slug || row.books?.id || row.book_id,
-          isCompleted: row.is_completed || false,
-          expectedSegments: row.books?.expected_segments || 0,
-        }));
+        // Utiliser le service qui calcule correctement les segments validés et la progression
+        const toReadBooks = await fetchBooksForStatus(payload, 'to_read', user.id);
+        const inProgressBooks = await fetchBooksForStatus(payload, 'in_progress', user.id);
+        const completedBooks = await fetchBooksForStatus(payload, 'completed', user.id);
 
         setState(s => ({
           ...s,
           toReadCount: payload.toReadCount,
           inProgressCount: payload.inProgressCount,
           completedCount: payload.completedCount,
-          toRead: convertToBooks(payload.toRead),
-          inProgress: convertToBooks(payload.inProgress),
-          completed: convertToBooks(payload.completed),
+          toRead: toReadBooks,
+          inProgress: inProgressBooks,
+          completed: completedBooks,
           isLoading: false,
           isLoadingReadingList: false,
           hasInitialFetch: true,
