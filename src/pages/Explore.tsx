@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { BookCard } from '@/components/books/BookCard'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
-import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+
+import { SearchBar } from "@/components/books/SearchBar";
 
 type Category = 'litterature' | 'religion' | 'essai' | 'bio'
 
@@ -14,30 +15,30 @@ export default function Explore() {
   const allowed: Category[] = ['litterature','religion','essai','bio']
   const paramCat = searchParams.get('cat') as Category
   const initialCat: Category = allowed.includes(paramCat) ? paramCat : 'litterature'
+  const initialQ = (searchParams.get('q') ?? '').trim()
 
   const [category, setCategory] = useState<Category>(initialCat)
+  const [q, setQ] = useState(initialQ)
   const [books, setBooks] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [showWelcome, setShowWelcome] = useState(() => {
-    const onboardingFlag = localStorage.getItem("onboardingDone");
-    return !onboardingFlag;
-  });
   const pageSize = 24
 
-  // Mémoriser la catégorie dans l'URL sans provoquer de boucle
+  // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
   useEffect(() => {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(searchParams)
     params.set('cat', category)
+    if (q) params.set('q', q)
+    else params.delete('q')
     navigate({ search: params.toString() }, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category])
+  }, [category, q])
 
   useEffect(() => {
     fetchBooks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, page])
+  }, [category, page, q])
 
   async function fetchBooks() {
     setLoading(true)
@@ -46,15 +47,19 @@ export default function Explore() {
     const to = from + pageSize - 1
 
     try {
-      let q = supabase
+      let query = supabase
         .from('books_explore')
         .select('*')
         .eq('category', category)
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error } = await q
-      console.debug('[Explore] cat=', category, 'page=', page, 'rows=', data?.length, 'error=', error)
+      if (q && q.length >= 2) {
+        query = query.or(`title.ilike.%${q}%,author.ilike.%${q}%`)
+      }
+
+      const { data, error } = await query
+      console.debug('[Explore] cat=', category, 'page=', page, 'q=', q, 'rows=', data?.length, 'error=', error)
       if (error) throw error
       setBooks(data || [])
     } catch (e: any) {
@@ -96,16 +101,28 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
+      
       <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
         <div className="space-y-4">
           <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
 
-          <div className="inline-flex items-center gap-1 rounded-xl border border-border p-1 mb-6">
-            <Tab value="litterature" label="Littérature" />
-            <Tab value="religion" label="Religion" />
-            <Tab value="essai" label="Essai" />
-            <Tab value="bio" label="Bio" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Onglets catégories */}
+            <div className="inline-flex items-center gap-1 rounded-xl border border-border p-1 order-2 sm:order-1">
+              <Tab value="litterature" label="Littérature" />
+              <Tab value="religion" label="Religion" />
+              <Tab value="essai" label="Essai" />
+              <Tab value="bio" label="Bio" />
+            </div>
+
+            {/* Barre de recherche à droite sur desktop, au-dessus sur mobile */}
+            <div className="order-1 sm:order-2 w-full sm:max-w-md" role="search" aria-label="Recherche de livres">
+              <SearchBar
+                onSearch={(value) => { setQ(value.trim()); setPage(1); }}
+                placeholder="Titre ou auteur…"
+                isSearching={loading}
+              />
+            </div>
           </div>
         </div>
 

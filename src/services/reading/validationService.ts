@@ -97,7 +97,7 @@ export const validateReading = async (
           next_segment_question: null
         };
       }
-      progressRow = await updateReadingProgress(progressId, clampedPage, newStatus);
+      progressRow = await updateReadingProgress(progressId, request.user_id, clampedPage, newStatus);
     }
 
     // Get question for segment using book slug
@@ -139,8 +139,10 @@ export const validateReading = async (
       newBadges,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-    toast.error(`Échec de la validation: ${errorMessage}`);
-    throw new Error(errorMessage);
+    const msg = error instanceof Error ? error.message : "Erreur inconnue";
+    // Ne pas masquer, toast concis + log complet
+    console.error("[validateReading] failure:", error);
+    toast.error(`Échec de la validation: ${msg}`);
+    throw new Error(msg);
   }
 };

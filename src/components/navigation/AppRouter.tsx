@@ -9,7 +9,6 @@ import Profile from '@/pages/Profile';
 import BookPage from '@/pages/BookPage';
 import Blog from '@/pages/Blog';
 import BlogPost from '@/pages/BlogPost';
-import BlogPage from '@/pages/BlogPage';
 import ReadingList from '@/pages/ReadingList';
 import Discover from '@/pages/Discover';
 import Explore from '@/pages/Explore';
@@ -17,6 +16,7 @@ import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 import AdminAutoCovers from '@/pages/AdminAutoCovers';
+import AdminAudit from '@/pages/AdminAudit';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
@@ -48,7 +48,8 @@ const AppRouter = () => {
       <Route path="/book/:id" element={<BookPage />} />
       <Route path="/books/:id" element={<BookPage />} />
       <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/page/:page" element={<BlogPage />} />
+      <Route path="/blog/page/1" element={<Navigate to="/blog" replace />} />
+      <Route path="/blog/page/:page" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />
@@ -81,6 +82,11 @@ const AppRouter = () => {
       <Route path="/admin/auto-covers" element={
         <AdminGuard>
           <AdminAutoCovers />
+        </AdminGuard>
+      } />
+      <Route path="/admin/audit" element={
+        <AdminGuard>
+          <AdminAudit />
         </AdminGuard>
       } />
       

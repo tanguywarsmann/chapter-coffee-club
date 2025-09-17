@@ -20,9 +20,10 @@
     }
   ],
   "rewrites": [
-    { "source": "/blog", "destination": "/" },
-    { "source": "/blog/:path*", "destination": "/" },
-    { "source": "/((?!api|.*\\..*).*)", "destination": "/" }
+    {
+      "source": "/((?!api|.*\\.(?:js|css|png|jpg|jpeg|gif|svg|ico|json|txt|xml|webp|avif|woff|woff2|ttf|map)$).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {

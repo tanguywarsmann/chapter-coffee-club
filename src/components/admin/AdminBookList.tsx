@@ -24,6 +24,16 @@ interface BookValidationStatus extends Book {
   cover_url?: string; // Cover URL
 }
 
+type BookSegmentStatus = {
+  id: string;
+  slug: string;
+  title: string;
+  expected_segments: number | null;
+  available_questions: number;
+  missing_segments: number[];
+  status: 'unknown' | 'missing' | 'incomplete' | 'complete';
+};
+
 export function AdminBookList() {
   const [books, setBooks] = useState<BookValidationStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,10 +44,6 @@ export function AdminBookList() {
   const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
   const [generatingCovers, setGeneratingCovers] = useState<Set<string>>(new Set());
 
-  // Fonction pour calculer le nombre de segments basé sur le nombre de pages
-  const calculateExpectedSegments = (totalPages: number): number => {
-    return Math.ceil(totalPages / 30);
-  };
 
   // Fonction pour corriger les segments commençant à 0
   const fixSegmentIndexing = async () => {
@@ -132,46 +138,30 @@ export function AdminBookList() {
     setError(null);
     
     try {
-      // Récupérer tous les livres
+      // Récupérer tous les livres avec expected_segments
       const { data: booksData, error: booksError } = await supabase
         .from('books')
-        .select('id, title, slug, total_pages, cover_url');
+        .select('id, title, slug, total_pages, cover_url, expected_segments');
       
       if (booksError) throw booksError;
       
-      // Récupérer toutes les questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('reading_questions')
-        .select('book_slug, segment');
+      // Récupérer l'état des segments depuis la vue
+      const { data: statuses } = await supabase
+        .from('book_segment_status')
+        .select('*');
       
-      if (questionsError) throw questionsError;
+      const bySlug = new Map(statuses?.map(s => [s.slug, s as BookSegmentStatus]) ?? []);
       
       // Transformer les données pour l'affichage
       const booksWithStatus: BookValidationStatus[] = booksData.map(book => {
         const totalPages = book.total_pages || 0;
-        const expectedSegments = calculateExpectedSegments(totalPages);
+        const expectedSegments = book.expected_segments ?? 0;
+        const statusData = bySlug.get(book.slug);
         
-        // Récupérer les segments qui ont des questions pour ce livre
-        const bookQuestions = questionsData.filter(q => q.book_slug === book.slug);
-        const segments = bookQuestions.map(q => q.segment);
-        const uniqueSegments = [...new Set(segments)];
-        
-        // Calculer les segments manquants (en commençant à 1, pas 0)
-        const missingSegments = [];
-        for (let i = 1; i <= expectedSegments; i++) {
-          if (!uniqueSegments.includes(i)) {
-            missingSegments.push(i);
-          }
-        }
-        
-        let status: 'complete' | 'incomplete' | 'missing';
-        if (uniqueSegments.length === 0) {
-          status = 'missing';
-        } else if (uniqueSegments.length === expectedSegments && !missingSegments.length) {
-          status = 'complete';
-        } else {
-          status = 'incomplete';
-        }
+        const availableQuestions = statusData?.available_questions ?? 0;
+        const missingSegments = statusData?.missing_segments ?? [];
+        const status = statusData?.status === 'complete' ? 'complete' : 
+                      statusData?.status === 'incomplete' ? 'incomplete' : 'missing';
         
         // Create a BookValidationStatus object with all required fields
         return {
@@ -180,8 +170,8 @@ export function AdminBookList() {
           slug: book.slug,
           total_pages: totalPages,
           expectedSegments: expectedSegments,
-          availableQuestions: uniqueSegments.length,
-          segments: uniqueSegments,
+          availableQuestions: availableQuestions,
+          segments: [], // We don't need this for display anymore
           missingSegments: missingSegments,
           status: status,
           cover_url: book.cover_url,
@@ -189,7 +179,7 @@ export function AdminBookList() {
           author: "", // Default value since it might not be available
           description: "", // Default value
           totalChapters: expectedSegments, // Use expectedSegments as totalChapters
-          chaptersRead: uniqueSegments.length, // Use availableQuestions as chaptersRead
+          chaptersRead: availableQuestions, // Use availableQuestions as chaptersRead
           isCompleted: status === 'complete', // Mark as completed if all segments are available
           language: "fr", // Default value
           categories: [], // Default empty array
