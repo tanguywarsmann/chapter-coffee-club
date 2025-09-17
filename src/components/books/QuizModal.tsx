@@ -102,31 +102,46 @@ export function QuizModal({
         return;
       }
 
-      console.log("✅ Calling validateReadingSegmentBeta ONCE with:", {
+      console.log("✅ Calling validateReadingSegmentBeta with user answer:", {
         bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim(),
         userId: user.id
       });
 
-      // UN SEUL appel de validation
+      // Validation côté serveur - laisse le serveur vérifier si la réponse est correcte
       const result = await validateReadingSegmentBeta({
         bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim(),
         userId: user.id,
         usedJoker: false,
-        correct: true
+        correct: undefined // Le serveur déterminera si c'est correct
       });
 
       console.log("✅ Validation result:", result);
 
-      if (result) {
-        toast.success("Segment validé !");
+      if (result?.ok) {
+        toast.success("Réponse correcte ! Segment validé !");
         
         // Call onComplete ONCE - this should trigger all necessary updates
         console.log("📞 Calling onComplete ONCE");
         onComplete({ correct: true, useJoker: false });
+      } else {
+        // Réponse incorrecte - gérer les tentatives et jokers
+        setAttempts(prev => prev + 1);
+        toast.error("Réponse incorrecte. Essayez encore !");
+        
+        // Si pas de jokers disponibles et trop de tentatives, on ne peut pas continuer
+        if (attempts >= 2 && actualJokersRemaining === 0) {
+          toast.error("Nombre de tentatives épuisé et aucun joker disponible.");
+          return;
+        }
+        
+        // Proposer un joker si disponible après 2 tentatives
+        if (attempts >= 1 && actualJokersRemaining > 0) {
+          setShowJokerConfirmation(true);
+        }
       }
       
     } catch (error) {
