@@ -197,6 +197,8 @@ export const useBookValidation = ({
 
     if (correct) {
       console.log("🎉 Showing confetti and success animations");
+      console.log("🎊 showConfetti function:", showConfetti);
+      console.log("🎊 showConfetti type:", typeof showConfetti);
       showConfetti();
     }
     
