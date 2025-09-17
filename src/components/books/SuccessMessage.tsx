@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useConfetti } from "@/hooks/useConfetti";
+import { useConfetti } from "@/components/confetti/ConfettiProvider";
 import { CheckCircle } from "lucide-react";
 
 interface SuccessMessageProps {
@@ -17,7 +17,8 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
   useEffect(() => {
     if (isOpen) {
       console.log("🎉 Success modal opened - triggering confetti");
-      showConfetti();
+      // Laisse à Radix le temps d'ouvrir la modale avant le burst
+      requestAnimationFrame(() => showConfetti({ burst: "big" }));
     }
   }, [isOpen, showConfetti]);
 
