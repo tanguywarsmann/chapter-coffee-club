@@ -3,7 +3,6 @@ import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { QuizContent } from "./QuizContent";
 import { PublicReadingQuestion } from "@/types/reading";
 import { JokerConfirmationModal } from "./JokerConfirmationModal";
@@ -66,7 +65,6 @@ export function QuizModal({
 
   // Utiliser les jokers du hook si pas fournis en props
   const actualJokersRemaining = jokersRemaining ?? hookJokersRemaining;
-  const shouldReduce = useReducedMotion();
 
   const handleSubmit = async () => {
     console.log("=== SINGLE VALIDATION CALL ===");
@@ -338,15 +336,6 @@ export function QuizModal({
               Répondez par un mot pour valider votre compréhension.
             </DialogDescription>
           </DialogHeader>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="quiz-content"
-              initial={{ opacity: 0, y: shouldReduce ? 0 : 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: shouldReduce ? 0 : -8 }}
-              transition={{ duration: 0.18 }}
-            >
           
           <QuizContent
             bookTitle={bookTitle}
@@ -395,8 +384,6 @@ export function QuizModal({
               </div>
             )}
           </DialogFooter>
-            </motion.div>
-          </AnimatePresence>
         </DialogContent>
       </Dialog>
 
@@ -430,15 +417,6 @@ export function QuizModal({
               Révèle la bonne réponse pour ce segment en dépensant un joker.
             </DialogDescription>
           </DialogHeader>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="joker-content"
-              initial={{ opacity: 0, scale: shouldReduce ? 1 : 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: shouldReduce ? 1 : 0.98 }}
-              transition={{ duration: 0.18 }}
-            >
           
           <div className="py-4 text-center space-y-4">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
@@ -470,8 +448,6 @@ export function QuizModal({
               {isRevealing ? "Révélation..." : "Utiliser le joker"}
             </Button>
           </DialogFooter>
-            </motion.div>
-          </AnimatePresence>
         </DialogContent>
       </Dialog>
     </>
