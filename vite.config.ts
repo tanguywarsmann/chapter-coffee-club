@@ -32,21 +32,7 @@ export default defineConfig(({ command }) => ({
         skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}'],
         maximumFileSizeToCacheInBytes: 3000000, // 3MB max par fichier
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'pages-cache',
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 24 * 60 * 60, // 24 heures
-              },
-            },
-          },
           {
             urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|avif)$/,
             handler: 'CacheFirst',

@@ -69,13 +69,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "activity_likes_liker_id_fkey"
-            columns: ["liker_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "activity_likes_progress_id_fkey"
             columns: ["progress_id"]
             isOneToOne: false
@@ -381,13 +374,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "notifications_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "notifications_progress_id_fkey"
             columns: ["progress_id"]
             isOneToOne: false
@@ -399,13 +385,6 @@ export type Database = {
             columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -484,13 +463,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "reading_progress_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "book_segment_status"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "reading_progress_book_fk"
             columns: ["book_id"]
@@ -614,13 +586,6 @@ export type Database = {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "book_segment_status"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reading_validations_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
@@ -672,13 +637,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -842,13 +800,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       validation_locks: {
@@ -881,13 +832,6 @@ export type Database = {
             foreignKeyName: "validation_locks_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "book_segment_status"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "validation_locks_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
@@ -909,18 +853,6 @@ export type Database = {
       }
     }
     Views: {
-      book_segment_status: {
-        Row: {
-          available_questions: number | null
-          expected_segments: number | null
-          id: string | null
-          missing_segments: number[] | null
-          slug: string | null
-          status: string | null
-          title: string | null
-        }
-        Relationships: []
-      }
       books_explore: {
         Row: {
           author: string | null
@@ -1005,36 +937,6 @@ export type Database = {
           title?: string | null
           total_chapters?: number | null
           total_pages?: number | null
-        }
-        Relationships: []
-      }
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          email: string | null
-          id: string | null
-          is_admin: boolean | null
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          is_admin?: never
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          is_admin?: never
-          updated_at?: string | null
-          username?: string | null
         }
         Relationships: []
       }
@@ -1200,15 +1102,6 @@ export type Database = {
       }
       get_public_profiles_for_ids: {
         Args: { ids: string[] }
-        Returns: {
-          avatar_url: string
-          created_at: string
-          id: string
-          username: string
-        }[]
-      }
-      get_safe_public_profiles: {
-        Args: { limit_count?: number }
         Returns: {
           avatar_url: string
           created_at: string

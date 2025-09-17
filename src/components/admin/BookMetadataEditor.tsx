@@ -82,17 +82,16 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
 
     setIsSaving(true);
     try {
-      // Get the book id and slug
+      // Get the book slug
       const { data: bookData, error: bookError } = await supabase
         .from('books')
-        .select('id, slug')
+        .select('slug')
         .eq('id', book.id)
         .single();
       
       if (bookError) throw bookError;
       
       const segmentEntries = book.missingSegments.map(segmentNum => ({
-        book_id: bookData.id,
         book_slug: bookData.slug,
         segment: segmentNum, // Déjà indexé à partir de 1 depuis le composant parent
         question: "",
@@ -222,10 +221,10 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
     setIsAddingQuestion(true);
     
     try {
-      // Récupérer l'id et le slug du livre
+      // Récupérer le slug du livre
       const { data: bookData, error: bookError } = await supabase
         .from('books')
-        .select('id, slug')
+        .select('slug')
         .eq('id', book.id)
         .single();
         
@@ -235,7 +234,6 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       const { error } = await supabase
         .from('reading_questions')
         .insert({
-          book_id: bookData.id,
           book_slug: bookData.slug,
           segment: selectedSegment,
           question: question.trim(),

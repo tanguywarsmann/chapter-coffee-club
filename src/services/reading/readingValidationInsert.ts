@@ -31,10 +31,9 @@ export async function insertReadingValidation(
     .select('id');
 
   if (validationError) {
-    console.error("[insertReadingValidation] error:", validationError);
-    if (validationError.message?.includes("foreign key")) {
-      throw new Error("Progression absente ou non autorisée (RLS). Réessayez après reprise de la progression.");
-    } else if (validationError.message?.includes('reading_validations_segment_check')) {
+    if (validationError.message.includes('violates foreign key constraint')) {
+      throw new Error("Erreur de contrainte : le progress_id n'est pas valide. Contacter le support.");
+    } else if (validationError.message.includes('reading_validations_segment_check')) {
       throw new Error("Erreur de validation : segment invalide");
     } else {
       throw new Error("Échec d'enregistrement de la validation: " + validationError.message);
