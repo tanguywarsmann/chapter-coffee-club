@@ -95,10 +95,16 @@ export function QuizModal({
         return;
       }
 
+      // Nettoyer les IDs avant validation
+      const cleanBookId = bookData.id?.replace('fallback-', '') || bookData.id;
+      const cleanQuestionId = question.id?.replace('fallback-', '') || question.id;
+
+      console.log("[QuizModal] Using clean IDs:", { cleanBookId, cleanQuestionId });
+
       // Atomic validation using the robust RPC
       const result = await validateReadingSegmentBeta({
-        bookId: bookData.id,
-        questionId: question.id,
+        bookId: cleanBookId,
+        questionId: cleanQuestionId,
         answer: answer.trim(),
         userId: user.id,
         usedJoker: false,
