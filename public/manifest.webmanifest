@@ -1,0 +1,32 @@
+{
+  "name": "VREAD - Lecture Intelligente",
+  "short_name": "VREAD",
+  "description": "Application de lecture avec validation progressive",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B4513",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/branding/vread-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/branding/vread-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/branding/vread-logo-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["books", "education", "productivity"],
+  "lang": "fr-FR"
+}

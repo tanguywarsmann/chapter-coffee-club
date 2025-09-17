@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,336 +7,229 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-serve(async (req) => {
-  console.log('[JOKER-REVEAL] Request received:', req.method);
-  
+interface JokerRevealPayload {
+  bookId?: string;
+  bookSlug?: string;
+  segment: number;
+  questionId?: string;
+  consume?: boolean;
+}
+
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    console.log('[JOKER-REVEAL] Environment variables check:', {
-      hasUrl: !!supabaseUrl,
-      hasAnonKey: !!supabaseAnonKey,
-      hasServiceKey: !!supabaseServiceKey
+    // Create client with user auth for security checks
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization') ?? '' },
+      },
     });
 
-    // Client for user authentication
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: req.headers.get("Authorization")! } },
-    });
+    // Create service role client for privileged operations
+    const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
 
-    const {
-      data: { user },
-      error: userErr,
-    } = await supabaseAuth.auth.getUser();
-    
-    console.log('[JOKER-REVEAL] Auth check:', { hasUser: !!user, userErr });
-    
-    if (userErr || !user) {
-      console.error('Authentication error:', userErr);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { 
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    // Parse request body
+    let body: JokerRevealPayload;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
-    const uid = user.id;
 
-    const body = await req.json().catch((e) => {
-      console.error('[JOKER-REVEAL] JSON parse error:', e);
-      return {};
-    });
     console.log('[JOKER-REVEAL] Request body:', body);
-    
-    const { bookId, bookSlug, segment, questionId, consume = true } = body;
 
-    if ((!bookId && !bookSlug) || typeof segment !== "number") {
-      console.error('[JOKER-REVEAL] Missing required params:', { bookId, bookSlug, segment });
-      return new Response(JSON.stringify({ error: "Missing bookId/bookSlug or segment" }), { 
+    // Validate required parameters
+    if (!body.segment) {
+      return new Response(JSON.stringify({ error: 'Missing segment parameter' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Service Role client for secure operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (!body.bookId && !body.bookSlug) {
+      return new Response(JSON.stringify({ error: 'Missing bookId or bookSlug' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Feature flag configuration (no blocking for now, just logging)
-    const EF_MIN_ENABLED = Deno.env.get('JOKER_MIN_SEGMENTS_ENABLED') === 'true';
-    const EF_MIN = parseInt(Deno.env.get('JOKER_MIN_SEGMENTS') || '3', 10);
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[JOKER-REVEAL] Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Resolve book slug to UUID if needed
-    let actualBookId = bookId;
-    let bookData: any = null;
-    if (!bookId && bookSlug) {
-      console.log('[JOKER-REVEAL] Resolving book slug to UUID:', bookSlug);
-      const { data: resolvedBookData, error: bookErr } = await supabase
-        .from("books_public")
-        .select("id, expected_segments")
-        .eq("slug", bookSlug)
+    console.log('[JOKER-REVEAL] Authenticated user:', user.id);
+
+    // Resolve bookId from slug if needed
+    let resolvedBookId = body.bookId;
+    if (!resolvedBookId && body.bookSlug) {
+      const { data: bookData, error: bookError } = await supabaseService
+        .from('books')
+        .select('id')
+        .eq('slug', body.bookSlug)
         .maybeSingle();
-        
-      if (bookErr || !resolvedBookData) {
-        console.error('[JOKER-REVEAL] Failed to resolve book slug:', { bookSlug, bookErr });
-        return new Response(JSON.stringify({ error: "Book not found" }), { 
+
+      if (bookError || !bookData) {
+        console.error('[JOKER-REVEAL] Book lookup error:', bookError);
+        return new Response(JSON.stringify({ error: 'Book not found' }), {
           status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      actualBookId = resolvedBookData.id;
-      bookData = resolvedBookData;
-      console.log('[JOKER-REVEAL] Resolved book slug to UUID:', { bookSlug, actualBookId });
-    } else if (bookId) {
-      // Get book data for existing bookId to check expected_segments
-      const { data: resolvedBookData } = await supabase
-        .from("books_public")
-        .select("id, expected_segments")
-        .eq("id", bookId)
+      resolvedBookId = bookData.id;
+    }
+
+    console.log('[JOKER-REVEAL] Resolved bookId:', resolvedBookId);
+
+    // Get question and correct answer
+    let questionData;
+    if (body.questionId) {
+      // Get specific question by ID
+      const { data, error } = await supabaseService
+        .from('reading_questions')
+        .select('id, answer, segment, book_id')
+        .eq('id', body.questionId)
         .maybeSingle();
-      bookData = resolvedBookData;
-    }
 
-    // Feature flag enforcement: block if enabled and < min segments
-    if (EF_MIN_ENABLED && bookData?.expected_segments != null && bookData.expected_segments < EF_MIN) {
-      console.warn('[JOKER-REVEAL] Joker blocked by min segments constraint', {
-        bookId: actualBookId,
-        expected: bookData.expected_segments,
-        min: EF_MIN,
-        enabled: EF_MIN_ENABLED
-      });
-      return new Response(JSON.stringify({
-        error: `Jokers non disponibles pour les livres de moins de ${EF_MIN} segments`,
-        expectedSegments: bookData.expected_segments,
-        minimumRequired: EF_MIN
-      }), { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 1) Consume joker via existing RPC if requested
-    if (consume) {
-      console.log('[JOKER-REVEAL] Calling use_joker RPC with params:', {
-        p_user_id: uid,
-        p_book_id: actualBookId,
-        p_segment: segment,
-      });
-      
-      const { data: jokerResult, error: rpcErr } = await supabase.rpc("use_joker", {
-        p_user_id: uid,
-        p_book_id: actualBookId,
-        p_segment: segment,
-      });
-      
-      console.log('[JOKER-REVEAL] RPC use_joker result:', { jokerResult, rpcErr });
-      
-      if (rpcErr) {
-        console.error('Joker RPC error:', rpcErr);
-        return new Response(JSON.stringify({ error: "use_joker failed", details: rpcErr.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      if (error || !data) {
+        console.error('[JOKER-REVEAL] Question lookup error:', error);
+        return new Response(JSON.stringify({ error: 'Question not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      
-      // Check if joker usage was successful - handle multiple return formats
-      const jr = jokerResult;
-      console.log('[JOKER-REVEAL] Analyzing joker result:', { jr, type: typeof jr, isArray: Array.isArray(jr) });
-      
-      const success = 
-        jr === true ||
-        (typeof jr === 'object' && jr?.success === true) ||
-        (Array.isArray(jr) && (jr[0] === true || jr[0]?.success === true));
-
-      console.log('[JOKER-REVEAL] Joker usage success check:', { success });
-
-      if (!success) {
-        console.error('[JOKER-REVEAL] Joker usage failed:', jr);
-        return new Response(JSON.stringify({ 
-          error: "Joker usage failed", 
-          message: JSON.stringify(jr),
-          debug: { jr, type: typeof jr }
-        }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
+      questionData = data;
     } else {
-      // If not consuming here, verify joker was already used for this segment
-      const { data: rv, error: rvErr } = await supabase
-        .from("reading_validations")
-        .select("id")
-        .eq("user_id", uid)
-        .eq("segment", segment)
-        .eq("book_id", actualBookId)
-        .eq("used_joker", true)
+      // Get question by book and segment
+      const { data, error } = await supabaseService
+        .from('reading_questions')
+        .select('id, answer, segment, book_id')
+        .eq('book_id', resolvedBookId)
+        .eq('segment', body.segment)
         .maybeSingle();
-        
-      if (rvErr) {
-        console.error('Validation check error:', rvErr);
-        return new Response(JSON.stringify({ error: "Failed to verify joker usage" }), { 
+
+      if (error || !data) {
+        console.error('[JOKER-REVEAL] Question lookup by segment error:', error);
+        return new Response(JSON.stringify({ error: 'Question not found for this segment' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      questionData = data;
+    }
+
+    console.log('[JOKER-REVEAL] Found question:', questionData.id);
+
+    // Check if joker can be used (only if consume is true)
+    if (body.consume !== false) {
+      try {
+        const { data: jokerResult, error: jokerError } = await supabaseService.rpc('use_joker', {
+          p_book_id: resolvedBookId,
+          p_user_id: user.id,
+          p_segment: body.segment
+        });
+
+        console.log('[JOKER-REVEAL] Joker check result:', jokerResult);
+
+        if (jokerError) {
+          console.error('[JOKER-REVEAL] Joker RPC error:', jokerError);
+          return new Response(JSON.stringify({ error: jokerError.message }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!jokerResult?.[0]?.success) {
+          const message = jokerResult?.[0]?.message || 'Cannot use joker';
+          console.warn('[JOKER-REVEAL] Joker usage failed:', message);
+          return new Response(JSON.stringify({ error: message }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (error) {
+        console.error('[JOKER-REVEAL] Joker validation error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to validate joker usage' }), {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      
-      if (!rv) {
-        return new Response(JSON.stringify({ error: "Joker not used for this segment" }), { 
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
 
-    // 2) Get the correct answer
-    let answer: string | null = null;
+    // Create validation record with joker usage
+    const { data: validation, error: validationError } = await supabaseService
+      .from('reading_validations')
+      .insert({
+        user_id: user.id,
+        book_id: resolvedBookId,
+        question_id: questionData.id,
+        segment: questionData.segment,
+        answer: questionData.answer,
+        used_joker: true,
+        correct: true,
+        revealed_answer_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
-    if (questionId) {
-      const { data: q1, error: q1Err } = await supabase
-        .from("reading_questions")
-        .select("answer")
-        .eq("id", questionId)
-        .maybeSingle();
-        
-      if (q1Err) {
-        console.error('Question fetch by ID error:', q1Err);
-        return new Response(JSON.stringify({ error: "Failed to read question by id", details: q1Err.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      answer = q1?.answer ?? null;
+    if (validationError) {
+      console.error('[JOKER-REVEAL] Validation insert error:', validationError);
+      // Don't fail completely, just log the error
+      console.warn('[JOKER-REVEAL] Could not create validation record, continuing...');
     } else {
-      const { data: q2, error: q2Err } = await supabase
-        .from("reading_questions")
-        .select("answer")
-        .eq("book_id", actualBookId)
-        .eq("segment", segment)
-        .limit(1)
-        .maybeSingle();
-        
-      if (q2Err) {
-        console.error('Question fetch by book/segment error:', q2Err);
-        return new Response(JSON.stringify({ error: "Failed to read question by book/segment", details: q2Err.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      answer = q2?.answer ?? null;
+      console.log('[JOKER-REVEAL] Created validation:', validation.id);
     }
 
-    // Trim & guard the answer before return (avoid empty string due to spaces)
-    answer = String(answer ?? '').trim();
-    if (!answer) {
-      return new Response(JSON.stringify({ error: "No correct answer found (empty)" }), { 
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
+    // Return the correct answer
+    const response = {
+      correctAnswer: questionData.answer,
+      revealedAt: new Date().toISOString(),
+      segment: questionData.segment,
+      bookId: resolvedBookId,
+      validationSaved: !validationError,
+      jokerRecorded: true,
+      questionId: questionData.id
+    };
 
-    // 3) Mark answer as revealed and set correct to true
-    const now = new Date().toISOString();
-    
-    // First, check if validation already exists
-    const { data: existingValidation } = await supabase
-      .from("reading_validations")
-      .select("id")
-      .eq("user_id", uid)
-      .eq("book_id", actualBookId)
-      .eq("segment", segment)
-      .maybeSingle();
+    console.log('[JOKER-REVEAL] Success response:', response);
 
-    if (existingValidation) {
-      // Update existing record
-      console.log('Updating existing validation record:', existingValidation.id);
-      const { error: updateErr } = await supabase
-        .from("reading_validations")
-        .update({
-          correct: true,
-          used_joker: true,
-          validated_at: now,
-          revealed_answer_at: now,
-          question_id: questionId || null
-        })
-        .eq("id", existingValidation.id);
-        
-      if (updateErr) {
-        console.error('Update validation record error:', updateErr);
-        return new Response(JSON.stringify({ error: "Failed to update validation record", details: updateErr.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      console.log('Validation record updated successfully');
-    } else {
-      // Create new record
-      console.log('Creating new validation record');
-      
-      // First get the progress_id
-      const { data: progressData, error: progressErr } = await supabase
-        .from("reading_progress")
-        .select("id")
-        .eq("user_id", uid)
-        .eq("book_id", actualBookId)
-        .maybeSingle();
-        
-      if (progressErr || !progressData) {
-        console.error('Failed to get progress_id:', progressErr);
-        return new Response(JSON.stringify({ error: "Reading progress not found", details: progressErr?.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      
-      const { error: insertErr } = await supabase
-        .from("reading_validations")
-        .insert({
-          user_id: uid,
-          book_id: actualBookId,
-          segment: segment,
-          correct: true,
-          used_joker: true,
-          validated_at: now,
-          revealed_answer_at: now,
-          question_id: questionId || null,
-          progress_id: progressData.id
-        });
-        
-      if (insertErr) {
-        console.error('Insert validation record error:', insertErr);
-        return new Response(JSON.stringify({ error: "Failed to create validation record", details: insertErr.message }), { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      console.log('Validation record created successfully');
-    }
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
-    console.log(`Answer revealed for user ${uid}, segment ${segment}, book ${actualBookId}`);
-
-    return new Response(
-      JSON.stringify({
-        correctAnswer: answer,
-        revealedAt: now,
-        segment,
-        bookId: actualBookId,
-        _debug: { usedQuestionId: !!questionId }
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-  } catch (e) {
-    console.error('Joker reveal function error:', e);
-    return new Response(JSON.stringify({ error: "Internal server error", details: String(e) }), { 
+  } catch (error) {
+    console.error('[JOKER-REVEAL] Unexpected error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error', 
+      details: error.message 
+    }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

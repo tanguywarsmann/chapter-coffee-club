@@ -241,7 +241,7 @@ export function QuizModal({
         questionId: question?.id
       });
 
-      // Use joker and reveal correct answer
+      // Use joker and reveal correct answer with the edge function
       const result = await useJokerAndReveal({
         bookSlug: question.book_slug,
         segment: chapterNumber,
@@ -261,12 +261,12 @@ export function QuizModal({
         return;
       }
 
-      // 1) État d'abord
+      // Set state for the answer reveal modal
       setRevealedAnswer(answer);
       setAnswerRevealedAt(result?.revealedAt ?? new Date().toISOString());
       setShowAnswerReveal(true);
 
-      // 2) Analytics ensuite (protégées)
+      // Analytics tracking (protected)
       if (jokerStartTime) {
         console.log("📊 Tracking joker analytics");
         try {
@@ -287,14 +287,14 @@ export function QuizModal({
         }
       }
 
-      // Mettre à jour les informations de jokers après utilisation
+      // Update jokers info after usage
       await updateJokersInfo();
 
       toast.success("Joker utilisé ! La bonne réponse est révélée.");
     } catch (error) {
       console.error('Joker reveal error:', error);
       toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
-      // Ne pas fermer le flux ici : permettre de réessayer
+      // Don't close the flow here: allow retry
     } finally {
       setIsRevealing(false);
     }
@@ -318,13 +318,9 @@ export function QuizModal({
       <Dialog 
         open={!showJokerConfirmation && !showAnswerReveal} 
         onOpenChange={onClose}
-        aria-labelledby="quiz-modal-title"
-        aria-describedby="quiz-modal-description"
       >
         <DialogContent 
           className="sm:max-w-md border-coffee-medium"
-          role="dialog"
-          aria-modal="true"
         >
           <DialogHeader>
             <DialogTitle 
@@ -411,17 +407,49 @@ export function QuizModal({
         </DialogContent>
       </Dialog>
 
-      <JokerConfirmationModal
-        isOpen={showJokerConfirmation}
-        segment={chapterNumber}
-        jokersUsed={jokersUsed}
-        jokersAllowed={jokersAllowed}
-        jokersRemaining={actualJokersRemaining}
-        isUsingJoker={isUsingJoker}
-        expectedSegments={expectedSegments}
-        onConfirm={handleJokerConfirm}
-        onCancel={handleJokerCancel}
-      />
+      <Dialog open={showJokerConfirmation} onOpenChange={() => setShowJokerConfirmation(false)}>
+        <DialogContent className="sm:max-w-md border-coffee-medium">
+          <DialogHeader>
+            <DialogTitle className="text-center font-serif text-coffee-darker">
+              Utiliser un joker
+            </DialogTitle>
+            <DialogDescription className="text-center text-body-sm text-foreground/80">
+              Révèle la bonne réponse pour ce segment en dépensant un joker.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 text-center space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-amber-800 text-body-sm">
+                Utiliser un joker révélera immédiatement la bonne réponse et validera ce segment.
+              </p>
+            </div>
+            
+            <div className="text-body-sm text-muted-foreground">
+              <p>Jokers restants : <span className="font-semibold text-coffee-dark">{actualJokersRemaining}</span></p>
+              <p>Segment : {chapterNumber}</p>
+            </div>
+          </div>
+          
+          <DialogFooter className="sm:justify-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleJokerCancel}
+              disabled={isRevealing}
+              className="border-coffee-medium text-foreground hover:bg-muted"
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleJokerConfirm}
+              disabled={isRevealing}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {isRevealing ? "Révélation..." : "Utiliser le joker"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -40,12 +40,12 @@ export async function getCorrectAnswerAfterJoker(params: {
   console.log('[JOKER SERVICE] Response from edge function:', { data, error });
 
   if (error) {
-    console.error('joker-reveal invoke error', error);
+    console.error('joker-reveal invoke error:', error);
     throw new Error(error.message || 'Failed to reveal correct answer');
   }
 
   if (data?.error) {
-    console.error('joker-reveal payload error', data);
+    console.error('joker-reveal payload error:', data);
     throw new Error(data.error);
   }
 

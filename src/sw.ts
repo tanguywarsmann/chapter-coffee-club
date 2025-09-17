@@ -104,6 +104,31 @@ self.addEventListener("fetch", (event) => {
     return; // Laisser passer sans mise en cache
   }
 
+  // Bypass Supabase Edge Functions - toujours NetworkOnly
+  if (event.request.url.includes('supabase.co/functions/v1/') || 
+      event.request.url.includes('/functions/v1/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Bypass manifest avec NetworkFirst
+  if (event.request.url.endsWith('/manifest.webmanifest')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   // Vérifier les mises à jour périodiquement sur les requêtes HTML
   if (event.request.mode === 'navigate') {
     event.respondWith(
