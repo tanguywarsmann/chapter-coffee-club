@@ -1163,13 +1163,23 @@ export type Database = {
         }[]
       }
       force_validate_segment_beta: {
-        Args: {
-          p_answer: string
-          p_book_id: string
-          p_question_id: string
-          p_user_id: string
-        }
+        Args:
+          | {
+              p_answer: string
+              p_book_id: string
+              p_correct?: boolean
+              p_question_id: string
+              p_used_joker?: boolean
+              p_user_id: string
+            }
+          | {
+              p_answer: string
+              p_book_id: string
+              p_question_id: string
+              p_user_id: string
+            }
         Returns: {
+          action: string
           progress_id: string
           segment: number
           validation_id: string

@@ -1,39 +1,39 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-/**
- * Beta validation service that bypasses RLS issues
- * Uses force_validate_segment_beta RPC for robust validation
- */
-export async function validateReadingSegmentBeta(args: {
+type ValidateArgs = {
   bookId: string;
   questionId: string;
   answer: string;
-  userId: string; // ⚠️ obligatoire maintenant
-}) {
-  try {
-    console.log("[validateReadingSegmentBeta] call", args);
-    
-    const { data, error } = await supabase.rpc("force_validate_segment_beta", {
-      p_book_id: args.bookId,
-      p_question_id: args.questionId,
-      p_answer: args.answer ?? "",
-      p_user_id: args.userId,
-    });
+  userId: string;
+  usedJoker?: boolean;
+  correct?: boolean;
+};
 
-    if (error) {
-      console.error("[force_validate_segment_beta] error", error);
-      throw new Error(error.message || "Échec validation (RPC beta)");
-    }
-    
-    console.info("[force_validate_segment_beta] ok", data?.[0]);
-    return data?.[0] || { validation_id: null, progress_id: null, segment: 0 };
-  } catch (error) {
-    console.error("[validateReadingSegmentBeta] caught error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-    toast.error(`Échec de la validation: ${errorMessage}`);
-    throw error;
+/**
+ * Beta validation service with UPSERT - no more 409 conflicts
+ * Uses force_validate_segment_beta RPC for robust validation
+ */
+export async function validateReadingSegmentBeta(args: ValidateArgs) {
+  console.log("[validateReadingSegmentBeta] call", args);
+
+  const { data, error } = await supabase.rpc("force_validate_segment_beta", {
+    p_book_id: args.bookId,
+    p_question_id: args.questionId,
+    p_answer: args.answer ?? "",
+    p_user_id: args.userId,          // ⚠️ obligatoire
+    p_used_joker: !!args.usedJoker,
+    p_correct: args.correct ?? true,
+  });
+
+  if (error) {
+    console.error("[force_validate_segment_beta] error", error);
+    throw new Error(error.message || "Échec validation (RPC beta)");
   }
+
+  const row = data?.[0];
+  console.info(`[force_validate_segment_beta] ${row?.action} validation`, row);
+  return row as { validation_id: string; progress_id: string | null; segment: number; action: "inserted" | "updated" };
 }
 
 /**

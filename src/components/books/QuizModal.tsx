@@ -104,14 +104,17 @@ export function QuizModal({
         bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim(),
-        userId: user.id
+        userId: user.id,
+        usedJoker: false,
+        correct: true
       });
       
       // In BETA mode, assume validation is always successful  
       const isCorrect = true;
       
       if (isCorrect) {
-        toast.success("Bonne réponse !");
+        const actionMessage = result?.action === "updated" ? "Déjà validé — mise à jour" : "Segment validé !";
+        toast.success(actionMessage);
         // Fixed: Always pass boolean for useJoker
         onComplete({ correct: true, useJoker: false });
       } else {
