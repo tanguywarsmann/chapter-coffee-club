@@ -52,7 +52,7 @@ export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<an
       p_answer: args.answer || "",
       p_user_id: args.userId,
       p_used_joker: Boolean(args.usedJoker),
-      p_correct: args.correct !== false
+      p_correct: args.correct ?? null // Laisser le serveur décider si null/undefined
     });
 
     if (error) {

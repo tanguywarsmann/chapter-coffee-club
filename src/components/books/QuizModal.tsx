@@ -102,11 +102,11 @@ export function QuizModal({
         return;
       }
 
-      console.log("✅ Calling validateReadingSegmentBeta with user answer:", {
+      console.log("🔍 DEBUG: User answer validation:", {
+        userAnswer: answer.trim(),
         bookId: bookData.id,
         questionId: question.id,
-        answer: answer.trim(),
-        userId: user.id
+        attempts: attempts
       });
 
       // Validation côté serveur - laisse le serveur vérifier si la réponse est correcte
@@ -116,7 +116,7 @@ export function QuizModal({
         answer: answer.trim(),
         userId: user.id,
         usedJoker: false,
-        correct: undefined // Le serveur déterminera si c'est correct
+        correct: null // Laisser le serveur décider
       });
 
       console.log("✅ Validation result:", result);
