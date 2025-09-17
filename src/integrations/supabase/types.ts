@@ -550,7 +550,7 @@ export type Database = {
           progress_id: string | null
           question_id: string | null
           revealed_answer_at: string | null
-          segment: number
+          segment: number | null
           used_joker: boolean
           user_id: string
           validated_at: string
@@ -563,7 +563,7 @@ export type Database = {
           progress_id?: string | null
           question_id?: string | null
           revealed_answer_at?: string | null
-          segment: number
+          segment?: number | null
           used_joker?: boolean
           user_id: string
           validated_at?: string
@@ -576,7 +576,7 @@ export type Database = {
           progress_id?: string | null
           question_id?: string | null
           revealed_answer_at?: string | null
-          segment?: number
+          segment?: number | null
           used_joker?: boolean
           user_id?: string
           validated_at?: string
