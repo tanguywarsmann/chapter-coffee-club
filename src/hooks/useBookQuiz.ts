@@ -85,9 +85,7 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
-    }
+    console.log("🎯 useBookQuiz.handleQuizComplete - UI updates only (validation already done)");
     
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
@@ -97,84 +95,29 @@ export const useBookQuiz = (
     try {
       if (setIsValidating) setIsValidating(true);
 
-      if (useJoker) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
-        }
-        setIsUsingJoker(true);
+      // Just handle UI updates - validation is already done in QuizModal
+      if (correct) {
+        console.log(useJoker ? "🃏 Quiz completed with joker" : "✅ Quiz completed successfully");
         
-        // Use bypass validation - always succeeds
-        const result = await forceValidateSegment({
-          bookId: book.id,
-          segment: quizChapter,
-          userId,
-          useJoker: true
-        });
+        setShowQuiz(false);
+        setShowSuccessMessage(true);
         
-        // Update joker count via normal flow (optional - can be ignored if it fails)
-        try {
-          const expectedSegmentsSafe = Number(
-            book?.expectedSegments ??
-            book?.expected_segments ??
-            book?.totalSegments ??
-            book?.total_chapters ??
-            0
-          );
-          
-          const jokerResult = await useJokerAtomically(book.id, userId, quizChapter, expectedSegmentsSafe);
-          if (jokerResult.success) {
-            setJokersRemaining(jokerResult.jokersRemaining);
-          }
-        } catch (jokerError) {
-          console.warn("Joker count update failed (non-critical):", jokerError);
-        }
-        
-        // Invalidate cache
+        // Invalidate cache to refresh data
         mutate(['jokers-info', book.id]);
         mutate(['book-progress', book.id]);
         
-        toast.success("Segment validé grâce à un Joker !");
-        setShowQuiz(false);
-        setShowSuccessMessage(true);
-        
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
         }
         
-        return result;
-      } else if (correct) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("✅ Réponse correcte sans joker");
-        }
-        
-        // Use bypass validation - always succeeds
-        const result = await forceValidateSegment({
-          bookId: book.id,
-          segment: quizChapter,
-          userId,
-          useJoker: false
-        });
-
-        setShowQuiz(false);
-        setShowSuccessMessage(true);
-
-        if (onProgressUpdate) {
-          onProgressUpdate(book.id);
-        }
-        
-        return result;
+        return { success: true };
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("❌ Réponse incorrecte - pas de joker utilisé");
-        }
+        console.log("❌ Quiz failed");
         setShowQuiz(false);
-        toast.error("Réponse incorrecte. Essayez de relire le passage.");
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
-      console.error("❌ Error completing quiz:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
+      console.error("❌ Error in quiz UI updates:", error);
       throw error;
     } finally {
       if (setIsValidating) setIsValidating(false);
