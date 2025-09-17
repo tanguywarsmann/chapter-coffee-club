@@ -72,12 +72,6 @@ export function QuizModal({
 
     try {
       // Use secure server-side answer validation
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Vous devez être connecté pour valider une réponse");
-        return;
-      }
-
       const { data, error } = await supabase.functions.invoke('validate-answer', {
         body: {
           questionId: question.id,
