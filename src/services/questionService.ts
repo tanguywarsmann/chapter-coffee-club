@@ -17,6 +17,13 @@ export async function getCorrectAnswerAfterJoker(params: {
 }): Promise<CorrectAnswerResult> {
   console.log('[JOKER SERVICE] Calling joker-reveal with params:', params);
   
+  // Get the current session to ensure we have a valid token
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.access_token) {
+    throw new Error("No valid session found for joker reveal");
+  }
+  
   const { data, error } = await supabase.functions.invoke('joker-reveal', {
     body: {
       bookId: params.bookId,
@@ -24,6 +31,9 @@ export async function getCorrectAnswerAfterJoker(params: {
       segment: params.segment,
       questionId: params.questionId,
       consume: params.consume ?? true
+    },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
   });
 
