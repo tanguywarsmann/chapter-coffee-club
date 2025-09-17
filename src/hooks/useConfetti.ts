@@ -9,63 +9,100 @@ export function useConfetti() {
     console.log("🎉 CONFETTI TRIGGERED! Making sure it's visible...");
     setIsActive(true);
     
-    // Force le style container pour s'assurer que c'est visible
-    const existingCanvas = document.querySelector('canvas[style*="position: fixed"]');
-    if (existingCanvas) {
-      (existingCanvas as HTMLElement).style.zIndex = '999999';
-      (existingCanvas as HTMLElement).style.pointerEvents = 'none';
-    }
+    // Force canvas positioning and ensure it's on top of everything
+    const forceCanvasVisible = () => {
+      const canvases = document.querySelectorAll('canvas');
+      canvases.forEach((canvas) => {
+        const style = (canvas as HTMLElement).style;
+        style.position = 'fixed';
+        style.top = '0';
+        style.left = '0';
+        style.width = '100vw';
+        style.height = '100vh';
+        style.zIndex = '999999';
+        style.pointerEvents = 'none';
+        style.display = 'block';
+        console.log("🎨 Canvas styled:", canvas);
+      });
+    };
     
-    // Confettis très visibles et nombreux
-    const count = 200;
+    // Apply initial styling
+    forceCanvasVisible();
+    
+    // Confetti configuration with maximum visibility
+    const count = 300;
     const defaults = {
-      origin: { y: 0.7 },
+      origin: { y: 0.6 },
       zIndex: 999999,
-      disableForReducedMotion: false
+      disableForReducedMotion: false,
+      useWorker: false,
+      resize: true
     };
 
     function fire(particleRatio: number, opts: any) {
-      confetti({
+      console.log("🎆 Firing confetti burst with", Math.floor(count * particleRatio), "particles");
+      
+      const result = confetti({
         ...defaults,
         ...opts,
         particleCount: Math.floor(count * particleRatio)
       });
+      
+      // Force canvas visibility after each confetti call
+      setTimeout(forceCanvasVisible, 10);
+      
+      return result;
     }
 
-    // Explosion de confettis en plusieurs vagues
-    fire(0.25, {
+    // Multiple intense confetti bursts
+    fire(0.3, {
       spread: 26,
-      startVelocity: 55,
+      startVelocity: 60,
       colors: ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#9370DB']
     });
 
-    fire(0.2, {
-      spread: 60,
-      colors: ['#00FF00', '#00CED1', '#1E90FF', '#FF69B4', '#FFD700']
-    });
+    setTimeout(() => {
+      fire(0.25, {
+        spread: 60,
+        colors: ['#00FF00', '#00CED1', '#1E90FF', '#FF69B4', '#FFD700']
+      });
+    }, 200);
 
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8,
-      colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8']
-    });
+    setTimeout(() => {
+      fire(0.4, {
+        spread: 100,
+        decay: 0.91,
+        scalar: 1.2,
+        colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8']
+      });
+    }, 400);
 
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2,
-      colors: ['#A0522D', '#8B4513', '#D2B48C', '#F0E6C9']
-    });
+    setTimeout(() => {
+      fire(0.15, {
+        spread: 120,
+        startVelocity: 25,
+        decay: 0.92,
+        scalar: 1.5,
+        colors: ['#A0522D', '#8B4513', '#D2B48C', '#F0E6C9']
+      });
+    }, 600);
 
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 45,
-      colors: ['#FF0080', '#00FF80', '#8000FF', '#FF8000']
-    });
+    setTimeout(() => {
+      fire(0.2, {
+        spread: 160,
+        startVelocity: 45,
+        colors: ['#FF0080', '#00FF80', '#8000FF', '#FF8000']
+      });
+    }, 800);
     
-    setTimeout(() => setIsActive(false), 3000);
+    // Keep checking canvas visibility for 2 seconds
+    const intervalId = setInterval(forceCanvasVisible, 100);
+    
+    setTimeout(() => {
+      clearInterval(intervalId);
+      setIsActive(false);
+      console.log("🎉 Confetti animation complete");
+    }, 3000);
   }, []);
 
   return { showConfetti, isActive };
