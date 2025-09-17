@@ -85,7 +85,7 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
-    console.log("🎯 useBookQuiz.handleQuizComplete - UI updates only (validation already done)");
+    console.log("🎯 useBookQuiz.handleQuizComplete called with:", { correct, useJoker });
     
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
@@ -95,29 +95,31 @@ export const useBookQuiz = (
     try {
       if (setIsValidating) setIsValidating(true);
 
-      // Just handle UI updates - validation is already done in QuizModal
       if (correct) {
-        console.log(useJoker ? "🃏 Quiz completed with joker" : "✅ Quiz completed successfully");
+        console.log("✅ Success - showing animations and updating UI");
         
+        // Close quiz and show success with animations
         setShowQuiz(false);
         setShowSuccessMessage(true);
         
-        // Invalidate cache to refresh data
+        // Force cache refresh for all relevant data
         mutate(['jokers-info', book.id]);
         mutate(['book-progress', book.id]);
+        mutate((key) => typeof key === 'string' && key.includes('reading-progress'), undefined, { revalidate: true });
         
+        // Trigger parent updates
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
         }
         
-        return { success: true };
+        return { success: true, newBadges: [] };
       } else {
         console.log("❌ Quiz failed");
         setShowQuiz(false);
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
-      console.error("❌ Error in quiz UI updates:", error);
+      console.error("❌ Error in quiz completion:", error);
       throw error;
     } finally {
       if (setIsValidating) setIsValidating(false);

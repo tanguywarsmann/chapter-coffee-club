@@ -183,32 +183,29 @@ export const useBookValidation = ({
     }, 'useBookValidation.handleValidationConfirm')
   );
 
-  // Handler consolidé pour la complétion du quiz - SIMPLIFIÉ
+  // Handler consolidé pour la complétion du quiz - RESTAURÉ avec animations complètes
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    console.log("📞 handleQuizCompleteWrapper called - SIMPLIFIED VERSION");
+    console.log("📞 handleQuizCompleteWrapper called with full animations:", { correct, useJoker });
     
     if (correct) {
-      console.log("🎉 Showing confetti immediately");
+      console.log("🎉 Showing confetti and success animations");
       showConfetti();
-      
-      // Un seul refresh immédiat
-      if (refreshProgressData) {
-        await refreshProgressData();
-      }
-      forceRefresh();
     }
     
-    // Appel du handler original
+    // Appel du handler original pour la logique de validation
     const result = await handleQuizComplete(correct, useJoker);
     
     if (correct && result) {
-      // Handle badges and rewards
+      // Handle badges and rewards complets
       if (userId) {
+        // Check for new badges
         if (result?.newBadges && result.newBadges.length > 0) {
+          console.log("🏆 New badges unlocked:", result.newBadges);
           setUnlockedBadges(result.newBadges);
           setShowBadgeDialog(true);
         }
         
+        // Handle completed books
         if ((currentBook || book)?.isCompleted) {
           const completedBooks = localStorage.getItem(`completed_books_${userId}`)
             ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
@@ -219,24 +216,36 @@ export const useBookValidation = ({
           }
         }
         
+        // Record reading session
         if (sessionStartTimeRef.current) {
           const endTime = new Date();
           recordReadingSession(userId, sessionStartTimeRef.current, endTime);
           sessionStartTimeRef.current = null;
         }
         
-        // Monthly reward dialog
-        const monthlyBadge = await checkAndGrantMonthlyReward(userId);
-        if (monthlyBadge) {
-          setTimeout(() => {
-            setShowMonthlyReward(true);
-          }, 1000);
+        // Check monthly reward
+        try {
+          const monthlyBadge = await checkAndGrantMonthlyReward(userId);
+          if (monthlyBadge) {
+            console.log("🎁 Monthly reward available");
+            setTimeout(() => {
+              setShowMonthlyReward(true);
+            }, 1500); // Après les confettis
+          }
+        } catch (error) {
+          console.warn("Monthly reward check failed:", error);
         }
       }
+      
       toast.success("Segment validé avec succès !");
     }
     
-    return result;
+    // Force refresh de toutes les données
+    console.log("🔄 Forcing complete data refresh");
+    if (refreshProgressData) {
+      await refreshProgressData();
+    }
+    forceRefresh();
     
     return result;
   }, [
