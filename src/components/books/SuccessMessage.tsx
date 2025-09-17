@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useConfetti } from "@/hooks/useConfetti";
 import { CheckCircle } from "lucide-react";
@@ -32,6 +32,9 @@ export function SuccessMessage({ isOpen, onClose, segment }: SuccessMessageProps
             <DialogTitle className="text-h4 text-center font-serif text-coffee-darker">
               Parfait !
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Votre lecture a été validée avec succès
+            </DialogDescription>
           </div>
         </DialogHeader>
         

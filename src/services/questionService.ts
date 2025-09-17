@@ -8,59 +8,36 @@ export interface CorrectAnswerResult {
   bookId: string;
 }
 
-export async function getCorrectAnswerAfterJoker(params: {
-  bookId?: string;
-  bookSlug?: string;
-  segment: number;
-  questionId?: string;
-  consume?: boolean; // default true
-}): Promise<CorrectAnswerResult> {
-  console.log('[JOKER SERVICE] Calling joker-reveal with params:', params);
-  
-  // Get the current session to ensure we have a valid token
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session?.access_token) {
-    throw new Error("No valid session found for joker reveal");
+type JokerRevealParams = {
+  bookId: string;       // UUID
+  questionId: string;   // UUID
+  userId: string;       // UUID
+  consume?: boolean;    // default true
+};
+
+export async function getCorrectAnswerAfterJoker(params: JokerRevealParams): Promise<string> {
+  const { bookId, questionId, userId, consume = true } = params;
+
+  if (!bookId || !questionId || !userId) {
+    throw new Error("joker-reveal: missing bookId/questionId/userId");
   }
-  
-  const { data, error } = await supabase.functions.invoke('joker-reveal', {
-    body: {
-      bookId: params.bookId,
-      bookSlug: params.bookSlug,
-      segment: params.segment,
-      questionId: params.questionId,
-      consume: params.consume ?? true
-    },
-    headers: {
-      Authorization: `Bearer ${session.access_token}`
-    }
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+  console.log('[JOKER SERVICE] Calling joker-reveal with params:', { bookId, questionId, userId, consume });
+
+  const { data, error } = await supabase.functions.invoke("joker-reveal", {
+    body: { bookId, questionId, userId, consume },
+    headers,
   });
 
-  console.log('[JOKER SERVICE] Response from edge function:', { data, error });
+  console.log("[JOKER SERVICE] Response from edge function:", { data, error });
+  if (error) throw new Error(error.message || "joker-reveal failed");
+  if (!data?.answer) throw new Error("joker-reveal: no answer returned");
 
-  if (error) {
-    console.error('joker-reveal invoke error:', error);
-    throw new Error(error.message || 'Failed to reveal correct answer');
-  }
-
-  if (data?.error) {
-    console.error('joker-reveal payload error:', data);
-    throw new Error(data.error);
-  }
-
-  // Log the joker recording status
-  if (data?.validationSaved && data?.jokerRecorded) {
-    console.log('✅ Joker successfully recorded in database');
-  } else {
-    console.warn('⚠️ Joker may not have been recorded properly:', {
-      validationSaved: data?.validationSaved,
-      jokerRecorded: data?.jokerRecorded,
-      debugInfo: data?._debug
-    });
-  }
-
-  return data as CorrectAnswerResult;
+  return data.answer as string;
 }
 
 export async function getQuestionForBookSegment(bookSlug: string, segment: number): Promise<PublicReadingQuestion | null> {

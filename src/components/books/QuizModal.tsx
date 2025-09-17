@@ -243,9 +243,9 @@ export function QuizModal({
 
       // Use joker and reveal correct answer with the edge function
       const result = await useJokerAndReveal({
-        bookSlug: question.book_slug,
-        segment: chapterNumber,
+        bookId: question.book_id,
         questionId: question.id,
+        userId: user.id,
         expectedSegments
       });
       
@@ -254,16 +254,16 @@ export function QuizModal({
       // Trace after call
       console.info('[JOKER] after-call', { ok: true, payload: result });
 
-      const answer = (result?.correctAnswer ?? "").trim();
+      const answer = (result ?? "").trim();
       if (!answer) {
-        console.error("[JOKER] empty correctAnswer", result);
+        console.error("[JOKER] empty answer", result);
         toast.error("Impossible d'afficher la bonne réponse (données manquantes).");
         return;
       }
 
       // Set state for the answer reveal modal
       setRevealedAnswer(answer);
-      setAnswerRevealedAt(result?.revealedAt ?? new Date().toISOString());
+      setAnswerRevealedAt(new Date().toISOString());
       setShowAnswerReveal(true);
 
       // Analytics tracking (protected)
