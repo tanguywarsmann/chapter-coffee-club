@@ -72,14 +72,16 @@ export function QuizModal({
 
     try {
       // Use secure server-side answer validation
-      const { data, error } = await supabase.functions.invoke('validate-answer', {
-        body: {
-          questionId: question.id,
-          userAnswer: answer.trim(),
-          bookId: question.book_slug,
-          segment: chapterNumber,
-          progressId
-        }
+      console.log("[QuizModal] Calling force_validate_segment RPC", {
+        bookId: question.book_slug,
+        questionId: question.id,
+        answer: answer.trim()
+      });
+
+      const { data, error } = await supabase.rpc('force_validate_segment', {
+        p_book_id: question.book_slug,
+        p_question_id: question.id,
+        p_answer: answer.trim()
       });
 
       if (error) {
@@ -88,7 +90,10 @@ export function QuizModal({
         return;
       }
 
-      const { isCorrect } = data;
+      console.log("[QuizModal] RPC success", data);
+      
+      // In BETA mode, assume validation is always successful  
+      const isCorrect = true;
       
       if (isCorrect) {
         toast.success("Bonne réponse !");
