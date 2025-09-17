@@ -10,17 +10,24 @@ type ValidateArgs = {
   correct?: boolean;
 };
 
-type RpcRow = {
+type ValidationResult = {
+  ok: true;
   validation_id: string;
   progress_id: string;
   validated_segment: number;
 };
 
+type ErrorResult = {
+  ok: false;
+  code: string;
+  message: string;
+};
+
 /**
- * Atomic validation service - handles both progress and validation in one RPC
- * No more 409 conflicts, immediate success feedback
+ * Robust validation service that never throws HTTP 400 errors
+ * Returns structured JSON response with success/error status
  */
-export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<RpcRow> {
+export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<ValidationResult> {
   const { data, error } = await supabase.rpc("force_validate_segment_beta", {
     p_book_id: args.bookId,
     p_question_id: args.questionId,
@@ -32,16 +39,21 @@ export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<Rp
 
   if (error) {
     console.error("[force_validate_segment_beta] RPC error:", error);
-    throw new Error(error.message || "Échec validation (RPC)");
+    throw new Error(error.message || "RPC error");
   }
 
-  const row = (data?.[0] as RpcRow) ?? null;
-  if (!row?.progress_id) {
-    throw new Error("RPC ok mais progress_id manquant");
+  // Type-safe handling of jsonb response
+  const result = data as ValidationResult | ErrorResult;
+  
+  if (!result?.ok) {
+    const errorResult = result as ErrorResult;
+    const errorMsg = errorResult?.message || `Validation échouée (${errorResult?.code || "UNKNOWN"})`;
+    console.error("[force_validate_segment_beta] Business error:", errorResult);
+    throw new Error(errorMsg);
   }
   
-  console.info("[force_validate_segment_beta] success:", row);
-  return row;
+  console.info("[force_validate_segment_beta] success:", result);
+  return result as ValidationResult;
 }
 
 /**

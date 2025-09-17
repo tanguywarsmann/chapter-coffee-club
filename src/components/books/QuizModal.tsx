@@ -95,7 +95,7 @@ export function QuizModal({
         return;
       }
 
-      // Atomic validation using the new RPC
+      // Atomic validation using the robust RPC
       const result = await validateReadingSegmentBeta({
         bookId: bookData.id,
         questionId: question.id,
@@ -105,9 +105,24 @@ export function QuizModal({
         correct: true
       });
       
-      // ✅ Immediate success feedback - no more progress update toasts
+      // ✅ Immediate success feedback and animations
       toast.success("Segment validé !");
+      
+      // Trigger success animations immediately
+      // The parent component should handle the animation logic
       onComplete({ correct: true, useJoker: false });
+      
+      // Silent background refresh (no error toasts)
+      setTimeout(async () => {
+        try {
+          await supabase.from("reading_progress")
+            .select("current_page")
+            .eq("id", result.progress_id)
+            .maybeSingle();
+        } catch {
+          // Silent fail
+        }
+      }, 100);
       
     } catch (error) {
       console.error('Submit error:', error);
