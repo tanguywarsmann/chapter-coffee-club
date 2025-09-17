@@ -153,6 +153,15 @@ export function QuizModal({
       // Check if joker can be used immediately after first wrong answer
       const canUseJokerFlag = canUseJokers(expectedSegments);
       const canUseJoker = canUseJokerFlag && actualJokersRemaining > 0 && !isUsingJoker;
+      
+      console.log('[JOKER DEBUG] Quiz failed - checking joker availability:', {
+        expectedSegments,
+        canUseJokerFlag,
+        actualJokersRemaining,
+        isUsingJoker,
+        canUseJoker
+      });
+      
       if (canUseJoker) {
         setJokerStartTime(Date.now());
         setShowJokerConfirmation(true);

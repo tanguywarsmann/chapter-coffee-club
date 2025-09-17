@@ -7,8 +7,8 @@
 export const JOKER_MIN_SEGMENTS_DEFAULT = 3;
 
 // Feature flag pour activer la nouvelle contrainte (UI gating)
-export const JOKER_MIN_SEGMENTS_ENABLED = 
-  import.meta.env.VITE_JOKER_MIN_SEGMENTS_ENABLED === 'true';
+// Temporairement désactivé pour permettre les jokers sur tous les livres
+export const JOKER_MIN_SEGMENTS_ENABLED = false;
 
 // Valeur minimum de segments (configurable via env)
 export const JOKER_MIN_SEGMENTS = Number(import.meta.env.VITE_JOKER_MIN_SEGMENTS ?? JOKER_MIN_SEGMENTS_DEFAULT);
