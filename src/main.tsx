@@ -18,6 +18,7 @@ console.info("[JOKER FLAGS] front", {
 if (import.meta.env.DEV) {
   exposeAuditHelpers();
   import("@/debug/consoleTap");
+  import("@/debug/finalValidation");
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

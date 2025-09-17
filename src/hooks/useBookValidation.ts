@@ -183,17 +183,25 @@ export const useBookValidation = ({
     }, 'useBookValidation.handleValidationConfirm')
   );
 
-  // Handler consolidé pour la complétion du quiz - RESTAURÉ avec animations complètes
+  // Handler consolidé pour la complétion du quiz - CORRECTION DOUBLE VALIDATION
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    console.log("📞 handleQuizCompleteWrapper called with full animations:", { correct, useJoker });
-    
+    console.log("📞 handleQuizCompleteWrapper called:", { correct, useJoker });
+
+    // SI JOKER UTILISÉ ET CORRECT -> PAS DE VALIDATION SUPPLÉMENTAIRE
+    if (useJoker && correct) {
+      console.log("🃏 Joker used successfully - skipping RPC validation");
+      showConfetti();
+      // Retourner immédiatement sans appeler handleQuizComplete
+      return { success: true, newBadges: [] };
+    }
+
     if (correct) {
       console.log("🎉 Showing confetti and success animations");
       showConfetti();
     }
     
-    // Appel du handler original pour la logique de validation
-    const result = await handleQuizComplete(correct, useJoker);
+    // Appeler handleQuizComplete SEULEMENT si pas de joker
+    const result = await handleQuizComplete(correct, false);
     
     if (correct && result) {
       // Handle badges and rewards complets

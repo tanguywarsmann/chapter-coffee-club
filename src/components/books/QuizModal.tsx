@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -53,9 +53,15 @@ export function QuizModal({
   const [isRevealing, setIsRevealing] = useState(false);
   const maxAttempts = 3;
   const inFlightRef = useRef(false);
+  const hasCalledComplete = useRef(false); // Protection contre les appels multiples
 
   // Récupérer l'utilisateur authentifié
   const { user } = useAuth();
+
+  // Reset protection when question changes
+  useEffect(() => {
+    hasCalledComplete.current = false;
+  }, [question?.id]);
 
   // Récupérer les informations de jokers via le hook dédié avec le bon userId
   const { jokersAllowed, jokersUsed, jokersRemaining: hookJokersRemaining, updateJokersInfo } = useJokersInfo({
@@ -128,7 +134,10 @@ export function QuizModal({
         
         // Call onComplete ONCE - this should trigger all necessary updates
         console.log("📞 Calling onComplete ONCE");
-        onComplete({ correct: true, useJoker: false });
+        if (!hasCalledComplete.current) {
+          hasCalledComplete.current = true;
+          onComplete({ correct: true, useJoker: false });
+        }
       } else {
         // Réponse incorrecte - gérer les tentatives et jokers
         const newAttempts = attempts + 1;
@@ -144,11 +153,17 @@ export function QuizModal({
           // Joker not available due to constraint
           toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
           if (newAttempts >= maxAttempts) {
-            onComplete({ correct: false, useJoker: false });
+            if (!hasCalledComplete.current) {
+              hasCalledComplete.current = true;
+              onComplete({ correct: false, useJoker: false });
+            }
           }
         } else if (newAttempts >= maxAttempts) {
           toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-          onComplete({ correct: false, useJoker: false });
+          if (!hasCalledComplete.current) {
+            hasCalledComplete.current = true;
+            onComplete({ correct: false, useJoker: false });
+          }
         }
       }
       
@@ -178,13 +193,19 @@ export function QuizModal({
         // Joker not available due to constraint - show appropriate message
         toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
         if (newAttempts >= maxAttempts) {
-          onComplete({ correct: false, useJoker: false });
+          if (!hasCalledComplete.current) {
+            hasCalledComplete.current = true;
+            onComplete({ correct: false, useJoker: false });
+          }
         } else {
           toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
         }
       } else if (newAttempts >= maxAttempts) {
         toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-        onComplete({ correct: false, useJoker: false });
+        if (!hasCalledComplete.current) {
+          hasCalledComplete.current = true;
+          onComplete({ correct: false, useJoker: false });
+        }
       } else {
         toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
       }
@@ -303,16 +324,24 @@ export function QuizModal({
   };
 
   const handleAnswerRevealContinue = () => {
+    console.log("✅ Joker used successfully - ONE call only");
     setShowAnswerReveal(false);
-    // Fixed: Always pass boolean for useJoker
-    onComplete({ correct: true, useJoker: true });
+    
+    // UN SEUL appel à onComplete avec protection
+    if (!hasCalledComplete.current) {
+      hasCalledComplete.current = true;
+      onComplete({ correct: true, useJoker: true });
+    }
   };
 
   const handleJokerCancel = () => {
     setShowJokerConfirmation(false);
     setJokerStartTime(null);
-    // Fixed: Always pass boolean for useJoker
-    onComplete({ correct: false, useJoker: false });
+    // Fixed: Always pass boolean for useJoker with protection
+    if (!hasCalledComplete.current) {
+      hasCalledComplete.current = true;
+      onComplete({ correct: false, useJoker: false });
+    }
   };
 
   return (

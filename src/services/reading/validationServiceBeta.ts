@@ -25,7 +25,13 @@ export interface ValidationError {
 export type ValidationResult = ValidationSuccess | ValidationError;
 
 export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<any> {
-  console.log("[validateReadingSegmentBeta] Raw args:", args);
+  console.log("[validateReadingSegmentBeta] Called with:", args);
+  
+  // BLOQUER LES APPELS AVEC FALLBACK IDS
+  if (args.questionId?.includes('fallback-')) {
+    console.error("❌ BLOCKED: Fallback ID detected, skipping validation");
+    return { ok: false, blocked: true, reason: "fallback_id" };
+  }
   
   if (!args.userId || !args.bookId || !args.questionId) {
     throw new Error("Missing required parameters");
@@ -39,8 +45,9 @@ export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<an
   
   // Nettoyer aussi le questionId si nécessaire
   let cleanQuestionId = args.questionId;
-  if (cleanQuestionId.startsWith('fallback-')) {
-    cleanQuestionId = cleanQuestionId.replace('fallback-', '');
+  if (cleanQuestionId?.startsWith('fallback-')) {
+    console.error("❌ Fallback question ID - this should not happen");
+    return { ok: false, blocked: true };
   }
 
   console.log("[validateReadingSegmentBeta] Clean IDs:", { cleanBookId, cleanQuestionId });

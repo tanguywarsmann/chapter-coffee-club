@@ -4,7 +4,7 @@ import { mutate } from "swr";
 import { Book } from "@/types/book";
 import { PublicReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
-import { forceValidateSegment } from "@/services/reading/validationServiceBeta";
+// forceValidateSegment désactivée - suppression import
 import { checkValidationLock } from "@/services/validation/lockService";
 import { getRemainingJokers, useJokerAtomically } from "@/services/jokerService";
 
