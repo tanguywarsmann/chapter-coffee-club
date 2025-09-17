@@ -25,6 +25,24 @@ export const HomeContent = memo(function HomeContent({
   const { user } = useAuth();
   const logger = useLogger('HomeContent');
 
+  // Debug: Logs détaillés des données de progression
+  useEffect(() => {
+    console.log("=== HOME CONTENT DEBUG ===");
+    console.log("User:", user?.id);
+    console.log("Reading progress (raw):", readingProgress);
+    console.log("Reading progress (length):", readingProgress?.length);
+    console.log("Is loading:", isLoading);
+    console.log("Reading progress (type):", typeof readingProgress);
+    console.log("Is array:", Array.isArray(readingProgress));
+    
+    if (readingProgress && Array.isArray(readingProgress)) {
+      readingProgress.forEach((item, index) => {
+        console.log(`Progress item ${index}:`, item);
+      });
+    }
+    console.log("=== END HOME CONTENT DEBUG ===");
+  }, [readingProgress, isLoading, user]);
+
   // Correction automatique des données incohérentes au chargement
   useEffect(() => {
     if (user?.id && readingProgress && readingProgress.length > 0) {

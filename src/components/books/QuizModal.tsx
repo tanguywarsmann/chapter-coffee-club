@@ -67,6 +67,12 @@ export function QuizModal({
   const actualJokersRemaining = jokersRemaining ?? hookJokersRemaining;
 
   const handleSubmit = async () => {
+    console.log("=== VALIDATION DEBUG START ===");
+    console.log("Raw answer:", answer);
+    console.log("Raw bookTitle:", bookTitle);
+    console.log("Raw question:", question);
+    console.log("User:", user?.id);
+    
     if (!answer.trim()) {
       toast.error("Veuillez entrer une réponse");
       return;
@@ -84,6 +90,8 @@ export function QuizModal({
         .eq('slug', question.book_slug)
         .maybeSingle();
       
+      console.log("Book lookup result:", { bookData, bookError });
+      
       if (bookError || !bookData) {
         console.error('Book lookup error:', bookError);
         toast.error("Erreur lors de la recherche du livre.");
@@ -99,9 +107,34 @@ export function QuizModal({
       const cleanBookId = bookData.id?.replace('fallback-', '') || bookData.id;
       const cleanQuestionId = question.id?.replace('fallback-', '') || question.id;
 
-      console.log("[QuizModal] Using clean IDs:", { cleanBookId, cleanQuestionId });
+      console.log("[QuizModal] Raw IDs:", { 
+        rawBookId: bookData.id, 
+        rawQuestionId: question.id,
+        questionBookSlug: question.book_slug
+      });
+      console.log("[QuizModal] Clean IDs:", { cleanBookId, cleanQuestionId });
 
-      // Atomic validation using the robust RPC
+      // Tester d'abord avec des valeurs hardcodées pour isoler le problème
+      console.log("=== TESTING WITH HARDCODED VALUES ===");
+      const testResult = await supabase.rpc("force_validate_segment_beta", {
+        p_book_id: "1d6511a2-e109-4d87-b3a5-0970b9f18b07",
+        p_question_id: "7149d6d5-899c-4bf1-b7ae-2157105fc3ce",
+        p_answer: "test",
+        p_user_id: user.id,
+        p_used_joker: false,
+        p_correct: true
+      });
+      
+      console.log("Test RPC result:", testResult);
+      
+      if (testResult.error) {
+        console.error("TEST RPC FAILED:", testResult.error);
+        toast.error(`Test RPC Error: ${testResult.error.message}`);
+        return;
+      }
+
+      // Si le test marche, essayer avec les vraies valeurs
+      console.log("=== TESTING WITH REAL VALUES ===");
       const result = await validateReadingSegmentBeta({
         bookId: cleanBookId,
         questionId: cleanQuestionId,
@@ -110,6 +143,8 @@ export function QuizModal({
         usedJoker: false,
         correct: true
       });
+      
+      console.log("Real validation result:", result);
       
       // ✅ Immediate success feedback and animations
       toast.success("Segment validé !");
@@ -131,7 +166,7 @@ export function QuizModal({
       }, 100);
       
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error('=== VALIDATION ERROR ===', error);
       
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -158,6 +193,7 @@ export function QuizModal({
       }
     } finally {
       inFlightRef.current = false;
+      console.log("=== VALIDATION DEBUG END ===");
     }
   };
 

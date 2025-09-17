@@ -32,12 +32,20 @@ export const useReadingProgress = () => {
   }, [user]);
 
   const fetchProgress = useCallback(async (forceRefresh = false) => {
+    console.log("=== FETCH PROGRESS DEBUG START ===");
+    console.log("User ID:", user?.id);
+    console.log("Force refresh:", forceRefresh);
+    console.log("Is mounted:", isMounted.current);
+    console.log("Is fetching:", isFetching.current);
+    
     if (!user?.id || !isMounted.current || isFetching.current) {
+      console.log("Early return - conditions not met");
       return;
     }
 
     const now = Date.now();
     if (!forceRefresh && now - lastFetchTimestamp.current < MIN_FETCH_INTERVAL) {
+      console.log("Early return - too soon since last fetch");
       return;
     }
     
@@ -49,14 +57,20 @@ export const useReadingProgress = () => {
       setError(null);
 
       if (forceRefresh) {
+        console.log("Clearing progress cache...");
         await clearProgressCache(user.id);
       }
 
+      console.log("Fetching user reading progress...");
       const progress = await getUserReadingProgress(user.id);
+      console.log("Raw progress data:", progress);
+      console.log("Progress length:", progress?.length);
 
       if (!isMounted.current) return;
 
       const inProgress = progress.filter(p => p.status === "in_progress");
+      console.log("Filtered in-progress items:", inProgress);
+      console.log("In-progress count:", inProgress.length);
       
       setReadingProgress(inProgress);
       hasFetched.current = true;
@@ -65,8 +79,10 @@ export const useReadingProgress = () => {
       if (retryCount > 0) {
         setRetryCount(0);
       }
+      
+      console.log("=== FETCH PROGRESS SUCCESS ===");
     } catch (err) {
-      console.error("⚠️ Erreur lors du chargement de la progression :", err);
+      console.error("=== FETCH PROGRESS ERROR ===", err);
       
       if (isMounted.current) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -92,6 +108,7 @@ export const useReadingProgress = () => {
         }
       }
     } finally {
+      console.log("=== FETCH PROGRESS DEBUG END ===");
       if (isMounted.current) {
         setIsLoading(false);
         isFetching.current = false;

@@ -9,17 +9,29 @@ import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/r
  * Get user reading progress (with public API)
  */
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
-  if (!userId) return [];
+  console.log("=== getUserReadingProgress DEBUG START ===");
+  console.log("Input userId:", userId);
+  
+  if (!userId) {
+    console.log("No userId provided, returning empty array");
+    return [];
+  }
+  
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!validUuidPattern.test(userId)) return [];
+  if (!validUuidPattern.test(userId)) {
+    console.log("Invalid UUID format, returning empty array");
+    return [];
+  }
 
   // Check cache first
   const cached = progressCache.get(userId);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log("Returning cached data:", cached.data);
     return cached.data;
   }
 
   try {
+    console.log("Making Supabase query to reading_progress...");
     // Advanced fetch with join
     const { data, error } = await supabase
       .from("reading_progress")
@@ -30,13 +42,27 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         )
       `)
       .eq("user_id", userId);
+      
+    console.log("Supabase query result:", { data, error });
+    console.log("Data length:", data?.length);
+    
     if (error) {
       console.error("Erreur dans getUserReadingProgress (jointure):", error);
+      console.log("Falling back to legacy method...");
       return getUserReadingProgressLegacy(userId);
     }
-    if (!data || data.length === 0) return [];
-    const enriched = await Promise.all(data.map(async (item: any) => {
+    
+    if (!data || data.length === 0) {
+      console.log("No data found, returning empty array");
+      return [];
+    }
+    
+    console.log("Processing data items...");
+    const enriched = await Promise.all(data.map(async (item: any, index: number) => {
+      console.log(`Processing item ${index}:`, item);
       const book = item.books;
+      console.log(`Book data for item ${index}:`, book);
+      
       const baseProgress = {
         ...item,
         ...(book as any),
@@ -47,12 +73,24 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_cover: (book as any)?.cover_url ?? "",
         validations: [],
       };
-      return await addDerivedFields(baseProgress);
+      
+      console.log(`Base progress for item ${index}:`, baseProgress);
+      const enrichedItem = await addDerivedFields(baseProgress);
+      console.log(`Enriched item ${index}:`, enrichedItem);
+      return enrichedItem;
     }));
+    
+    console.log("All items processed, final enriched data:", enriched);
+    
+    // Cache result
     progressCache.set(userId, { data: enriched, timestamp: Date.now() });
+    console.log("Data cached successfully");
+    console.log("=== getUserReadingProgress DEBUG END (SUCCESS) ===");
     return enriched;
   } catch (error) {
-    console.error("Erreur dans getUserReadingProgress:", error);
+    console.error("=== getUserReadingProgress ERROR ===", error);
+    console.log("Returning empty array due to error");
+    console.log("=== getUserReadingProgress DEBUG END (ERROR) ===");
     return [];
   }
 };
