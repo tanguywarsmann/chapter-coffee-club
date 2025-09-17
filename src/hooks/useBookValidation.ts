@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
-import { useConfetti } from "./useConfetti";
+import { useConfetti } from "@/components/confetti/ConfettiProvider";
 import { useReadingProgress } from "./useReadingProgress";
 import { useValidationState } from "./useValidationState";
 import { useQuizCompletion } from "./useQuizCompletion";
