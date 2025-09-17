@@ -87,13 +87,13 @@ export function QuizModal({
         return;
       }
 
-      console.log("[QuizModal] Calling force_validate_segment RPC", {
+      console.log("[QuizModal] Calling force_validate_segment_beta RPC", {
         bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim()
       });
 
-      const { data, error } = await supabase.rpc('force_validate_segment', {
+      const { data, error } = await supabase.rpc('force_validate_segment_beta', {
         p_book_id: bookData.id,
         p_question_id: question.id,
         p_answer: answer.trim()

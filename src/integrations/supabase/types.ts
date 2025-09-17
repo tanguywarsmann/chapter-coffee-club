@@ -1162,6 +1162,18 @@ export type Database = {
           validation_id: string
         }[]
       }
+      force_validate_segment_beta: {
+        Args: {
+          p_answer: string
+          p_book_id: string
+          p_question_id: string
+          p_user_id?: string
+        }
+        Returns: {
+          progress_id: string
+          validation_id: string
+        }[]
+      }
       get_activity_feed: {
         Args: { lim?: number; uid: string }
         Returns: {
