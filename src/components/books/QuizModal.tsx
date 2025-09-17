@@ -72,14 +72,29 @@ export function QuizModal({
 
     try {
       // Use secure server-side answer validation
+      console.log("[QuizModal] Getting book UUID from slug:", question.book_slug);
+      
+      // Get book UUID from slug first
+      const { data: bookData, error: bookError } = await supabase
+        .from('books')
+        .select('id')
+        .eq('slug', question.book_slug)
+        .maybeSingle();
+      
+      if (bookError || !bookData) {
+        console.error('Book lookup error:', bookError);
+        toast.error("Erreur lors de la recherche du livre.");
+        return;
+      }
+
       console.log("[QuizModal] Calling force_validate_segment RPC", {
-        bookId: question.book_slug,
+        bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim()
       });
 
       const { data, error } = await supabase.rpc('force_validate_segment', {
-        p_book_id: question.book_slug,
+        p_book_id: bookData.id,
         p_question_id: question.id,
         p_answer: answer.trim()
       });
