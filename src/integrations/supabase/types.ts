@@ -1155,6 +1155,13 @@ export type Database = {
         Args: { lim?: number; uid: string }
         Returns: Json
       }
+      force_validate_segment: {
+        Args: { p_answer: string; p_book_id: string; p_question_id: string }
+        Returns: {
+          progress_id: string
+          validation_id: string
+        }[]
+      }
       get_activity_feed: {
         Args: { lim?: number; uid: string }
         Returns: {

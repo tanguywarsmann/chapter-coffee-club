@@ -26,7 +26,7 @@ interface BookValidationModalsProps {
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
-  onQuizComplete: (passed: boolean, useJoker?: boolean) => void;
+  onQuizComplete: (args: { correct: boolean; useJoker: boolean }) => void;
   onSuccessClose?: () => void;
   onLockExpire?: () => void;
 }

@@ -190,9 +190,8 @@ export const useBookValidation = ({
     }
     try {
       const result = await handleQuizComplete(correct, useJoker);
-
+      // ... rest of existing logic
       if (correct) {
-// Debug: vérifier que les confettis sont bien appelés
 console.log("🎉 Calling showConfetti from handleQuizCompleteWrapper");
 showConfetti();
         
@@ -282,6 +281,11 @@ showConfetti();
     setShowMonthlyReward,
   ]);
 
+  // New signature wrapper for modal components
+  const handleQuizCompleteForModals = useCallback((args: { correct: boolean; useJoker: boolean }) => {
+    return handleQuizCompleteWrapper(args.correct, args.useJoker);
+  }, [handleQuizCompleteWrapper]);
+
   // Mémoriser les valeurs de retour pour éviter les re-rendus
   const returnValue = useMemo(() => ({
     isValidating,
@@ -295,7 +299,7 @@ showConfetti();
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizComplete: handleQuizCompleteWrapper,
+    handleQuizComplete: handleQuizCompleteForModals, // Use new signature for modals
     handleValidationConfirm,
     showConfetti,
     validationError,
@@ -326,7 +330,7 @@ showConfetti();
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizCompleteWrapper,
+    handleQuizCompleteForModals,
     handleValidationConfirm,
     showConfetti,
     validationError,

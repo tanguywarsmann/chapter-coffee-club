@@ -61,6 +61,11 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     handleQuizComplete
   } = useCurrentBookValidation(user?.id || null, book, onProgressUpdate);
 
+  // Wrapper to convert new signature to old signature - but handleQuizComplete now expects new signature
+  const handleQuizCompleteWrapper = (args: { correct: boolean; useJoker: boolean }) => {
+    handleQuizComplete(args);
+  };
+
   const chaptersRead = book.chaptersRead || 0;
   const totalChapters = book.totalChapters || book.expectedSegments || 1;
 
@@ -97,7 +102,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         <QuizModal 
           bookTitle={book.title} 
           chapterNumber={quizChapter}
-          onComplete={handleQuizComplete}
+          onComplete={handleQuizCompleteWrapper}
           onClose={() => setShowQuiz(false)}
           question={currentQuestion}
         />

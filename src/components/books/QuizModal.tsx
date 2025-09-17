@@ -15,10 +15,13 @@ import { debugLog, auditJokerState, canUseJokers } from "@/utils/jokerConstraint
 import { collectJokerAuditData } from "@/utils/jokerAudit";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Fixed: useJoker is always boolean, never undefined
+type OnCompleteArgs = { correct: boolean; useJoker: boolean };
+
 interface QuizModalProps {
   bookTitle: string;
   chapterNumber: number;
-  onComplete: (passed: boolean, useJoker?: boolean) => void;
+  onComplete: (args: OnCompleteArgs) => void;
   onClose: () => void;
   question: PublicReadingQuestion;
   expectedSegments?: number;
@@ -95,7 +98,8 @@ export function QuizModal({
       
       if (isCorrect) {
         toast.success("Bonne réponse !");
-        onComplete(true);
+        // Fixed: Always pass boolean for useJoker
+        onComplete({ correct: true, useJoker: false });
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -110,13 +114,13 @@ export function QuizModal({
           // Joker not available due to constraint - show appropriate message
           toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
           if (newAttempts >= maxAttempts) {
-            onComplete(false);
+            onComplete({ correct: false, useJoker: false });
           } else {
             toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
           }
         } else if (newAttempts >= maxAttempts) {
           toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
-          onComplete(false);
+          onComplete({ correct: false, useJoker: false });
         } else {
           toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
         }
@@ -237,13 +241,15 @@ export function QuizModal({
 
   const handleAnswerRevealContinue = () => {
     setShowAnswerReveal(false);
-    onComplete(true); // Answer was validated with joker
+    // Fixed: Always pass boolean for useJoker
+    onComplete({ correct: true, useJoker: true });
   };
 
   const handleJokerCancel = () => {
     setShowJokerConfirmation(false);
     setJokerStartTime(null);
-    onComplete(false); // Just fail normally
+    // Fixed: Always pass boolean for useJoker
+    onComplete({ correct: false, useJoker: false });
   };
 
   return (
