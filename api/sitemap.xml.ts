@@ -1,17 +1,17 @@
 // api/sitemap.xml.ts
 export const config = { runtime: 'edge' };
 
-// Construire les chevrons pour éviter toute "correction" de l'éditeur
+// Construire les chevrons pour éviter que l'éditeur remplace le XML par "loc+lastmod"
 const LA = String.fromCharCode(60);  // "<"
 const RA = String.fromCharCode(62);  // ">"
 
-function escapeXml(s: string) {
-  return String(s).replace(/[<>&'"]/g, (c) => {
+function escapeXml(s : string) {
+  return String(s).replace(/[<>&\'"]/g, (c) => {
     switch (c) {
       case '<': return '&lt;';
       case '>': return '&gt;';
       case '&': return '&amp;';
-      case "'": return '&apos;';
+      case '\'': return '&apos;';
       case '"': return '&quot;';
       default: return c;
     }
@@ -39,10 +39,10 @@ export default async function handler() {
 
   const now = new Date().toISOString();
   const urls = [
-    { loc: `${BASE}/`, lastmod: now },
+    { loc: `${BASE}/ `, lastmod: now },
     { loc: `${BASE}/blog`, lastmod: now },
     ...rows.map((r: any) => ({
-      loc: `${BASE}/blog/${r.slug}`,
+      loc: `${BASE}/blog/${r.slug} `,
       lastmod: new Date(r.updated_at || r.created_at || now).toISOString()
     }))
   ];
