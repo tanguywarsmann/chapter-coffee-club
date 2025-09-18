@@ -1,11 +1,24 @@
 export const config = { runtime: 'edge' };
 
+function escapeXml(s: string) {
+  return String(s).replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case "'": return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+}
+
 export default async function handler() {
   const BASE = process.env.SITEMAP_BASE || 'https://www.vread.fr';
   const url = process.env.SITEMAP_SUPABASE_URL!;
   const key = process.env.SITEMAP_SUPABASE_KEY!;
 
-  // Articles publiés uniquement
+  // Blog uniquement: articles publiés
   const qs = new URL(`${url}/rest/v1/blog_posts`);
   qs.searchParams.set('select', 'slug,updated_at,created_at');
   qs.searchParams.set('published', 'eq.true');
@@ -31,7 +44,12 @@ export default async function handler() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `<url><loc>${escapeXml(u.loc)}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n')}
+${urls
+  .map(
+    (u) =>
+      `<url><loc>${escapeXml(u.loc)}</loc><lastmod>${u.lastmod}</lastmod></url>`
+  )
+  .join('\n')}
 </urlset>`;
 
   return new Response(xml, {
@@ -40,14 +58,4 @@ ${urls.map(u => `<url><loc>${escapeXml(u.loc)}</loc><lastmod>${u.lastmod}</lastm
       'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400'
     }
   });
-}
-
-function escapeXml(s: string) {
-  return String(s).replace(/[<>&'"]/g, c => (
-    c === '<' ? '&lt;' :
-    c === '>' ? '&gt;' :
-    c === '&' ? '&amp;' :
-    c === '\'' ? '&apos;' :
-    c === '"' ? '&quot;' : c
-  ));
 }
