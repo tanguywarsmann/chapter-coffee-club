@@ -90,62 +90,11 @@ const AppRouter = () => {
         </AdminGuard>
       } />
       
-      {/* Route pour le sitemap dynamique */}
-      <Route 
-        path="/sitemap.xml" 
-        element={<SitemapRoute />} 
-      />
-
       {/* Catch-all 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
 
-// Composant pour servir le sitemap
-const SitemapRoute = () => {
-  const [sitemap, setSitemap] = useState<string>('');
-
-  useEffect(() => {
-    const generateSitemap = async () => {
-      try {
-        const { generateCompleteSitemap } = await import('@/utils/sitemapServer');
-        const sitemapContent = await generateCompleteSitemap();
-        setSitemap(sitemapContent);
-        
-        // Définir les headers appropriés
-        document.querySelector('meta[name="content-type"]')?.setAttribute('content', 'application/xml');
-      } catch (error) {
-        console.error('Erreur génération sitemap:', error);
-        setSitemap(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.vread.fr/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>`);
-      }
-    };
-
-    generateSitemap();
-  }, []);
-
-  // Retourner le XML directement
-  if (sitemap) {
-    return (
-      <div 
-        dangerouslySetInnerHTML={{ __html: sitemap }}
-        style={{ 
-          fontFamily: 'monospace', 
-          whiteSpace: 'pre-wrap',
-          fontSize: '12px'
-        }}
-      />
-    );
-  }
-
-  return <div>Génération du sitemap...</div>;
-};
 
 export default AppRouter;
