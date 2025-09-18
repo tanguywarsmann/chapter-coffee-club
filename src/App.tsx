@@ -30,6 +30,7 @@ const UserOnboarding = lazy(() =>
 import AppRouter from "./components/navigation/AppRouter";
 import { CanonicalManager } from "@/components/seo/CanonicalManager";
 import { OGUrlManager } from "@/components/seo/OGUrlManager";
+import { ConfettiTester } from "@/components/debug/ConfettiTester";
 
 const AppContent = () => {
   const location = useLocation();
@@ -62,6 +63,9 @@ const AppContent = () => {
       <CanonicalManager />
       <OGUrlManager />
       <AppRouter />
+      
+      {/* Debug confetti tester in dev mode */}
+      {import.meta.env.DEV && <ConfettiTester />}
     </>
   );
 };

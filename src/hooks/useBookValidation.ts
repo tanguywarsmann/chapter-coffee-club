@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
-import { useConfetti } from "@/components/confetti/ConfettiProvider";
+import confetti from 'canvas-confetti';
 import { useReadingProgress } from "./useReadingProgress";
 import { useValidationState } from "./useValidationState";
 import { useQuizCompletion } from "./useQuizCompletion";
@@ -57,7 +57,36 @@ export const useBookValidation = ({
     resetValidationState
   } = useValidationState();
 
-  const { showConfetti } = useConfetti();
+  const showConfetti = () => {
+    console.log("🎊 TRIGGERING CONFETTI");
+    try {
+      // Explosion principale
+      confetti({
+        particleCount: 200,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Effets latéraux
+      setTimeout(() => {
+        confetti({
+          particleCount: 100,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 100,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 250);
+      
+    } catch (error) {
+      console.error("❌ Confetti failed:", error);
+    }
+  };
   const { forceRefresh } = useReadingProgress();
 
   // Monthly reward
