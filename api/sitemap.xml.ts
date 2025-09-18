@@ -1,4 +1,9 @@
+// api/sitemap.xml.ts
 export const config = { runtime: 'edge' };
+
+// Chevrons construits (évite que l'éditeur remplace le XML par "loc+lastmod")
+const LA = String.fromCharCode(60);  // "<"
+const RA = String.fromCharCode(62);  // ">"
 
 function escapeXml(s: string) {
   return String(s).replace(/[<>&'"]/g, (c) => {
@@ -42,10 +47,16 @@ export default async function handler() {
     }))
   ];
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `<url><loc>${escapeXml(u.loc)}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n')}
-</urlset>`;
+  const urlsetOpen = `${LA}urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${RA}`;
+  const urlsetClose = `${LA}/urlset${RA}`;
+
+  const body = urls.map(u => {
+    const loc = `${LA}loc${RA}${escapeXml(u.loc)}${LA}/loc${RA}`;
+    const lastmod = `${LA}lastmod${RA}${u.lastmod}${LA}/lastmod${RA}`;
+    return `${LA}url${RA}${loc}${lastmod}${LA}/url${RA}`;
+  }).join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n${urlsetOpen}\n${body}\n${urlsetClose}`;
 
   return new Response(xml, {
     headers: {
