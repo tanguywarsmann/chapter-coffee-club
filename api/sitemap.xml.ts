@@ -1,19 +1,24 @@
 // api/sitemap.xml.ts
 type Url = { loc: string; lastmod: string };
 
-const encode = (s: string) =>
-  s.replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&apos;', '"': '&quot;' }[c] as string));
+const esc = (s: string) =>
+  s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&apos;','"':'&quot;'}[c] as string));
 
 const render = (urls: Url[]) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n` +
   `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-  urls.map(u => `  <url><loc>${encode(u.loc)}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') +
+  urls.map(u => `  <url><loc>${esc(u.loc)}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') +
   `\n</urlset>`;
 
 export default async function handler(): Promise<Response> {
   const BASE = process.env.SITEMAP_BASE ?? 'https://www.vread.fr';
-  const SUPA_URL = process.env.SITEMAP_SUPABASE_URL;
-  const SUPA_KEY = process.env.SITEMAP_SUPABASE_KEY;
+  // 👇 tombe sur tes variables Vercel existantes si les SITEMAP_* ne sont pas définies
+  const SUPA_URL =
+    process.env.SITEMAP_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '';
+  const SUPA_KEY =
+    process.env.SITEMAP_SUPABASE_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? // OK côté serveur uniquement
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
   const now = new Date().toISOString();
   const baseUrls: Url[] = [
@@ -21,19 +26,18 @@ export default async function handler(): Promise<Response> {
     { loc: `${BASE}/blog`, lastmod: now },
   ];
 
-  try {
-    if (!SUPA_URL || !SUPA_KEY) {
-      const xml = render(baseUrls);
-      return new Response(xml, {
-        headers: {
-          'Content-Type': 'application/xml; charset=utf-8',
-          'Cache-Control': 'no-store, max-age=0',
-          'X-Sitemap-Source': 'api/node',
-          'X-Sitemap-Note': 'missing-env',
-        },
-      });
-    }
+  // Si pas d’env, renvoyer quand même un XML valide
+  if (!SUPA_URL || !SUPA_KEY) {
+    return new Response(render(baseUrls), {
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Sitemap-Note': 'missing-env',
+      },
+    });
+  }
 
+  try {
     const qs = new URL(`${SUPA_URL}/rest/v1/blog_posts`);
     qs.searchParams.set('select', 'slug,updated_at,created_at,published');
     qs.searchParams.set('published', 'eq.true');
@@ -44,7 +48,8 @@ export default async function handler(): Promise<Response> {
       headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
       cache: 'no-store',
     });
-    if (!r.ok) throw new Error(`supabase ${r.status}`);
+
+    if (!r.ok) throw new Error(`supabase:${r.status}`);
 
     const rows: any[] = await r.json();
     const urls: Url[] = [
@@ -55,22 +60,20 @@ export default async function handler(): Promise<Response> {
       })),
     ];
 
-    const xml = render(urls);
-    return new Response(xml, {
+    return new Response(render(urls), {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'no-store, max-age=0',
+        'Cache-Control': 'no-store',
         'X-Sitemap-Source': 'api/node',
       },
     });
-  } catch (err: any) {
-    const xml = render(baseUrls);
-    return new Response(xml, {
+  } catch (e: any) {
+    // Fallback en 200 pour ne pas casser /sitemap.xml
+    return new Response(render(baseUrls), {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'no-store, max-age=0',
-        'X-Sitemap-Source': 'api/node',
-        'X-Sitemap-Error': String(err?.message ?? err),
+        'Cache-Control': 'no-store',
+        'X-Sitemap-Error': String(e?.message ?? e),
       },
     });
   }
