@@ -1,7 +1,7 @@
 // api/sitemap.xml.ts
 export const config = { runtime: 'edge' };
 
-// Chevrons construits (évite que l'éditeur remplace le XML par "loc+lastmod")
+// Construire les chevrons pour éviter toute "correction" de l'éditeur
 const LA = String.fromCharCode(60);  // "<"
 const RA = String.fromCharCode(62);  // ">"
 
@@ -47,7 +47,7 @@ export default async function handler() {
     }))
   ];
 
-  const urlsetOpen = `${LA}urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${RA}`;
+  const urlsetOpen  = `${LA}urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${RA}`;
   const urlsetClose = `${LA}/urlset${RA}`;
 
   const body = urls.map(u => {
