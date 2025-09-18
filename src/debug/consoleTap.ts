@@ -1,19 +1,31 @@
-// Debug instrumentation - Patch console + fetch pour tracer le flux Joker/Validation
+// Debug instrumentation - SAFE VERSION (no recursion)
 let installed = (window as any).__VREAD_DEBUG_INSTALLED__;
 if (!installed) {
   (window as any).__VREAD_DEBUG_INSTALLED__ = true;
-  console.info("[DEBUG] 🔍 Console/Network instrumentation active");
-
+  
   const logs: any[] = [];
+  
+  // Store original console methods ONCE
+  const originalConsole = {
+    log: console.log.bind(console),
+    info: console.info.bind(console), 
+    warn: console.warn.bind(console),
+    error: console.error.bind(console)
+  };
+  
+  originalConsole.info("[DEBUG] 🔍 Console/Network instrumentation active");
+
   const push = (t: string, ...args: any[]) => {
     logs.push({ t, ts: new Date().toISOString(), args });
-    // garde l'affichage normal
-    (console as any)[t]?.apply(console, args);
+    // Use original methods to prevent recursion
+    originalConsole[t as keyof typeof originalConsole]?.(...args);
   };
 
+  // Patch console methods safely
   ["log","info","warn","error"].forEach(k => {
-    const orig = (console as any)[k];
-    (console as any)[k] = (...args: any[]) => { push(k, ...args); return orig.apply(console, args); };
+    (console as any)[k] = (...args: any[]) => { 
+      push(k, ...args); 
+    };
   });
 
   const origFetch = window.fetch.bind(window);
