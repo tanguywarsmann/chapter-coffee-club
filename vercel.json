@@ -21,11 +21,7 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
-    { "source": "/news-sitemap.xml", "destination": "/api/news-sitemap.xml" },
-    {
-      "source": "/((?!api|.*\\.(?:js|css|png|jpg|jpeg|gif|svg|ico|json|txt|xml|webp|avif|woff|woff2|ttf|map)$).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/news-sitemap.xml", "destination": "/api/news-sitemap.xml" }
   ],
   "headers": [
     {
