@@ -1,10 +1,10 @@
-// api/sitemap.xml.ts — Hotfix: réponse instantanée sans Supabase
-// (Optionnel) Active Edge si tu veux :
-// export const config = { runtime: "edge" };
+// api/sitemap.xml.ts — HOTFIX Node (@vercel/node)
 
-export default async function handler(_req?: Request) {
-  const BASE = "https://www.vread.fr";
-  const now  = new Date().toISOString();
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default function handler(_req: VercelRequest, res: VercelResponse) {
+  const BASE = 'https://www.vread.fr';
+  const now = new Date().toISOString();
 
   const xml =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
@@ -13,11 +13,8 @@ export default async function handler(_req?: Request) {
     `  <url><loc>${BASE}/blog</loc><lastmod>${now}</lastmod></url>\n` +
     `</urlset>\n`;
 
-  return new Response(xml, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "s-maxage=600, stale-while-revalidate=3600",
-      "x-sitemap-version": "vread-sitemap-HOTFIX",
-    },
-  });
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
+  res.setHeader('x-sitemap-version', 'vread-sitemap-HOTFIX-node');
+  res.status(200).send(xml);
 }
