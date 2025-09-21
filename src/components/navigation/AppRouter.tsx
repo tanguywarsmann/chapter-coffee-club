@@ -30,7 +30,7 @@ import { PrivacyPolicy } from '@/pages/legal/PrivacyPolicy';
 import { Terms } from '@/pages/legal/Terms';
 
 // Settings pages
-import { DeleteAccount } from '@/pages/settings/DeleteAccount';
+import DeleteAccount from '@/pages/settings/DeleteAccount';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -75,7 +75,11 @@ const AppRouter = () => {
       <Route path="/legal/terms" element={<Terms />} />
       
       {/* Settings Pages */}
-      <Route path="/settings/delete-account" element={<AuthGuard><DeleteAccount /></AuthGuard>} />
+      <Route path="/settings/delete-account" element={
+        <AuthGuard>
+          <DeleteAccount />
+        </AuthGuard>
+      } />
       
       {/* Admin Panel */}
       <Route path="/admin" element={<Admin />} />
