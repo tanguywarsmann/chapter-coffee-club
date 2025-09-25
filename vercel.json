@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/sitemap.xml",       "destination": "/api/sitemap-corrected.xml" },
+    { "source": "/sitemap.xml",       "destination": "/api/sitemap.xml" },
     { "source": "/news-sitemap.xml",  "destination": "/api/news-sitemap.xml" }
   ]
 }
