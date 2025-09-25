@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { blogService } from "@/services/blogService";
 import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
@@ -70,25 +71,21 @@ export default function BlogPost() {
 
   return (
     <>
+      <SEOHead
+        title={`${post.title} - Blog VREAD`}
+        description={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD pour enrichir vos connaissances littéraires et améliorer votre expérience de lecture.`}
+        canonical={`https://www.vread.fr/blog/${post.slug}`}
+        ogType="article"
+        publishedTime={post.created_at}
+        modifiedTime={post.updated_at}
+        author={post.author || 'VREAD'}
+        tags={post.tags || []}
+        section="Littérature"
+        ogImage={post.imageHero}
+      />
+      
+      {/* Schema.org structured data for article */}
       <Helmet>
-        <title>{post.title} - Blog VREAD</title>
-        <meta name="description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
-        <meta property="og:title" content={`${post.title} - Blog VREAD`} />
-        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://www.vread.fr/blog/${post.slug}`} />
-        <meta property="article:published_time" content={post.created_at} />
-        <meta property="article:modified_time" content={post.updated_at} />
-        <meta property="article:author" content={post.author || 'VREAD'} />
-        {post.tags && post.tags.map(tag => (
-          <meta key={tag} property="article:tag" content={tag} />
-        ))}
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={`${post.title} - Blog VREAD`} />
-        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
-        <link rel="canonical" href={`https://www.vread.fr/blog/${post.slug}`} />
-        
-        {/* Schema.org structured data for article */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -102,7 +99,11 @@ export default function BlogPost() {
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
-              "url": "https://www.vread.fr"
+              "url": "https://www.vread.fr",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.vread.fr/branding/vread-logo-512.png"
+              }
             },
             "datePublished": post.created_at,
             "dateModified": post.updated_at,
@@ -112,7 +113,8 @@ export default function BlogPost() {
               "@id": `https://www.vread.fr/blog/${post.slug}`
             },
             "keywords": post.tags?.join(", ") || "",
-            "articleSection": "Littérature"
+            "articleSection": "Littérature",
+            "image": post.imageHero || "https://www.vread.fr/branding/vread-logo-512.png"
           })}
         </script>
       </Helmet>
