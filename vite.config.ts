@@ -1,8 +1,10 @@
+import path from "path";
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-import path from "path";
 
 const isNative = process.env.VREAD_NATIVE === '1';
+// Par défaut, on N'UTILISE PAS la PWA (utile pour Lovable et build natif)
+const usePwa = process.env.VITE_USE_PWA === '1';
 
 export default defineConfig({
   base: isNative ? './' : '/',
@@ -15,7 +17,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      ...(isNative ? {
+      ...(!usePwa ? {
         'virtual:pwa-register/react': path.resolve(__dirname, './src/pwa-register-stub.ts'),
         'virtual:pwa-register': path.resolve(__dirname, './src/pwa-register-stub.ts'),
       } : {}),
