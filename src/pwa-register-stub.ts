@@ -3,5 +3,4 @@ export const useRegisterSW = () => ({
   offlineReady: { value: true },
   updateServiceWorker: (_opts?: any) => {},
 });
-
 export default () => {};
