@@ -9,7 +9,8 @@ import compression from "vite-plugin-compression2";
 export default defineConfig(({ command, mode }) => {
   // Astuce: mets VREAD_NATIVE=1 pour un build natif (Capacitor iOS) sans Service Worker
   const isDev = command === "serve";
-  const isNative = process.env.VREAD_NATIVE === "1";
+  // Force native mode detection: Capacitor build ou variable explicite
+  const isNative = process.env.VREAD_NATIVE === "1" || mode === "capacitor";
 
   return {
     // Expose aussi NEXT_PUBLIC_* si tu en as besoin côté client
@@ -23,6 +24,9 @@ export default defineConfig(({ command, mode }) => {
     define: {
       __VREAD_BUILD__: JSON.stringify(new Date().toISOString()),
     },
+
+    // CRITICAL: Base path pour Capacitor 
+    base: isNative ? './' : '/',
 
     plugins: [
       react(),
