@@ -9,9 +9,16 @@ export default defineConfig({
   plugins: [react()],
   build: { outDir: 'dist' },
   define: { __VREAD_NATIVE__: JSON.stringify(isNative) },
+  server: {
+    port: 8080
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      ...(isNative ? {
+        'virtual:pwa-register/react': path.resolve(__dirname, './src/pwa-register-stub.ts'),
+        'virtual:pwa-register': path.resolve(__dirname, './src/pwa-register-stub.ts'),
+      } : {}),
     },
   },
 });
