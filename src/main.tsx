@@ -7,6 +7,11 @@ import './index.css'
 import { exposeAuditHelpers } from '@/utils/jokerAudit';
 import { JOKER_MIN_SEGMENTS_ENABLED, JOKER_MIN_SEGMENTS } from "@/utils/jokerConstraints";
 
+// Neutralise service worker en mode natif pour éviter les conflits d'assets
+if ((window as any).__VREAD_NATIVE__ && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations?.().then(rs => rs.forEach(r => r.unregister()));
+}
+
 console.info("[BOOTSTRAP] Loading React app");
 
 console.info("[JOKER FLAGS] front", {
