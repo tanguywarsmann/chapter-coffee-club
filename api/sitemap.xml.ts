@@ -1,10 +1,14 @@
-// api/sitemap.xml.ts — Sitemap dynamique automatique optimisé
+// api/sitemap.xml.ts — Sitemap dynamique v2 avec améliorations
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { readdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import matter from 'gray-matter';
 
-// Types pour une meilleure sécurité
+// Constantes de configuration
+const GOOGLE_SITEMAP_LIMIT = 50000;
+const BATCH_SIZE = 10;
+
+// Types
 interface BlogPost {
   slug: string;
   lastmod: string;
@@ -29,11 +33,7 @@ interface SitemapStats {
   fromDB: number;
 }
 
-// Configuration des limites Google
-const GOOGLE_SITEMAP_LIMIT = 50000; // URLs max par sitemap
-const BATCH_SIZE = 100; // Traitement par batch pour éviter la surcharge
-
-function escapeXml(s: string): string {
+function escapeXml(s: string) {
   return String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
