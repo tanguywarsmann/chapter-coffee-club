@@ -1,21 +1,17 @@
-// src/pwa-register-stub.ts
-
 // Stub de l'API "classique"
-export const registerSW = (_opts?: any) => {
-  // renvoie un objet "compatible" si quelqu'un l'utilise
-  return {
-    update() {},            // no-op
-    needRefresh: false,     // pas d'update nécessaire
-    offlineReady: false,    // évite d'afficher des toasts "prêt hors-ligne"
-  };
-};
+export const registerSW = (_opts?: any) => ({
+  update() {},
+  needRefresh: false,
+  offlineReady: false,
+});
 
-// Stub de l'API React (hook)
+// Stub du hook React
 export const useRegisterSW = (_opts?: any) => ({
   needRefresh: { value: false },
   offlineReady: { value: false },
   updateServiceWorker: (_?: any) => {},
 });
 
-// Par sécurité, on exporte aussi par défaut quelque chose d'appelable
+// Default no-op (pour les imports par défaut)
 export default registerSW;
+
