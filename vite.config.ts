@@ -4,8 +4,9 @@ import react from '@vitejs/plugin-react-swc';
 import path from 'node:path';
 import { VitePWA } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression2';
+import { componentTagger } from 'lovable-tagger';
 
-// --- stub des deps Node-only (sharp/detect-libc) + toute référence à sitemapServer côté client
+// --- Stub universel : neutralise sharp/detect-libc (Node-only) et toute réf client à sitemapServer ---
 function stubNodeOnly() {
   const wantsStubSource = (id: string) =>
     /^sharp(?:\/.*)?$/.test(id) ||
@@ -32,27 +33,51 @@ function stubNodeOnly() {
   };
 }
 
-export default defineConfig(({ mode }) => {
-  const isDev = mode !== 'production';
-  const isNative = process.env.VREAD_NATIVE === '1' || process.env.CAPACITOR === '1';
-  const usePwa = !isNative; // pas de SW en Capacitor
+export default defineConfig(({ command, mode }) => {
+  const isDev = command === 'serve';
+  const isNative =
+    process.env.VREAD_NATIVE === '1' ||
+    process.env.CAPACITOR === '1' ||
+    mode === 'capacitor';
+  const usePwa =
+    !isNative &&
+    (process.env.VITE_USE_PWA === '1' || process.env.VITE_USE_PWA === 'true');
 
   return {
-    // base pour Capacitor
+    envPrefix: ['VITE_', 'NEXT_PUBLIC_', 'VREAD_'],
+
+    define: {
+      __VREAD_BUILD__: JSON.stringify(new Date().toISOString()),
+      __VREAD_NATIVE__: JSON.stringify(isNative),
+    },
+
+    // Chemin relatif pour Capacitor (WKWebView), absolu pour web
     base: isNative ? './' : '/',
 
+    server: {
+      host: '::',
+      port: 8080,
+    },
+
     plugins: [
-      stubNodeOnly(),          // <-- en premier !
+      // IMPORTANT: en premier pour empêcher la résolution de sharp/detect-libc/sitemapServer
+      stubNodeOnly(),
       react(),
-      // PWA: garder register manuel, et désactiver l'injection du manifest (on garde /public/manifest.webmanifest)
-      ...(usePwa ? [
-        VitePWA({
-          registerType: 'autoUpdate',
-          injectRegister: null, // on appelle notre register dans pwa.ts
-          manifest: false,      // ne pas injecter de <link rel="manifest"> (évite le WARNING)
-        }),
-      ] : []),
-      // compressions
+      ...(isDev ? [componentTagger()] : []),
+
+      // PWA côté Web uniquement (jamais en natif)
+      ...(usePwa
+        ? [
+            VitePWA({
+              registerType: 'autoUpdate',
+              injectRegister: null, // on enregistre via src/pwa.ts
+              // Laisse le manifest statique dans public/manifest.webmanifest
+              manifest: false, // évite l'injection et fait taire le WARNING "head/body not found"
+            }),
+          ]
+        : []),
+
+      // Gzip + Brotli (sans re-compresser .gz/.br)
       compression({ algorithm: 'gzip', exclude: [/\.(br)$/, /\.(gz)$/] }),
       compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
     ],
@@ -62,11 +87,15 @@ export default defineConfig(({ mode }) => {
         { find: '@', replacement: path.resolve(process.cwd(), 'src') },
         { find: /^sharp(\/.*)?$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
         { find: /^detect-libc(\/.*)?$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
-        // si tu veux forcer un stub quand PWA off :
-        ...(!usePwa ? [
-          { find: 'virtual:pwa-register/react', replacement: path.resolve(process.cwd(), 'src/pwa-register-stub.ts') },
-          { find: 'virtual:pwa-register',        replacement: path.resolve(process.cwd(), 'src/pwa-register-stub.ts') },
-        ] : []),
+        // Sécurité: si un import "sitemapServer" traîne côté client, on le stub automatiquement
+        { find: /sitemapServer$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
+        // Quand la PWA est OFF, on mappe les modules virtuels vers un stub no-op
+        ...(!usePwa
+          ? [
+              { find: 'virtual:pwa-register/react', replacement: path.resolve(process.cwd(), 'src/pwa-register-stub.ts') },
+              { find: 'virtual:pwa-register',        replacement: path.resolve(process.cwd(), 'src/pwa-register-stub.ts') },
+            ]
+          : []),
       ],
     },
 
@@ -75,13 +104,17 @@ export default defineConfig(({ mode }) => {
       exclude: ['sharp', 'detect-libc'],
     },
 
-    ssr: { noExternal: ['sharp'] },
+    ssr: {
+      noExternal: ['sharp'],
+    },
 
     build: {
       target: 'es2020',
       sourcemap: false,
       minify: 'terser',
-      terserOptions: { compress: { drop_console: true, drop_debugger: true } },
+      terserOptions: {
+        compress: { drop_console: true, drop_debugger: true },
+      },
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
@@ -91,7 +124,7 @@ export default defineConfig(({ mode }) => {
             if (/(@supabase)/.test(id)) return 'vendor-supabase';
             if (/(radix|@radix-ui|lucide-react)/.test(id)) return 'vendor-ui';
             if (/workbox|virtual:pwa-register/.test(id)) return 'vendor-utils';
-            // ne RIEN renvoyer d'autre -> plus de "vendor-image"
+            // ne RIEN renvoyer d’autre -> évite 'vendor-image'
           },
         },
       },
