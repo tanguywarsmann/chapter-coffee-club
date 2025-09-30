@@ -15,19 +15,22 @@ import Explore from '@/pages/Explore';
 import Achievements from '@/pages/Achievements';
 import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
+import AdminAutoCovers from '@/pages/AdminAutoCovers';
+import AdminAudit from '@/pages/AdminAudit';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
 import NotFound from '@/pages/NotFound';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AdminGuard } from '@/components/admin/AdminGuard';
 
 // Legal pages
 import { PrivacyPolicy } from '@/pages/legal/PrivacyPolicy';
 import { Terms } from '@/pages/legal/Terms';
 
 // Settings pages
-import { DeleteAccount } from '@/pages/settings/DeleteAccount';
+import DeleteAccount from '@/pages/settings/DeleteAccount';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -45,6 +48,8 @@ const AppRouter = () => {
       <Route path="/book/:id" element={<BookPage />} />
       <Route path="/books/:id" element={<BookPage />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/page/1" element={<Navigate to="/blog" replace />} />
+      <Route path="/blog/page/:page" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/reading-list" element={<ReadingList />} />
       <Route path="/discover" element={<Discover />} />
@@ -70,23 +75,32 @@ const AppRouter = () => {
       <Route path="/legal/terms" element={<Terms />} />
       
       {/* Settings Pages */}
-      <Route path="/settings/delete-account" element={<AuthGuard><DeleteAccount /></AuthGuard>} />
+      <Route path="/settings/delete-account" element={
+        <AuthGuard>
+          <DeleteAccount />
+        </AuthGuard>
+      } />
       
       {/* Admin Panel */}
       <Route path="/admin" element={<Admin />} />
+      <Route path="/admin/auto-covers" element={
+        <AdminGuard>
+          <AdminAutoCovers />
+        </AdminGuard>
+      } />
+      <Route path="/admin/audit" element={
+        <AdminGuard>
+          <AdminAudit />
+        </AdminGuard>
+      } />
       
-      {/* Route pour le sitemap dynamique */}
-      <Route 
-        path="/sitemap.xml" 
-        element={<SitemapRoute />} 
-      />
-
       {/* Catch-all 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
 
+<<<<<<< HEAD
 // Composant pour servir le sitemap
 const SitemapRoute = () => {
   const [sitemap, setSitemap] = useState<string>('');
@@ -130,5 +144,7 @@ if (typeof window !== "undefined") { window.location.href = "/sitemap.xml"; retu
 
   return <div>Génération du sitemap...</div>;
 };
+=======
+>>>>>>> origin/main
 
 export default AppRouter;

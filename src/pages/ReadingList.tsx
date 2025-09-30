@@ -9,23 +9,31 @@ import { ReadingListHeader } from "@/components/reading/ReadingListHeader";
 import { FetchingStatus } from "@/components/reading/FetchingStatus";
 import { useReadingListPage } from "@/hooks/useReadingListPage";
 import { useLogger } from "@/utils/logger";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ReadingList() {
   const logger = useLogger('ReadingList');
+  const { user, session } = useAuth();
+  const navigate = useNavigate();
   
+  // Rediriger si pas authentifié
   useEffect(() => {
-    logger.info("ReadingList component mounted");
-  }, [logger]);
+    if (!user || !session) {
+      console.log('[ReadingList] User not authenticated, redirecting to auth');
+      navigate('/auth');
+      return;
+    }
+    logger.info("ReadingList component mounted for user:", user.id);
+  }, [user, session, navigate, logger]);
   
   const {
     books,
     loading,
-    error,
-    sortBy,
-    setSortBy,
     navigateToBook,
-    fetchBooks
   } = useReadingListPage();
+  
+  const error = null; // No error handling needed with new structure
 
   // Log spécifique pour le débogage des listes de livres
   logger.debug("Reading list state", {
@@ -117,11 +125,6 @@ export default function ReadingList() {
         <AppHeader />
         
         <main className="mx-auto w-full px-4 max-w-none px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-          <ReadingListHeader 
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-          />
-          
           <FetchingStatus isFetching={loading.isFetching} />
 
           {renderContent()}

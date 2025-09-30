@@ -2,7 +2,7 @@
 import { Book } from "@/types/book";
 import { ValidationModal } from "./ValidationModal";
 import { QuizModal } from "./QuizModal";
-import { ReadingQuestion } from "@/types/reading";
+import { PublicReadingQuestion } from "@/types/reading";
 import { SuccessMessage } from "./SuccessMessage";
 import { LockTimer } from "./LockTimer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,7 +15,7 @@ interface BookValidationModalsProps {
   showQuizModal: boolean;
   showSuccessMessage?: boolean;
   validationSegment: number | null;
-  currentQuestion: ReadingQuestion | null;
+  currentQuestion: PublicReadingQuestion | null;
   isValidating: boolean;
   isLocked?: boolean;
   remainingLockTime?: number | null;
@@ -26,7 +26,7 @@ interface BookValidationModalsProps {
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
-  onQuizComplete: (passed: boolean, useJoker?: boolean) => void;
+  onQuizComplete: (args: { correct: boolean; useJoker: boolean }) => void;
   onSuccessClose?: () => void;
   onLockExpire?: () => void;
 }
@@ -53,6 +53,15 @@ export const BookValidationModals = memo(({
   onSuccessClose,
   onLockExpire
 }: BookValidationModalsProps) => {
+  // Fallback robuste pour expectedSegments
+  const expectedSegmentsSafe = Number(
+    book?.expectedSegments ??
+    book?.expected_segments ??
+    book?.totalSegments ??
+    book?.total_chapters ??
+    0
+  );
+  
   // N'effectuer le rendu que si une des modales est visible
   if (!showValidationModal && !showQuizModal && !showSuccessMessage) {
     return null;
@@ -98,7 +107,7 @@ export const BookValidationModals = memo(({
           onComplete={onQuizComplete}
           onClose={onQuizClose}
           question={currentQuestion}
-          expectedSegments={book.expected_segments || book.total_chapters}
+          expectedSegments={expectedSegmentsSafe}
           progressId={book.id}
           jokersRemaining={jokersRemaining}
           isUsingJoker={isUsingJoker}

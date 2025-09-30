@@ -244,6 +244,18 @@ export default function Profile() {
                             <FollowButton targetUserId={profileUserId} />
                           </div>
                         )}
+                        
+                        {/* Account management link for own profile */}
+                        {isOwnProfile && (
+                          <div className="flex-shrink-0">
+                            <Link 
+                              to="/settings/delete-account" 
+                              className="text-xs text-muted-foreground hover:text-destructive transition-colors underline-offset-4 hover:underline"
+                            >
+                              Supprimer mon compte
+                            </Link>
+                          </div>
+                        )}
                       </div>
 
                       {/* Quick Stats */}

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { texts } from "@/i18n/texts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
+import { PAGES_PER_SEGMENT } from "@/utils/constants";
 
 interface CurrentReadingCardProps {
   book: BookType;
@@ -17,6 +18,8 @@ interface CurrentReadingCardProps {
 
 export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
   const isMobile = useIsMobile();
+  
+  const imageSrc = (book as any)?.coverImage || (book as any)?.cover_url || (book as any)?.book_cover;
   
   console.log("Rendering CurrentReadingCard", { 
     bookId: book?.id || 'book undefined',
@@ -38,7 +41,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   const isReadingInvalid = !book.slug || currentPage === undefined || currentPage < 0;
 
   // Calculate segment based on current page (with validation)
-  const segment = !isReadingInvalid ? Math.floor(currentPage / 8000) : 0;
+  const segment = Math.max(0, Math.floor((currentPage ?? 0) / PAGES_PER_SEGMENT));
 
   // Utiliser totalSegments s'il est disponible, sinon expectedSegments ou totalChapters
   const totalSegments = book.totalSegments || book.expectedSegments || book.total_chapters || 0;
@@ -46,7 +49,7 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   const handleContinueReading = () => {
     if (!isReadingInvalid) {
       toast.info("Reprise de la lecture…");
-      navigate(`/livre/${book.slug}/segment/${segment}`);
+      navigate(`/books/${book.slug || book.id}`);
     }
   };
 
@@ -54,9 +57,9 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
     <Card className="border-coffee-light shadow-sm hover:shadow-md transition-shadow mobile-optimized">
       <CardContent className={`flex gap-4 ${isMobile ? 'p-4' : 'p-4'}`}>
         <div className={`book-cover ${isMobile ? 'w-20 h-28' : 'w-20 h-30'} flex-shrink-0`}>
-          {book.coverImage ? (
+          {imageSrc ? (
             <Image 
-              src={book.coverImage} 
+              src={imageSrc as string} 
               alt={book.title} 
               className="w-full h-full object-cover rounded"
               priority={true} // Image critique pour la lecture en cours

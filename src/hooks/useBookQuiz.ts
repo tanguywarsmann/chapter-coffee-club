@@ -2,11 +2,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { Book } from "@/types/book";
-import { ReadingQuestion } from "@/types/reading";
+import { PublicReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
-import { validateReading } from "@/services/reading/validationService";
+// forceValidateSegment désactivée - suppression import
 import { checkValidationLock } from "@/services/validation/lockService";
-import { useJokerAtomically, getRemainingJokers } from "@/services/jokerService";
+import { getRemainingJokers, useJokerAtomically } from "@/services/jokerService";
 
 export const useBookQuiz = (
   book: Book | null,
@@ -17,7 +17,7 @@ export const useBookQuiz = (
 ) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
-  const [currentQuestion, setCurrentQuestion] = useState<ReadingQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<PublicReadingQuestion | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
@@ -62,20 +62,15 @@ export const useBookQuiz = (
       const remainingJokersCount = await getRemainingJokers(book.id, userId);
       setJokersRemaining(remainingJokersCount);
 
-      // Get question for this segment
-      const question = await getQuestionForBookSegment(book.id, segment);
+      // Get question for this segment using book slug
+      const question = await getQuestionForBookSegment(book.slug || book.id, segment);
 
       if (question) {
         setCurrentQuestion(question);
       } else {
-        // Fallback for when no question exists
-        setCurrentQuestion({
-          id: `fallback-${book.id}-${segment}`,
-          book_slug: book.slug,
-          segment: segment,
-          question: "Avez-vous bien lu ce segment ?",
-          answer: "oui"
-        });
+        console.log("❌ No question found for segment", segment);
+        toast.error("Aucune question trouvée pour ce segment");
+        return;
       }
 
       setQuizChapter(segment);
@@ -90,9 +85,7 @@ export const useBookQuiz = (
   };
 
   const handleQuizComplete = async (correct: boolean, useJoker: boolean = false) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("🎯 handleQuizComplete called with:", { correct, useJoker });
-    }
+    console.log("🎯 useBookQuiz.handleQuizComplete called with:", { correct, useJoker });
     
     if (!userId || !book || !book.id) {
       toast.error("Information utilisateur ou livre manquante");
@@ -102,96 +95,32 @@ export const useBookQuiz = (
     try {
       if (setIsValidating) setIsValidating(true);
 
-      if (useJoker) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("🃏 Utilisation d'un joker pour le segment:", quizChapter);
-        }
-        setIsUsingJoker(true);
+      if (correct) {
+        console.log("✅ Success - showing animations and updating UI");
         
-        // Utiliser la fonction RPC atomique
-        const jokerResult = await useJokerAtomically(book.id, userId, quizChapter);
+        // Close quiz and show success with animations
+        setShowQuiz(false);
+        setShowSuccessMessage(true);
         
-        if (!jokerResult.success) {
-          setShowQuiz(false);
-          return { canUseJoker: false };
-        }
-        
-        // Mettre à jour le compteur de jokers
-        setJokersRemaining(jokerResult.jokersRemaining);
-        
-        // Invalider le cache SWR pour rafraîchir l'affichage des jokers
+        // Force cache refresh for all relevant data (no duplicate validation calls)
         mutate(['jokers-info', book.id]);
         mutate(['book-progress', book.id]);
+        mutate((key) => typeof key === 'string' && key.includes('reading-progress'), undefined, { revalidate: true });
         
-        // Valider le segment avec le joker
-        const result = await validateReading({
-          user_id: userId,
-          book_id: book.id,
-          segment: quizChapter,
-          correct: true, // Joker simule une réponse correcte
-          used_joker: true
-        });
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log("✅ Validation avec joker réussie:", result);
-        }
-        toast.success("Segment validé grâce à un Joker !");
-        
-        // Fermer le quiz et afficher le message de succès
-        setShowQuiz(false);
-        setShowSuccessMessage(true);
-        
-        // Mettre à jour le parent si nécessaire
+        // Trigger parent updates
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
         }
         
-        return result;
-      } else if (correct) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("✅ Réponse correcte sans joker");
-        }
-        
-        // Validate reading segment normalement
-        const result = await validateReading({
-          user_id: userId,
-          book_id: book.id,
-          segment: quizChapter,
-          correct: true,
-          used_joker: false
-        });
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log("✅ Validation normale réussie:", result);
-        }
-
-        // Close quiz modal
-        setShowQuiz(false);
-
-        // Show success message
-        setShowSuccessMessage(true);
-
-        // Update parent component if needed
-        if (onProgressUpdate) {
-          onProgressUpdate(book.id);
-        }
-        
-        // Return the result including any new badges
-        return result;
+        return { success: true, newBadges: [] };
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("❌ Réponse incorrecte - pas de joker utilisé");
-        }
-        // Handle incorrect answer without joker
+        console.log("❌ Quiz failed - no additional validation needed");
         setShowQuiz(false);
-        toast.error("Réponse incorrecte. Essayez de relire le passage.");
         return { canUseJoker: jokersRemaining > 0 };
       }
     } catch (error) {
-      console.error("❌ Error completing quiz:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      toast.error(`Erreur lors de la validation : ${errorMessage.substring(0, 100)}`);
-      throw error;
+      console.error("❌ Error in quiz completion:", error);
+      return { canUseJoker: jokersRemaining > 0 };
     } finally {
       if (setIsValidating) setIsValidating(false);
       setIsUsingJoker(false);

@@ -10,6 +10,42 @@ import {
 import { assertValidBook } from '@/utils/bookValidation';
 import { getValidatedSegmentCount } from './validatedSegmentCount';
 
+type ProgressRow = {
+  id: string;
+  user_id: string;
+  book_id: string;
+  current_page: number;
+  total_pages: number;
+  status: 'to_read' | 'in_progress' | 'completed';
+  updated_at?: string | null;
+  started_at?: string | null;
+  books?: any; // jointure books_public
+};
+
+type ReadingListPayload = {
+  toRead: ProgressRow[];
+  inProgress: ProgressRow[];
+  completed: ProgressRow[];
+  toReadCount: number;
+  inProgressCount: number;
+  completedCount: number;
+};
+
+function mapRows(rows: ProgressRow[]): ReadingListPayload {
+  const completed = rows.filter(r => r.status === 'completed');
+  const inProgress = rows.filter(r => r.status === 'in_progress');
+  const toRead = rows.filter(r => r.status === 'to_read');
+
+  return {
+    toRead,
+    inProgress,
+    completed,
+    toReadCount: toRead.length,
+    inProgressCount: inProgress.length,
+    completedCount: completed.length,
+  };
+}
+
 /**
  * Service pour gérer la Reading List de l'utilisateur
  * Centralise les opérations d'ajout, suppression et récupération des livres
@@ -84,99 +120,103 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 };
 
 /**
- * Récupère les progrès de lecture de l'utilisateur
+ * Lit la progression depuis reading_progress pour l'utilisateur courant,
+ * joint books_public pour récupérer la cover et le slug.
  */
-export const fetchReadingProgress = async (userId: string) => {
-  if (!userId) return null;
+export async function fetchReadingProgress(userId: string): Promise<ReadingListPayload> {
+  console.log("[fetchReadingProgress] start for", userId);
 
   const { data, error } = await supabase
-    .from('reading_progress')
-    .select(`
-      *,
-      books (
-        id,
-        title,
-        author,
-        description,
-        cover_url,
-        total_pages,
-        tags,
-        expected_segments,
-        total_chapters
+    .from("reading_progress")
+    .select(
+      `
+      id,
+      user_id,
+      book_id,
+      current_page,
+      total_pages,
+      status,
+      updated_at,
+      started_at,
+      books:books_public(
+        id, slug, title, author, cover_url, total_chapters, expected_segments
       )
-    `)
-    .eq('user_id', userId);
+    `
+    )
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error('Erreur lors de la récupération des progrès:', error);
-    return null;
+    console.error("[fetchReadingProgress] error:", error);
+    return mapRows([]);
   }
 
-  return data;
-};
+  return mapRows(data ?? []);
+}
 
 /**
- * Récupère les livres selon leur statut avec calcul correct basé sur les segments validés
+ * Récupère les livres selon leur statut - compatible avec la nouvelle structure
  */
-export const fetchBooksForStatus = async (readingList: any, status: string, userId: string): Promise<Book[]> => {
-  if (!readingList || !userId) return [];
+export const fetchBooksForStatus = async (readingListData: any, status: string, userId: string): Promise<Book[]> => {
+  if (!readingListData || !userId) return [];
 
-  // Calculer le statut réel basé sur les segments validés
-  const booksWithRealStatus = await Promise.all(
-    readingList.map(async (progress: any) => {
-      const bookId = progress.books?.id || progress.book_id;
-      const expectedSegments = progress.books?.expected_segments || progress.books?.total_chapters || 1;
+  // Si readingListData est déjà le résultat de fetchReadingProgress
+  if (readingListData.toRead && readingListData.inProgress && readingListData.completed) {
+    const statusMap = {
+      'to_read': readingListData.toRead,
+      'in_progress': readingListData.inProgress,
+      'completed': readingListData.completed
+    };
+    
+    const items = statusMap[status as keyof typeof statusMap] || [];
+    
+    return Promise.all(items.map(async (item: any) => {
+      // Debug détaillé pour identifier le problème
+      console.log("🔍 ReadingList item debug:", {
+        item: item,
+        userId: userId,
+        book_id: item.book_id,
+        books: item.books
+      });
       
-      // Récupérer le nombre de segments validés
-      const validatedSegments = await getValidatedSegmentCount(userId, bookId);
+      // Calculer correctement les segments validés comme sur la page d'accueil
+      const validatedSegments = await getValidatedSegmentCount(userId, item.book_id);
+      const expectedSegments = item.books?.expected_segments || item.books?.total_chapters || 10;
+      const progressPercent = Math.round((validatedSegments / (expectedSegments || 1)) * 100);
       
-      // Calculer le statut réel
-      let realStatus: string;
-      if (validatedSegments >= expectedSegments) {
-        realStatus = 'completed';
-      } else if (validatedSegments > 0) {
-        realStatus = 'in_progress';
-      } else {
-        realStatus = 'to_read';
-      }
-
-      return {
-        ...progress,
-        realStatus,
+      console.log("📋 ReadingList book calculation:", {
+        title: item.books?.title,
+        book_id: item.book_id,
+        userId: userId,
         validatedSegments,
         expectedSegments,
-        books: progress.books
+        progressPercent,
+        status: item.status
+      });
+      
+      return {
+        id: item.books?.id || item.book_id,
+        title: item.books?.title || 'Titre inconnu',
+        author: item.books?.author || 'Auteur inconnu',
+        description: item.books?.description || '',
+        coverImage: item.books?.cover_url || '',
+        cover_url: item.books?.cover_url || '',
+        pages: item.books?.total_pages || 0,
+        categories: item.books?.tags || [],
+        tags: item.books?.tags || [],
+        totalChapters: expectedSegments,
+        chaptersRead: validatedSegments, // Ajouter les segments validés
+        currentSegment: validatedSegments,
+        progressPercent: progressPercent,
+        expectedSegments: expectedSegments,
+        language: 'fr',
+        publicationYear: new Date().getFullYear(),
+        slug: item.books?.slug || item.books?.id || item.book_id,
+        isCompleted: status === 'completed',
       };
-    })
-  );
+    }));
+  }
 
-  // Filtrer par le statut demandé (utiliser le statut réel)
-  const filteredProgress = booksWithRealStatus.filter((item: any) => item.realStatus === status);
-  
-  return filteredProgress.map((progress: any) => ({
-    id: progress.books?.id || progress.book_id,
-    title: progress.books?.title || 'Titre inconnu',
-    author: progress.books?.author || 'Auteur inconnu',
-    description: progress.books?.description || '',
-    coverImage: progress.books?.cover_url || '',
-    pages: progress.books?.total_pages || 0,
-    categories: progress.books?.tags || [],
-    tags: progress.books?.tags || [],
-    totalChapters: progress.expectedSegments || 0,
-    chaptersRead: progress.validatedSegments || 0,
-    isCompleted: progress.realStatus === 'completed',
-    language: 'fr',
-    publicationYear: new Date().getFullYear(),
-    slug: progress.books?.id || progress.book_id,
-    book_author: progress.books?.author || 'Auteur inconnu',
-    book_slug: progress.books?.id || progress.book_id,
-    book_cover: progress.books?.cover_url || null,
-    total_chapters: progress.expectedSegments || 0,
-    created_at: progress.started_at || new Date().toISOString(),
-    is_published: true,
-    // Ajouter les champs pour le progrès correct
-    progressPercent: Math.round((progress.validatedSegments / (progress.expectedSegments || 1)) * 100),
-    expectedSegments: progress.expectedSegments || 0,
-    totalSegments: progress.expectedSegments || 0,
-  }));
+  // Fallback pour l'ancien format si nécessaire
+  return [];
 };

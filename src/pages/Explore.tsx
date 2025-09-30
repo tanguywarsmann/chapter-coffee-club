@@ -1,220 +1,158 @@
-
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { BookCard } from '@/components/books/BookCard'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
-import { SearchBar } from "@/components/books/SearchBar";
-import { BookGrid } from "@/components/books/BookGrid";
-import { getAllBooks, getBooksByCategory, getAvailableCategories } from "@/services/books/bookQueries";
-import { toast } from "sonner";
-import { Book } from "@/types/book";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Sparkles } from "lucide-react";
-import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 
-import { BookEmptyState } from "@/components/reading/BookEmptyState";
-import { TagSlider } from "@/components/books/TagSlider";
+import { SearchBar } from "@/components/books/SearchBar";
+
+type Category = 'litterature' | 'religion' | 'essai' | 'bio'
 
 export default function Explore() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const isMounted = useRef(true);
-  const [showWelcome, setShowWelcome] = useState(() => {
-    const onboardingFlag = localStorage.getItem("onboardingDone");
-    return !onboardingFlag;
-  });
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
-  const fetchBooksAndCategories = useCallback(async () => {
-    if (!isMounted.current) return;
-    
-    setLoading(true);
-    setError(null);
+  const allowed: Category[] = ['litterature','religion','essai','bio']
+  const paramCat = searchParams.get('cat') as Category
+  const initialCat: Category = allowed.includes(paramCat) ? paramCat : 'litterature'
+  const initialQ = (searchParams.get('q') ?? '').trim()
 
-    try {
-      const [allBooks, availableCategories] = await Promise.all([
-        getAllBooks(),
-        getAvailableCategories()
-      ]);
-      
-      if (!isMounted.current) return;
+  const [category, setCategory] = useState<Category>(initialCat)
+  const [q, setQ] = useState(initialQ)
+  const [books, setBooks] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const pageSize = 24
 
-      if (allBooks.length === 0) {
-        setError("Aucun livre disponible pour le moment");
-      }
-      
-      setBooks(allBooks);
-      setFilteredBooks(allBooks);
-      setCategories(availableCategories);
-    } catch (error) {
-      console.error("Error loading books or categories:", error);
-      if (isMounted.current) {
-        setError("Erreur lors du chargement des livres");
-        toast.error("Erreur lors du chargement des livres");
-      }
-    } finally {
-      if (isMounted.current) {
-        setLoading(false);
-      }
-    }
-  }, []);
+  // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams)
+    params.set('cat', category)
+    if (q) params.set('q', q)
+    else params.delete('q')
+    navigate({ search: params.toString() }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, q])
 
   useEffect(() => {
-    isMounted.current = true;
-    fetchBooksAndCategories();
-    return () => {
-      isMounted.current = false;
-    };
-  }, [fetchBooksAndCategories]);
+    fetchBooks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, page, q])
 
-  const handleCategoryFilter = async (category: string | null) => {
-    if (!isMounted.current) return;
-    
-    setSelectedCategory(category);
-    setLoading(true);
-    
+  async function fetchBooks() {
+    setLoading(true)
+    setError(null)
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
     try {
-      if (category) {
-        const filteredBooks = await getBooksByCategory(category);
-        if (!isMounted.current) return;
-        setFilteredBooks(filteredBooks);
-        if (filteredBooks.length === 0) {
-          toast.info(`Aucun livre trouvé dans la catégorie "${category}"`);
-        }
-      } else {
-        setFilteredBooks(books);
+      let query = supabase
+        .from('books_explore')
+        .select('*')
+        .eq('category', category)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (q && q.length >= 2) {
+        query = query.or(`title.ilike.%${q}%,author.ilike.%${q}%`)
       }
-    } catch (error) {
-      console.error("Error filtering by category:", error);
-      if (isMounted.current) {
-        toast.error(`Erreur lors du filtrage par catégorie "${category}"`);
-      }
+
+      const { data, error } = await query
+      console.debug('[Explore] cat=', category, 'page=', page, 'q=', q, 'rows=', data?.length, 'error=', error)
+      if (error) throw error
+      setBooks(data || [])
+    } catch (e: any) {
+      console.error('[Explore] fetchBooks failed:', e)
+      setError(e.message ?? 'Erreur inconnue')
+      setBooks([])
     } finally {
-      if (isMounted.current) {
-        setLoading(false);
-      }
+      setLoading(false)
+    }
+  }
+
+  const getCategoryLabel = (cat: Category) => {
+    switch (cat) {
+      case 'litterature': return 'Littérature';
+      case 'religion': return 'Religion';
+      case 'essai': return 'Essai';
+      case 'bio': return 'Bio';
+      default: return 'Littérature';
     }
   };
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setFilteredBooks(books);
-      return;
-    }
-
-    const results = books.filter(book => 
-      book.title.toLowerCase().includes(query.toLowerCase()) ||
-      book.author.toLowerCase().includes(query.toLowerCase()) ||
-      book.categories.some(category => category.toLowerCase().includes(query.toLowerCase()))
-    );
-
-    setFilteredBooks(results);
-
-    if (results.length === 0) {
-      toast.info("Aucun livre trouvé pour cette recherche.");
-    }
-  };
-
-  const suggestedBook = books.length > 0 ? books[Math.floor(Math.random() * books.length)] : null;
+  const Tab = ({ value, label }: { value: Category; label: string }) => {
+    const active = category === value
+    return (
+      <button
+        onClick={() => { setCategory(value); setPage(1) }}
+        className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+          active 
+            ? 'bg-neutral text-neutral-foreground font-medium' 
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        }`}
+        aria-pressed={active}
+      >
+        {label}
+      </button>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
-        <AppHeader />
-        <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />
-        <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker">Découvrir de nouveaux livres</h1>
+      <AppHeader />
+      
+      <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
+        <div className="space-y-4">
+          <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
 
-            <div className="max-w-none">
-              <SearchBar 
-                onSearch={handleSearch} 
-                placeholder="Rechercher par titre, auteur ou thématique..."
-              />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Onglets catégories */}
+            <div className="inline-flex items-center gap-1 rounded-xl border border-border p-1 order-2 sm:order-1">
+              <Tab value="litterature" label="Littérature" />
+              <Tab value="religion" label="Religion" />
+              <Tab value="essai" label="Essai" />
+              <Tab value="bio" label="Bio" />
             </div>
 
-            <TagSlider
-              tags={categories}
-              selectedTag={selectedCategory}
-              onSelectTag={handleCategoryFilter}
-            />
+            {/* Barre de recherche à droite sur desktop, au-dessus sur mobile */}
+            <div className="order-1 sm:order-2 w-full sm:max-w-md" role="search" aria-label="Recherche de livres">
+              <SearchBar
+                onSearch={(value) => { setQ(value.trim()); setPage(1); }}
+                placeholder="Titre ou auteur…"
+                isSearching={loading}
+              />
+            </div>
           </div>
+        </div>
 
-          {loading ? (
-            <div className="py-20 flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
-                <p className="text-muted-foreground">Chargement des livres...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <BookEmptyState 
-              hasError={true}
-              title="Erreur"
-              description={error}
-            />
-          ) : (
-            <div className="space-y-12">
-              <BookGrid 
-                books={filteredBooks} 
-                title="Livres disponibles" 
-                showAddButton={true}
-                enablePagination={true}
-                initialPageSize={12}
-                pageSize={8}
-              />
+        {loading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {!loading && !error && books.length === 0 && (
+          <p className="text-sm text-muted-foreground">Aucun livre dans cette catégorie.</p>
+        )}
 
-              {suggestedBook && (
-                <Card className="border-coffee-light bg-white overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-1/3 lg:w-1/4">
-                        {suggestedBook.coverImage ? (
-                          <img 
-                            src={suggestedBook.coverImage} 
-                            alt={suggestedBook.title} 
-                            className="w-full h-full object-cover aspect-[3/4]" 
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/placeholder.svg';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full aspect-[3/4] flex items-center justify-center bg-coffee-medium">
-                            <span className="text-white font-serif italic text-4xl">
-                              {suggestedBook.title.substring(0, 1)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-6 md:w-2/3 lg:w-3/4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Sparkles className="h-5 w-5 text-coffee-dark" />
-                          <h2 className="text-xl font-serif font-medium text-coffee-darker">Suggestion pour vous</h2>
-                        </div>
-                        <h3 className="text-2xl font-medium text-coffee-darker mb-2">{suggestedBook.title}</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Par {suggestedBook.author} • {suggestedBook.pages} page{suggestedBook.pages > 1 ? "s" : ""} • {suggestedBook.publicationYear || "N/A"}
-                        </p>
-                        <p className="mb-4 text-coffee-darker">
-                          Un livre qui pourrait vous plaire, basé sur vos lectures précédentes.
-                        </p>
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {suggestedBook.categories.map((category, index) => (
-                            <span key={index} className="px-2 py-1 bg-coffee-light/30 text-coffee-darker rounded-full text-xs">
-                              {category}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
-  );
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {books.map(b => <BookCard key={b.id} book={b} />)}
+        </div>
+
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            className="px-3 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+            disabled={page === 1}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+          >
+            Précédent
+          </button>
+          <span className="text-sm text-muted-foreground">Page {page}</span>
+          <button
+            className="px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors"
+            onClick={() => setPage(p => p + 1)}
+          >
+            Suivant
+          </button>
+        </div>
+      </main>
+    </div>
+  )
 }

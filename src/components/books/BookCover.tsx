@@ -26,7 +26,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
   fluid = false
 }) => {
   // Use either the passed image or get it from the book
-  const coverImage = image || book?.coverImage;
+  const coverImage = image || book?.coverImage || (book as any)?.cover_url || (book as any)?.book_cover;
   const bookTitle = title || book?.title || "Unknown";
   
   // Calculate progress only if we have a book with chapters

@@ -1,7 +1,6 @@
 
-import { writeFileSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
-import { getBlogPosts } from '../src/utils/blogUtils';
+// neutralisé – l'API /api/sitemap.xml est la seule source
+process.exit(0);
 
 interface SitemapUrl {
   loc: string;

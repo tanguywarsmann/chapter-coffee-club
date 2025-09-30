@@ -1,179 +1,107 @@
-
-import { useState, useCallback, useEffect, useRef } from "react";
-import { Book } from "@/types/book";
-import { useNavigate } from "react-router-dom";
-import { useReadingList } from "@/hooks/useReadingList";
+import { useEffect, useState, useCallback } from "react";
+import { fetchReadingProgress, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBookSorting } from "@/hooks/useBookSorting";
-import { useBookFetching } from "./useBookFetching";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
+import { Book } from "@/types/book";
+
+type RLState = {
+  toReadCount: number;
+  inProgressCount: number;
+  completedCount: number;
+  isLoading: boolean;
+  isLoadingReadingList: boolean;
+  hasInitialFetch: boolean;
+  isDataReady: boolean;
+  toRead: Book[];
+  inProgress: Book[];
+  completed: Book[];
+};
 
 export const useReadingListPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const userId = user?.id;
-  const isMobile = useIsMobile();
-  
-  const { 
-    getBooksByStatus, 
-    isLoadingReadingList, 
-    readingList
-  } = useReadingList();
-  
-  const { sortBy, setSortBy, sortBooks } = useBookSorting();
-  
-  const [toReadBooks, setToReadBooks] = useState<Book[]>([]);
-  const [inProgressBooks, setInProgressBooks] = useState<Book[]>([]);
-  const [completedBooks, setCompletedBooks] = useState<Book[]>([]);
-  const [isDataReady, setIsDataReady] = useState<boolean>(false);
-
-  // Add reference to track if initial fetch was triggered
-  const initialFetchTriggered = useRef(false);
-  // New reference to track if the first userId-specific useEffect has been executed
-  const initialUserIdFetchDone = useRef(false);
-
-  // Use useBookFetching with the correct signature
-  const { 
-    isLoading, 
-    isFetching, 
-    error,
-    refetch,
-    hasLoaded
-  } = useBookFetching();
-
-  // Effect to track data state and update isDataReady
-  useEffect(() => {
-    try {
-      if (!isLoading && !isFetching) {
-        // Mark data as ready only when loading is complete
-        // and at least one of the lists contains data
-        const hasData = toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0;
-        setIsDataReady(hasData);
-      }
-    } catch (e) {
-      console.error("Error in useEffect for isDataReady:", e);
-    }
-  }, [toReadBooks, inProgressBooks, completedBooks, isLoading, isFetching]);
+  const { user, session } = useAuth();
+  const [state, setState] = useState<RLState>({
+    toReadCount: 0,
+    inProgressCount: 0,
+    completedCount: 0,
+    isLoading: true,
+    isLoadingReadingList: false,
+    hasInitialFetch: false,
+    isDataReady: false,
+    toRead: [],
+    inProgress: [],
+    completed: [],
+  });
 
   const navigateToBook = useCallback((bookId: string) => {
-    try {
-      if (!bookId) {
-        console.warn("navigateToBook called with empty or null bookId");
-        return;
-      }
-      if (typeof window !== "undefined") {
-        navigate(`/books/${bookId}`);
-      }
-    } catch (e) {
-      console.error("Error in navigateToBook:", e);
-    }
+    navigate(`/books/${bookId}`);
   }, [navigate]);
 
-  const handleFetchBooks = useCallback(async () => {
-    // Only fetch if no loading is in progress and userId exists
-    if (!userId || isFetching || isLoading) {
-      return;
-    }
-
-    // If data is already loaded, don't refetch
-    if (toReadBooks.length > 0 || inProgressBooks.length > 0 || completedBooks.length > 0) {
-      return;
-    }
-    
-    try {
-      console.log("[DEBUG] Fetching books for mobile:", isMobile, "userId:", userId);
-      
-      // Fetch all categories regardless of device type
-      const [toRead, inProgress, completed] = await Promise.all([
-        getBooksByStatus('to_read'),
-        getBooksByStatus('in_progress'),
-        getBooksByStatus('completed')
-      ]);
-      
-      console.log("[DEBUG] Fetched books:", {
-        toRead: toRead?.length || 0,
-        inProgress: inProgress?.length || 0,
-        completed: completed?.length || 0
-      });
-      
-      // Apply sorting
-      setToReadBooks(sortBooks(toRead || [], sortBy));
-      setInProgressBooks(sortBooks(inProgress || [], sortBy));
-      setCompletedBooks(sortBooks(completed || [], sortBy));
-    } catch (error) {
-      console.error("Error fetching books:", error);
-    }
-    
-  }, [
-    getBooksByStatus, 
-    userId,
-    isFetching,
-    isLoading,
-    toReadBooks.length,
-    inProgressBooks.length,
-    completedBooks.length,
-    sortBooks,
-    sortBy,
-    isMobile
-  ]);
-
-  // NEW EFFECT: Watch specifically ONLY for userId appearance
-  // without depending on the lists to avoid loops
   useEffect(() => {
-    if (userId && !initialUserIdFetchDone.current) {
-      initialUserIdFetchDone.current = true;
-      
-      // Check if lists are empty before triggering fetch
-      if (toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
-        handleFetchBooks();
+    if (!user?.id) {
+      console.log("⚪ [ReadingList] no user, finishing empty");
+      setState(s => ({ ...s, isLoading: false, isLoadingReadingList: false, hasInitialFetch: true, isDataReady: true }));
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        setState(s => ({ ...s, isLoading: true, isLoadingReadingList: true }));
+        console.log("[useReadingListPage] User:", user, " Session:", session);
+        
+        // Récupérer les données brutes de progression
+        const payload = await fetchReadingProgress(user.id);
+
+        if (cancelled) return;
+
+        // Utiliser le service qui calcule correctement les segments validés et la progression
+        const toReadBooks = await fetchBooksForStatus(payload, 'to_read', user.id);
+        const inProgressBooks = await fetchBooksForStatus(payload, 'in_progress', user.id);
+        const completedBooks = await fetchBooksForStatus(payload, 'completed', user.id);
+
+        setState(s => ({
+          ...s,
+          toReadCount: payload.toReadCount,
+          inProgressCount: payload.inProgressCount,
+          completedCount: payload.completedCount,
+          toRead: toReadBooks,
+          inProgress: inProgressBooks,
+          completed: completedBooks,
+          isLoading: false,
+          isLoadingReadingList: false,
+          hasInitialFetch: true,
+          isDataReady: true,
+        }));
+      } catch (e) {
+        console.error("[useReadingListPage] fatal:", e);
+        if (cancelled) return;
+        setState(s => ({
+          ...s,
+          isLoading: false,
+          isLoadingReadingList: false,
+          hasInitialFetch: true,
+          isDataReady: true,
+        }));
       }
-    }
-  }, [userId, handleFetchBooks, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
+    };
 
-  // NEW EFFECT: Watch specifically for userId appearance
-  // and trigger initial fetch if needed
-  useEffect(() => {
-    if (userId && !initialFetchTriggered.current && !isLoading && !isFetching) {
-      initialFetchTriggered.current = true;
-      handleFetchBooks();
-    }
-  }, [userId, handleFetchBooks, isLoading, isFetching]);
-
-  // Mount effect for first data retrieval
-  useEffect(() => {
-    // Only trigger if userId exists, no loading is in progress and there's no data yet
-    if (userId && !isLoading && !isFetching && 
-       toReadBooks.length === 0 && inProgressBooks.length === 0 && completedBooks.length === 0) {
-      handleFetchBooks();
-    }
-  }, [userId, handleFetchBooks, isLoading, isFetching, toReadBooks.length, inProgressBooks.length, completedBooks.length]);
-
-  // Effect for readingList changes
-  useEffect(() => {
-    if (userId && readingList && !isLoading && !isFetching) {
-      // Only trigger if readingList actually changes
-      handleFetchBooks();
-    }
-  }, [userId, readingList, handleFetchBooks, isLoading, isFetching]);
+    run();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   return {
-    user,
     books: {
-      toRead: toReadBooks,
-      inProgress: inProgressBooks,
-      completed: completedBooks
+      toRead: state.toRead,
+      inProgress: state.inProgress,
+      completed: state.completed
     },
     loading: {
-      isLoading,
-      isLoadingReadingList,
-      isFetching,
-      isDataReady
+      isLoading: state.isLoading,
+      isLoadingReadingList: state.isLoadingReadingList,
+      isDataReady: state.isDataReady,
+      isFetching: false
     },
-    error,
-    sortBy,
-    setSortBy,
     navigateToBook,
-    fetchBooks: handleFetchBooks,
-    isMobile // Add this to allow components to check if mobile view is active
   };
 };

@@ -4,11 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { bookFailureCache } from "@/utils/bookFailureCache";
-import { fetchReadingProgress, addBookToReadingList } from "@/services/reading/readingListService";
+import { fetchReadingProgress, addBookToReadingList, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useReadingListState } from "./useReadingListState";
 import { Book } from "@/types/book";
 import { cacheBooksByStatus, getCachedBooksByStatus, clearBooksByStatusCache } from "./useReadingListCache";
-import { safeFetchBooksForStatus } from "./useReadingListHelpers";
 import { useStableCallback } from "./useStableCallback";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
 import { useDebounce } from "./useDebounce";
@@ -111,7 +110,7 @@ export const useReadingList = () => {
       
       // Completed = always fetch from server (potentially most volatile)
       if (status === "completed") {
-        const booksFetched = await safeFetchBooksForStatus(readingList, status, debouncedUserId);
+        const booksFetched = await fetchBooksForStatus(readingList, status, debouncedUserId);
         cacheBooksByStatus(status, booksFetched);
         queryClient.setQueryData(["books_by_status", debouncedUserId, status], booksFetched);
         return booksFetched;
@@ -131,7 +130,7 @@ export const useReadingList = () => {
       }
       
       // Else, fetch and cache
-      const booksFetched = await safeFetchBooksForStatus(readingList, status, debouncedUserId);
+      const booksFetched = await fetchBooksForStatus(readingList, status, debouncedUserId);
       cacheBooksByStatus(status, booksFetched);
       queryClient.setQueryData(["books_by_status", debouncedUserId, status], booksFetched);
       return booksFetched;
@@ -258,7 +257,7 @@ export const useReadingList = () => {
       
       try {
         queryClient.removeQueries({ queryKey: ["books_by_status", debouncedUserId, "completed"] });
-        const completedBooks = await safeFetchBooksForStatus(readingList, "completed", debouncedUserId);
+        const completedBooks = await fetchBooksForStatus(readingList, "completed", debouncedUserId);
         if (isMounted.current) {
           updateBooks(books.toRead, books.inProgress, completedBooks);
         }

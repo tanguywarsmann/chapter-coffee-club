@@ -256,7 +256,9 @@ export async function searchUsers(query: string, limit: number = 5): Promise<Pro
       created_at: profile.created_at,
       updated_at: null,
       email: null, // Never expose email in search results
-      is_admin: null // Never expose admin status in search results
+      is_admin: null, // Never expose admin status in search results
+      onboarding_seen_at: null, // Not relevant for search results
+      onboarding_version: null // Not relevant for search results
     }));
     
     return profiles;

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ONBOARDING_KEY } from "@/constants/onboarding";
 import { Check } from "lucide-react";
 
 interface WelcomeModalWithNavigateProps {
@@ -21,7 +22,7 @@ try {
 }
 
   const handleStart = () => {
-    localStorage.setItem("onboardingDone", "true");
+    localStorage.setItem(ONBOARDING_KEY, "true");
     onClose(false);
     navigate("/auth?mode=signup");
   };

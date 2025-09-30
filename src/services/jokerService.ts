@@ -1,10 +1,32 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getCorrectAnswerAfterJoker, CorrectAnswerResult } from "./questionService";
+import { canUseJokers, calculateJokersAllowed } from "@/utils/jokerConstraints";
 
 export interface JokerUsageResult {
   jokersRemaining: number;
   success: boolean;
   message: string;
+}
+
+export async function useJokerAndReveal(params: {
+  bookId: string;
+  questionId: string;
+  userId: string;
+  expectedSegments?: number;
+}): Promise<string> {
+  // Garde-fou service: vérifier la contrainte avant l'appel
+  if (!canUseJokers(params.expectedSegments ?? 0)) {
+    throw new Error("Joker indisponible: nécessite au moins 3 segments.");
+  }
+  
+  // Single call - Edge Function consumes joker and returns answer
+  return getCorrectAnswerAfterJoker({
+    bookId: params.bookId,
+    questionId: params.questionId,
+    userId: params.userId,
+    consume: true
+  });
 }
 
 /**
@@ -17,8 +39,13 @@ export interface JokerUsageResult {
 export async function useJokerAtomically(
   bookId: string,
   userId: string,
-  segment: number
+  segment: number,
+  expectedSegments?: number
 ): Promise<JokerUsageResult> {
+  // Garde-fou service: vérifier la contrainte avant l'appel
+  if (!canUseJokers(expectedSegments ?? 0)) {
+    throw new Error("Joker indisponible: nécessite au moins 3 segments.");
+  }
   try {
     const { data, error } = await supabase.rpc('use_joker', {
       p_book_id: bookId,
@@ -66,7 +93,7 @@ export async function useJokerAtomically(
 
 /**
  * Récupère le nombre de jokers restants pour un livre
- * @param bookId - ID du livre
+ * @param bookId - ID du livre (peut être UUID ou slug)
  * @param userId - ID de l'utilisateur
  * @returns Nombre de jokers restants
  */
@@ -75,12 +102,37 @@ export async function getRemainingJokers(
   userId: string
 ): Promise<number> {
   try {
-    // Récupérer les informations du livre
-    const { data: bookData, error: bookError } = await supabase
-      .from('books')
+    // Try to get book info - handle both UUID and slug cases
+    let bookData, bookError;
+    
+    // First try by id (UUID)
+    const uuidResult = await supabase
+      .from('books_public')
       .select('expected_segments')
       .eq('id', bookId)
-      .single();
+      .maybeSingle();
+    
+    if (!uuidResult.error && uuidResult.data) {
+      bookData = uuidResult.data;
+      bookError = null;
+    } else {
+      // If not found by UUID, try by slug using the main books table
+      const slugResult = await supabase
+        .from('books')
+        .select('expected_segments, id')
+        .eq('slug', bookId)
+        .eq('is_published', true)
+        .maybeSingle();
+      
+      if (!slugResult.error && slugResult.data) {
+        bookData = slugResult.data;
+        bookError = null;
+        // Update bookId to the actual UUID for progress queries
+        bookId = slugResult.data.id;
+      } else {
+        bookError = slugResult.error || new Error('Book not found');
+      }
+    }
 
     if (bookError || !bookData) {
       console.error('Erreur lors de la récupération du livre:', bookError);
@@ -100,8 +152,8 @@ export async function getRemainingJokers(
       return 0;
     }
 
-    // Calculer les jokers autorisés
-    const jokersAllowed = Math.floor(bookData.expected_segments / 10) + 1;
+    // Calculer les jokers autorisés via l'utilitaire centralisé
+    const jokersAllowed = calculateJokersAllowed(bookData.expected_segments);
 
     // Compter les jokers utilisés
     const { data: validationsData, error: validationsError } = await supabase

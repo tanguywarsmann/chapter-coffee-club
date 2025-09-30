@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
-import { safeFetchBooksForStatus } from "./useReadingListHelpers";
+import { fetchBooksForStatus } from "@/services/reading/readingListService";
 import { cacheBooksByStatus, getCachedBooksByStatus, clearBooksByStatusCache } from "./useReadingListCache";
 import { useStableCallback } from "./useStableCallback";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
@@ -38,7 +38,7 @@ export const useReadingListBooks = (readingList: any, userId: string) => {
       
       // Completed = always fetch from server (potentially most volatile)
       if (status === "completed") {
-        const booksFetched = await safeFetchBooksForStatus(readingList, status, userId);
+        const booksFetched = await fetchBooksForStatus(readingList, status, userId);
         cacheBooksByStatus(status, booksFetched);
         queryClient.setQueryData(["books_by_status", userId, status], booksFetched);
         return booksFetched;
@@ -61,7 +61,7 @@ export const useReadingListBooks = (readingList: any, userId: string) => {
       }
       
       // Else, fetch and cache
-      const booksFetched = await safeFetchBooksForStatus(readingList, status, userId);
+      const booksFetched = await fetchBooksForStatus(readingList, status, userId);
       cacheBooksByStatus(status, booksFetched);
       queryClient.setQueryData(["books_by_status", userId, status], booksFetched);
       return booksFetched;

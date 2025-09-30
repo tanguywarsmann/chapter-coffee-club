@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
-import { useConfetti } from "./useConfetti";
+import confetti from 'canvas-confetti';
 import { useReadingProgress } from "./useReadingProgress";
 import { useValidationState } from "./useValidationState";
 import { useQuizCompletion } from "./useQuizCompletion";
@@ -57,7 +57,36 @@ export const useBookValidation = ({
     resetValidationState
   } = useValidationState();
 
-  const { showConfetti } = useConfetti();
+  const showConfetti = () => {
+    console.log("🎊 TRIGGERING CONFETTI");
+    try {
+      // Explosion principale
+      confetti({
+        particleCount: 200,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Effets latéraux
+      setTimeout(() => {
+        confetti({
+          particleCount: 100,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 100,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 250);
+      
+    } catch (error) {
+      console.error("❌ Confetti failed:", error);
+    }
+  };
   const { forceRefresh } = useReadingProgress();
 
   // Monthly reward
@@ -183,94 +212,86 @@ export const useBookValidation = ({
     }, 'useBookValidation.handleValidationConfirm')
   );
 
-  // Handler consolidé pour la complétion du quiz
+  // Handler consolidé pour la complétion du quiz - CORRECTION DOUBLE VALIDATION
   const handleQuizCompleteWrapper = useCallback(async (correct: boolean, useJoker?: boolean) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("📞 handleQuizCompleteWrapper called with:", { correct, useJoker });
+    console.log("📞 handleQuizCompleteWrapper called:", { correct, useJoker });
+
+    // SI JOKER UTILISÉ ET CORRECT -> PAS DE VALIDATION SUPPLÉMENTAIRE
+    if (useJoker && correct) {
+      console.log("🃏 Joker used successfully - skipping RPC validation");
+      showConfetti();
+      // Retourner immédiatement sans appeler handleQuizComplete
+      return { success: true, newBadges: [] };
     }
-    try {
-      const result = await handleQuizComplete(correct, useJoker);
 
-      if (correct) {
-        showConfetti();
-        
-        if (refreshProgressData) {
-          await refreshProgressData();
+    if (correct) {
+      console.log("🎉 Showing confetti and success animations");
+      console.log("🎊 showConfetti function:", showConfetti);
+      console.log("🎊 showConfetti type:", typeof showConfetti);
+      showConfetti();
+    }
+    
+    // Appeler handleQuizComplete SEULEMENT si pas de joker
+    const result = await handleQuizComplete(correct, false);
+    
+    if (correct && result) {
+      // Handle badges and rewards complets
+      if (userId) {
+        // Check for new badges
+        if (result?.newBadges && result.newBadges.length > 0) {
+          console.log("🏆 New badges unlocked:", result.newBadges);
+          setUnlockedBadges(result.newBadges);
+          setShowBadgeDialog(true);
         }
-        forceRefresh();
-
-        // Refreshs en cascade pour assurer la cohérence
-        setTimeout(async () => {
-          if (refreshProgressData) {
-            await refreshProgressData();
-          }
-          if (refreshReadingProgress) {
-            refreshReadingProgress(true);
-          }
-        }, 100);
         
-        setTimeout(async () => {
-          if (refreshProgressData) {
-            await refreshProgressData();
+        // Handle completed books
+        if ((currentBook || book)?.isCompleted) {
+          const completedBooks = localStorage.getItem(`completed_books_${userId}`)
+            ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
+            : [];
+          if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
+            completedBooks.push(currentBook || book);
+            localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
           }
-          if (refreshReadingProgress) {
-            refreshReadingProgress(true);
-          }
-          if (setCurrentBook && currentBook) {
-            setCurrentBook(currentBook);
-          }
-        }, 500);
-
-        if (userId) {
-          if (result?.newBadges && result.newBadges.length > 0) {
-            setUnlockedBadges(result.newBadges);
-            setShowBadgeDialog(true);
-          }
-          
-          if ((currentBook || book)?.isCompleted) {
-            const completedBooks = localStorage.getItem(`completed_books_${userId}`)
-              ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
-              : [];
-            if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
-              completedBooks.push(currentBook || book);
-              localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
-            }
-          }
-          
-          if (sessionStartTimeRef.current) {
-            const endTime = new Date();
-            recordReadingSession(userId, sessionStartTimeRef.current, endTime);
-            sessionStartTimeRef.current = null;
-          }
-          
-          // Monthly reward dialog
+        }
+        
+        // Record reading session
+        if (sessionStartTimeRef.current) {
+          const endTime = new Date();
+          recordReadingSession(userId, sessionStartTimeRef.current, endTime);
+          sessionStartTimeRef.current = null;
+        }
+        
+        // Check monthly reward
+        try {
           const monthlyBadge = await checkAndGrantMonthlyReward(userId);
           if (monthlyBadge) {
+            console.log("🎁 Monthly reward available");
             setTimeout(() => {
               setShowMonthlyReward(true);
-            }, 1000);
+            }, 1500); // Après les confettis
           }
+        } catch (error) {
+          console.warn("Monthly reward check failed:", error);
         }
-        toast.success("Segment validé avec succès !");
-      } else {
-        if (refreshProgressData) {
-          await refreshProgressData();
-        }
-        forceRefresh();
       }
-    } catch (error) {
-      toast.error("Une erreur est survenue lors de la validation");
-      if (refreshProgressData) {
-        await refreshProgressData();
-      }
-      forceRefresh();
+      
+      toast.success("Segment validé avec succès !");
     }
+    
+    // Force refresh de toutes les données
+    console.log("🔄 Forcing complete data refresh");
+    if (refreshProgressData) {
+      await refreshProgressData();
+    }
+    forceRefresh();
+    
+    return result;
   }, [
     handleQuizComplete,
     showConfetti,
     refreshProgressData,
     forceRefresh,
-    refreshReadingProgress,
     userId,
     setCurrentBook,
     currentBook,
@@ -279,6 +300,11 @@ export const useBookValidation = ({
     setUnlockedBadges,
     setShowMonthlyReward,
   ]);
+
+  // New signature wrapper for modal components
+  const handleQuizCompleteForModals = useCallback((args: { correct: boolean; useJoker: boolean }) => {
+    return handleQuizCompleteWrapper(args.correct, args.useJoker);
+  }, [handleQuizCompleteWrapper]);
 
   // Mémoriser les valeurs de retour pour éviter les re-rendus
   const returnValue = useMemo(() => ({
@@ -293,7 +319,7 @@ export const useBookValidation = ({
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizComplete: handleQuizCompleteWrapper,
+    handleQuizComplete: handleQuizCompleteForModals, // Use new signature for modals
     handleValidationConfirm,
     showConfetti,
     validationError,
@@ -324,7 +350,7 @@ export const useBookValidation = ({
     setShowSuccessMessage,
     handleValidateReading,
     prepareAndShowQuestion,
-    handleQuizCompleteWrapper,
+    handleQuizCompleteForModals,
     handleValidationConfirm,
     showConfetti,
     validationError,

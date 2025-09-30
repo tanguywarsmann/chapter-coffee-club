@@ -1,7 +1,5 @@
 
-console.log("Import de CurrentBook.tsx OK");
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
@@ -13,6 +11,7 @@ import { CurrentBookInfo } from "./CurrentBookInfo";
 import { useCurrentBookValidation } from "@/hooks/useCurrentBookValidation";
 import { calculateReadingProgress } from "@/lib/progress";
 import { texts } from "@/i18n/texts";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CurrentBookProps {
   book: Book | null;
@@ -26,7 +25,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
   });
 
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user } = useAuth();
   
   // Si le livre est null ou undefined, on affiche un message alternatif
   if (!book) {
@@ -60,7 +59,12 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
     currentQuestion,
     handleValidateReading,
     handleQuizComplete
-  } = useCurrentBookValidation(userId, book, onProgressUpdate);
+  } = useCurrentBookValidation(user?.id || null, book, onProgressUpdate);
+
+  // Wrapper to convert new signature to old signature - but handleQuizComplete now expects new signature
+  const handleQuizCompleteWrapper = (args: { correct: boolean; useJoker: boolean }) => {
+    handleQuizComplete(args);
+  };
 
   const chaptersRead = book.chaptersRead || 0;
   const totalChapters = book.totalChapters || book.expectedSegments || 1;
@@ -98,7 +102,7 @@ export function CurrentBook({ book, onProgressUpdate }: CurrentBookProps) {
         <QuizModal 
           bookTitle={book.title} 
           chapterNumber={quizChapter}
-          onComplete={handleQuizComplete}
+          onComplete={handleQuizCompleteWrapper}
           onClose={() => setShowQuiz(false)}
           question={currentQuestion}
         />

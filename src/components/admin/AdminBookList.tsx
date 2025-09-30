@@ -9,6 +9,7 @@ import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 import { AddBookForm } from "@/components/admin/AddBookForm";
 import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
 import { toast } from "@/hooks/use-toast";
+import { generateAndSaveCover } from "@/utils/generateCover";
 import { Book } from "@/types/book";
 
 // Define BookValidationStatus as an extension of the Book type
@@ -20,7 +21,18 @@ interface BookValidationStatus extends Book {
   segments: number[]; // Available segments
   missingSegments: number[]; // Missing segments
   status: 'complete' | 'incomplete' | 'missing'; // Validation status
+  cover_url?: string; // Cover URL
 }
+
+type BookSegmentStatus = {
+  id: string;
+  slug: string;
+  title: string;
+  expected_segments: number | null;
+  available_questions: number;
+  missing_segments: number[];
+  status: 'unknown' | 'missing' | 'incomplete' | 'complete';
+};
 
 export function AdminBookList() {
   const [books, setBooks] = useState<BookValidationStatus[]>([]);
@@ -30,11 +42,8 @@ export function AdminBookList() {
   const [isFixingSegments, setIsFixingSegments] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+  const [generatingCovers, setGeneratingCovers] = useState<Set<string>>(new Set());
 
-  // Fonction pour calculer le nombre de segments basé sur le nombre de pages
-  const calculateExpectedSegments = (totalPages: number): number => {
-    return Math.ceil(totalPages / 30);
-  };
 
   // Fonction pour corriger les segments commençant à 0
   const fixSegmentIndexing = async () => {
@@ -129,46 +138,30 @@ export function AdminBookList() {
     setError(null);
     
     try {
-      // Récupérer tous les livres
+      // Récupérer tous les livres avec expected_segments
       const { data: booksData, error: booksError } = await supabase
         .from('books')
-        .select('id, title, slug, total_pages');
+        .select('id, title, slug, total_pages, cover_url, expected_segments');
       
       if (booksError) throw booksError;
       
-      // Récupérer toutes les questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('reading_questions')
-        .select('book_slug, segment');
+      // Récupérer l'état des segments depuis la vue
+      const { data: statuses } = await supabase
+        .from('book_segment_status')
+        .select('*');
       
-      if (questionsError) throw questionsError;
+      const bySlug = new Map(statuses?.map(s => [s.slug, s as BookSegmentStatus]) ?? []);
       
       // Transformer les données pour l'affichage
       const booksWithStatus: BookValidationStatus[] = booksData.map(book => {
         const totalPages = book.total_pages || 0;
-        const expectedSegments = calculateExpectedSegments(totalPages);
+        const expectedSegments = book.expected_segments ?? 0;
+        const statusData = bySlug.get(book.slug);
         
-        // Récupérer les segments qui ont des questions pour ce livre
-        const bookQuestions = questionsData.filter(q => q.book_slug === book.slug);
-        const segments = bookQuestions.map(q => q.segment);
-        const uniqueSegments = [...new Set(segments)];
-        
-        // Calculer les segments manquants (en commençant à 1, pas 0)
-        const missingSegments = [];
-        for (let i = 1; i <= expectedSegments; i++) {
-          if (!uniqueSegments.includes(i)) {
-            missingSegments.push(i);
-          }
-        }
-        
-        let status: 'complete' | 'incomplete' | 'missing';
-        if (uniqueSegments.length === 0) {
-          status = 'missing';
-        } else if (uniqueSegments.length === expectedSegments && !missingSegments.length) {
-          status = 'complete';
-        } else {
-          status = 'incomplete';
-        }
+        const availableQuestions = statusData?.available_questions ?? 0;
+        const missingSegments = statusData?.missing_segments ?? [];
+        const status = statusData?.status === 'complete' ? 'complete' : 
+                      statusData?.status === 'incomplete' ? 'incomplete' : 'missing';
         
         // Create a BookValidationStatus object with all required fields
         return {
@@ -177,15 +170,16 @@ export function AdminBookList() {
           slug: book.slug,
           total_pages: totalPages,
           expectedSegments: expectedSegments,
-          availableQuestions: uniqueSegments.length,
-          segments: uniqueSegments,
+          availableQuestions: availableQuestions,
+          segments: [], // We don't need this for display anymore
           missingSegments: missingSegments,
           status: status,
+          cover_url: book.cover_url,
           // Add required fields from Book
           author: "", // Default value since it might not be available
           description: "", // Default value
           totalChapters: expectedSegments, // Use expectedSegments as totalChapters
-          chaptersRead: uniqueSegments.length, // Use availableQuestions as chaptersRead
+          chaptersRead: availableQuestions, // Use availableQuestions as chaptersRead
           isCompleted: status === 'complete', // Mark as completed if all segments are available
           language: "fr", // Default value
           categories: [], // Default empty array
@@ -265,6 +259,32 @@ export function AdminBookList() {
   // Handler pour ouvrir la boîte de dialogue de suppression
   const handleDeleteClick = (book: {id: string; title: string}) => {
     setBookToDelete(book);
+  };
+
+  // Handler pour générer une couverture
+  const handleGenerateCover = async (book: BookValidationStatus) => {
+    setGeneratingCovers(prev => new Set(prev).add(book.id));
+    
+    try {
+      const url = await generateAndSaveCover(book);
+      toast({
+        title: `Couverture générée pour "${book.title}"`,
+        description: `URL: ${url}`,
+      });
+      handleBookUpdate();
+    } catch (error: any) {
+      toast({
+        title: "Erreur lors de la génération de la couverture",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingCovers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(book.id);
+        return newSet;
+      });
+    }
   };
 
   // Composant pour afficher les segments manquants
@@ -393,6 +413,7 @@ export function AdminBookList() {
               <TableHead className="text-right">Segments attendus</TableHead>
               <TableHead className="text-right">Questions disponibles</TableHead>
               <TableHead className="text-right">Couverture</TableHead>
+              <TableHead className="text-center">Cover</TableHead>
               <TableHead className="text-right">État</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -406,6 +427,27 @@ export function AdminBookList() {
                 <TableCell className="text-right">{book.availableQuestions}</TableCell>
                 <TableCell className="text-right">
                   {Math.round((book.availableQuestions / book.expectedSegments) * 100)}%
+                </TableCell>
+                <TableCell className="text-center">
+                  {book.cover_url ? (
+                    <div className="flex items-center justify-center text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateCover(book)}
+                      disabled={generatingCovers.has(book.id)}
+                      className="text-xs px-2 py-1 h-6"
+                    >
+                      {generatingCovers.has(book.id) ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        "📕 Générer"
+                      )}
+                    </Button>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   {renderStatus(book.status)}
@@ -429,7 +471,7 @@ export function AdminBookList() {
             ))}
             {books.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   Aucun livre trouvé
                 </TableCell>
               </TableRow>

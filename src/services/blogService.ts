@@ -37,7 +37,7 @@ export interface UpdateBlogPostData extends Partial<CreateBlogPostData> {
 }
 
 export const blogService = {
-  // Récupérer tous les articles publiés
+  // Récupérer tous les articles publiés (conservé pour compatibilité)
   async getPublishedPosts(limit = 50): Promise<BlogPost[]> {
     console.log('Fetching published posts...');
     const nowIso = new Date().toISOString();
@@ -63,6 +63,44 @@ export const blogService = {
       imageHero: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
       imageAlt: post.image_alt
     }));
+  },
+
+  // Récupérer une page d'articles publiés avec pagination
+  async getPublishedPostsPage(page: number, pageSize: number): Promise<{data: BlogPost[], count: number}> {
+    console.log(`Fetching published posts page ${page} with pageSize ${pageSize}...`);
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    const nowIso = new Date().toISOString();
+    
+    const { data, count, error } = await supabase
+      .from('blog_posts')
+      .select('id,title,slug,excerpt,image_url,image_alt,published_at,author,tags', { count: 'exact' })
+      .eq('published', true)
+      .or(`published_at.is.null,published_at.lte.${nowIso}`)
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error('getPublishedPostsPage error', error);
+      throw error;
+    }
+
+    console.log(`Published posts page ${page} fetched:`, data);
+    return {
+      data: (data || []).map(post => ({
+        ...post,
+        imageUrl: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
+        imageHero: post.image_url ? getPublicImageUrl(post.image_url) : undefined,
+        imageAlt: post.image_alt,
+        content: '', // Non nécessaire pour la liste
+        created_at: post.published_at || '',
+        updated_at: post.published_at || '',
+        published: true // Toujours true car on filtre déjà les publiés
+      })),
+      count: count ?? 0
+    };
   },
 
   // Récupérer tous les articles (pour l'admin)

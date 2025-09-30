@@ -69,25 +69,28 @@ export function ValidationModal({
         </DialogHeader>
         
         <div className="py-4 space-y-4">
-          {/* Jokers info */}
-          {jokersAllowed > 0 && (
-            <div className="bg-muted/50 p-3 rounded-lg border border-coffee-light">
-              <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4" />
-                <span 
-                  className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}
-                  data-testid="jokers-remaining"
-                >
-                  Jokers disponibles : {Math.max(0, jokersAllowed - jokersUsed)} / {jokersAllowed}
-                </span>
-              </div>
-              {jokersUsed >= jokersAllowed && (
-                <p className="text-caption text-muted-foreground mt-1">
-                  Tous vos jokers ont été utilisés pour ce livre
-                </p>
-              )}
+          {/* Jokers info - affiche toujours 0/0 si jokersAllowed = 0 (UI gating) */}
+          <div className="bg-muted/50 p-3 rounded-lg border border-coffee-light">
+            <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4" />
+              <span 
+                className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}
+                data-testid="jokers-remaining"
+              >
+                Jokers disponibles : {Math.max(0, jokersAllowed - jokersUsed)} / {jokersAllowed}
+              </span>
             </div>
-          )}
+            {jokersAllowed === 0 && (
+              <p className="text-caption text-muted-foreground mt-1">
+                Jokers disponibles à partir de 3 segments
+              </p>
+            )}
+            {jokersAllowed > 0 && jokersUsed >= jokersAllowed && (
+              <p className="text-caption text-muted-foreground mt-1">
+                Tous vos jokers ont été utilisés pour ce livre
+              </p>
+            )}
+          </div>
 
           {isLocked && remainingLockTime && remainingLockTime > 0 ? (
             <div role="status" aria-live="polite">

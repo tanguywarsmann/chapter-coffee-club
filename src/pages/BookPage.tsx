@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Loader2 } from "lucide-react";
 import { getBookReadingProgress } from "@/services/reading/progressService";
+import { useExpectedSegments } from "@/hooks/useExpectedSegments";
+import { uiCanSurfaceJoker } from "@/utils/jokerUiGate";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +23,20 @@ export default function BookPage() {
   const location = useLocation();
   const { user } = useAuth();
   const isMounted = useRef(true);
+  
+  // Debug pour le gating UI des jokers
+  const expectedSegments = useExpectedSegments(book);
+  const canShowJoker = uiCanSurfaceJoker(expectedSegments);
+  
+  useEffect(() => {
+    if (book) {
+      console.info("[BOOK/JOKER UI]", {
+        bookTitle: book.title,
+        expectedSegments,
+        canShowJoker,
+      });
+    }
+  }, [book?.title, expectedSegments, canShowJoker]);
   
   // État pour les messages d'alerte
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);

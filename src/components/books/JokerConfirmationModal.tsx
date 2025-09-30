@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Sparkles, X } from "lucide-react";
+import { canUseJokers, getJokerDisabledMessage } from "@/utils/jokerConstraints";
 
 interface JokerConfirmationModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface JokerConfirmationModalProps {
   jokersAllowed: number;
   jokersRemaining?: number;
   isUsingJoker?: boolean;
+  expectedSegments?: number;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -20,10 +22,13 @@ export function JokerConfirmationModal({
   jokersAllowed,
   jokersRemaining: propJokersRemaining,
   isUsingJoker = false,
+  expectedSegments = 0,
   onConfirm,
   onCancel
 }: JokerConfirmationModalProps) {
   const jokersRemaining = propJokersRemaining ?? Math.max(0, jokersAllowed - jokersUsed);
+  const canUse = canUseJokers(expectedSegments);
+  const disabledMsg = getJokerDisabledMessage(expectedSegments);
 
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
@@ -65,12 +70,17 @@ export function JokerConfirmationModal({
           </Button>
           <Button 
             onClick={onConfirm}
-            disabled={jokersRemaining <= 0 || isUsingJoker}
+            disabled={!canUse || jokersRemaining <= 0 || isUsingJoker}
             className="bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            {isUsingJoker ? "Utilisation..." : "Utiliser un Joker"}
+            {!canUse ? "Jokers indisponibles" : (isUsingJoker ? "Utilisation..." : "Utiliser un Joker")}
           </Button>
+          {!canUse && disabledMsg && (
+            <p className="text-caption text-muted-foreground text-center mt-2">
+              {disabledMsg}
+            </p>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

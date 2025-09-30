@@ -1,39 +1,32 @@
 
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect } from "react";
+import { Link, useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { blogService } from "@/services/blogService";
 import { setCanonical } from "@/utils/seo";
-import type { BlogPost } from "@/services/blogService";
+import { usePaginatedPosts } from "@/hooks/usePaginatedPosts";
+import BlogList from "@/components/blog/BlogList";
+import BlogPagination from "@/components/blog/BlogPagination";
 
 export default function Blog() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const pageNum = Math.max(1, Number(params.page ?? 1) || 1);
+  const pageSize = 12;
+  
+  const { posts, totalPages, total, isLoading, error } = usePaginatedPosts(pageNum, pageSize);
 
   useEffect(() => {
-    setCanonical('https://www.vread.fr/blog');
-    
-    const loadPosts = async () => {
-      try {
-        const data = await blogService.getPublishedPosts();
-        setPosts(data);
-        setError(null);
-      } catch (error) {
-        setError('Erreur lors du chargement des articles');
-      } finally {
-        setLoading(false);
-      }
-    };
+    const canonical = pageNum === 1 ? 'https://www.vread.fr/blog' : `https://www.vread.fr/blog/page/${pageNum}`;
+    setCanonical(canonical);
+  }, [pageNum]);
 
-    loadPosts();
-  }, []);
+  // Si on tape une page au-delà du dernier index, rediriger vers la dernière page
+  if (pageNum > totalPages && total > 0) {
+    return <Navigate to={`/blog/page/${totalPages}`} replace />;
+  }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-logo-background">
         <div className="mx-auto w-full px-4 max-w-none py-8">
@@ -56,40 +49,39 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog VREAD — Découvrez nos articles sur la lecture</title>
-        <meta name="description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
-        <meta property="og:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
-        <meta property="og:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
+        <title>{pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`}</title>
+        <meta name="description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
+        <meta property="og:title" content={pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`} />
+        <meta property="og:description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.vread.fr/blog" />
+        <meta property="og:url" content={pageNum === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum}`} />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Blog VREAD — Découvrez nos articles sur la lecture" />
-        <meta name="twitter:description" content="Découvrez nos articles sur la lecture, les livres et la culture littéraire. Blog de l'application VREAD." />
-        <link rel="canonical" href="https://www.vread.fr/blog" />
+        <meta name="twitter:title" content={pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`} />
+        <meta name="twitter:description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
+        <link rel="canonical" href={pageNum === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum}`} />
+        {pageNum > 1 && (
+          <link rel="prev" href={pageNum - 1 === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum - 1}`} />
+        )}
+        {pageNum < totalPages && (
+          <link rel="next" href={`https://www.vread.fr/blog/page/${pageNum + 1}`} />
+        )}
         
-        {/* Schema.org structured data for blog */}
+        {/* Schema.org structured data for ItemList */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Blog",
+            "@type": "ItemList",
             "name": "Blog VREAD",
-            "description": "Découvrez nos articles sur la lecture, les livres et la culture littéraire",
+            "description": "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…",
             "url": "https://www.vread.fr/blog",
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
               "url": "https://www.vread.fr"
             },
-            "mainEntity": posts.map(post => ({
-              "@type": "BlogPosting",
-              "headline": post.title,
-              "description": post.excerpt || "",
-              "datePublished": post.created_at,
-              "dateModified": post.updated_at,
-              "author": {
-                "@type": "Organization",
-                "name": post.author || "VREAD"
-              },
+            "itemListElement": posts.map((post, i) => ({
+              "@type": "ListItem",
+              "position": i + 1,
               "url": `https://www.vread.fr/blog/${post.slug}`
             }))
           })}
@@ -116,81 +108,8 @@ export default function Blog() {
           </header>
 
           <div className="max-w-none mx-auto">
-            {posts.length === 0 ? (
-              <Card className="border-coffee-light">
-                <CardContent className="text-center py-12">
-                  <p className="text-coffee-dark">Aucun article publié pour le moment.</p>
-                </CardContent>
-              </Card>
-            ) : (
-                <div className="space-y-6">
-                {posts.map((post) => (
-                  <Card key={post.id} className="border-coffee-light hover:shadow-lg transition-shadow">
-                    {post.imageUrl && (
-                      <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                        <img 
-                          src={post.imageUrl} 
-                          alt={post.imageAlt || post.title}
-                          className="object-cover w-full h-full"
-                          loading="lazy"
-                          width={640}
-                          height={360}
-                        />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex-1">
-                          <CardTitle className="text-xl font-serif text-coffee-darker mb-2">
-                            <Link 
-                              to={`/blog/${post.slug}`}
-                              className="hover:text-coffee-dark transition-colors"
-                            >
-                              {post.title}
-                            </Link>
-                          </CardTitle>
-                          {post.excerpt && (
-                            <CardDescription className="text-base text-coffee-dark">
-                              {post.excerpt}
-                            </CardDescription>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-coffee-dark mt-3">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <time dateTime={post.created_at}>
-                            {new Date(post.created_at).toLocaleDateString('fr-FR', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </time>
-                        </div>
-                        
-                        {post.author && (
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            <span>{post.author}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {post.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="bg-coffee-light text-coffee-darker">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </CardHeader>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <BlogList posts={posts} />
+            <BlogPagination currentPage={pageNum} totalPages={totalPages} />
           </div>
         </div>
       </div>

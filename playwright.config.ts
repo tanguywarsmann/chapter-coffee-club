@@ -4,7 +4,11 @@ const external = process.env.PLAYWRIGHT_BASE_URL || '';
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  use: { baseURL: "http://localhost:4173" },
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  use: {
+    baseURL: external || 'http://localhost:4173'
+  },
   reporter: [['list']],
   webServer: external
     ? undefined

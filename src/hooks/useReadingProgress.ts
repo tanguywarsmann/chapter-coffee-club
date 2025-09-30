@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { BookWithProgress } from "@/types/reading";
 import { getUserReadingProgress, clearProgressCache } from "@/services/reading/progressService";
@@ -32,12 +31,20 @@ export const useReadingProgress = () => {
   }, [user]);
 
   const fetchProgress = useCallback(async (forceRefresh = false) => {
+    console.log("=== FETCH PROGRESS DEBUG START ===");
+    console.log("User ID:", user?.id);
+    console.log("Force refresh:", forceRefresh);
+    console.log("Is mounted:", isMounted.current);
+    console.log("Is fetching:", isFetching.current);
+    
     if (!user?.id || !isMounted.current || isFetching.current) {
+      console.log("Early return - conditions not met");
       return;
     }
 
     const now = Date.now();
     if (!forceRefresh && now - lastFetchTimestamp.current < MIN_FETCH_INTERVAL) {
+      console.log("Early return - too soon since last fetch");
       return;
     }
     
@@ -49,14 +56,20 @@ export const useReadingProgress = () => {
       setError(null);
 
       if (forceRefresh) {
+        console.log("Clearing progress cache...");
         await clearProgressCache(user.id);
       }
 
+      console.log("Fetching user reading progress...");
       const progress = await getUserReadingProgress(user.id);
+      console.log("Raw progress data:", progress);
+      console.log("Progress length:", progress?.length);
 
       if (!isMounted.current) return;
 
       const inProgress = progress.filter(p => p.status === "in_progress");
+      console.log("Filtered in-progress items:", inProgress);
+      console.log("In-progress count:", inProgress.length);
       
       setReadingProgress(inProgress);
       hasFetched.current = true;
@@ -65,8 +78,10 @@ export const useReadingProgress = () => {
       if (retryCount > 0) {
         setRetryCount(0);
       }
+      
+      console.log("=== FETCH PROGRESS SUCCESS ===");
     } catch (err) {
-      console.error("⚠️ Erreur lors du chargement de la progression :", err);
+      console.error("=== FETCH PROGRESS ERROR ===", err);
       
       if (isMounted.current) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -92,6 +107,7 @@ export const useReadingProgress = () => {
         }
       }
     } finally {
+      console.log("=== FETCH PROGRESS DEBUG END ===");
       if (isMounted.current) {
         setIsLoading(false);
         isFetching.current = false;
@@ -123,6 +139,30 @@ export const useReadingProgress = () => {
   const forceRefresh = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
   }, []);
+
+  // Force clear cache and refetch - exposed publicly for external triggers
+  const forceClearAndRefresh = useCallback(async () => {
+    if (!user?.id) return;
+    
+    console.log("🔄 FORCE CLEAR AND REFRESH - clearing all caches");
+    
+    try {
+      // Clear progress cache
+      await clearProgressCache(user.id);
+      
+      // Reset internal states
+      hasFetched.current = false;
+      setRefreshTrigger(prev => prev + 1);
+      
+      // Force immediate fetch
+      await fetchProgress(true);
+      
+      toast.success("Données rafraîchies", { duration: 2000 });
+    } catch (error) {
+      console.error("Erreur lors du rafraîchissement forcé:", error);
+      toast.error("Erreur lors du rafraîchissement");
+    }
+  }, [user?.id, fetchProgress]);
 
   const handleProgressUpdate = useCallback(async (bookId: string) => {
     if (!user?.id) {
@@ -162,6 +202,7 @@ export const useReadingProgress = () => {
     error,
     handleProgressUpdate,
     refetch: fetchProgress,
-    forceRefresh // Exposer la fonction pour forcer un rafraîchissement
+    forceRefresh, // Exposer la fonction pour forcer un rafraîchissement
+    forceClearAndRefresh // Nouvelle fonction pour le rafraîchissement complet
   };
 };
