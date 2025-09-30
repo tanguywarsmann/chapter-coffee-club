@@ -94,9 +94,7 @@ const SitemapRoute = () => {
   useEffect(() => {
     const generateSitemap = async () => {
       try {
-        const { generateCompleteSitemap } = await import('@/utils/sitemapServer');
-        const sitemapContent = await generateCompleteSitemap();
-        setSitemap(sitemapContent);
+if (typeof window !== "undefined") { window.location.href = "/sitemap.xml"; return; }
         
         // Définir les headers appropriés
         document.querySelector('meta[name="content-type"]')?.setAttribute('content', 'application/xml');
