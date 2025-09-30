@@ -11,6 +11,7 @@ export default defineConfig(({ command, mode }) => {
   const isDev = command === "serve";
   // Force native mode detection: Capacitor build ou variable explicite
   const isNative = process.env.VREAD_NATIVE === "1" || mode === "capacitor";
+const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
 
   return {
     // Expose aussi NEXT_PUBLIC_* si tu en as besoin côté client
@@ -21,9 +22,10 @@ export default defineConfig(({ command, mode }) => {
       port: 8080,
     },
 
-    define: {
-      __VREAD_BUILD__: JSON.stringify(new Date().toISOString()),
-    },
+   define: {
+  __VREAD_BUILD__: JSON.stringify(new Date().toISOString()),
+  __VREAD_NATIVE__: JSON.stringify(isNative),
+},
 
     // CRITICAL: Base path pour Capacitor 
     base: isNative ? './' : '/',
@@ -36,63 +38,57 @@ export default defineConfig(({ command, mode }) => {
       // PWA: **désactivée** si build natif iOS (isNative)
       ...(!isNative
         ? [
-            VitePWA({
-              registerType: "autoUpdate",
-              devOptions: { enabled: true },
-              includeAssets: [
-                "branding/vread-favicon.svg",
-                "branding/vread-favicon-32.png",
-                "branding/vread-favicon-16.png",
-                "branding/vread-apple-touch-icon.png",
-              ],
-              workbox: {
-                clientsClaim: true,
-                skipWaiting: true,
-                globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}"],
-                maximumFileSizeToCacheInBytes: 3_000_000,
-                navigateFallback: "/index.html",
-                navigateFallbackDenylist: [/^\/api\//],
-                runtimeCaching: [
-                  {
-                    urlPattern: ({ request }) => request.mode === "navigate",
-                    handler: "NetworkFirst",
-                    options: {
-                      cacheName: "pages-cache",
-                      networkTimeoutSeconds: 3,
-                      expiration: {
-                        maxEntries: 50,
-                        maxAgeSeconds: 24 * 60 * 60,
-                      },
-                    },
-                  },
-                  {
-                    urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|avif)$/,
-                    handler: "CacheFirst",
-                    options: {
-                      cacheName: "images-cache",
-                      expiration: {
-                        maxEntries: 150,
-                        maxAgeSeconds: 30 * 24 * 60 * 60,
-                      },
-                    },
-                  },
-                ],
+             VitePWA({
+        registerType: "autoUpdate",
+        devOptions: { enabled: true },
+        includeAssets: [
+          "branding/vread-favicon.svg",
+          "branding/vread-favicon-32.png",
+          "branding/vread-favicon-16.png",
+          "branding/vread-apple-touch-icon.png",
+        ],
+        workbox: {
+          clientsClaim: true,
+          skipWaiting: true,
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}"],
+          maximumFileSizeToCacheInBytes: 3_000_000,
+          navigateFallback: "/index.html",
+          navigateFallbackDenylist: [/^\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.mode === "navigate",
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "pages-cache",
+                networkTimeoutSeconds: 3,
+                expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
               },
-              manifest: {
-                name: "VREAD",
-                short_name: "VREAD",
-                start_url: "/",
-                display: "standalone",
-                background_color: "#B05F2C",
-                theme_color: "#E9CBA4",
-                icons: [
-                  { src: "/branding/vread-logo-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-                  { src: "/branding/vread-logo-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
-                ],
+            },
+            {
+              urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|avif)$/,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "images-cache",
+                expiration: { maxEntries: 150, maxAgeSeconds: 30 * 24 * 60 * 60 },
               },
-            }),
-          ]
-        : []),
+            },
+          ],
+        },
+        manifest: {
+          name: "VREAD",
+          short_name: "VREAD",
+          start_url: "/",
+          display: "standalone",
+          background_color: "#B05F2C",
+          theme_color: "#E9CBA4",
+          icons: [
+            { src: "/branding/vread-logo-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+            { src: "/branding/vread-logo-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+          ],
+        },
+      }),
+    ]
+  : []),
 
       // Double compression (gzip + brotli), sans re-compresser les fichiers déjà compressés
       compression({
@@ -105,12 +101,18 @@ export default defineConfig(({ command, mode }) => {
       }),
     ],
 
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "./src"),
-      },
-    },
-
+  resolve: {
+  alias: {
+    "@": path.resolve(__dirname, "./src"),
+    // Quand PWA OFF, remplace le module virtuel par un stub no-op
+    ...(!usePwa
+      ? {
+          "virtual:pwa-register/react": path.resolve(__dirname, "src/pwa-register-stub.ts"),
+          "virtual:pwa-register": path.resolve(__dirname, "src/pwa-register-stub.ts"),
+        }
+      : {}),
+  },
+},
     build: {
       // cible raisonnable pour mobiles modernes
       target: "es2020",
