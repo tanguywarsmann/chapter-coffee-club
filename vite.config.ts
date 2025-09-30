@@ -1,7 +1,7 @@
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import path from "node:path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import compression from "vite-plugin-compression2";
@@ -40,50 +40,17 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
   ? [
       VitePWA({
         registerType: "autoUpdate",
-        devOptions: { enabled: true },
-        includeAssets: [
-          "branding/vread-favicon.svg",
-          "branding/vread-favicon-32.png",
-          "branding/vread-favicon-16.png",
-          "branding/vread-apple-touch-icon.png",
-        ],
-        workbox: {
-          clientsClaim: true,
-          skipWaiting: true,
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,avif,jpg,jpeg}"],
-          maximumFileSizeToCacheInBytes: 3_000_000,
-          navigateFallback: "/index.html",
-          navigateFallbackDenylist: [/^\/api\//],
-          runtimeCaching: [
-            {
-              urlPattern: ({ request }) => request.mode === "navigate",
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "pages-cache",
-                networkTimeoutSeconds: 3,
-                expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|avif)$/,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "images-cache",
-                expiration: { maxEntries: 150, maxAgeSeconds: 30 * 24 * 60 * 60 },
-              },
-            },
-          ],
-        },
+        injectRegister: 'auto',
         manifest: {
-          name: "VREAD",
-          short_name: "VREAD",
-          start_url: "/",
-          display: "standalone",
-          background_color: "#B05F2C",
-          theme_color: "#E9CBA4",
+          name: 'VREAD',
+          short_name: 'VREAD',
+          start_url: '/',
+          display: 'standalone',
+          background_color: '#B05F2C',
+          theme_color: '#E9CBA4',
           icons: [
-            { src: "/branding/vread-logo-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-            { src: "/branding/vread-logo-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+            { src: '/branding/vread-logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: '/branding/vread-logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
           ],
         },
       }),
@@ -104,12 +71,14 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
 
   resolve: {
   alias: {
-    "@": path.resolve(__dirname, "./src"),
+    "@": path.resolve(process.cwd(), "./src"),
+    // Stub sharp pour éviter le bundling côté client
+    "sharp": path.resolve(process.cwd(), "src/empty-module.ts"),
     // Quand PWA OFF, remplace le module virtuel par un stub no-op
     ...(!usePwa
       ? {
-          "virtual:pwa-register/react": path.resolve(__dirname, "src/pwa-register-stub.ts"),
-          "virtual:pwa-register": path.resolve(__dirname, "src/pwa-register-stub.ts"),
+          "virtual:pwa-register/react": path.resolve(process.cwd(), "src/pwa-register-stub.ts"),
+          "virtual:pwa-register": path.resolve(process.cwd(), "src/pwa-register-stub.ts"),
         }
       : {}),
   },
@@ -128,15 +97,20 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            // Découpage utile sans modules Node
-            "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-tabs"],
-            "vendor-react": ["react", "react-dom", "react-router-dom"],
-            "vendor-supabase": ["@supabase/supabase-js"],
-            "vendor-utils": ["date-fns", "clsx", "tailwind-merge"],
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (/(react|react-dom|scheduler)/.test(id)) return 'vendor-react';
+            if (/(@supabase)/.test(id)) return 'vendor-supabase';
+            if (/(radix|@radix-ui|lucide-react)/.test(id)) return 'vendor-ui';
+            if (/workbox|virtual:pwa-register/.test(id)) return 'vendor-utils';
+            // ne pas créer de vendor-image
           },
         },
       },
+    },
+
+    ssr: {
+      noExternal: ['sharp'],
     },
 
     optimizeDeps: {

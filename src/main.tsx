@@ -30,3 +30,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </HelmetProvider>
   </React.StrictMode>,
 )
+
+// Register PWA after React is mounted
+import('./pwa').then(({ registerPWA }) => registerPWA());
