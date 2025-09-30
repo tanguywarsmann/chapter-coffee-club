@@ -36,11 +36,11 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
       ...(isDev ? [componentTagger()] : []),
 
      // PWA: uniquement si usePwa === true (jamais en natif, jamais par défaut)
-...(usePwa
+ ...(usePwa
   ? [
       VitePWA({
         registerType: "autoUpdate",
-        injectRegister: 'auto',
+        injectRegister: null,
         manifest: {
           name: 'VREAD',
           short_name: 'VREAD',
@@ -72,8 +72,9 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
   resolve: {
   alias: {
     "@": path.resolve(process.cwd(), "./src"),
-    // Stub sharp pour éviter le bundling côté client
+    // Stub sharp et detect-libc pour éviter le bundling côté client
     "sharp": path.resolve(process.cwd(), "src/empty-module.ts"),
+    "detect-libc": path.resolve(process.cwd(), "src/empty-module.ts"),
     // Quand PWA OFF, remplace le module virtuel par un stub no-op
     ...(!usePwa
       ? {
@@ -103,7 +104,6 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
             if (/(@supabase)/.test(id)) return 'vendor-supabase';
             if (/(radix|@radix-ui|lucide-react)/.test(id)) return 'vendor-ui';
             if (/workbox|virtual:pwa-register/.test(id)) return 'vendor-utils';
-            // ne pas créer de vendor-image
           },
         },
       },
@@ -115,8 +115,7 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
 
     optimizeDeps: {
       include: ["react", "react-dom", "react-router-dom", "@supabase/supabase-js", "lucide-react"],
-      // ⚠️ Ne jamais tenter de pré-bundler "sharp" côté client
-      exclude: [],
+      exclude: ['sharp', 'detect-libc'],
     },
   };
 });
