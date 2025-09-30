@@ -100,5 +100,51 @@ const AppRouter = () => {
   );
 };
 
+<<<<<<< HEAD
+// Composant pour servir le sitemap
+const SitemapRoute = () => {
+  const [sitemap, setSitemap] = useState<string>('');
+
+  useEffect(() => {
+    const generateSitemap = async () => {
+      try {
+if (typeof window !== "undefined") { window.location.href = "/sitemap.xml"; return; }
+        
+        // Définir les headers appropriés
+        document.querySelector('meta[name="content-type"]')?.setAttribute('content', 'application/xml');
+      } catch (error) {
+        console.error('Erreur génération sitemap:', error);
+        setSitemap(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.vread.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+      }
+    };
+
+    generateSitemap();
+  }, []);
+
+  // Retourner le XML directement
+  if (sitemap) {
+    return (
+      <div 
+        dangerouslySetInnerHTML={{ __html: sitemap }}
+        style={{ 
+          fontFamily: 'monospace', 
+          whiteSpace: 'pre-wrap',
+          fontSize: '12px'
+        }}
+      />
+    );
+  }
+
+  return <div>Génération du sitemap...</div>;
+};
+=======
+>>>>>>> origin/main
 
 export default AppRouter;
