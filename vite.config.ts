@@ -6,6 +6,22 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import compression from "vite-plugin-compression2";
 
+// --- stub sharp/detect-libc ---
+function stubSharp() {
+  const ids = [/^sharp(\/.*)?$/, /^detect-libc(\/.*)?$/];
+  return {
+    name: 'stub-sharp',
+    resolveId(source: string) {
+      if (ids.some(r => r.test(source))) return '\0empty:sharp';
+      return null;
+    },
+    load(id: string) {
+      if (id === '\0empty:sharp') return 'export default {}';
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ command, mode }) => {
   // Astuce: mets VREAD_NATIVE=1 pour un build natif (Capacitor iOS) sans Service Worker
   const isDev = command === "serve";
@@ -31,31 +47,29 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
     base: isNative ? './' : '/',
 
     plugins: [
+      stubSharp(),
       react(),
       // Activer le tagger Lovable uniquement en dev
       ...(isDev ? [componentTagger()] : []),
 
-     // PWA: uniquement si usePwa === true (jamais en natif, jamais par défaut)
- ...(usePwa
-  ? [
-      VitePWA({
-        registerType: "autoUpdate",
-        injectRegister: null,
-        manifest: {
-          name: 'VREAD',
-          short_name: 'VREAD',
-          start_url: '/',
-          display: 'standalone',
-          background_color: '#B05F2C',
-          theme_color: '#E9CBA4',
-          icons: [
-            { src: '/branding/vread-logo-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: '/branding/vread-logo-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-          ],
-        },
-      }),
-    ]
-  : []),
+      // PWA: uniquement si usePwa === true (jamais en natif, jamais par défaut)
+      ...(usePwa
+        ? [
+            VitePWA({
+              registerType: "autoUpdate",
+              injectRegister: null,       // on gère le register nous-mêmes via src/pwa.ts
+              manifest: {
+                name: 'VREAD',
+                short_name: 'VREAD',
+                start_url: '/',
+                display: 'standalone',
+                background_color: '#FFFFFF',
+                theme_color: '#AE6841',
+                icons: []
+              },
+            }),
+          ]
+        : []),
 
 
       // Double compression (gzip + brotli), sans re-compresser les fichiers déjà compressés
@@ -69,21 +83,20 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
       }),
     ],
 
-  resolve: {
-  alias: {
-    "@": path.resolve(process.cwd(), "./src"),
-    // Stub sharp et detect-libc pour éviter le bundling côté client
-    "sharp": path.resolve(process.cwd(), "src/empty-module.ts"),
-    "detect-libc": path.resolve(process.cwd(), "src/empty-module.ts"),
-    // Quand PWA OFF, remplace le module virtuel par un stub no-op
-    ...(!usePwa
-      ? {
-          "virtual:pwa-register/react": path.resolve(process.cwd(), "src/pwa-register-stub.ts"),
-          "virtual:pwa-register": path.resolve(process.cwd(), "src/pwa-register-stub.ts"),
-        }
-      : {}),
-  },
-},
+    resolve: {
+      alias: [
+        { find: "@", replacement: path.resolve(process.cwd(), "./src") },
+        { find: /^sharp(\/.*)?$/, replacement: path.resolve(process.cwd(), "src/empty-module.ts") },
+        { find: /^detect-libc(\/.*)?$/, replacement: path.resolve(process.cwd(), "src/empty-module.ts") },
+        // Quand PWA OFF, remplace le module virtuel par un stub no-op
+        ...(!usePwa
+          ? [
+              { find: "virtual:pwa-register/react", replacement: path.resolve(process.cwd(), "src/pwa-register-stub.ts") },
+              { find: "virtual:pwa-register", replacement: path.resolve(process.cwd(), "src/pwa-register-stub.ts") },
+            ]
+          : []),
+      ],
+    },
     build: {
       // cible raisonnable pour mobiles modernes
       target: "es2020",
@@ -104,6 +117,7 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
             if (/(@supabase)/.test(id)) return 'vendor-supabase';
             if (/(radix|@radix-ui|lucide-react)/.test(id)) return 'vendor-ui';
             if (/workbox|virtual:pwa-register/.test(id)) return 'vendor-utils';
+            // ne rien retourner d'autre
           },
         },
       },
