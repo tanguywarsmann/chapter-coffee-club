@@ -35,10 +35,10 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
       // Activer le tagger Lovable uniquement en dev
       ...(isDev ? [componentTagger()] : []),
 
-      // PWA: **désactivée** si build natif iOS (isNative)
-      ...(!isNative
-        ? [
-             VitePWA({
+     // PWA: uniquement si usePwa === true (jamais en natif, jamais par défaut)
+...(usePwa
+  ? [
+      VitePWA({
         registerType: "autoUpdate",
         devOptions: { enabled: true },
         includeAssets: [
@@ -89,6 +89,7 @@ const usePwa = !isNative && process.env.VITE_USE_PWA === "1";
       }),
     ]
   : []),
+
 
       // Double compression (gzip + brotli), sans re-compresser les fichiers déjà compressés
       compression({
