@@ -87,8 +87,8 @@ export default defineConfig(({ command, mode }) => {
         { find: '@', replacement: path.resolve(process.cwd(), 'src') },
         { find: /^sharp(\/.*)?$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
         { find: /^detect-libc(\/.*)?$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
-        // Sécurité: si un import "sitemapServer" traîne côté client, on le stub automatiquement
-        { find: /sitemapServer$/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
+        // Sécurité: si un import "sitemapServer" traîne côté client, on le stub automatiquement  
+      { find: /(^|\/)sitemap(Server|Generator)(?:$|\.|\/)/, replacement: path.resolve(process.cwd(), 'src/empty-module.ts') },
         // Quand la PWA est OFF, on mappe les modules virtuels vers un stub no-op
         ...(!usePwa
           ? [
@@ -102,10 +102,6 @@ export default defineConfig(({ command, mode }) => {
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js', 'lucide-react'],
       exclude: ['sharp', 'detect-libc'],
-    },
-
-    ssr: {
-      noExternal: ['sharp'],
     },
 
     build: {
