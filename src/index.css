@@ -1,10 +1,14 @@
-
+/* Animations locales (si présentes) */
 @import './components/ui/animations.css';
 
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   BASE THEME (CSS Variables)
+   ========================= */
 @layer base {
   :root {
     --background: 30 35% 96%;
@@ -69,21 +73,47 @@
   }
 }
 
+/* =========================
+   GLOBAL RESETS & LAYOUT
+   ========================= */
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
+
+  /* 100dvh pour mieux gérer l’UI sur iOS (barres dynamiques) */
+  #root {
+    min-height: 100dvh;
   }
 
   body {
     @apply bg-background text-foreground font-sans;
+    margin: 0;
     scroll-behavior: smooth;
-    /* Améliore le scroll sur mobile */
+
+    /* iOS/mobile UX */
     -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+
+    /* Respecte les encoches / safe areas (viewport-fit=cover requis dans index.html) */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
+  /* Titres : lisibilité + pas de coupures */
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
-    /* Empêche toute coupure de mots */
     text-wrap: balance;
     word-break: keep-all;
     hyphens: none;
@@ -98,7 +128,7 @@
   h5 { @apply text-h4; }
   h6 { @apply text-h4; }
 
-  /* Titre hero spécifique - empêche toute coupure */
+  /* Titre Hero spécifique */
   .hero-title {
     @apply text-hero font-serif;
     hyphens: none;
@@ -110,14 +140,35 @@
     max-inline-size: 34rem;
   }
 
-  /* Enhanced focus styles for accessibility - WCAG AA compliant */
+  /* Texte par défaut */
+  p {
+    @apply text-body;
+  }
+
+  /* Empêche les coupures inopinées dans les éléments courants */
+  p, span, button, a, label {
+    text-wrap: pretty;
+    word-break: keep-all;
+    hyphens: none;
+    overflow-wrap: break-word;
+    max-width: 34rem;
+  }
+
+  .text-container {
+    max-width: 34rem;
+    word-break: keep-all;
+    hyphens: none;
+    overflow-wrap: break-word;
+  }
+
+  /* Focus visible accessible (WCAG AA) */
   :focus-visible {
     outline: 3px solid hsl(var(--ring));
     outline-offset: 2px;
     box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 5px hsl(var(--ring));
   }
 
-  /* High contrast mode support */
+  /* High contrast (AA+) */
   @media (prefers-contrast: high) {
     :focus-visible {
       outline: 4px solid currentColor;
@@ -126,7 +177,7 @@
     }
   }
 
-  /* Skip to content link for keyboard accessibility */
+  /* Lien "Skip to content" accessible clavier */
   .skip-to-content {
     @apply absolute z-50 p-3 bg-coffee-dark text-white border border-coffee-medium rounded-md shadow-lg;
     @apply -translate-y-full focus:translate-y-0 transition-transform duration-200;
@@ -136,36 +187,7 @@
     font-weight: 600;
   }
 
-  /* Empêche la coupure de mots pour tous les éléments texte */
-  p, span, button, a, label {
-    text-wrap: pretty;
-    word-break: keep-all;
-    hyphens: none;
-    overflow-wrap: break-word;
-    max-width: 34rem;
-  }
-
-  /* Conteneurs de texte avec max-width pour éviter les lignes trop longues */
-  .text-container {
-    max-width: 34rem;
-    word-break: keep-all;
-    hyphens: none;
-    overflow-wrap: break-word;
-  }
-
-  /* Paragraphes avec taille responsive */
-  p {
-    @apply text-body;
-  }
-
-  /* Boutons et CTA avec texte non-coupé */
-  button, .btn-primary, .btn-secondary {
-    word-break: keep-all;
-    hyphens: none;
-    white-space: nowrap;
-  }
-
-  /* Screen reader only content */
+  /* Visually-hidden utilitaire */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -179,112 +201,101 @@
   }
 }
 
+/* =========================
+   COMPONENTS
+   ========================= */
 @layer components {
   .book-cover {
     @apply relative aspect-[2/3] overflow-hidden rounded-md shadow-md transition-all duration-300 hover:shadow-lg;
   }
-  
+
   .reading-progress {
     @apply h-2 bg-coffee-light rounded-full overflow-hidden;
   }
-  
+
   .progress-bar {
     @apply h-full bg-coffee-dark animate-progress;
   }
-  
+
   .book-card {
-    @apply bg-card rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-opacity-50;
+    @apply bg-card rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden;
+    @apply focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-opacity-50;
   }
-  
+
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 
-  /* Améliorations des éléments interactifs pour mobile */
+  /* Éléments interactifs avec touch target min 44px */
   .interactive-element {
     @apply transition-all duration-200 hover:bg-opacity-80;
     @apply focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    /* Zone de tap plus large sur mobile */
     min-height: 44px;
     min-width: 44px;
   }
-  
-  /* Padding cohérent mobile/desktop avec plus d'espace sur mobile */
+
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
   }
 
-  /* Styles de cartes avec meilleur espacement mobile */
   .content-card {
     @apply bg-card rounded-lg shadow-md transition-all duration-200;
     @apply p-4 sm:p-6;
-    /* Plus d'espacement interne sur mobile */
     @apply space-y-4 sm:space-y-6;
   }
 
-  /* Boutons avec meilleures zones de tap et contraste WCAG AA */
+  /* Boutons — contraste AA + grandes zones de tap */
   .btn-primary {
-    @apply bg-coffee-dark text-white hover:bg-coffee-darker;
+    @apply bg-coffee-dark text-white transition-colors duration-200;
     @apply focus-visible:ring-4 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    @apply transition-colors duration-200;
-    /* Zone de tap plus large */
+    /* Touch target + typo */
     @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast ratio - WCAG AA compliant */
+
+    /* Couleurs explicites pour un bon contraste */
     background-color: hsl(25 40% 15%);
     color: hsl(30 35% 98%);
   }
-
-  .btn-primary:hover {
-    background-color: hsl(25 40% 12%);
-  }
+  .btn-primary:hover { background-color: hsl(25 40% 12%); }
 
   .btn-secondary {
-    @apply border-2 border-coffee-medium bg-transparent hover:bg-coffee-light/20;
-    @apply focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-coffee-medium focus-visible:outline-none;
-    @apply transition-colors duration-200;
+    @apply border-2 bg-transparent transition-colors duration-200;
+    @apply focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:outline-none;
     @apply min-h-[44px] px-6 py-3 text-base sm:text-sm sm:px-4 sm:py-2;
-    /* Ensure good contrast - WCAG AA compliant */
+
     border-color: hsl(25 30% 40%);
     color: hsl(25 40% 15%);
   }
 
-  /* Transitions de page plus fluides */
-  .page-transition {
-    @apply transition-all duration-300 ease-in-out;
-  }
+  .page-transition { @apply transition-all duration-300 ease-in-out; }
 
-  /* Champs de formulaire avec meilleures zones de tap et contraste amélioré */
+  /* Champs de formulaire */
   .form-field {
-    @apply mt-1 block w-full rounded-md border-2 border-coffee-medium shadow-sm;
-    @apply focus:border-coffee-dark focus:ring-4 focus:ring-coffee-dark focus:ring-opacity-25;
-    @apply focus-visible:outline-none transition-colors duration-200;
+    @apply mt-1 block w-full rounded-md border-2 shadow-sm;
+    @apply focus:ring-4 focus:ring-opacity-25 focus-visible:outline-none transition-colors duration-200;
     @apply min-h-[44px] px-4 py-3 text-base sm:text-sm;
-    /* Better contrast - WCAG AA compliant */
+
     border-color: hsl(25 30% 40%);
     color: hsl(25 40% 15%);
     background-color: hsl(30 35% 98%);
   }
-
   .form-field:focus {
     border-color: hsl(25 40% 15%);
     box-shadow: 0 0 0 4px hsla(25, 40%, 15%, 0.15);
   }
 
-  /* Tags de statut avec meilleure lisibilité et contraste WCAG AA */
+  /* Tags de statut */
   .status-reading {
     @apply px-3 py-2 text-sm font-medium border;
     background-color: hsl(35 30% 85%);
     color: hsl(25 40% 15%);
     border-color: hsl(25 30% 40%);
   }
-  
   .status-to-read {
     @apply px-3 py-2 text-sm font-medium border;
     background-color: hsl(0 0% 88%);
     color: hsl(0 0% 15%);
     border-color: hsl(0 0% 40%);
   }
-  
   .status-completed {
     @apply px-3 py-2 text-sm font-medium border;
     background-color: hsl(120 50% 85%);
@@ -292,88 +303,79 @@
     border-color: hsl(120 50% 40%);
   }
 
-  /* Améliorations spécifiques mobile */
-  .mobile-optimized {
-    /* Espacement généreux sur mobile */
-    @apply space-y-6 sm:space-y-4;
-  }
-
+  /* Mobile-specific spacing */
+  .mobile-optimized { @apply space-y-6 sm:space-y-4; }
   .mobile-title {
-    @apply text-h3 font-serif;
-    @apply mb-4 sm:mb-2;
+    @apply text-h3 font-serif mb-4 sm:mb-2;
     color: hsl(25 40% 15%);
-    word-break: keep-all;
-    hyphens: none;
-    max-width: 34rem;
+    word-break: keep-all; hyphens: none; max-width: 34rem;
   }
-
   .mobile-subtitle {
-    @apply text-h4;
-    @apply mb-3 sm:mb-2;
+    @apply text-h4 mb-3 sm:mb-2;
     color: hsl(25 40% 20%);
-    word-break: keep-all;
-    hyphens: none;
-    max-width: 34rem;
+    word-break: keep-all; hyphens: none; max-width: 34rem;
   }
 
-  /* Navigation mobile améliorée avec contraste WCAG AA */
+  /* Navigation mobile */
   .mobile-nav-item {
     @apply block w-full text-left px-4 py-4 sm:py-2;
     @apply hover:bg-coffee-light/20 active:bg-coffee-light/30;
     @apply focus-visible:ring-4 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 focus-visible:outline-none;
-    @apply transition-colors duration-200;
-    @apply text-body font-medium;
-    /* Ensure minimum touch target */
+    @apply transition-colors duration-200 text-body font-medium;
     min-height: 48px;
     color: hsl(25 40% 15%);
   }
 
-  /* Cartes de livre optimisées mobile */
+  /* Cartes de livre mobile */
   .mobile-book-card {
-    @apply p-4 sm:p-3 space-y-3 sm:space-y-2;
-    @apply border border-coffee-light rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+    @apply p-4 sm:p-3 space-y-3 sm:space-y-2 border rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
     background-color: hsl(30 35% 98%);
     border-color: hsl(35 30% 75%);
   }
 
-  /* Skeletons pour le chargement avec contraste approprié */
-  .loading-skeleton {
-    @apply animate-pulse rounded;
-    background-color: hsl(0 0% 88%);
-  }
+  /* Skeletons */
+  .loading-skeleton { @apply animate-pulse rounded; background-color: hsl(0 0% 88%); }
+  .loading-skeleton-text { @apply loading-skeleton h-4 w-3/4 mb-2; }
+  .loading-skeleton-title { @apply loading-skeleton h-6 w-1/2 mb-3; }
+}
 
-  .loading-skeleton-text {
-    @apply loading-skeleton h-4 w-3/4 mb-2;
-  }
-
-  .loading-skeleton-title {
-    @apply loading-skeleton h-6 w-1/2 mb-3;
+/* =========================
+   UTILITIES (SAFE AREAS, FIXED BARS)
+   ========================= */
+@layer utilities {
+  .header-fixed { padding-top: env(safe-area-inset-top); }
+  .footer-fixed { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-pad {
+    padding:
+      env(safe-area-inset-top)
+      env(safe-area-inset-right)
+      env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
   }
 }
 
-/* Enhanced touch interactions for better accessibility */
+/* =========================
+   MEDIA QUERIES / PREFS
+   ========================= */
+
+/* Interactions tactiles (désactive certains effets hover) */
 @media (hover: none) and (pointer: coarse) {
-  .hover\:scale-105:hover {
-    transform: none;
-  }
-  
-  .hover\:shadow-lg:hover {
-    box-shadow: none;
-  }
-  
-  /* More visible and larger focus states on mobile - WCAG AAA compliant */
-  button:focus, 
-  a:focus, 
+  .hover\:scale-105:hover { transform: none; }
+  .hover\:shadow-lg:hover { box-shadow: none; }
+
+  button:focus,
+  a:focus,
   [role="button"]:focus,
   [role="link"]:focus,
   input:focus,
   textarea:focus {
     outline: 4px solid hsl(25 40% 15%) !important;
     outline-offset: 2px !important;
-    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 8px hsl(25 40% 15%) !important;
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 0 8px hsl(25 40% 15%) !important;
   }
-  
-  /* Enhanced touch targets */
+
   .interactive-element,
   .btn-primary,
   .btn-secondary,
@@ -383,26 +385,23 @@
   }
 }
 
-/* High contrast mode enhancements - WCAG AAA support */
+/* High contrast (renforce le contraste des composants) */
 @media (prefers-contrast: high) {
   .btn-primary {
     background-color: hsl(0 0% 0%);
     color: hsl(0 0% 100%);
     border: 3px solid hsl(0 0% 0%);
   }
-  
   .btn-secondary {
     background-color: hsl(0 0% 100%);
     color: hsl(0 0% 0%);
     border: 3px solid hsl(0 0% 0%);
   }
-  
   .form-field {
     border: 3px solid hsl(0 0% 0%);
     background-color: hsl(0 0% 100%);
     color: hsl(0 0% 0%);
   }
-  
   .status-reading,
   .status-to-read,
   .status-completed {
@@ -410,8 +409,6 @@
     background-color: hsl(0 0% 100%);
     color: hsl(0 0% 0%);
   }
-  
-  /* High contrast text */
   .mobile-title,
   .mobile-subtitle,
   .mobile-nav-item {
@@ -419,7 +416,7 @@
   }
 }
 
-/* Reduced motion preferences */
+/* Réduction des animations si préférée par l’utilisateur */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -431,17 +428,9 @@
   }
 }
 
-/* Optimisations pour les très petits écrans */
+/* Très petits écrans */
 @media (max-width: 360px) {
-  .content-wrapper {
-    @apply px-3;
-  }
-  
-  .content-card {
-    @apply p-3;
-  }
-  
-  .mobile-title {
-    @apply text-xl;
-  }
+  .content-wrapper { @apply px-3; }
+  .content-card { @apply p-3; }
+  .mobile-title { @apply text-xl; }
 }
