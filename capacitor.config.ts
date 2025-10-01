@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'VREAD',
   webDir: 'dist',
   server: { 
-    androidScheme: 'https' 
+    androidScheme: 'https',
+    iosScheme: 'capacitor'
   },
   plugins: {
     LocalNotifications: {

@@ -1,8 +1,0 @@
-{
-  "appId": "com.vread.app",
-  "appName": "VREAD",
-  "webDir": "dist",
-  "bundledWebRuntime": false,
-  "server": {
-    "iosScheme": "ionic"
-  }
