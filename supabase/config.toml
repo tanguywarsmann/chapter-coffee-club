@@ -47,6 +47,9 @@ verify_jwt = true
 [functions.validate-answer]
 verify_jwt = false
 
+[functions.stripe-webhook]
+verify_jwt = false
+
 [auth]
 enabled = true
 port = 54326

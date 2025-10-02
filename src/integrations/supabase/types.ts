@@ -417,8 +417,10 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean | null
+          is_premium: boolean | null
           onboarding_seen_at: string | null
           onboarding_version: number | null
+          premium_since: string | null
           updated_at: string | null
           username: string | null
         }
@@ -428,8 +430,10 @@ export type Database = {
           email?: string | null
           id: string
           is_admin?: boolean | null
+          is_premium?: boolean | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
+          premium_since?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -439,8 +443,10 @@ export type Database = {
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          is_premium?: boolean | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
+          premium_since?: string | null
           updated_at?: string | null
           username?: string | null
         }
