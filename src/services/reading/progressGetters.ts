@@ -5,6 +5,37 @@ import { addDerivedFields } from "./addDerivedFields";
 import { progressCache, CACHE_DURATION } from "./progressCache";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 
+// FIX P0-2: Network retry logic with exponential backoff
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000;
+
+async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = MAX_RETRIES,
+  delay = INITIAL_RETRY_DELAY
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error: any) {
+    // Identifier les erreurs réseau retryables
+    const isRetryable = 
+      error?.message?.includes('fetch') ||
+      error?.message?.includes('timeout') ||
+      error?.code === 'PGRST301' || // Supabase timeout
+      error?.code === '429' || // Rate limit
+      error?.status === 500 || // Server error
+      error?.status === 503; // Service unavailable
+
+    if (retries > 0 && isRetryable) {
+      console.log(`[Retry] Attempt ${MAX_RETRIES - retries + 1}/${MAX_RETRIES} after ${delay}ms`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return fetchWithRetry(fn, retries - 1, delay * 2); // Exponential backoff
+    }
+
+    throw error;
+  }
+}
+
 /**
  * Get user reading progress (with public API)
  */
@@ -32,16 +63,25 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
 
   try {
     console.log("Making Supabase query to reading_progress...");
-    // Advanced fetch with join
-    const { data, error } = await supabase
-      .from("reading_progress")
-      .select(`
-        *,
-        books:books_public(
-          id, slug, title, author, cover_url, total_chapters, expected_segments
-        )
-      `)
-      .eq("user_id", userId);
+    
+    // FIX P0-2: Wrap Supabase call with retry logic
+    const { data, error } = await fetchWithRetry(async () => {
+      const result = await supabase
+        .from("reading_progress")
+        .select(`
+          *,
+          books:books_public(
+            id, slug, title, author, cover_url, total_chapters, expected_segments
+          )
+        `)
+        .eq("user_id", userId);
+      
+      if (result.error) {
+        throw result.error; // Throw to trigger retry
+      }
+      
+      return result;
+    });
       
     console.log("Supabase query result:", { data, error });
     console.log("Data length:", data?.length);
@@ -131,17 +171,27 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!validUuidPattern.test(userId)) return null;
   try {
-    const { data, error } = await supabase
-      .from("reading_progress")
-      .select(`
-        *,
-        books:books_public(
-          id, slug, title, author, cover_url, total_chapters, expected_segments
-        )
-      `)
-      .eq("user_id", userId)
-      .eq("book_id", bookId)
-      .maybeSingle();
+    // FIX P0-2: Wrap Supabase call with retry logic
+    const { data, error } = await fetchWithRetry(async () => {
+      const result = await supabase
+        .from("reading_progress")
+        .select(`
+          *,
+          books:books_public(
+            id, slug, title, author, cover_url, total_chapters, expected_segments
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("book_id", bookId)
+        .maybeSingle();
+      
+      if (result.error) {
+        throw result.error; // Throw to trigger retry
+      }
+      
+      return result;
+    });
+    
     if (error) {
       console.error("Erreur dans getBookReadingProgress (jointure):", error);
       return getBookReadingProgressLegacy(userId, bookId);

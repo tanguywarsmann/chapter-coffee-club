@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
@@ -46,6 +46,9 @@ export const useBookValidation = ({
   const [showBadgeDialog, setShowBadgeDialog] = useState(false);
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
+  
+  // FIX P0-1: Store confetti timers for cleanup to prevent memory leaks
+  const confettiTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const {
     isValidating,
@@ -57,9 +60,21 @@ export const useBookValidation = ({
     resetValidationState
   } = useValidationState();
 
+  // FIX P0-1: Cleanup confetti timers on unmount
+  useEffect(() => {
+    return () => {
+      confettiTimersRef.current.forEach(clearTimeout);
+      confettiTimersRef.current = [];
+    };
+  }, []);
+
   const showConfetti = () => {
     console.log("🎊 TRIGGERING CONFETTI");
     try {
+      // Clear any existing timers before creating new ones
+      confettiTimersRef.current.forEach(clearTimeout);
+      confettiTimersRef.current = [];
+      
       // Explosion principale
       confetti({
         particleCount: 200,
@@ -68,7 +83,7 @@ export const useBookValidation = ({
       });
       
       // Effets latéraux
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         confetti({
           particleCount: 100,
           angle: 60,
@@ -82,6 +97,9 @@ export const useBookValidation = ({
           origin: { x: 1 }
         });
       }, 250);
+      
+      // Store timer for cleanup
+      confettiTimersRef.current.push(timer);
       
     } catch (error) {
       console.error("❌ Confetti failed:", error);

@@ -58,9 +58,14 @@ export function QuizModal({
   // Récupérer l'utilisateur authentifié
   const { user } = useAuth();
 
-  // Reset protection when question changes
+  // FIX P0-3: Reset protection when question changes AND on unmount
   useEffect(() => {
     hasCalledComplete.current = false;
+
+    // Cleanup on unmount pour éviter race condition
+    return () => {
+      hasCalledComplete.current = false;
+    };
   }, [question?.id]);
 
   // Récupérer les informations de jokers via le hook dédié avec le bon userId
