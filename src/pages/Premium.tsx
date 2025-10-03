@@ -17,9 +17,8 @@ export default function Premium() {
 
     setIsLoading(true);
 
-    // TODO: Replace with actual Stripe Payment Link from dashboard
-    // Add user.id as client_reference_id for webhook
-    const stripeUrl = `https://buy.stripe.com/test_VOTRE_PAYMENT_LINK?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
+    // Stripe Payment Link with user email and ID for webhook
+    const stripeUrl = `https://buy.stripe.com/cNi28q73k0oE7u3bBuejK00?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
     
     window.location.href = stripeUrl;
   };
