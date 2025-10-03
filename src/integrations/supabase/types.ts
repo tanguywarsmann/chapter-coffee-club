@@ -269,6 +269,42 @@ export type Database = {
         }
         Relationships: []
       }
+      book_requests: {
+        Row: {
+          book_author: string | null
+          book_title: string
+          created_at: string
+          id: string
+          isbn: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_author?: string | null
+          book_title: string
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_author?: string | null
+          book_title?: string
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           author: string

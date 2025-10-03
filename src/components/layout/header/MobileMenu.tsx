@@ -3,14 +3,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Trophy, BookCheck, Menu, Users, BookOpen } from "lucide-react";
+import { Home, Trophy, BookCheck, Menu, Users, BookOpen, BookPlus, Crown } from "lucide-react";
 import { texts } from "@/i18n/texts";
 
 interface MobileMenuProps {
   isAdmin?: boolean;
+  isPremium?: boolean;
 }
 
-export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
+export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -171,6 +172,38 @@ export const MobileMenu = ({ isAdmin }: MobileMenuProps) => {
                 Presse
               </Button>
             </li>
+            {!isPremium && (
+              <li role="listitem">
+                <Button 
+                  variant="ghost" 
+                  className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                  onClick={() => handleNavigation("/premium")}
+                  onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/premium"))}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Passer Premium"
+                >
+                  <Crown className="h-5 w-5 mr-3 text-yellow-500" aria-hidden="true" />
+                  Premium
+                </Button>
+              </li>
+            )}
+            {isPremium && (
+              <li role="listitem">
+                <Button 
+                  variant="ghost" 
+                  className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                  onClick={() => handleNavigation("/request-book")}
+                  onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/request-book"))}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Demander un livre"
+                >
+                  <BookPlus className="h-5 w-5 mr-3" aria-hidden="true" />
+                  Demander un livre
+                </Button>
+              </li>
+            )}
           </ul>
         </nav>
       </SheetContent>

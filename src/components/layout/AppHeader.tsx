@@ -11,7 +11,7 @@ import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 
 export function AppHeader() {
   const isMobile = useIsMobile();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isPremium } = useAuth();
 
   return (
     <header 
@@ -21,14 +21,14 @@ export function AppHeader() {
       <div className="mx-auto w-full px-4 max-w-none flex h-16 sm:h-14 items-center gap-4">
         {isMobile && (
           <div role="navigation" aria-label="Menu mobile">
-            <MobileMenu isAdmin={isAdmin} />
+            <MobileMenu isAdmin={isAdmin} isPremium={isPremium} />
           </div>
         )}
         
         <HeaderLogo />
         
         <nav role="navigation" aria-label="Navigation principale" className="hidden md:block">
-          <DesktopNav isAdmin={isAdmin} />
+          <DesktopNav isAdmin={isAdmin} isPremium={isPremium} />
         </nav>
         
         {user ? (

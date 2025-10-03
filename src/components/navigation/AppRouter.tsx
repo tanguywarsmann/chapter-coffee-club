@@ -32,6 +32,7 @@ import { Terms } from '@/pages/legal/Terms';
 // Settings pages
 import DeleteAccount from '@/pages/settings/DeleteAccount';
 import Premium from '@/pages/Premium';
+import RequestBook from '@/pages/RequestBook';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -77,6 +78,11 @@ const AppRouter = () => {
       
       {/* Premium */}
       <Route path="/premium" element={<Premium />} />
+      <Route path="/request-book" element={
+        <AuthGuard>
+          <RequestBook />
+        </AuthGuard>
+      } />
       
       {/* Settings Pages */}
       <Route path="/settings/delete-account" element={

@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   isInitialized: boolean;
   isAdmin: boolean;
+  isPremium: boolean;
   error: string | null;
   setError: (error: string | null) => void;
 }
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isInitialized: false,
   isAdmin: false,
+  isPremium: false,
   error: null,
   setError: () => {}
 });
@@ -31,31 +33,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAdminStatus = async (userId: string) => {
+  const fetchUserStatus = async (userId: string) => {
     try {
-      if (!userId) return false;
+      if (!userId) return { isAdmin: false, isPremium: false };
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, is_premium')
         .eq('id', userId)
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching admin status:', error);
+        console.error('Error fetching user status:', error);
         setIsAdmin(false);
-        return false;
+        setIsPremium(false);
+        return { isAdmin: false, isPremium: false };
       }
 
       const adminStatus = data?.is_admin || false;
+      const premiumStatus = data?.is_premium || false;
       setIsAdmin(adminStatus);
-      return adminStatus;
+      setIsPremium(premiumStatus);
+      return { isAdmin: adminStatus, isPremium: premiumStatus };
     } catch (error) {
-      console.error('Exception when fetching admin status:', error);
+      console.error('Exception when fetching user status:', error);
       setIsAdmin(false);
-      return false;
+      setIsPremium(false);
+      return { isAdmin: false, isPremium: false };
     }
   };
 
@@ -76,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setTimeout(async () => {
           try {
             await syncUserProfile(currentSession.user.id, currentSession.user.email);
-            await fetchAdminStatus(currentSession.user.id);
+            await fetchUserStatus(currentSession.user.id);
           } catch (err) {
             console.error("[AUTH CONTEXT] Error during profile sync:", err);
           }
@@ -117,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(async () => {
             try {
               await syncUserProfile(currentSession.user.id, currentSession.user.email);
-              await fetchAdminStatus(currentSession.user.id);
+              await fetchUserStatus(currentSession.user.id);
             } catch (err) {
               console.error("[AUTH CONTEXT] Error during profile sync:", err);
             }
@@ -161,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, isInitialized, isAdmin, error, setError }}>
+    <AuthContext.Provider value={{ session, user, isLoading, isInitialized, isAdmin, isPremium, error, setError }}>
       {children}
     </AuthContext.Provider>
   );
