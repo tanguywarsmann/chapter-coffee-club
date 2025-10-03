@@ -56,7 +56,7 @@ export default function Premium() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Validation par checkpoints tous les ~20 pages</span>
+                  <span>Validation par checkpoints toutes les ~30 pages</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -156,13 +156,13 @@ export default function Premium() {
                 <h3 className="font-semibold mb-2">Comment fonctionne la demande de livre ?</h3>
                 <p className="text-muted-foreground">
                   Une fois Premium, tu peux demander n'importe quel livre via le formulaire dédié. 
-                  Nous créons les questions de compréhension et ajoutons le livre sous 48-72h.
+                  Nous créons les questions de compréhension et ajoutons le livre ASAP.
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Combien de livres puis-je demander ?</h3>
                 <p className="text-muted-foreground">
-                  Illimité ! Tu peux demander autant de livres que tu veux pendant toute la durée de ton abonnement.
+                  Deux livres par deux livres ! Tu dois valider un des deux livres demandés pour en obtenir un autre.
                 </p>
               </div>
               <div>
