@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -8,8 +9,16 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
+  const navigate = useNavigate();
   const { user, isLoading, isInitialized, error } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Redirect to auth page if user is not authenticated after initialization
+  useEffect(() => {
+    if (isInitialized && !isLoading && !user) {
+      navigate('/auth', { replace: true });
+    }
+  }, [isInitialized, isLoading, user, navigate]);
 
   // Show loading state while checking auth - prevent render during loading
   if (isLoading || !isInitialized) {
