@@ -12,16 +12,18 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const navigate = useNavigate();
   const { user, isLoading, isInitialized, error } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Redirect to auth page if user is not authenticated after initialization
   useEffect(() => {
-    if (isInitialized && !isLoading && !user) {
+    if (isInitialized && !isLoading && !user && !isRedirecting) {
+      setIsRedirecting(true);
       navigate('/auth', { replace: true });
     }
-  }, [isInitialized, isLoading, user, navigate]);
+  }, [isInitialized, isLoading, user, navigate, isRedirecting]);
 
   // Show loading state while checking auth - prevent render during loading
-  if (isLoading || !isInitialized) {
+  if (isLoading || !isInitialized || isRedirecting) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
