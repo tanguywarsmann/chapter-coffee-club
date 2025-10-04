@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ThumbsUp } from "lucide-react";
+import { Heart } from "lucide-react";
 
 export function BookyOverlay({ show }: { show: boolean }) {
   return (
@@ -20,7 +20,7 @@ export function BookyOverlay({ show }: { show: boolean }) {
               animate={{ opacity: 0.18, scale: 1.15 }}
               exit={{ opacity: 0 }}
             />
-            <ThumbsUp className="h-28 w-28" color="#DFC5A6" strokeWidth={1.5} />
+            <Heart className="h-28 w-28" color="#DFC5A6" strokeWidth={1.5} fill="#DFC5A6" />
           </div>
         </motion.div>
       )}

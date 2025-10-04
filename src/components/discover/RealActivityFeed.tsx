@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, BookOpen, Award, ThumbsUp } from "lucide-react";
+import { Sparkles, BookOpen, Award, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -186,7 +186,7 @@ function FinishedActivityItem({ activity, timeAgo }: { activity: DiscoverFeedIte
                 toggleBooky();
               }}
             >
-              <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} style={{ color: '#AE6841' }} />
+              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} style={{ color: '#AE6841' }} />
               <span>{count} Booky{count > 1 ? "s" : ""}</span>
             </button>
           </div>
