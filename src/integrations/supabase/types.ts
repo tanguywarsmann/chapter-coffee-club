@@ -350,6 +350,68 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_events: {
+        Row: {
+          actor_id: string
+          book_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          seed_tag: string | null
+          segment: number | null
+        }
+        Insert: {
+          actor_id: string
+          book_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          seed_tag?: string | null
+          segment?: number | null
+        }
+        Update: {
+          actor_id?: string
+          book_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          seed_tag?: string | null
+          segment?: number | null
+        }
+        Relationships: []
+      }
+      feed_lauriers: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          liker_id: string
+          seed_tag: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          liker_id: string
+          seed_tag?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          liker_id?: string
+          seed_tag?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_lauriers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "feed_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followers: {
         Row: {
           created_at: string
@@ -1197,6 +1259,24 @@ export type Database = {
         Args: { lim?: number; uid: string }
         Returns: Json
       }
+      feed_get_v1: {
+        Args:
+          | { p_limit: number; p_offset: number }
+          | { p_limit?: number; p_offset?: number; p_viewer?: string }
+        Returns: {
+          actor_avatar_url: string
+          actor_id: string
+          actor_name: string
+          book_id: string
+          book_title: string
+          created_at: string
+          event_type: string
+          id: string
+          lauriers_count: number
+          liked_by_me: boolean
+          segment: number
+        }[]
+      }
       force_validate_segment: {
         Args: { p_answer: string; p_book_id: string; p_question_id: string }
         Returns: {
@@ -1306,6 +1386,7 @@ export type Database = {
         | "streak_kept"
         | "streak_lost"
         | "weekly_digest"
+        | "booky_received"
       reading_status: "to_read" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1441,6 +1522,7 @@ export const Constants = {
         "streak_kept",
         "streak_lost",
         "weekly_digest",
+        "booky_received",
       ],
       reading_status: ["to_read", "in_progress", "completed"],
     },
