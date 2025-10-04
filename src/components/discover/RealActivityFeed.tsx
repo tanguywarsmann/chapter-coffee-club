@@ -8,8 +8,8 @@ import { DiscoverFeedItem } from "@/services/user/realDiscoverService";
 import { EnhancedAvatar } from "@/components/ui/avatar";
 import { useState, useCallback } from "react";
 import { useDoubleTap } from "@/hooks/useDoubleTap";
-import { LaurierOverlay } from "./LaurierOverlay";
-import { giveLaurier, removeLaurier } from "@/services/social/lauriersService";
+import { BookyOverlay } from "./BookyOverlay";
+import { giveBooky, removeBooky } from "@/services/social/bookysService";
 
 interface RealActivityFeedProps {
   activities: DiscoverFeedItem[];
@@ -125,31 +125,32 @@ function FinishedActivityItem({ activity, timeAgo }: { activity: DiscoverFeedIte
   const [count, setCount] = useState<number>(activity.likes_count ?? 0);
   const [showOverlay, setShowOverlay] = useState(false);
 
-  const toggleLaurier = useCallback(async () => {
+  const toggleBooky = useCallback(async () => {
     if (!activity.activity_id) return;
-    const prevLiked = liked;
-    const prevCount = count;
-    setLiked(!prevLiked);
-    setCount(prevLiked ? Math.max(0, prevCount - 1) : prevCount + 1);
+
     setShowOverlay(true);
-    setTimeout(() => setShowOverlay(false), 450);
+    setTimeout(() => setShowOverlay(false), 600);
+
+    setCount((prev) => (liked ? prev - 1 : prev + 1));
+    const prevLiked = liked;
+    setLiked(!liked);
 
     try {
-      if (prevLiked) await removeLaurier(activity.activity_id as string);
-      else await giveLaurier(activity.activity_id as string);
+      if (prevLiked) await removeBooky(activity.activity_id as string);
+      else await giveBooky(activity.activity_id as string);
     } catch (e) {
       setLiked(prevLiked);
-      setCount(prevCount);
+      setCount(activity.likes_count ?? 0);
       setShowOverlay(false);
       console.error(e);
     }
   }, [liked, count, activity.activity_id]);
 
-  const dtHandlers = useDoubleTap(toggleLaurier);
+  const dtHandlers = useDoubleTap(toggleBooky);
 
   return (
     <div className="relative rounded-lg bg-gradient-to-r from-coffee-light/5 to-coffee-medium/5 hover:from-coffee-light/10 hover:to-coffee-medium/10 transition-colors overflow-hidden" {...dtHandlers}>
-      <LaurierOverlay show={showOverlay} />
+      <BookyOverlay show={showOverlay} />
       
       <div className="flex items-start gap-3 p-3">
         {/* Avatar */}
@@ -178,17 +179,15 @@ function FinishedActivityItem({ activity, timeAgo }: { activity: DiscoverFeedIte
             <p className="text-coffee-dark/60 text-caption">{timeAgo}</p>
             
             <button
-              aria-label={liked ? "Retirer le Laurier" : "Donner un Laurier"}
-              className={`flex items-center gap-1 text-sm transition-colors ${
-                liked ? "text-[#AE6841]" : "text-coffee-dark/70 hover:text-[#AE6841]"
-              }`}
+              aria-label={liked ? "Retirer le Booky" : "Donner un Booky"}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card hover:bg-accent transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleLaurier();
+                toggleBooky();
               }}
             >
-              <ThumbsUp className="h-4 w-4" />
-              <span>{count} Laurier{count > 1 ? "s" : ""}</span>
+              <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} style={{ color: '#AE6841' }} />
+              <span>{count} Booky{count > 1 ? "s" : ""}</span>
             </button>
           </div>
         </div>

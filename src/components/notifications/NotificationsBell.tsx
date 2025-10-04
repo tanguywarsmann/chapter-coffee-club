@@ -49,7 +49,7 @@ export function NotificationsBell() {
         setUnreadCount((prev) => prev + 1);
 
         const msg =
-          n.type === "laurier_received" ? `${n.actor?.username ?? "Quelqu'un"} t'a donné un Laurier pour ${n.book_title}` :
+          n.type === "booky_received" ? `${n.actor?.username ?? "Quelqu'un"} t'a donné un Booky pour ${n.book_title}` :
           n.type === "friend_finished" ? `${n.actor?.username ?? "Quelqu'un"} a terminé ${n.book_title}` :
           n.type === "streak_nudge"   ? (n.meta?.msg ?? "Tu n'as pas validé aujourd'hui. Garde ta série.") :
           n.type === "streak_kept"    ? (n.meta?.msg ?? "Série maintenue. Continue.") :

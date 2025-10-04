@@ -350,37 +350,7 @@ export type Database = {
         }
         Relationships: []
       }
-      feed_events: {
-        Row: {
-          actor_id: string
-          book_id: string | null
-          created_at: string
-          event_type: string
-          id: string
-          seed_tag: string | null
-          segment: number | null
-        }
-        Insert: {
-          actor_id: string
-          book_id?: string | null
-          created_at?: string
-          event_type: string
-          id?: string
-          seed_tag?: string | null
-          segment?: number | null
-        }
-        Update: {
-          actor_id?: string
-          book_id?: string | null
-          created_at?: string
-          event_type?: string
-          id?: string
-          seed_tag?: string | null
-          segment?: number | null
-        }
-        Relationships: []
-      }
-      feed_lauriers: {
+      feed_bookys: {
         Row: {
           created_at: string
           event_id: string
@@ -411,6 +381,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feed_events: {
+        Row: {
+          actor_id: string
+          book_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          seed_tag: string | null
+          segment: number | null
+        }
+        Insert: {
+          actor_id: string
+          book_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          seed_tag?: string | null
+          segment?: number | null
+        }
+        Update: {
+          actor_id?: string
+          book_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          seed_tag?: string | null
+          segment?: number | null
+        }
+        Relationships: []
       }
       followers: {
         Row: {
@@ -1260,19 +1260,17 @@ export type Database = {
         Returns: Json
       }
       feed_get_v1: {
-        Args:
-          | { p_limit: number; p_offset: number }
-          | { p_limit?: number; p_offset?: number; p_viewer?: string }
+        Args: { p_limit?: number; p_offset?: number; p_viewer?: string }
         Returns: {
           actor_avatar_url: string
           actor_id: string
           actor_name: string
           book_id: string
           book_title: string
+          bookys_count: number
           created_at: string
           event_type: string
           id: string
-          lauriers_count: number
           liked_by_me: boolean
           segment: number
         }[]

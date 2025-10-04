@@ -108,12 +108,12 @@ serve(async (req) => {
 
         // Get weekly stats
         
-        // 1. Lauriers received this week
-        const { count: lauriersReceived } = await supabase
+        // 1. Bookys received this week
+        const { count: bookysReceived } = await supabase
           .from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("recipient_id", userSetting.user_id)
-          .eq("type", "laurier_received")
+          .eq("type", "booky_received")
           .gte("created_at", weekStartUTC)
           .lt("created_at", weekEndUTC);
 
@@ -147,16 +147,16 @@ serve(async (req) => {
 
         // Create digest meta
         const digestMeta = {
-          lauriers: lauriersReceived || 0,
+          bookys: bookysReceived || 0,
           validations: validations || 0,
           activeFriends: activeFriends,
           weekStart: weekStartUTC,
           weekEnd: weekEndUTC,
-          msg: `Semaine VREAD. ${lauriersReceived || 0} Lauriers. ${validations || 0} validations. ${activeFriends} amis actifs.`
+          msg: `Semaine VREAD. ${bookysReceived || 0} Bookys. ${validations || 0} validations. ${activeFriends} amis actifs.`
         };
 
         // Only send if there's some activity
-        if ((lauriersReceived || 0) > 0 || (validations || 0) > 0 || activeFriends > 0) {
+        if ((bookysReceived || 0) > 0 || (validations || 0) > 0 || activeFriends > 0) {
           await supabase.from("notifications").insert({
             recipient_id: userSetting.user_id,
             type: "weekly_digest",

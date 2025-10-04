@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ThumbsUp } from "lucide-react";
 
-export function LaurierOverlay({ show }: { show: boolean }) {
+export function BookyOverlay({ show }: { show: boolean }) {
   return (
     <AnimatePresence>
       {show && (

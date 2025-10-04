@@ -36,7 +36,7 @@ export function NotificationsInbox({
   );
   
   const socialNotifications = notifications.filter(n => 
-    ['laurier_received', 'friend_finished'].includes(n.type)
+    ['booky_received', 'friend_finished'].includes(n.type)
   );
   
   const digestNotifications = notifications.filter(n => 
@@ -63,7 +63,7 @@ export function NotificationsInbox({
       case 'streak_kept':
       case 'streak_lost':
         return <Flame className="h-4 w-4 text-orange-500" />;
-      case 'laurier_received':
+      case 'booky_received':
         return <ThumbsUp className="h-4 w-4" style={{ color: '#AE6841' }} />;
       case 'friend_finished':
         return <BookOpen className="h-4 w-4 text-green-600" />;
@@ -76,10 +76,10 @@ export function NotificationsInbox({
 
   const getNotificationMessage = (notification: VreadNotification) => {
     switch (notification.type) {
-      case 'laurier_received':
+      case 'booky_received':
         return (
           <span>
-            <strong>{notification.actor?.username || "Quelqu'un"}</strong> t'a donné un Laurier pour{" "}
+            <strong>{notification.actor?.username || "Quelqu'un"}</strong> t'a donné un Booky pour{" "}
             <strong>{notification.book_title}</strong>
           </span>
         );
@@ -104,7 +104,7 @@ export function NotificationsInbox({
   const getNotificationAction = (notification: VreadNotification) => {
     switch (notification.type) {
       case 'friend_finished':
-      case 'laurier_received':
+      case 'booky_received':
         return notification.book_id ? "Voir l'activité" : null;
       case 'streak_nudge':
         return "Lire maintenant";
@@ -118,7 +118,7 @@ export function NotificationsInbox({
   const handleNotificationAction = (notification: VreadNotification) => {
     switch (notification.type) {
       case 'friend_finished':
-      case 'laurier_received':
+      case 'booky_received':
         navigate('/discover');
         break;
       case 'streak_nudge':

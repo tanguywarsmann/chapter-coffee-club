@@ -1,5 +1,5 @@
 -- SEED FEED 20 JOURS GLISSANTS - VREAD
--- Génère événements + lauriers avec alternance de densité
+-- Génère événements + bookys avec alternance de densité
 
 -- Variables
 DO $$
@@ -10,7 +10,7 @@ DECLARE
   books_id_col TEXT := 'id';
   books_segments_col_preferred TEXT := 'expected_segments';
   feed_events_table TEXT := 'public.feed_events';
-  feed_lauriers_table TEXT := 'public.feed_lauriers';
+  feed_bookys_table TEXT := 'public.feed_bookys';
   timezone_name TEXT := 'Europe/Paris';
   
   v_day DATE;
@@ -23,9 +23,9 @@ DECLARE
   v_max_segment INT;
   v_event_ts TIMESTAMPTZ;
   v_event_id UUID;
-  v_lauriers_count INT;
+  v_bookys_count INT;
   v_liker_id UUID;
-  v_laurier_ts TIMESTAMPTZ;
+  v_booky_ts TIMESTAMPTZ;
   v_hour INT;
   v_minute INT;
   
@@ -52,8 +52,8 @@ BEGIN
     EXECUTE format('CREATE INDEX idx_feed_events_actor ON %s (actor_id)', feed_events_table);
   END IF;
   
-  -- Créer table feed_lauriers si absente
-  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'feed_lauriers') THEN
+  -- Créer table feed_bookys si absente
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'feed_bookys') THEN
     EXECUTE format('
       CREATE TABLE %s (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -61,10 +61,10 @@ BEGIN
         liker_id UUID NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         UNIQUE(event_id, liker_id)
-      )', feed_lauriers_table);
+      )', feed_bookys_table);
     
-    EXECUTE format('CREATE INDEX idx_feed_lauriers_event ON %s (event_id)', feed_lauriers_table);
-    EXECUTE format('CREATE INDEX idx_feed_lauriers_liker ON %s (liker_id)', feed_lauriers_table);
+    EXECUTE format('CREATE INDEX idx_feed_bookys_event ON %s (event_id)', feed_bookys_table);
+    EXECUTE format('CREATE INDEX idx_feed_bookys_liker ON %s (liker_id)', feed_bookys_table);
   END IF;
   
   -- Charger pool utilisateurs (130 aléatoires)
@@ -129,12 +129,12 @@ BEGIN
         INTO v_event_id
         USING gen_random_uuid(), v_actor_id, v_event_type, v_book_id, v_segment, v_event_ts;
       
-      -- Lauriers (~60% des événements, 1-6 lauriers)
+      -- Bookys (~60% des événements, 1-6 bookys)
       IF random() < 0.6 THEN
-        v_lauriers_count := 1 + floor(random() * 6)::INT;
+        v_bookys_count := 1 + floor(random() * 6)::INT;
         v_available_likers := v_users;
         
-        FOR v_j IN 1..LEAST(v_lauriers_count, array_length(v_users, 1) - 1) LOOP
+        FOR v_j IN 1..LEAST(v_bookys_count, array_length(v_users, 1) - 1) LOOP
           -- Liker différent de l'acteur
           LOOP
             v_liker_id := v_available_likers[1 + floor(random() * array_length(v_available_likers, 1))::INT];
@@ -144,14 +144,14 @@ BEGIN
           -- Retirer liker du pool
           v_available_likers := array_remove(v_available_likers, v_liker_id);
           
-          -- Timestamp laurier: événement + 0-2h
-          v_laurier_ts := v_event_ts + (random() * INTERVAL '2 hours');
+          -- Timestamp booky: événement + 0-2h
+          v_booky_ts := v_event_ts + (random() * INTERVAL '2 hours');
           
-          -- Insérer laurier (ON CONFLICT ignore)
+          -- Insérer booky (ON CONFLICT ignore)
           BEGIN
             EXECUTE format('INSERT INTO %s (event_id, liker_id, created_at) VALUES ($1, $2, $3)', 
-              feed_lauriers_table)
-              USING v_event_id, v_liker_id, v_laurier_ts;
+              feed_bookys_table)
+              USING v_event_id, v_liker_id, v_booky_ts;
           EXCEPTION WHEN unique_violation THEN
             -- Ignorer duplicatas
           END;
@@ -160,7 +160,7 @@ BEGIN
     END LOOP;
   END LOOP;
   
-  RAISE NOTICE '✓ Seed terminé: 20 jours d''événements avec lauriers';
+  RAISE NOTICE '✓ Seed terminé: 20 jours d''événements avec bookys';
 END $$;
 
 -- REQUÊTES DE CONTRÔLE
@@ -177,15 +177,15 @@ WHERE created_at >= CURRENT_DATE - INTERVAL '20 days'
 GROUP BY jour
 ORDER BY jour DESC;
 
--- 2) Stats lauriers
+-- 2) Stats bookys
 SELECT 
-  COUNT(DISTINCT fe.id) as events_avec_lauriers,
-  COUNT(fl.id) as total_lauriers,
-  ROUND(AVG(lauriers_per_event), 2) as avg_lauriers_par_event
+  COUNT(DISTINCT fe.id) as events_avec_bookys,
+  COUNT(fl.id) as total_bookys,
+  ROUND(AVG(bookys_per_event), 2) as avg_bookys_par_event
 FROM public.feed_events fe
 LEFT JOIN (
-  SELECT event_id, COUNT(*) as lauriers_per_event
-  FROM public.feed_lauriers
+  SELECT event_id, COUNT(*) as bookys_per_event
+  FROM public.feed_bookys
   GROUP BY event_id
 ) fl ON fl.event_id = fe.id
 WHERE fe.created_at >= CURRENT_DATE - INTERVAL '20 days';

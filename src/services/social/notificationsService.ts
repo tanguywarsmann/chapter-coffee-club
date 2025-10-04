@@ -4,7 +4,7 @@ export type VreadNotification = {
   id: string;
   recipient_id: string;
   actor_id?: string | null;
-  type: "friend_finished" | "laurier_received" | "streak_nudge" | "streak_kept" | "streak_lost" | "weekly_digest";
+  type: "friend_finished" | "booky_received" | "streak_nudge" | "streak_kept" | "streak_lost" | "weekly_digest";
   progress_id?: string | null;
   book_id?: string | null;
   book_title?: string | null;

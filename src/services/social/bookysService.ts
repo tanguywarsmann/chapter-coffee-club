@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function giveLaurier(progressId: string) {
+export async function giveBooky(progressId: string) {
   const { data: session } = await supabase.auth.getSession();
   const uid = session?.session?.user?.id;
   if (!uid) throw new Error("Not authenticated");
@@ -8,7 +8,7 @@ export async function giveLaurier(progressId: string) {
   if (error && error.code !== "23505") throw error;
 }
 
-export async function removeLaurier(progressId: string) {
+export async function removeBooky(progressId: string) {
   const { data: session } = await supabase.auth.getSession();
   const uid = session?.session?.user?.id;
   if (!uid) throw new Error("Not authenticated");
