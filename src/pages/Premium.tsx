@@ -42,46 +42,79 @@ export default function Premium() {
 
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Free Plan */}
-            <Card className="p-8">
-              <h3 className="text-2xl font-bold mb-2">Gratuit</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">0€</span>
-                <span className="text-muted-foreground ml-2">pour toujours</span>
-              </div>
-              <ul className="space-y-4 mb-6">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Accès au catalogue de livres classiques</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Validation par checkpoints toutes les ~30 pages</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Suivi de progression et statistiques</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Badges et système de récompenses</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Communauté de lecteurs</span>
-                </li>
-              </ul>
-            </Card>
-
-            {/* Premium Plan */}
-            <Card className="p-8 border-2 border-primary relative shadow-lg">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                <Sparkles className="h-4 w-4" />
-                Recommandé
+            {/* Early Bird Lifetime - MISE EN AVANT */}
+            <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                🔥 Offre de lancement - Limitée
               </div>
               
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-2xl font-bold">Premium</h3>
+                <h3 className="text-2xl font-bold">Lifetime - Early Bird</h3>
+                <Crown className="h-6 w-6 text-orange-500" />
+              </div>
+              
+              <div className="mb-2">
+                <span className="text-sm text-muted-foreground line-through">99€</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-orange-600">29€</span>
+                  <Sparkles className="h-6 w-6 text-orange-500 animate-pulse" />
+                </div>
+              </div>
+              <p className="text-sm font-semibold text-orange-600 mb-6">
+                Accès à vie - Valable jusqu'au 15 octobre
+              </p>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span className="font-semibold">
+                    Demander l'ajout de n'importe quel livre
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>Traitement sous 48-72h</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>Statistiques de lecture avancées</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>Badges exclusifs Premium</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>Support prioritaire</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span>Accès anticipé aux nouvelles fonctionnalités</span>
+                </li>
+              </ul>
+              
+              <Button 
+                onClick={() => {
+                  if (!user) {
+                    window.location.href = '/auth';
+                    return;
+                  }
+                  setIsLoading(true);
+                  const stripeUrl = `https://buy.stripe.com/cNi28q73k0oE7u3bBuejK00?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
+                  window.location.href = stripeUrl;
+                }}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold"
+                size="lg"
+              >
+                {isLoading ? 'Redirection vers Stripe...' : 'Profiter de l\'offre - 29€ Lifetime'}
+              </Button>
+            </Card>
+
+            {/* Premium Annuel - STANDARD */}
+            <Card className="p-8 border relative shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-2xl font-bold">Premium Annuel</h3>
                 <Crown className="h-6 w-6 text-yellow-500" />
               </div>
               
@@ -92,10 +125,6 @@ export default function Premium() {
               <p className="text-sm text-muted-foreground mb-6">Soit 4,17€/mois</p>
               
               <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="font-medium">Tout du plan Gratuit</span>
-                </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="font-semibold">
@@ -125,12 +154,20 @@ export default function Premium() {
               </ul>
               
               <Button 
-                onClick={handleUpgrade} 
+                onClick={() => {
+                  if (!user) {
+                    window.location.href = '/auth';
+                    return;
+                  }
+                  setIsLoading(true);
+                  const stripeUrl = `https://buy.stripe.com/7sYbJ0fzQ5IY5lV0WQejK01?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
+                  window.location.href = stripeUrl;
+                }}
                 disabled={isLoading}
                 className="w-full"
                 size="lg"
               >
-                {isLoading ? 'Redirection vers Stripe...' : 'Passer Premium'}
+                {isLoading ? 'Redirection vers Stripe...' : 'Passer Premium - 50€/an'}
               </Button>
             </Card>
           </div>
