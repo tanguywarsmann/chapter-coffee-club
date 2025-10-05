@@ -140,7 +140,7 @@ export async function syncUserProfile(userId: string, email: string | undefined)
     // Vérifier si un profil existe déjà
     const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, username, email, avatar_url, is_premium, premium_since, is_admin, created_at, updated_at')
       .eq('id', userId)
       .maybeSingle();
       
