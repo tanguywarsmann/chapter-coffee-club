@@ -9,9 +9,10 @@ interface StreakStatsProps {
 export function StreakStats({ current, best }: StreakStatsProps) {
 
   const formatStreakText = (streak: number, label: string) => {
-    if (streak === 0) return `Aucune ${label.toLowerCase()}`;
-    if (streak === 1) return `${streak} jour`;
-    return `${streak} jours`;
+    const safeStreak = streak ?? 0;
+    if (safeStreak === 0) return `Aucune ${label.toLowerCase()}`;
+    if (safeStreak === 1) return `${safeStreak} jour`;
+    return `${safeStreak} jours`;
   };
 
   return (
@@ -40,7 +41,7 @@ export function StreakStats({ current, best }: StreakStatsProps) {
                 Série Actuelle
               </h3>
               <p className="text-h4 sm:text-h3 font-serif font-semibold text-reed-darker leading-tight break-words">
-                {formatStreakText(current, "série")}
+                {formatStreakText(current ?? 0, "série")}
               </p>
             </div>
           </div>
@@ -68,7 +69,7 @@ export function StreakStats({ current, best }: StreakStatsProps) {
                 Record Personnel
               </h3>
               <p className="text-h4 sm:text-h3 font-serif font-semibold text-reed-darker leading-tight break-words">
-                {formatStreakText(best, "record")}
+                {formatStreakText(best ?? 0, "record")}
               </p>
             </div>
           </div>

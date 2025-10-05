@@ -65,9 +65,9 @@ export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = f
                 </h3>
                 <div className="flex items-baseline gap-2">
                   <p className="text-h2 sm:text-h1 font-serif font-bold text-reed-darker leading-none break-all">
-                    {isLoading ? "—" : stat.value.toLocaleString()}
+                    {isLoading ? "—" : (stat.value ?? 0).toLocaleString()}
                   </p>
-                  {!isLoading && stat.value > 0 && (
+                  {!isLoading && (stat.value ?? 0) > 0 && (
                     <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
                   )}
                 </div>
@@ -80,7 +80,7 @@ export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = f
                   <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.iconColor}`} />
                 </div>
                 {/* Badge décoratif pour les valeurs positives */}
-                {!isLoading && stat.value > 0 && (
+                {!isLoading && (stat.value ?? 0) > 0 && (
                   <div className="absolute -top-2 -right-2">
                     <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-reed-primary to-reed-dark rounded-full flex items-center justify-center">
                       <Sparkles className="h-2 w-2 sm:h-3 sm:w-3 text-white" />
@@ -95,7 +95,7 @@ export function StatsCards({ booksRead, pagesRead, badges, quests, isLoading = f
               <div 
                 className={`h-full bg-gradient-to-r ${stat.gradient} transition-all duration-1000 ease-out`}
                 style={{ 
-                  width: isLoading ? '0%' : `${Math.min(100, Math.max(10, (stat.value / Math.max(stat.value, 10)) * 100))}%` 
+                  width: isLoading ? '0%' : `${Math.min(100, Math.max(10, ((stat.value ?? 0) / Math.max((stat.value ?? 0), 10)) * 100))}%` 
                 }}
               />
             </div>

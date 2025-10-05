@@ -7,7 +7,7 @@ interface LevelCardProps {
 
 export function LevelCard({ xp, level }: LevelCardProps) {
   // Calculate progress toward next level (every 1000 XP)
-  const progressPercent = (xp % 1000) / 10; // Convert to percentage (0-100)
+  const progressPercent = ((xp ?? 0) % 1000) / 10; // Convert to percentage (0-100)
   
   return (
     <div className="group relative">
@@ -24,17 +24,17 @@ export function LevelCard({ xp, level }: LevelCardProps) {
             {/* Badge niveau */}
             <div className="absolute -top-2 -right-2">
               <div className="px-2 py-1 bg-gradient-to-br from-reed-primary to-reed-dark rounded-full text-caption font-bold text-white">
-                {level}
+                {level ?? 1}
               </div>
             </div>
           </div>
           
           <div className="flex-1 min-w-0">
             <h3 className="text-caption sm:text-body-sm font-serif font-medium text-reed-dark uppercase mb-2">
-              Niveau {level}
+              Niveau {level ?? 1}
             </h3>
             <p className="text-h4 sm:text-h4 font-serif font-semibold text-reed-darker mb-3 break-words">
-              {xp.toLocaleString()} XP
+              {(xp ?? 0).toLocaleString()} XP
             </p>
             
             {/* Barre de progression vers le niveau suivant */}
@@ -45,7 +45,7 @@ export function LevelCard({ xp, level }: LevelCardProps) {
               />
             </div>
             <p className="text-caption text-reed-dark mt-1">
-              {1000 - (xp % 1000)} XP jusqu'au niveau {level + 1}
+              {1000 - ((xp ?? 0) % 1000)} XP jusqu'au niveau {(level ?? 1) + 1}
             </p>
           </div>
           
