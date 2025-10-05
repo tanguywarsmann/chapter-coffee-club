@@ -41,14 +41,45 @@ export default function Premium() {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Early Bird Lifetime - MISE EN AVANT */}
-            <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* CARTE 1 - GRATUIT */}
+            <Card className="p-8">
+              <h3 className="text-2xl font-bold mb-2">Gratuit</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold">0€</span>
+                <span className="text-muted-foreground ml-2 block text-sm mt-1">pour toujours</span>
+              </div>
+              <ul className="space-y-4 mb-6">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Accès au catalogue de livres classiques</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Validation par checkpoints toutes les ~30 pages</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Suivi de progression et statistiques</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Badges et système de récompenses</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Communauté de lecteurs</span>
+                </li>
+              </ul>
+            </Card>
+
+            {/* CARTE 2 - EARLY BIRD LIFETIME (MISE EN AVANT) */}
+            <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50 md:scale-105 md:z-10">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
                 🔥 Offre de lancement - Limitée
               </div>
               
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 mt-2">
                 <h3 className="text-2xl font-bold">Lifetime - Early Bird</h3>
                 <Crown className="h-6 w-6 text-orange-500" />
               </div>
@@ -59,9 +90,10 @@ export default function Premium() {
                   <span className="text-5xl font-bold text-orange-600">29€</span>
                   <Sparkles className="h-6 w-6 text-orange-500 animate-pulse" />
                 </div>
+                <span className="text-lg font-semibold text-orange-700">Accès à vie</span>
               </div>
               <p className="text-sm font-semibold text-orange-600 mb-6">
-                Accès à vie - Valable jusqu'au 15 octobre
+                Valable jusqu'au 15 octobre
               </p>
               
               <ul className="space-y-4 mb-8">
@@ -111,7 +143,7 @@ export default function Premium() {
               </Button>
             </Card>
 
-            {/* Premium Annuel - STANDARD */}
+            {/* CARTE 3 - PREMIUM ANNUEL */}
             <Card className="p-8 border relative shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-2xl font-bold">Premium Annuel</h3>
