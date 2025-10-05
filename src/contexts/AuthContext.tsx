@@ -40,11 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!userId) return { isAdmin: false, isPremium: false };
       
+      console.log('[AUTH] Fetching profile for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_admin, is_premium')
+        .select('is_admin, is_premium, premium_since')
         .eq('id', userId)
         .maybeSingle();
+
+      console.log('[AUTH] Profile data fetched:', data);
+      console.log('[AUTH] Profile error:', error);
 
       if (error) {
         console.error('Error fetching user status:', error);
@@ -55,8 +60,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const adminStatus = data?.is_admin || false;
       const premiumStatus = data?.is_premium || false;
+      
+      console.log('[AUTH] Setting isPremium to:', premiumStatus);
+      console.log('[AUTH] Setting isAdmin to:', adminStatus);
+      
       setIsAdmin(adminStatus);
       setIsPremium(premiumStatus);
+      
+      // Enrichir l'objet user avec les données du profil
+      setUser(prev => {
+        if (!prev) return prev;
+        const enrichedUser = {
+          ...prev,
+          is_admin: adminStatus,
+          is_premium: premiumStatus,
+          premium_since: data?.premium_since
+        } as any;
+        console.log('[AUTH] Enriched user object:', enrichedUser);
+        return enrichedUser;
+      });
+      
       return { isAdmin: adminStatus, isPremium: premiumStatus };
     } catch (error) {
       console.error('Exception when fetching user status:', error);
