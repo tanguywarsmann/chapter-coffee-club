@@ -14,20 +14,7 @@ export function AppHeader() {
   const { user, isAdmin, isPremium } = useAuth();
 
   return (
-    <>
-      <div style={{
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        background: 'red', 
-        color: 'white', 
-        padding: '10px', 
-        zIndex: 9999,
-        fontSize: '20px'
-      }}>
-        DEBUG: isPremium = {String(isPremium)}
-      </div>
-      <header
+    <header
       className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60"
       role="banner"
     >
@@ -65,6 +52,5 @@ export function AppHeader() {
         )}
       </div>
     </header>
-    </>
   );
 }
