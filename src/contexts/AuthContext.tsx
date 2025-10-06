@@ -68,6 +68,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       `;
       document.body.appendChild(debugDiv3);
       
+      // Test RPC pour vérifier auth.uid()
+      const { data: authTest } = await supabase.rpc('test_auth_uid');
+      const authTestData = authTest as { auth_uid: string | null; role: string | null } | null;
+
+      const debugDiv4 = document.getElementById('debug-rpc') || document.createElement('div');
+      debugDiv4.id = 'debug-rpc';
+      debugDiv4.style.cssText = 'position:fixed;top:350px;left:0;background:purple;color:white;padding:10px;zIndex:9999;fontSize:16px';
+      debugDiv4.innerHTML = `
+        <div>RPC auth.uid(): ${authTestData?.auth_uid}</div>
+        <div>RPC role: ${authTestData?.role}</div>
+      `;
+      document.body.appendChild(debugDiv4);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin, is_premium, premium_since')

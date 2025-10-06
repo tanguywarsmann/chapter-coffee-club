@@ -1367,6 +1367,10 @@ export type Database = {
           xp: number
         }[]
       }
+      test_auth_uid: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       use_joker: {
         Args: { p_book_id: string; p_segment: number; p_user_id: string }
         Returns: {
