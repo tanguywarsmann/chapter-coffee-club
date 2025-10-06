@@ -17,6 +17,7 @@ import Followers from '@/pages/Followers';
 import Admin from '@/pages/Admin';
 import AdminAutoCovers from '@/pages/AdminAutoCovers';
 import AdminAudit from '@/pages/AdminAudit';
+import AdminBookRequests from '@/pages/AdminBookRequests';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
@@ -98,11 +99,16 @@ const AppRouter = () => {
           <AdminAutoCovers />
         </AdminGuard>
       } />
-      <Route path="/admin/audit" element={
-        <AdminGuard>
-          <AdminAudit />
-        </AdminGuard>
-      } />
+          <Route path="/admin/audit" element={
+            <AdminGuard>
+              <AdminAudit />
+            </AdminGuard>
+          } />
+          <Route path="/admin/book-requests" element={
+            <AdminGuard>
+              <AdminBookRequests />
+            </AdminGuard>
+          } />
       
       {/* Catch-all 404 */}
       <Route path="*" element={<NotFound />} />

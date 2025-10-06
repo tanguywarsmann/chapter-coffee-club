@@ -34,6 +34,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             Audit
           </NavLink>
+          <NavLink 
+            to="/admin/book-requests" 
+            className={({ isActive }) => 
+              `hover:underline ${isActive ? 'text-primary font-medium' : 'text-foreground'}`
+            }
+          >
+            Demandes
+          </NavLink>
         </nav>
         <AdminBadge />
       </header>
