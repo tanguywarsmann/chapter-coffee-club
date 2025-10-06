@@ -53,7 +53,7 @@ const safeStorage = {
   }
 };
 
-// Forcer les en-têtes apikey et Authorization pour éviter l'erreur 400 même sans session
+// Configuration du client Supabase avec auth correctement configuré
 export const supabase = createClient<Database>(url, key, {
   auth: {
     storage: safeStorage,
@@ -64,7 +64,7 @@ export const supabase = createClient<Database>(url, key, {
   global: {
     headers: {
       apikey: key,
-      Authorization: `Bearer ${key}`,
+      // NE PAS forcer Authorization ici - Supabase gère automatiquement le JWT
     },
   },
 });
