@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!userId) return { isAdmin: false, isPremium: false };
       
-      alert(`[AUTH] Fetching profile for user: ${userId}`);
+      console.log('[AUTH] Fetching profile for user:', userId);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -48,8 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .maybeSingle();
 
-      alert(`[AUTH] Profile data: ${JSON.stringify(data)}`);
-      if (error) alert(`[AUTH] Profile error: ${JSON.stringify(error)}`);
+      console.log('[AUTH] Profile data fetched:', data);
+      console.log('[AUTH] Profile error:', error);
 
       if (error) {
         console.error('Error fetching user status:', error);
@@ -61,7 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const adminStatus = data?.is_admin || false;
       const premiumStatus = data?.is_premium || false;
       
-      alert(`[AUTH] isPremium: ${premiumStatus}, isAdmin: ${adminStatus}`);
+      console.log('[AUTH] Setting isPremium to:', premiumStatus);
+      console.log('[AUTH] Setting isAdmin to:', adminStatus);
       
       setIsAdmin(adminStatus);
       setIsPremium(premiumStatus);
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           is_premium: premiumStatus,
           premium_since: data?.premium_since
         } as any;
-        alert(`[AUTH] User enriched - is_premium: ${enrichedUser.is_premium}`);
+        console.log('[AUTH] Enriched user object:', enrichedUser);
         return enrichedUser;
       });
       
