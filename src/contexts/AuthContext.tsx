@@ -54,11 +54,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       `;
       document.body.appendChild(debugDiv2);
       
+      // Test si on peut lire la table profiles du tout
+      const { data: testData, error: testError } = await supabase
+        .from('profiles')
+        .select('count');
+
+      const debugDiv3 = document.getElementById('debug-test') || document.createElement('div');
+      debugDiv3.id = 'debug-test';
+      debugDiv3.style.cssText = 'position:fixed;top:250px;left:0;background:green;color:white;padding:10px;zIndex:9999;fontSize:16px';
+      debugDiv3.innerHTML = `
+        <div>Can read profiles table: ${testData ? 'YES' : 'NO'}</div>
+        <div>Test error: ${JSON.stringify(testError)}</div>
+      `;
+      document.body.appendChild(debugDiv3);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin, is_premium, premium_since')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
 
       // DEBUG TEMPORAIRE
       const debugDiv = document.getElementById('debug-premium') || document.createElement('div');
