@@ -48,6 +48,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .maybeSingle();
 
+      // DEBUG TEMPORAIRE
+      const debugDiv = document.getElementById('debug-premium') || document.createElement('div');
+      debugDiv.id = 'debug-premium';
+      debugDiv.style.cssText = 'position:fixed;top:50px;left:0;background:blue;color:white;padding:10px;zIndex:9999;fontSize:16px;maxWidth:400px';
+      debugDiv.innerHTML = `
+        <div>userId: ${userId}</div>
+        <div>data: ${JSON.stringify(data)}</div>
+        <div>error: ${JSON.stringify(error)}</div>
+        <div>data?.is_premium: ${data?.is_premium}</div>
+      `;
+      document.body.appendChild(debugDiv);
+
       console.log('[AUTH] Profile data fetched:', data);
       console.log('[AUTH] Profile error:', error);
 
