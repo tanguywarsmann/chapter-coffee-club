@@ -42,6 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log('[AUTH] Fetching profile for user:', userId);
       
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+
+      const debugDiv2 = document.getElementById('debug-auth') || document.createElement('div');
+      debugDiv2.id = 'debug-auth';
+      debugDiv2.style.cssText = 'position:fixed;top:150px;left:0;background:orange;color:black;padding:10px;zIndex:9999;fontSize:16px;maxWidth:400px';
+      debugDiv2.innerHTML = `
+        <div>authUser.id: ${authUser?.id}</div>
+        <div>userId param: ${userId}</div>
+        <div>Match: ${authUser?.id === userId}</div>
+      `;
+      document.body.appendChild(debugDiv2);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin, is_premium, premium_since')
