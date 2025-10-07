@@ -3,17 +3,19 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, ArrowLeft, Tag, Share2, Clock } from "lucide-react";
+import { Calendar, User, ArrowLeft, Tag, Share2, Clock, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { blogService } from "@/services/blogService";
 import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +47,39 @@ export default function BlogPost() {
 
     loadPost();
   }, [slug]);
+
+  // Charger les articles liés
+  useEffect(() => {
+    const loadRelatedPosts = async () => {
+      if (!post?.tags || post.tags.length === 0) return;
+
+      try {
+        const { data } = await supabase
+          .from('blog_posts')
+          .select('id, title, slug, excerpt, image_url, image_alt, tags, published_at')
+          .contains('tags', post.tags)
+          .neq('id', post.id)
+          .eq('published', true)
+          .limit(3);
+
+        if (data) {
+          setRelatedPosts(data.map(p => ({
+            ...p,
+            content: '',
+            created_at: p.published_at || '',
+            updated_at: p.published_at || '',
+            published: true,
+            imageHero: p.image_url,
+            imageAlt: p.image_alt
+          })));
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des articles liés:', error);
+      }
+    };
+
+    loadRelatedPosts();
+  }, [post]);
 
   if (loading) {
     return (
@@ -168,6 +203,25 @@ export default function BlogPost() {
             </Link>
           </div>
 
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6">
+            <ol className="flex items-center gap-2 text-sm text-white/80">
+              <li>
+                <Link to="/" className="hover:text-white transition-colors">
+                  Accueil
+                </Link>
+              </li>
+              <li><ChevronRight className="h-4 w-4" /></li>
+              <li>
+                <Link to="/blog" className="hover:text-white transition-colors">
+                  Blog
+                </Link>
+              </li>
+              <li><ChevronRight className="h-4 w-4" /></li>
+              <li className="text-white/60 truncate max-w-md">{post.title}</li>
+            </ol>
+          </nav>
+
           {/* Article */}
           <article className="max-w-none mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Article Image */}
@@ -260,6 +314,47 @@ export default function BlogPost() {
                 })
               }}
             />
+
+            {/* Articles liés */}
+            {relatedPosts.length > 0 && (
+              <section className="px-8 pb-8 mt-8 border-t border-coffee-light pt-8">
+                <h2 className="text-2xl font-serif font-bold text-coffee-darker mb-6">Articles liés</h2>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {relatedPosts.map(related => (
+                    <Link 
+                      to={`/blog/${related.slug}`} 
+                      key={related.id}
+                      className="group block"
+                    >
+                      <article className="bg-coffee-lightest rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        {related.imageHero && (
+                          <div className="relative h-40 w-full overflow-hidden">
+                            <img 
+                              src={related.imageHero} 
+                              alt={related.imageAlt || related.title}
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                              width={400}
+                              height={200}
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-coffee-darker mb-2 group-hover:text-logo-accent transition-colors line-clamp-2">
+                            {related.title}
+                          </h3>
+                          {related.excerpt && (
+                            <p className="text-sm text-coffee-dark line-clamp-3">
+                              {related.excerpt}
+                            </p>
+                          )}
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
           </article>
         </div>
       </div>
