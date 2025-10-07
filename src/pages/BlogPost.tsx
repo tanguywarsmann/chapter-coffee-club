@@ -11,6 +11,7 @@ import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { trackPageView, trackReadingTime, trackShare } from "@/utils/analytics";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
@@ -81,6 +82,26 @@ export default function BlogPost() {
     loadRelatedPosts();
   }, [post]);
 
+  // Track page view
+  useEffect(() => {
+    if (post) {
+      trackPageView(post.title, `/blog/${post.slug}`);
+    }
+  }, [post]);
+
+  // Track reading time
+  useEffect(() => {
+    if (!post) return;
+    
+    const startTime = Date.now();
+    return () => {
+      const timeSpent = Math.round((Date.now() - startTime) / 1000);
+      if (timeSpent > 5) { // Only track if user spent more than 5 seconds
+        trackReadingTime(post.title, timeSpent);
+      }
+    };
+  }, [post]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-logo-background">
@@ -112,6 +133,7 @@ export default function BlogPost() {
           text: post.excerpt || post.title,
           url: window.location.href
         });
+        trackShare(post.title, 'web_share');
         toast.success('Article partagé avec succès');
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
@@ -122,6 +144,7 @@ export default function BlogPost() {
       // Fallback: copier l'URL dans le presse-papier
       try {
         await navigator.clipboard.writeText(window.location.href);
+        trackShare(post.title, 'clipboard');
         toast.success('Lien copié dans le presse-papier');
       } catch (error) {
         toast.error('Impossible de copier le lien');
