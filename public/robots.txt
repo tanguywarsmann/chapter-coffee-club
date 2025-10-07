@@ -1,9 +1,11 @@
 
 User-agent: *
 Allow: /
+Sitemap: https://www.vread.fr/sitemap.xml
 
+Disallow: /admin/
+Disallow: /api/
 Disallow: /blog-admin/
 Disallow: /search
 
-Sitemap: https://www.vread.fr/sitemap.xml
 Sitemap: https://www.vread.fr/news-sitemap.xml

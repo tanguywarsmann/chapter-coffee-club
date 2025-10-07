@@ -34,6 +34,7 @@ import { Terms } from '@/pages/legal/Terms';
 import DeleteAccount from '@/pages/settings/DeleteAccount';
 import Premium from '@/pages/Premium';
 import RequestBook from '@/pages/RequestBook';
+import SitemapXML from '@/pages/SitemapXML';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -65,6 +66,7 @@ const AppRouter = () => {
       {/* Public Pages */}
       <Route path="/a-propos" element={<About />} />
       <Route path="/presse" element={<Press />} />
+      <Route path="/sitemap.xml" element={<SitemapXML />} />
 
       {/* Aliases with redirects */}
       <Route path="/apropos" element={<Navigate to="/a-propos" replace />} />
