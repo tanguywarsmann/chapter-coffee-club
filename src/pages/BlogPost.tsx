@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
+import { Calendar, User, ArrowLeft, Tag, Share2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { blogService } from "@/services/blogService";
 import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
+import { toast } from "sonner";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
@@ -67,6 +68,31 @@ export default function BlogPost() {
 
   const publishedDate = new Date(post.created_at);
   const modifiedDate = new Date(post.updated_at);
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.excerpt || post.title,
+          url: window.location.href
+        });
+        toast.success('Article partagé avec succès');
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          toast.error('Erreur lors du partage');
+        }
+      }
+    } else {
+      // Fallback: copier l'URL dans le presse-papier
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Lien copié dans le presse-papier');
+      } catch (error) {
+        toast.error('Impossible de copier le lien');
+      }
+    }
+  };
 
   return (
     <>
@@ -151,9 +177,10 @@ export default function BlogPost() {
                   src={post.imageHero} 
                   alt={post.imageAlt || post.title}
                   className="object-cover w-full h-full"
-                  loading="eager"
-                  width={1280}
-                  height={720}
+                  loading="lazy"
+                  decoding="async"
+                  width={1200}
+                  height={630}
                 />
               </div>
             )}
@@ -188,6 +215,26 @@ export default function BlogPost() {
                     <span>{post.author}</span>
                   </div>
                 )}
+
+                {post.reading_time && (
+                  <>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{post.reading_time} min de lecture</span>
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  onClick={handleShare}
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-coffee-dark hover:text-logo-accent"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Partager
+                </Button>
               </div>
               
               {post.tags && post.tags.length > 0 && (

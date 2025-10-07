@@ -17,6 +17,7 @@ export interface BlogPost {
   imageAlt?: string;
   created_at: string;
   updated_at: string;
+  reading_time?: number;
 }
 
 export interface CreateBlogPostData {
@@ -147,7 +148,8 @@ export const blogService = {
       ...data,
       imageUrl: data.image_url ? getPublicImageUrl(data.image_url) : undefined,
       imageHero: data.image_url ? getPublicImageUrl(data.image_url) : undefined,
-      imageAlt: data.image_alt
+      imageAlt: data.image_alt,
+      reading_time: (data as any).reading_time
     };
   },
 
