@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
-import { SEOHead } from "@/components/seo/SEOHead";
 import { blogService } from "@/services/blogService";
 import { setCanonical } from "@/utils/seo";
 import type { BlogPost } from "@/services/blogService";
@@ -71,21 +70,33 @@ export default function BlogPost() {
 
   return (
     <>
-      <SEOHead
-        title={`${post.title} - Blog VREAD`}
-        description={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD pour enrichir vos connaissances littéraires et améliorer votre expérience de lecture.`}
-        canonical={`https://www.vread.fr/blog/${post.slug}`}
-        ogType="article"
-        publishedTime={post.created_at}
-        modifiedTime={post.updated_at}
-        author={post.author || 'VREAD'}
-        tags={post.tags || []}
-        section="Littérature"
-        ogImage={post.imageHero}
-      />
-      
-      {/* Schema.org structured data for article */}
       <Helmet>
+        <title>{post.title} | VREAD Blog</title>
+        <meta name="description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
+        {post.tags && post.tags.length > 0 && (
+          <meta name="keywords" content={post.tags.join(', ')} />
+        )}
+        <link rel="canonical" href={`https://www.vread.fr/blog/${post.slug}`} />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
+        <meta property="og:url" content={`https://www.vread.fr/blog/${post.slug}`} />
+        <meta property="og:image" content={post.imageHero || 'https://www.vread.fr/branding/vread-logo-512.png'} />
+        <meta property="article:published_time" content={post.created_at} />
+        {post.author && <meta property="article:author" content={post.author} />}
+        {post.tags && post.tags.length > 0 && (
+          <meta property="article:tag" content={post.tags.join(', ')} />
+        )}
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt || `Découvrez l'article "${post.title}" sur le blog VREAD`} />
+        <meta name="twitter:image" content={post.imageHero || 'https://www.vread.fr/branding/vread-logo-512.png'} />
+        
+        {/* Schema.org structured data for article */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

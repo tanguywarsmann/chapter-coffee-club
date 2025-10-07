@@ -49,16 +49,20 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>{pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`}</title>
-        <meta name="description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
-        <meta property="og:title" content={pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`} />
-        <meta property="og:description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={pageNum === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum}`} />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={pageNum === 1 ? 'Blog VREAD — Conseils lecture, méthodes et nouveautés' : `Blog VREAD — Page ${pageNum}`} />
-        <meta name="twitter:description" content={pageNum === 1 ? "Tous nos articles VREAD: méthodes, lecture, SEO, nouveautés…" : `Page ${pageNum} des articles VREAD: méthodes, lecture, SEO, nouveautés…`} />
+        <title>{pageNum === 1 ? 'Blog VREAD | Conseils et méthodes pour mieux lire' : `Blog VREAD — Page ${pageNum}`}</title>
+        <meta name="description" content={pageNum === 1 ? "Découvrez des conseils scientifiques et des méthodes concrètes pour améliorer votre lecture, créer une routine et retenir ce que vous lisez." : `Page ${pageNum} - Découvrez nos articles pour améliorer votre lecture`} />
         <link rel="canonical" href={pageNum === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum}`} />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={pageNum === 1 ? 'Blog VREAD | Conseils et méthodes pour mieux lire' : `Blog VREAD — Page ${pageNum}`} />
+        <meta property="og:description" content={pageNum === 1 ? "Découvrez des conseils scientifiques et des méthodes concrètes pour améliorer votre lecture, créer une routine et retenir ce que vous lisez." : `Page ${pageNum} - Découvrez nos articles pour améliorer votre lecture`} />
+        <meta property="og:url" content={pageNum === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum}`} />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageNum === 1 ? 'Blog VREAD | Conseils et méthodes pour mieux lire' : `Blog VREAD — Page ${pageNum}`} />
+        <meta name="twitter:description" content={pageNum === 1 ? "Découvrez des conseils scientifiques et des méthodes concrètes pour améliorer votre lecture, créer une routine et retenir ce que vous lisez." : `Page ${pageNum} - Découvrez nos articles pour améliorer votre lecture`} />
         {pageNum > 1 && (
           <link rel="prev" href={pageNum - 1 === 1 ? "https://www.vread.fr/blog" : `https://www.vread.fr/blog/page/${pageNum - 1}`} />
         )}
