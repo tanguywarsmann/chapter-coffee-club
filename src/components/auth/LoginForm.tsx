@@ -133,17 +133,21 @@ export function LoginForm() {
             </div>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <button 
-            onClick={() => setShowForgotPassword(true)}
-            className="text-sm text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4"
-          >
-            Mot de passe oublié?
-          </button>
+        <CardFooter className="flex flex-col gap-4 pt-2">
+          <div className="w-full text-center">
+            <button 
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm text-coffee-dark hover:text-coffee-darker underline underline-offset-4 font-medium"
+            >
+              Mot de passe oublié?
+            </button>
+          </div>
           
-          <div className="text-body-sm text-center">
+          <div className="text-body-sm text-center border-t border-border pt-4">
             Pas encore de compte?{" "}
             <button 
+              type="button"
               onClick={() => setShowSignUp(true)}
               className="text-coffee-dark hover:text-coffee-darker font-semibold"
             >
