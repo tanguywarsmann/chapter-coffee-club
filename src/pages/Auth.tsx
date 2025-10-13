@@ -16,12 +16,14 @@ import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
+import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { user, error, setError } = useAuth();
 
@@ -212,6 +214,17 @@ export default function Auth() {
               >
                 {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
+              
+              <div className="w-full text-center">
+                <button 
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-coffee-dark hover:text-coffee-darker underline underline-offset-4 font-medium transition-colors"
+                >
+                  Mot de passe oublié?
+                </button>
+              </div>
+              
               <Button
                 onClick={handleSignup}
                 variant="outline"
@@ -225,6 +238,11 @@ export default function Auth() {
           </Card>
         </main>
       </div>
+
+      <ForgotPasswordModal 
+        open={showForgotPassword} 
+        onOpenChange={setShowForgotPassword} 
+      />
     </div>
   );
 }
