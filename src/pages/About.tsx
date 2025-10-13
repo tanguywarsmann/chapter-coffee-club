@@ -85,9 +85,18 @@ export default function About() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-6">📞 Contact et support</h2>
-          <p className="mb-6">
+          <p className="mb-4">
             Des questions ? Des suggestions ? Notre équipe est à votre écoute pour améliorer continuellement 
             votre expérience VREAD. Rejoignez notre communauté Discord ou écrivez-nous directement !
+          </p>
+          <p className="mb-6">
+            <strong>Pour nous contacter :</strong>{" "}
+            <a 
+              href="mailto:tanguy@vread.fr" 
+              className="text-logo-accent hover:underline font-medium"
+            >
+              tanguy@vread.fr
+            </a>
           </p>
 
           <div className="bg-logo-background text-white p-8 rounded-lg text-center mt-12">
