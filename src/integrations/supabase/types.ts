@@ -185,6 +185,7 @@ export type Database = {
       blog_posts: {
         Row: {
           author: string | null
+          canonical_url: string | null
           content: string
           created_at: string
           excerpt: string | null
@@ -195,16 +196,22 @@ export type Database = {
           image_alt: string | null
           image_url: string | null
           is_news: boolean
+          last_modified: string | null
+          meta_description: string | null
+          meta_keywords: string[] | null
           published: boolean
           published_at: string | null
+          reading_time: number | null
           section: string | null
           slug: string
           tags: string[] | null
           title: string
           updated_at: string
+          word_count: number | null
         }
         Insert: {
           author?: string | null
+          canonical_url?: string | null
           content: string
           created_at?: string
           excerpt?: string | null
@@ -215,16 +222,22 @@ export type Database = {
           image_alt?: string | null
           image_url?: string | null
           is_news?: boolean
+          last_modified?: string | null
+          meta_description?: string | null
+          meta_keywords?: string[] | null
           published?: boolean
           published_at?: string | null
+          reading_time?: number | null
           section?: string | null
           slug: string
           tags?: string[] | null
           title: string
           updated_at?: string
+          word_count?: number | null
         }
         Update: {
           author?: string | null
+          canonical_url?: string | null
           content?: string
           created_at?: string
           excerpt?: string | null
@@ -235,13 +248,18 @@ export type Database = {
           image_alt?: string | null
           image_url?: string | null
           is_news?: boolean
+          last_modified?: string | null
+          meta_description?: string | null
+          meta_keywords?: string[] | null
           published?: boolean
           published_at?: string | null
+          reading_time?: number | null
           section?: string | null
           slug?: string
           tags?: string[] | null
           title?: string
           updated_at?: string
+          word_count?: number | null
         }
         Relationships: []
       }
@@ -1366,6 +1384,14 @@ export type Database = {
           streak_current: number
           xp: number
         }[]
+      }
+      unaccent: {
+        Args: { "": string }
+        Returns: string
+      }
+      unaccent_init: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       use_joker: {
         Args: { p_book_id: string; p_segment: number; p_user_id: string }
