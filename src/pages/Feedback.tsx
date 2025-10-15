@@ -3,6 +3,7 @@ import { QuickRating } from "@/components/feedback/QuickRating";
 import { FeedbackForm } from "@/components/feedback/FeedbackForm";
 import { FeedbackList } from "@/components/feedback/FeedbackList";
 import { Button } from "@/components/ui/button";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +13,9 @@ export default function Feedback() {
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-12 space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold">
           🌱 Fais pousser VREAD avec nous
@@ -69,6 +72,7 @@ export default function Feedback() {
 
       <div id="feedback-list">
         <FeedbackList />
+      </div>
       </div>
     </div>
   );
