@@ -430,6 +430,197 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          feedback_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_comments_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_quick_ratings: {
+        Row: {
+          created_at: string | null
+          id: string
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_quick_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_quick_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_submissions: {
+        Row: {
+          category: string | null
+          comments_count: number | null
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          is_anonymous: boolean | null
+          points_awarded: number | null
+          status: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string | null
+          votes_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          comments_count?: number | null
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          points_awarded?: number | null
+          status?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+          votes_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          comments_count?: number | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          points_awarded?: number | null
+          status?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+          votes_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_votes: {
+        Row: {
+          created_at: string | null
+          feedback_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feedback_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_votes_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followers: {
         Row: {
           created_at: string
@@ -849,6 +1040,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_feedback_points: {
+        Row: {
+          badges: Json | null
+          feedback_count: number | null
+          id: string
+          last_feedback_at: string | null
+          level: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string | null
+          votes_given_count: number | null
+        }
+        Insert: {
+          badges?: Json | null
+          feedback_count?: number | null
+          id?: string
+          last_feedback_at?: string | null
+          level?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          votes_given_count?: number | null
+        }
+        Update: {
+          badges?: Json | null
+          feedback_count?: number | null
+          id?: string
+          last_feedback_at?: string | null
+          level?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          votes_given_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feedback_points_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_feedback_points_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_levels: {
         Row: {

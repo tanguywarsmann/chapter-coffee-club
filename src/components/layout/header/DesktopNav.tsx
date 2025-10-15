@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { texts } from "@/i18n/texts";
-import { BookPlus, Crown } from "lucide-react";
+import { BookPlus, Crown, MessageSquare } from "lucide-react";
 
 interface DesktopNavProps {
   isAdmin?: boolean;
@@ -35,6 +35,12 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
       <Link to="/discover">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.discover}
+        </Button>
+      </Link>
+      <Link to="/feedback">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          <MessageSquare className="mr-2 h-4 w-4" />
+          Feedback
         </Button>
       </Link>
       <Link to="/blog">

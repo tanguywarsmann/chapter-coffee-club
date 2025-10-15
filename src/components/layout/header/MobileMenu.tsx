@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Trophy, BookCheck, Menu, Users, BookOpen, BookPlus, Crown } from "lucide-react";
+import { Home, Trophy, BookCheck, Menu, Users, BookOpen, BookPlus, Crown, MessageSquare } from "lucide-react";
 import { texts } from "@/i18n/texts";
 
 interface MobileMenuProps {
@@ -142,6 +142,20 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
               >
                 <Users className="h-5 w-5 mr-3" aria-hidden="true" />
                 {texts.discover}
+              </Button>
+            </li>
+            <li role="listitem">
+              <Button 
+                variant="ghost" 
+                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
+                onClick={() => handleNavigation("/feedback")}
+                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/feedback"))}
+                tabIndex={0}
+                role="button"
+                aria-label="Aller au Feedback"
+              >
+                <MessageSquare className="h-5 w-5 mr-3" aria-hidden="true" />
+                Feedback
               </Button>
             </li>
             <li role="listitem">

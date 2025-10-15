@@ -35,6 +35,7 @@ import DeleteAccount from '@/pages/settings/DeleteAccount';
 import Premium from '@/pages/Premium';
 import RequestBook from '@/pages/RequestBook';
 import SitemapXML from '@/pages/SitemapXML';
+import Feedback from '@/pages/Feedback';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
@@ -62,6 +63,7 @@ const AppRouter = () => {
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/followers/:type/:userId" element={<Followers />} />
       <Route path="/finished-chat/:slug" element={<FinishedChatPage />} />
+      <Route path="/feedback" element={<Feedback />} />
       
       {/* Public Pages */}
       <Route path="/a-propos" element={<About />} />
