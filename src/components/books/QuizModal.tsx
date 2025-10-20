@@ -51,7 +51,6 @@ export function QuizModal({
   const [answerRevealedAt, setAnswerRevealedAt] = useState<string | null>(null);
   const [jokerStartTime, setJokerStartTime] = useState<number | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [isJokerLoading, setIsJokerLoading] = useState(false);
   const maxAttempts = 3;
   const inFlightRef = useRef(false);
   const hasCalledComplete = useRef(false); // Protection contre les appels multiples
@@ -222,11 +221,10 @@ export function QuizModal({
   };
 
   const handleJokerConfirm = async () => {
-    // Prevent double-click during revelation
-    if (isRevealing || isJokerLoading) return;
-    
     setShowJokerConfirmation(false);
-    setIsJokerLoading(true);
+    
+    // Prevent double-click during revelation
+    if (isRevealing) return;
     setIsRevealing(true);
     
     try {
@@ -320,23 +318,13 @@ export function QuizModal({
       // Update jokers info after usage
       await updateJokersInfo();
 
-      setShowJokerConfirmation(false);
       toast.success("Joker utilisé ! La bonne réponse est révélée.");
-    } catch (error: any) {
+    } catch (error) {
       console.error('Joker reveal error:', error);
-      
-      // Gestion d'erreur spécifique selon le type d'erreur
-      if (error.message?.includes('fetch') || error.message?.includes('network')) {
-        toast.error("Le joker n'a pas pu se déclencher. Vérifie ta connexion.");
-      } else {
-        toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
-      }
-      
-      // Réouvrir la confirmation pour permettre un nouvel essai
-      setShowJokerConfirmation(true);
+      toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
+      // Don't close the flow here: allow retry
     } finally {
       setIsRevealing(false);
-      setIsJokerLoading(false);
     }
   };
 
@@ -503,27 +491,17 @@ export function QuizModal({
             <Button 
               variant="outline" 
               onClick={handleJokerCancel}
-              disabled={isJokerLoading}
+              disabled={isRevealing}
               className="border-coffee-medium text-foreground hover:bg-muted"
             >
               Annuler
             </Button>
             <Button 
               onClick={handleJokerConfirm}
-              disabled={isJokerLoading || actualJokersRemaining <= 0 || !canUseJokers(expectedSegments) || isUsingJoker}
+              disabled={isRevealing}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
-              {isJokerLoading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Chargement...
-                </>
-              ) : (
-                "Utiliser le joker"
-              )}
+              {isRevealing ? "Révélation..." : "Utiliser le joker"}
             </Button>
           </DialogFooter>
             </motion.div>

@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeText } from "@/services/questionService";
 
 export interface ValidateArgs {
   bookId: string;
@@ -54,13 +53,10 @@ export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<an
   console.log("[validateReadingSegmentBeta] Clean IDs:", { cleanBookId, cleanQuestionId });
 
   try {
-    // Normaliser la réponse avant validation
-    const normalizedAnswer = normalizeText(args.answer || "");
-    
     const { data, error } = await supabase.rpc("force_validate_segment_beta", {
       p_book_id: cleanBookId,
       p_question_id: cleanQuestionId,
-      p_answer: normalizedAnswer,
+      p_answer: args.answer || "",
       p_user_id: args.userId,
       p_used_joker: Boolean(args.usedJoker),
       p_correct: args.correct ?? null // Laisser le serveur décider si null/undefined
