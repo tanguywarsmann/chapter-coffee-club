@@ -20,13 +20,26 @@ export async function useJokerAndReveal(params: {
     throw new Error("Joker indisponible: nécessite au moins 3 segments.");
   }
   
+  console.log('🃏 Joker utilisé', { 
+    success: true, 
+    bookId: params.bookId,
+    segment: params.questionId 
+  });
+  
+  // Timeout de 10 secondes
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error('Le réseau est lent...')), 10000);
+  });
+  
   // Single call - Edge Function consumes joker and returns answer
-  return getCorrectAnswerAfterJoker({
+  const revealPromise = getCorrectAnswerAfterJoker({
     bookId: params.bookId,
     questionId: params.questionId,
     userId: params.userId,
     consume: true
   });
+  
+  return Promise.race([revealPromise, timeoutPromise]);
 }
 
 /**
