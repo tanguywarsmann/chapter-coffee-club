@@ -12,9 +12,10 @@ import { FollowButton } from "./FollowButton";
 import { useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { ProfileNameForm } from "./ProfileNameForm";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
 
 export function UserProfile() {
-  const { user } = useAuth();
+  const { user, isPremium } = useAuth();
   const { toast } = useToast();
   const params = useParams();
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
@@ -149,9 +150,12 @@ export function UserProfile() {
                   className="border-2 border-coffee-light mb-4 md:mb-0"
                 />
                 <div className="space-y-1 flex-1">
-                  <h3 className="text-lg font-medium text-coffee-darker truncate max-w-[calc(100vw-2rem)]">
-                    {displayName}
-                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-medium text-coffee-darker truncate max-w-[calc(100vw-8rem)]">
+                      {displayName}
+                    </h3>
+                    {isPremium && isOwnProfile && <PremiumBadge size="sm" />}
+                  </div>
                   <p className="text-sm text-muted-foreground truncate max-w-[calc(100vw-2rem)]">
                     {profileData?.email}
                   </p>

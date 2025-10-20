@@ -8,10 +8,11 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { texts } from "@/i18n/texts";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
 
 export const AvatarDropdown = () => {
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isPremium } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -53,11 +54,16 @@ export const AvatarDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-background border border-border" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col space-y-2">
             <p className="text-body-sm font-medium leading-none">{user.email}</p>
             <p className="text-caption leading-none text-muted-foreground">
               {user.email}
             </p>
+            {isPremium && (
+              <div className="pt-1">
+                <PremiumBadge size="sm" variant="full" />
+              </div>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
