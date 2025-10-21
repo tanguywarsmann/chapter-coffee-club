@@ -8,53 +8,120 @@ export default function Landing() {
     <>
       <Helmet>
         <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu</title>
-        <meta name="description" content="Sur 10 livres achetés, tu n'en finis que 2. VREAD change ça." />
+        <meta name="description" content="Sur 10 livres achetés, seulement 2 sont finis. VREAD change ça." />
       </Helmet>
 
-      <div className="min-h-screen bg-black flex items-center justify-center px-4">
-        <div className="max-w-5xl w-full space-y-24 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary flex items-center justify-center px-6">
+        <div className="max-w-4xl w-full space-y-16 text-center">
           
-          {/* Logo discret */}
-          <div className="opacity-40">
-            <LogoVreadPng size={48} className="mx-auto" />
-          </div>
-          
-          {/* Stat choc */}
-          <div className="space-y-8">
-            <h1 className="text-4xl md:text-5xl text-white/80 font-light leading-tight">
-              Sur 10 livres achetés,
-              <br />
-              tu n'en finis que
-            </h1>
-            
-            <div className="text-[12rem] md:text-[18rem] lg:text-[22rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-amber-400 leading-none">
-              2
+          {/* Logo avec animation pulse subtile */}
+          <div className="animate-pulse-slow">
+            <div className="inline-block bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-white/20">
+              <LogoVreadPng size={96} />
             </div>
           </div>
           
-          {/* CTA */}
-          <Button 
-            size="lg"
-            className="bg-white hover:bg-gray-100 text-black px-20 py-10 text-3xl font-bold rounded-full shadow-2xl hover:scale-105 transition-all"
-            asChild
-          >
-            <Link to="/auth">Finir mes livres</Link>
-          </Button>
+          {/* Stat + Texte alignés */}
+          <div className="space-y-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-light leading-relaxed">
+              Sur 10 livres achetés,
+              <br />
+              seulement <span className="font-black text-6xl md:text-8xl lg:text-9xl block mt-4 mb-4">2</span>
+              sont finis.
+            </h1>
+          </div>
+          
+          {/* CTA massif */}
+          <div className="pt-8">
+            <Button 
+              size="lg"
+              className="bg-white hover:bg-white/95 text-reed-primary px-20 py-10 text-3xl md:text-4xl font-black rounded-full shadow-2xl hover:scale-105 transition-all duration-300"
+              asChild
+            >
+              <Link to="/auth">Finir mes livres</Link>
+            </Button>
+          </div>
           
           {/* Slogan */}
-          <p className="text-2xl md:text-3xl text-white/50 font-light pt-12">
-            Si ce n'est pas sur VREAD,
-            <br />
-            tu ne l'as pas lu.
-          </p>
+          <div className="pt-12">
+            <p className="text-xl md:text-2xl lg:text-3xl text-white/90 font-serif italic">
+              Si ce n'est pas sur VREAD,
+              <br />
+              tu ne l'as pas lu.
+            </p>
+          </div>
           
-          {/* Mini footer */}
-          <p className="text-white/30 text-sm pt-8">
-            370 lecteurs · Gratuit
-          </p>
+          {/* Stats minimalistes */}
+          <div className="pt-8">
+            <p className="text-white/60 text-sm">
+              370 lecteurs · Gratuit
+            </p>
+          </div>
           
         </div>
       </div>
+
+      {/* Style personnalisé pour l'animation pulse lente */}
+      <style>{`
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.95;
+            transform: scale(1.02);
+          }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
+        }
+      `}</style>
     </>
   );
 }
+```
+
+---
+
+## 🎨 Ce Qui Change
+
+### ✅ Couleurs VREAD
+- Gradient `from-reed-primary via-reed-primary to-reed-secondary`
+- Bouton blanc sur fond coloré
+
+### ✅ Meilleur Alignement
+- Tout centré verticalement et horizontalement
+- Spacing cohérent avec `space-y-16`
+- Chiffre "2" intégré dans le texte
+
+### ✅ Logo En Avant
+- Plus gros (96px)
+- Bordure blanche subtile
+- Background blur
+- **Animation pulse douce** (3 secondes loop)
+
+### ✅ Structure Simplifiée
+1. Logo animé
+2. Phrase complète avec chiffre "2" géant au milieu
+3. CTA massif blanc
+4. Slogan en italique
+5. Stats minuscules
+
+---
+
+## 🎯 Résultat Visuel
+```
+        [Logo VREAD animé]
+
+    Sur 10 livres achetés,
+           seulement
+              2
+         sont finis.
+
+      [Finir mes livres]
+
+  Si ce n'est pas sur VREAD,
+      tu ne l'as pas lu.
+
+    370 lecteurs · Gratuit
