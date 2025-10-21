@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { syncUserProfile } from '@/services/user/userProfileService';
 
 interface AuthContextType {
+  supabase: typeof supabase;
   session: Session | null;
   user: User | null;
   isLoading: boolean;
@@ -14,9 +15,13 @@ interface AuthContextType {
   isPremium: boolean;
   error: string | null;
   setError: (error: string | null) => void;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
+  supabase,
   session: null,
   user: null,
   isLoading: true,
@@ -24,7 +29,10 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isPremium: false,
   error: null,
-  setError: () => {}
+  setError: () => {},
+  signUp: async () => {},
+  signIn: async () => {},
+  signOut: async () => {}
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -190,8 +198,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  async function signUp(email: string, password: string) {
+    setError(null);
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) throw new Error(error.message);
+  }
+
+  async function signIn(email: string, password: string) {
+    setError(null);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+  }
+
+  async function signOut() {
+    setError(null);
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, isInitialized, isAdmin, isPremium, error, setError }}>
+    <AuthContext.Provider value={{ 
+      supabase, 
+      session, 
+      user, 
+      isLoading, 
+      isInitialized, 
+      isAdmin, 
+      isPremium, 
+      error, 
+      setError,
+      signUp,
+      signIn,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   );
