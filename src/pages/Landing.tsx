@@ -34,12 +34,12 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu.</title>
+        <title>Vread — Si ce n'est pas sur Vread, tu ne l'as pas lu.</title>
         <meta
           name="description"
           content="Lis mieux, chaque jour. Segments de 10 000 mots, question de validation, preuves de lecture."
         />
-        <meta property="og:title" content="VREAD — Lis mieux, chaque jour" />
+        <meta property="og:title" content="Vread — Lis mieux, chaque jour" />
         <meta
           property="og:description"
           content="Segments, validations, récompenses. Ta lecture devient une habitude mesurable."
@@ -47,7 +47,7 @@ export default function Landing() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.vread.fr/" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="VREAD — Lis mieux, chaque jour" />
+        <meta name="twitter:title" content="Vread — Lis mieux, chaque jour" />
         <meta
           name="twitter:description"
           content="Segments, validations, récompenses. Ta lecture devient une habitude mesurable."
@@ -68,7 +68,7 @@ export default function Landing() {
               Lis mieux, chaque jour
             </h1>
             <p className="max-w-2xl text-white/95 md:text-xl">
-              Segments. Validation. Preuve de lecture. VREAD transforme ta lecture en progrès concrets.
+              Segments. Validation. Preuve de lecture. Vread transforme ta lecture en progrès concrets.
             </p>
 
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:justify-center" role="group" aria-label="Actions principales">
@@ -78,7 +78,7 @@ export default function Landing() {
                 className="bg-reed-light px-10 py-6 text-lg font-bold text-reed-darker shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-secondary hover:text-white focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/auth" aria-label="Commencer avec VREAD">Commencer</Link>
+                <Link to="/auth" aria-label="Commencer avec Vread">Commencer</Link>
               </Button>
 
               {/* Bouton plein blanc (non transparent) */}
@@ -87,7 +87,7 @@ export default function Landing() {
                 className="bg-white px-10 py-6 text-lg font-bold text-reed-primary shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-light hover:text-reed-darker focus:ring-4 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/blog" aria-label="Découvrir le blog VREAD">Découvrir le blog</Link>
+                <Link to="/blog" aria-label="Découvrir le blog Vread">Découvrir le blog</Link>
               </Button>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function Landing() {
         <section className="bg-white/15 px-4 py-16 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-screen-xl text-center">
             <h2 className="mb-10 font-serif text-3xl font-bold text-white md:text-4xl">
-              Une lecture claire et mesurable
+              Si c'est pas sur Vread, tu ne l'as pas lu.
             </h2>
 
             <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3" role="list">
@@ -138,7 +138,7 @@ export default function Landing() {
               className="bg-reed-light px-10 py-6 text-lg font-bold text-reed-darker shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-secondary hover:text-white focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
               asChild
             >
-              <Link to="/auth" aria-label="Créer votre compte VREAD gratuit maintenant">
+              <Link to="/auth" aria-label="Créer votre compte Vread gratuit maintenant">
                 Créer mon compte gratuit
               </Link>
             </Button>
