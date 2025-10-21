@@ -105,7 +105,7 @@ export default function Landing() {
                           }}
                         >
                           {revealed && shouldStay 
-                            ? (isBottom ? 'DEUX' : 'LIVRES')
+                            ? (isBottom ? 'LIVRES' : 'DEUX')
                             : letters[i]
                           }
                         </span>
