@@ -24,7 +24,6 @@ export default function AuthPage() {
   const [sPwd2, setSPwd2] = React.useState("");
   const [sLoading, setSLoading] = React.useState(false);
   const [sError, setSErr] = React.useState<string | null>(null);
-  const [sDone, setSDone] = React.useState(false);
 
   // login
   const [lEmail, setLEmail] = React.useState("");
@@ -43,7 +42,8 @@ export default function AuthPage() {
     setSLoading(true);
     try {
       await signUp(sEmail, sPwd);
-      setSDone(true);
+      // Redirection immédiate après inscription réussie
+      navigate("/home");
     } catch (err: any) {
       setSErr(err?.message ?? "Inscription impossible.");
     } finally {
@@ -109,10 +109,7 @@ export default function AuthPage() {
                         <CardDescription className="text-left text-white/90">Accède à VREAD en quelques secondes.</CardDescription>
                       </CardHeader>
                       <CardContent className="px-0">
-                        {sDone ? (
-                          <p className="rounded-xl bg-white/10 p-3 text-left text-white">Compte créé. Vérifie tes emails pour confirmer.</p>
-                        ) : (
-                          <form id="signup-form" onSubmit={handleSignup} className="space-y-4">
+                        <form id="signup-form" onSubmit={handleSignup} className="space-y-4">
                             <div className="text-left">
                               <Label htmlFor="s-email" className="text-white/90">Email</Label>
                               <Input id="s-email" type="email" value={sEmail} onChange={(e) => setSEmail(e.target.value)} className="bg-white" required autoComplete="email" />
@@ -135,7 +132,6 @@ export default function AuthPage() {
                               </button>
                             </div>
                           </form>
-                        )}
                       </CardContent>
                     </Card>
                   </TabsContent>
