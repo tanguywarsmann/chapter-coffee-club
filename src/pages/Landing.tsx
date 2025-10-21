@@ -6,40 +6,72 @@ import { useState, useEffect } from "react";
 
 export default function Landing() {
   const [revealed, setRevealed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [confetti, setConfetti] = useState<Array<{
     id: number;
     left: number;
     top: number;
-    size: number;
+    width: number;
+    height: number;
     color: string;
     rotation: number;
     velocityX: number;
     velocityY: number;
     duration: number;
+    shape: 'square' | 'rectangle' | 'circle';
   }>>([]);
+
+  // Détecter si mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint Tailwind
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleReveal = () => {
     if (!revealed) {
       setRevealed(true);
       
-      // Générer 150 confettis
-      const colors = ['#EEDCC8', '#F5E6D3', '#FFD700', '#FFA500', '#FF6B35', '#FFFFFF', '#FFF8DC', '#FFE4B5'];
-      const newConfetti = Array.from({ length: 150 }).map((_, i) => ({
-        id: i,
-        left: 50 + (Math.random() - 0.5) * 20, // Centre ±10%
-        top: 40 + (Math.random() - 0.5) * 10,  // Centre vertical ±5%
-        size: Math.random() * 8 + 4, // 4-12px
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rotation: Math.random() * 360,
-        velocityX: (Math.random() - 0.5) * 100, // -50 à +50
-        velocityY: (Math.random() - 0.3) * 80 - 40, // Bias vers le haut
-        duration: Math.random() * 1 + 2, // 2-3s
-      }));
-      
-      setConfetti(newConfetti);
-      
-      // Nettoyer
-      setTimeout(() => setConfetti([]), 3500);
+      // Confettis UNIQUEMENT sur mobile
+      if (isMobile) {
+        const colors = [
+          '#FFD700', '#FFA500', '#FF6B35', '#EEDCC8', '#FFFFFF',
+          '#F5E6D3', '#FFE4B5', '#FFDAB9', '#FFB6C1', '#87CEEB',
+        ];
+        
+        const newConfetti = Array.from({ length: 250 }).map((_, i) => {
+          const angle = (Math.random() * 360) * (Math.PI / 180);
+          const velocity = Math.random() * 100 + 80;
+          const shapes: Array<'square' | 'rectangle' | 'circle'> = ['square', 'rectangle', 'circle'];
+          const shape = shapes[Math.floor(Math.random() * shapes.length)];
+          const size = Math.random() * 20 + 10;
+          
+          return {
+            id: i,
+            left: 50,
+            top: 45,
+            width: shape === 'rectangle' ? size * 1.5 : size,
+            height: shape === 'rectangle' ? size * 0.6 : size,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            velocityX: Math.cos(angle) * velocity,
+            velocityY: Math.sin(angle) * velocity - 50,
+            duration: Math.random() * 1.5 + 3,
+            shape,
+          };
+        });
+        
+        setConfetti(newConfetti);
+        
+        setTimeout(() => {
+          setConfetti([]);
+        }, 5000);
+      }
     }
   };
 
@@ -70,30 +102,35 @@ export default function Landing() {
           {/* Pile + Confettis */}
           <div className="py-12 relative">
             
-            {/* Container confettis plein écran */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
-              {confetti.map((particle) => (
-                <div
-                  key={particle.id}
-                  className="absolute rounded-sm"
-                  style={{
-                    left: `${particle.left}%`,
-                    top: `${particle.top}%`,
-                    width: `${particle.size}px`,
-                    height: `${particle.size}px`,
-                    backgroundColor: particle.color,
-                    transform: `rotate(${particle.rotation}deg)`,
-                    animation: `confettiExplode ${particle.duration}s ease-out forwards`,
-                    '--velocity-x': `${particle.velocityX}vw`,
-                    '--velocity-y': `${particle.velocityY}vh`,
-                  } as React.CSSProperties}
-                />
-              ))}
-            </div>
+            {/* Container confettis MOBILE ONLY */}
+            {isMobile && (
+              <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+                {confetti.map((particle) => (
+                  <div
+                    key={particle.id}
+                    className="absolute"
+                    style={{
+                      left: `${particle.left}%`,
+                      top: `${particle.top}%`,
+                      width: `${particle.width}px`,
+                      height: `${particle.height}px`,
+                      backgroundColor: particle.color,
+                      borderRadius: particle.shape === 'circle' ? '50%' : particle.shape === 'rectangle' ? '2px' : '4px',
+                      transform: `rotate(${particle.rotation}deg)`,
+                      animation: `confettiMassive ${particle.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      '--velocity-x': `${particle.velocityX}px`,
+                      '--velocity-y': `${particle.velocityY}px`,
+                      '--final-y': `${particle.velocityY + 800}px`,
+                    } as React.CSSProperties}
+                  />
+                ))}
+              </div>
+            )}
             
             {/* Pile interactive */}
             <div 
-              className="relative cursor-pointer select-none outline-none focus:outline-none active:outline-none tap-highlight-transparent"
+              className="relative cursor-pointer select-none outline-none hover:scale-105 transition-transform"
               onClick={handleReveal}
               onTouchStart={(e) => {
                 e.preventDefault();
@@ -101,7 +138,12 @@ export default function Landing() {
               }}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleReveal()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleReveal();
+                }
+              }}
               aria-label="Cliquer pour révéler les livres terminés"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
@@ -169,7 +211,7 @@ export default function Landing() {
               
               {!revealed && (
                 <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-white/50 text-xs animate-bounce whitespace-nowrap pointer-events-none">
-                  Touche la pile
+                  {isMobile ? 'Touche la pile' : 'Clique sur la pile'}
                 </div>
               )}
               
@@ -215,28 +257,29 @@ export default function Landing() {
       </div>
 
       <style>{`
-        @keyframes confettiExplode {
+        @keyframes confettiMassive {
           0% {
             transform: translate(0, 0) rotate(0deg) scale(1);
             opacity: 1;
           }
+          15% {
+            transform: translate(calc(var(--velocity-x) * 0.3), calc(var(--velocity-y) * 0.3)) rotate(180deg) scale(1.1);
+            opacity: 1;
+          }
           100% {
-            transform: translate(var(--velocity-x), var(--velocity-y)) rotate(1080deg) scale(0.3);
+            transform: translate(var(--velocity-x), var(--final-y)) rotate(1440deg) scale(0.4);
             opacity: 0;
           }
         }
         
-        /* Supprimer TOUS les borders/outlines mobile */
         * {
           -webkit-tap-highlight-color: transparent;
-          -webkit-touch-callout: none;
         }
         
         button:focus,
         div:focus,
         [role="button"]:focus {
           outline: none !important;
-          box-shadow: none !important;
         }
         
         @media (prefers-reduced-motion: reduce) {
