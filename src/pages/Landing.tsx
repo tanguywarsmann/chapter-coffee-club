@@ -7,13 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  BookOpen,
-  Users,
-  Trophy,
-  TrendingUp,
-  ArrowDown,
-} from "lucide-react";
+import { BookOpen, Users, Trophy } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import AppFooter from "@/components/layout/AppFooter";
@@ -22,146 +16,105 @@ export default function Landing() {
   const features = [
     {
       icon: BookOpen,
-      title: "Lecture progressive",
-      description:
-        "Reprenez goût à la lecture avec des segments courts et des validations régulières.",
-    },
-    {
-      icon: Users,
-      title: "Communauté",
-      description:
-        "Rejoignez une communauté de lecteurs passionnés et partagez vos découvertes.",
+      title: "Segments validés",
+      description: "Lis par étapes courtes. Valide chaque avancée.",
     },
     {
       icon: Trophy,
-      title: "Accomplissements",
-      description:
-        "Débloquez des badges et suivez vos progrès de lecture au fil du temps.",
+      title: "Récompenses",
+      description: "Garde la motivation. Débloque des badges.",
     },
     {
-      icon: TrendingUp,
-      title: "Statistiques",
-      description:
-        "Analysez vos habitudes de lecture et visualisez votre évolution.",
+      icon: Users,
+      title: "Ensemble",
+      description: "Partage tes progrès. Découvre des idées.",
     },
   ];
 
   return (
     <>
       <Helmet>
-        <title>
-          VREAD — Si ce n'est pas sur Vread, tu ne l'as pas lu.
-        </title>
+        <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu.</title>
         <meta
           name="description"
-          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
+          content="Lis mieux, chaque jour. Segments de 10 000 mots, question de validation, preuves de lecture."
         />
-        <meta
-          property="og:title"
-          content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page"
-        />
+        <meta property="og:title" content="VREAD — Lis mieux, chaque jour" />
         <meta
           property="og:description"
-          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive. Découvrez des livres classiques, suivez vos progrès et rejoignez une communauté de lecteurs passionnés."
+          content="Segments, validations, récompenses. Ta lecture devient une habitude mesurable."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.vread.fr/" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="VREAD — L'appli qui t'accompagne dans ta lecture, page après page"
-        />
+        <meta name="twitter:title" content="VREAD — Lis mieux, chaque jour" />
         <meta
           name="twitter:description"
-          content="VREAD vous aide à reprendre goût à la lecture avec une approche progressive."
+          content="Segments, validations, récompenses. Ta lecture devient une habitude mesurable."
         />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
-        {/* Hero Section */}
-        <section className="relative py-20 px-4" role="banner">
-          <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-12 px-4 text-center">
-            <div className="mb-12 flex justify-center">
-              <div className="p-8 rounded-3xl shadow-2xl border-4 border-[#EEDCC8] bg-transparent">
-                <LogoVreadPng size={96} className="h-24 w-24" />
+        {/* HERO */}
+        <section className="relative px-4 py-20">
+          <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-10 text-center">
+            <div className="flex justify-center">
+              <div className="rounded-3xl border-4 border-[#EEDCC8] p-6 shadow-2xl">
+                <LogoVreadPng size={96} className="h-20 w-20 sm:h-24 sm:w-24" />
               </div>
             </div>
 
-            <h1 className="hero-title mb-8 font-serif font-bold leading-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
-              L'appli qui <span className="whitespace-nowrap">t'accompagne</span>
-              <br /> dans ta lecture,
-              <br /> <span className="text-reed-light">page après page</span>
+            <h1 className="hero-title font-serif text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              Lis mieux, chaque jour
             </h1>
-
-            <p className="mx-auto mb-12 max-w-3xl text-lg font-light leading-relaxed text-white/95 md:text-2xl">
-              Relevez des défis, suivez vos progrès, lisez à votre rythme. Redécouvrez
-              le plaisir de la lecture avec une approche moderne et bienveillante.
+            <p className="max-w-2xl text-white/95 md:text-xl">
+              Segments. Validation. Preuve de lecture. VREAD transforme ta lecture en progrès concrets.
             </p>
 
-            <div
-              className="mb-16 flex flex-col gap-6 sm:flex-row sm:justify-center"
-              role="group"
-              aria-label="Actions principales"
-            >
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:justify-center" role="group" aria-label="Actions principales">
+              {/* Bouton plein crème */}
               <Button
                 size="lg"
-                className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+                className="bg-reed-light px-10 py-6 text-lg font-bold text-reed-darker shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-secondary hover:text-white focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/auth" aria-label="Commencer votre parcours de lecture avec VREAD">
-                  Commencer
-                </Link>
+                <Link to="/auth" aria-label="Commencer avec VREAD">Commencer</Link>
               </Button>
+
+              {/* Bouton plein blanc (non transparent) */}
               <Button
                 size="lg"
-                variant="outline"
-                className="border-3 border-white px-12 py-6 text-xl font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-white hover:text-reed-primary focus:ring-4 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+                className="bg-white px-10 py-6 text-lg font-bold text-reed-primary shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-light hover:text-reed-darker focus:ring-4 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-reed-primary"
                 asChild
               >
-                <Link to="/blog" aria-label="Découvrir le blog VREAD">
-                  Découvrir le blog
-                </Link>
+                <Link to="/blog" aria-label="Découvrir le blog VREAD">Découvrir le blog</Link>
               </Button>
             </div>
-
-            <ArrowDown
-              className="h-8 w-8 animate-bounce text-white/70"
-              aria-hidden="true"
-            />
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="bg-white/15 backdrop-blur-sm py-20 px-4">
-          <div className="mx-auto w-full max-w-screen-xl px-4 text-center">
-            <header className="mb-16 space-y-6">
-              <h2 className="text-4xl font-serif font-bold text-white md:text-5xl">
-                Une nouvelle façon de lire
-              </h2>
-              <p className="mx-auto max-w-4xl text-xl text-white/90">
-                VREAD transforme votre expérience de lecture en un parcours engageant et personnalisé
-              </p>
-            </header>
+        {/* FEATURES */}
+        <section className="bg-white/15 px-4 py-16 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-screen-xl text-center">
+            <h2 className="mb-10 font-serif text-3xl font-bold text-white md:text-4xl">
+              Une lecture claire et mesurable
+            </h2>
 
-            <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 lg:grid-cols-4" role="list">
+            <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3" role="list">
               {features.map(({ icon: Icon, title, description }, i) => (
                 <Card
                   key={i}
-                  className="bg-white/20 backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-105 hover:bg-white/25 focus-within:ring-2 focus-within:ring-white/50"
+                  className="bg-white/20 backdrop-blur-md shadow-xl transition-transform duration-200 hover:scale-[1.02] focus-within:ring-2 focus-within:ring-white/50"
                   role="listitem"
                 >
-                  <CardHeader className="pb-6 text-center">
-                    <div className="mb-6 flex justify-center">
-                      <div className="bg-reed-light/20 rounded-full p-4">
-                        <Icon className="h-12 w-12 text-reed-light" aria-hidden="true" />
-                      </div>
+                  <CardHeader className="pb-4">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-reed-light/20">
+                      <Icon className="h-8 w-8 text-reed-light" aria-hidden="true" />
                     </div>
-                    <CardTitle className="text-xl font-semibold text-white">
-                      {title}
-                    </CardTitle>
+                    <CardTitle className="text-lg font-semibold text-white">{title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-base leading-relaxed text-white/95">
+                    <CardDescription className="text-foreground/95 text-base text-white/95">
                       {description}
                     </CardDescription>
                   </CardContent>
@@ -171,30 +124,30 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 px-4" role="region" aria-labelledby="cta-heading">
-          <div className="mx-auto flex max-w-screen-md flex-col items-center gap-12 px-4 text-center">
-            <div>
-              <h2
-                id="cta-heading"
-                className="mb-8 font-serif text-4xl font-bold text-white md:text-5xl"
-              >
-                Prêt à recommencer à lire ?
-            </div>
-
+        {/* CTA FINAL */}
+        <section className="px-4 py-16" role="region" aria-labelledby="cta-heading">
+          <div className="mx-auto flex max-w-screen-md flex-col items-center gap-6 text-center">
+            <h2 id="cta-heading" className="font-serif text-3xl font-bold text-white md:text-4xl">
+              Prêt à démarrer ?
+            </h2>
+            <p className="max-w-xl text-white/90">
+              Crée ton compte gratuit et reprends ta lecture avec des objectifs clairs.
+            </p>
             <Button
               size="lg"
-              className="bg-reed-light px-12 py-6 text-xl font-bold text-reed-darker shadow-xl transition-all duration-300 hover:scale-105 hover:bg-reed-secondary hover:shadow-2xl focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+              className="bg-reed-light px-10 py-6 text-lg font-bold text-reed-darker shadow-xl transition-all duration-200 hover:scale-105 hover:bg-reed-secondary hover:text-white focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
               asChild
             >
-                <Link to="/auth" aria-label="Créer votre compte VREAD gratuit maintenant">
-                  Créer mon compte gratuit
-                </Link>
+              <Link to="/auth" aria-label="Créer votre compte VREAD gratuit maintenant">
+                Créer mon compte gratuit
+              </Link>
             </Button>
           </div>
         </section>
       </div>
+
       <AppFooter />
     </>
   );
 }
+
