@@ -22,6 +22,21 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
           {texts.explore}
         </Button>
       </Link>
+            {!isPremium && (
+        <Link to="/premium">
+          <Button variant="ghost" className="hover:text-logo-accent">
+            <Crown className="mr-2 h-4 w-4 text-yellow-500" />
+            Premium
+          </Button>
+        </Link>
+      )}
+      {isPremium && (
+        <Link to="/request-book">
+          <Button variant="ghost" className="hover:text-logo-accent">
+            <BookPlus className="mr-2 h-4 w-4" />
+            Demander un livre
+          </Button>
+        </Link>
       <Link to="/achievements">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.achievements}
@@ -58,21 +73,6 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
           Presse
         </Button>
       </Link>
-      {!isPremium && (
-        <Link to="/premium">
-          <Button variant="ghost" className="hover:text-logo-accent">
-            <Crown className="mr-2 h-4 w-4 text-yellow-500" />
-            Premium
-          </Button>
-        </Link>
-      )}
-      {isPremium && (
-        <Link to="/request-book">
-          <Button variant="ghost" className="hover:text-logo-accent">
-            <BookPlus className="mr-2 h-4 w-4" />
-            Demander un livre
-          </Button>
-        </Link>
       )}
     </nav>
   );
