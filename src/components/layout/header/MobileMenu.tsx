@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Trophy, BookCheck, Menu, Users, BookOpen, BookPlus, Crown, MessageSquare } from "lucide-react";
+import { Menu } from "lucide-react";
 import { texts } from "@/i18n/texts";
+import { buildNav } from "./nav.config";
 
 interface MobileMenuProps {
   isAdmin?: boolean;
@@ -12,6 +12,7 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
+  const items = buildNav({ isAdmin, isPremium });
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -60,164 +61,22 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
         </SheetHeader>
         <nav className="mt-4" role="navigation" aria-label="Navigation principale">
           <ul className="space-y-1" role="list">
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/home")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/home"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.home}`}
-              >
-                <Home className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.home}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/explore")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/explore"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.explore}`}
-              >
-                <BookCheck className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.explore}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/achievements")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/achievements"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.achievements}`}
-              >
-                <Trophy className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.achievements}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/reading-list")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/reading-list"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.readingList}`}
-              >
-                <BookCheck className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.readingList}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/blog")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/blog"))}
-                tabIndex={0}
-                role="button"
-                aria-label="Aller au Blog"
-              >
-                <BookOpen className="h-5 w-5 mr-3" aria-hidden="true" />
-                Blog
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/discover")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/discover"))}
-                tabIndex={0}
-                role="button"
-                aria-label={`Aller à ${texts.discover}`}
-              >
-                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
-                {texts.discover}
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/feedback")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/feedback"))}
-                tabIndex={0}
-                role="button"
-                aria-label="Aller au Feedback"
-              >
-                <MessageSquare className="h-5 w-5 mr-3" aria-hidden="true" />
-                Feedback
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/a-propos")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/a-propos"))}
-                tabIndex={0}
-                role="button"
-                aria-label="Aller à À propos"
-              >
-                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
-                À propos
-              </Button>
-            </li>
-            <li role="listitem">
-              <Button 
-                variant="ghost" 
-                className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                onClick={() => handleNavigation("/presse")}
-                onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/presse"))}
-                tabIndex={0}
-                role="button"
-                aria-label="Aller à Presse"
-              >
-                <Users className="h-5 w-5 mr-3" aria-hidden="true" />
-                Presse
-              </Button>
-            </li>
-            {!isPremium && (
-              <li role="listitem">
+            {items.map(({ to, label, icon: Icon, ariaLabel }) => (
+              <li role="listitem" key={to}>
                 <Button 
                   variant="ghost" 
                   className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                  onClick={() => handleNavigation("/premium")}
-                  onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/premium"))}
+                  onClick={() => handleNavigation(to)}
+                  onKeyDown={(e) => handleKeyPress(e, () => handleNavigation(to))}
                   tabIndex={0}
                   role="button"
-                  aria-label="Passer Premium"
+                  aria-label={ariaLabel ?? label}
                 >
-                  <Crown className="h-5 w-5 mr-3 text-yellow-500" aria-hidden="true" />
-                  Premium
+                  {Icon && <Icon className="h-5 w-5 mr-3" aria-hidden="true" />}
+                  {label}
                 </Button>
               </li>
-            )}
-            {isPremium && (
-              <li role="listitem">
-                <Button 
-                  variant="ghost" 
-                  className="mobile-nav-item focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2" 
-                  onClick={() => handleNavigation("/request-book")}
-                  onKeyDown={(e) => handleKeyPress(e, () => handleNavigation("/request-book"))}
-                  tabIndex={0}
-                  role="button"
-                  aria-label="Demander un livre"
-                >
-                  <BookPlus className="h-5 w-5 mr-3" aria-hidden="true" />
-                  Demander un livre
-                </Button>
-              </li>
-            )}
+            ))}
           </ul>
         </nav>
       </SheetContent>
