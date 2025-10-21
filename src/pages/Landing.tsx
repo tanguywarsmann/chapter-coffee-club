@@ -8,75 +8,63 @@ export default function Landing() {
     <>
       <Helmet>
         <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu</title>
-        <meta name="description" content="Sur 10 livres achetés, seulement 2 sont finis. VREAD change ça." />
+        <meta name="description" content="Sur 10 livres achetés, seulement 2 sont finis." />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary flex items-center justify-center px-6">
-        <div className="max-w-4xl w-full space-y-16 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center px-6 py-12">
+        
+        {/* Logo grand et clean */}
+        <div className="mb-16">
+          <LogoVreadPng size={120} />
+        </div>
+        
+        {/* Contenu principal centré */}
+        <div className="max-w-3xl w-full text-center space-y-12">
           
-          {/* Logo avec animation pulse subtile */}
-          <div className="animate-pulse-slow">
-            <div className="inline-block bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-white/20">
-              <LogoVreadPng size={96} />
-            </div>
-          </div>
-          
-          {/* Stat + Texte alignés */}
-          <div className="space-y-6">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-light leading-relaxed">
+          {/* Texte aligné */}
+          <div className="space-y-4">
+            <p className="text-4xl md:text-5xl text-white font-light">
               Sur 10 livres achetés,
               <br />
-              seulement <span className="font-black text-6xl md:text-8xl lg:text-9xl block mt-4 mb-4">2</span>
+              seulement
+            </p>
+            
+            <div className="text-[16rem] md:text-[20rem] font-black text-white leading-none -my-8">
+              2
+            </div>
+            
+            <p className="text-4xl md:text-5xl text-white font-light">
               sont finis.
-            </h1>
+            </p>
           </div>
           
-          {/* CTA massif */}
+          {/* CTA */}
           <div className="pt-8">
             <Button 
               size="lg"
-              className="bg-white hover:bg-white/95 text-reed-primary px-20 py-10 text-3xl md:text-4xl font-black rounded-full shadow-2xl hover:scale-105 transition-all duration-300"
+              className="bg-white hover:bg-white/95 text-reed-primary px-16 py-8 text-3xl font-bold rounded-full shadow-2xl hover:scale-105 transition-all"
               asChild
             >
               <Link to="/auth">Finir mes livres</Link>
             </Button>
           </div>
           
-          {/* Slogan */}
-          <div className="pt-12">
-            <p className="text-xl md:text-2xl lg:text-3xl text-white/90 font-serif italic">
-              Si ce n'est pas sur VREAD,
-              <br />
-              tu ne l'as pas lu.
-            </p>
-          </div>
-          
-          {/* Stats minimalistes */}
-          <div className="pt-8">
-            <p className="text-white/60 text-sm">
-              +400 lecteurs · Gratuit
-            </p>
-          </div>
-          
         </div>
+        
+        {/* Slogan en bas */}
+        <div className="mt-20 text-center">
+          <p className="text-2xl md:text-3xl text-white/90 font-serif">
+            Si ce n'est pas sur VREAD,
+            <br />
+            tu ne l'as pas lu.
+          </p>
+          
+          <p className="text-white/60 text-sm mt-8">
+            370 lecteurs · Gratuit
+          </p>
+        </div>
+        
       </div>
-
-      {/* Style personnalisé pour l'animation pulse lente */}
-      <style>{`
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.95;
-            transform: scale(1.02);
-          }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </>
   );
 }
