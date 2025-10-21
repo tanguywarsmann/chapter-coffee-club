@@ -1,219 +1,342 @@
+import * as React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { BookOpen, Trophy, Users } from "lucide-react";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
-import { ArrowRight, Check } from "lucide-react";
+import AppFooter from "@/components/layout/AppFooter";
 
+// -----------------------------
+// Helpers
+// -----------------------------
+function k(n: number | undefined) {
+  if (typeof n !== "number") return "0";
+  if (n < 1000) return String(n);
+  if (n < 10000) return (n / 1000).toFixed(1) + "k";
+  return Math.round(n / 1000) + "k";
+}
+
+// -----------------------------
+// Internal components (inline)
+// -----------------------------
+function ViralHero() {
+  return (
+    <section className="relative px-4 py-20">
+      <div className="mx-auto flex max-w-screen-xl flex-col items-center gap-8 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-3xl border-4 border-[#EEDCC8] p-6 shadow-2xl">
+            <LogoVreadPng size={96} className="h-20 w-20 sm:h-24 sm:w-24" />
+          </div>
+        </div>
+
+        <h1 className="font-serif text-white sm:text-5xl md:text-6xl lg:text-7xl">
+          Si ce n’est pas sur VREAD, tu ne l’as pas lu.
+        </h1>
+
+        <p className="max-w-2xl text-white/95 md:text-xl">
+          Ta lecture devient une preuve. Segments. Question. Validation.
+        </p>
+
+        <div
+          className="mt-2 flex flex-col gap-4 sm:flex-row sm:justify-center"
+          role="group"
+          aria-label="Actions principales"
+        >
+          <Button
+            size="lg"
+            className="bg-reed-light px-10 py-6 text-lg font-bold text-reed-darker shadow-xl transition-transform duration-150 hover:scale-105 hover:bg-reed-secondary hover:text-white focus:ring-4 focus:ring-reed-light/50 focus:ring-offset-2 focus:ring-offset-reed-primary"
+            asChild
+          >
+            <Link to="/auth" aria-label="Commencer sur VREAD">Commencer</Link>
+          </Button>
+
+          {/* Bouton blog PLEIN (non transparent) */}
+          <Button
+            size="lg"
+            className="bg-white px-10 py-6 text-lg font-bold text-reed-primary shadow-xl transition-transform duration-150 hover:scale-105 hover:bg-reed-light hover:text-reed-darker focus:ring-4 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-reed-primary"
+            asChild
+          >
+            <Link to="/blog" aria-label="Découvrir le blog VREAD">Découvrir le blog</Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsStrip() {
+  // Remplacer par des données réelles si disponibles
+  const segments = 12840;
+  const minutesWeek = 45230;
+  const active = 3610;
+
+  const items = [
+    { icon: BookOpen, label: "Segments validés", value: k(segments) },
+    { icon: Trophy, label: "Minutes lues cette semaine", value: k(minutesWeek) },
+    { icon: Users, label: "Lecteurs actifs", value: k(active) },
+  ];
+
+  return (
+    <section className="px-4 pb-6">
+      <div className="mx-auto grid max-w-screen-xl gap-4 md:grid-cols-3">
+        {items.map(({ icon: Icon, label, value }, i) => (
+          <div
+            key={i}
+            className="rounded-2xl bg-white/15 p-5 text-center text-white backdrop-blur-sm ring-1 ring-white/20 shadow-sm"
+          >
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-reed-light/20">
+              <Icon className="h-6 w-6 text-reed-light" aria-hidden="true" />
+            </div>
+            <p className="text-2xl font-semibold">{value}</p>
+            <p className="text-sm text-white/90">{label}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LiveTicker() {
+  const demo = React.useMemo(
+    () => [
+      "Léa vient de valider Les Misérables, segment 3",
+      "Ilyes a repris La Chatte, segment 2",
+      "Zoé a tenu 22 min sur Candide",
+      "Noah a rejoint le défi 7 jours",
+      "Maya a validé Gatsby, segment 1",
+      "Yanis a débloqué le badge Série 5",
+    ],
+    []
+  );
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % demo.length), 2200);
+    return () => clearInterval(id);
+  }, [demo.length]);
+
+  return (
+    <section aria-label="Activité en direct" className="px-4 py-6">
+      <div className="mx-auto max-w-screen-xl overflow-hidden rounded-2xl bg-white/12 backdrop-blur-sm ring-1 ring-white/20">
+        <p
+          className="h-12 px-6 flex items-center justify-center text-white/95 text-sm md:text-base transition-opacity duration-150"
+          aria-live="polite"
+          role="status"
+        >
+          {demo[index]}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function ProofDemo() {
+  const [answer, setAnswer] = React.useState("");
+  const [status, setStatus] = React.useState<"idle" | "ok" | "ko">("idle");
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus(answer.trim().toLowerCase() === "rose" ? "ok" : "ko");
+  }
+
+  return (
+    <section className="px-4 py-14">
+      <div className="mx-auto max-w-screen-md">
+        <Card className="rounded-2xl bg-white/10 ring-1 ring-white/25 backdrop-blur-md">
+          <CardHeader>
+            <CardTitle className="text-center font-serif text-2xl text-white">
+              Essaie en 10 secondes
+            </CardTitle>
+            <CardDescription className="text-center text-white/90">
+              Réponds avec un seul mot pour valider.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-6 text-center italic text-white">
+              « La fleur était d’un <strong>rose</strong> éclatant. »
+            </p>
+            <form
+              onSubmit={onSubmit}
+              className="mx-auto flex max-w-sm flex-col items-center gap-4"
+            >
+              <Input
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value.replace(/\s+/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === " ") e.preventDefault();
+                }}
+                placeholder="Ta réponse (un mot)"
+                className="bg-white"
+                aria-label="Réponse en un mot"
+              />
+              <Button
+                type="submit"
+                className="bg-reed-light font-bold text-reed-darker hover:bg-reed-secondary hover:text-white"
+              >
+                Valider
+              </Button>
+              {status === "ok" && (
+                <p role="status" className="text-green-200">
+                  Validé. Tu vois la preuve.
+                </p>
+              )}
+              {status === "ko" && (
+                <p role="status" className="text-red-200">
+                  Ce n’est pas ça. Réessaie.
+                </p>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
+function ChallengeCTA() {
+  return (
+    <section className="px-4 pb-12">
+      <div className="mx-auto max-w-screen-md">
+        <Card className="rounded-2xl bg-white/12 ring-1 ring-white/20 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="font-serif text-2xl text-white">
+              Défi 7 jours Focus
+            </CardTitle>
+            <CardDescription className="text-white/90">
+              Un segment par jour. Une preuve par jour.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4 pb-8">
+            <Button
+              size="lg"
+              className="bg-reed-light px-8 text-reed-darker font-bold hover:bg-reed-secondary hover:text-white"
+              asChild
+            >
+              <Link to="/auth?challenge=7d">Rejoindre le défi</Link>
+            </Button>
+            <Link
+              to="#proof-demo"
+              className="text-sm text-white/90 underline decoration-white/50 underline-offset-4"
+            >
+              Voir comment ça marche
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
+function WallOfLove() {
+  const quotes = [
+    { text: "J’ai relu. J’ai tenu. VREAD m’a aidé.", author: "Camille" },
+    { text: "Enfin une preuve concrète.", author: "Marc" },
+    { text: "Moins d’écrans. Plus de pages.", author: "Salomé" },
+  ];
+
+  async function share() {
+    const shareData = {
+      title: "VREAD",
+      text: "Je me lance. Ma lecture devient une preuve.",
+      url: typeof window !== "undefined" ? window.location.href : "https://www.vread.fr",
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+            shareData.url
+          )}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }
+    } catch {
+      // noop
+    }
+  }
+
+  return (
+    <section className="px-4 py-12">
+      <div className="mx-auto max-w-screen-xl">
+        <h2 className="mb-8 text-center font-serif text-3xl font-bold text-white md:text-4xl">
+          Ce que disent nos lecteurs
+        </h2>
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+          {quotes.map((q, i) => (
+            <Card
+              key={i}
+              className="rounded-2xl bg-white/12 p-4 text-white ring-1 ring-white/20 backdrop-blur-sm"
+            >
+              <CardContent className="p-4">
+                <p className="mb-3 text-white/95">“{q.text}”</p>
+                <p className="text-sm text-white/80">— {q.author}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={share}
+            className="bg-white px-6 py-5 font-semibold text-reed-primary hover:bg-reed-light hover:text-reed-darker"
+            aria-label="Partager mon objectif"
+          >
+            Partager mon objectif
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// -----------------------------
+// Page
+// -----------------------------
 export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>VREAD — Si c'est pas sur VREAD, tu l'as pas lu</title>
-        <meta name="description" content="Tu finis 2 livres sur 10. VREAD change ça." />
+        <title>VREAD | Lis mieux, chaque jour</title>
+        <meta
+          name="description"
+          content="Ta lecture devient une preuve. Segments. Question. Validation. Reprends le contrôle."
+        />
+        <meta property="og:title" content="VREAD | Lis mieux, chaque jour" />
+        <meta
+          property="og:description"
+          content="Ta lecture devient une preuve. Segments. Question. Validation."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.vread.fr/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="VREAD | Lis mieux, chaque jour" />
+        <meta
+          name="twitter:description"
+          content="Ta lecture devient une preuve. Segments. Question. Validation."
+        />
       </Helmet>
 
-      <div className="bg-black">
-        
-        {/* HERO */}
-        <section className="relative min-h-screen flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-gradient-radial from-reed-primary/20 to-black" />
-          
-          <div className="relative z-10 max-w-7xl mx-auto text-center space-y-16">
-            
-            <div className="inline-block bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6">
-              <LogoVreadPng size={72} />
-            </div>
-            
-            <h1 className="text-7xl md:text-9xl lg:text-[11rem] font-serif font-black text-white leading-[0.85] tracking-tight">
-              Tu l'as
-              <br />
-              <span className="bg-gradient-to-r from-amber-200 via-reed-light to-amber-400 bg-clip-text text-transparent">
-                vraiment
-              </span>
-              <br />
-              lu ?
-            </h1>
-            
-            <p className="text-2xl md:text-3xl text-white/60 font-light">
-              Spoiler : probablement pas.
-            </p>
-            
-            <Button 
-              size="lg"
-              className="bg-white hover:bg-white text-black px-12 py-8 text-2xl font-bold rounded-2xl shadow-2xl hover:scale-105 transition-all"
-              asChild
-            >
-              <Link to="/auth" className="flex items-center gap-3">
-                Prouver que je lis
-                <ArrowRight className="w-6 h-6" />
-              </Link>
-            </Button>
-            
-            <div className="flex items-center justify-center gap-6 text-white/40 text-sm pt-8">
-              <span>370 lecteurs</span>
-              <span>•</span>
-              <span>Gratuit</span>
-            </div>
-            
-          </div>
-        </section>
-
-        {/* STAT SECTION */}
-        <section className="relative py-32 px-4 bg-gradient-to-b from-black via-reed-primary/10 to-black">
-          <div className="max-w-6xl mx-auto">
-            
-            <div className="text-center mb-16 space-y-6">
-              <h2 className="text-4xl md:text-6xl font-serif text-white/90 font-bold">
-                Combien de livres tu as
-                <br />
-                <span className="line-through text-white/30">achetés</span>
-                {" "}vraiment terminés ?
-              </h2>
-            </div>
-            
-            <div className="relative bg-gradient-to-br from-zinc-900 to-black border-2 border-white/10 rounded-3xl p-16 text-center">
-              <div className="space-y-8">
-                <div className="text-[15rem] md:text-[20rem] lg:text-[25rem] font-black leading-none bg-gradient-to-br from-red-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">
-                  2/10
-                </div>
-                
-                <p className="text-3xl md:text-4xl text-white/80 font-light">
-                  En moyenne, tu finis 2 livres sur 10
-                </p>
-                
-                <div className="w-24 h-1 bg-gradient-to-r from-transparent via-reed-light to-transparent mx-auto my-12" />
-                
-                <p className="text-5xl md:text-6xl font-serif font-bold text-white">
-                  VREAD change ça.
-                </p>
-              </div>
-            </div>
-            
-          </div>
-        </section>
-
-        {/* COMMENT ÇA MARCHE */}
-        <section className="py-32 px-4 bg-black">
-          <div className="max-w-6xl mx-auto space-y-16">
-            
-            <div className="text-center space-y-6">
-              <h2 className="text-5xl md:text-7xl font-serif font-bold text-white">
-                Simple. Efficace. Prouvé.
-              </h2>
-            </div>
-            
-            <div className="space-y-8">
-              
-              {/* Étape 1 */}
-              <div className="bg-gradient-to-r from-zinc-900 to-black border-l-4 border-reed-light rounded-2xl p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-reed-light to-amber-400 rounded-2xl flex items-center justify-center text-4xl font-black text-black">
-                    1
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <h3 className="text-3xl font-bold text-white">Choisis ton livre</h3>
-                    <p className="text-xl text-white/70">
-                      Classiques gratuits ou demande n'importe quel livre. On l'ajoute en 48h.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Étape 2 */}
-              <div className="bg-gradient-to-r from-zinc-900 to-black border-l-4 border-amber-400 rounded-2xl p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-4xl font-black text-black">
-                    2
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <h3 className="text-3xl font-bold text-white">Lis et valide</h3>
-                    <p className="text-xl text-white/70">
-                      Tous les 30 pages, réponds à une question. Ça prouve que tu lis vraiment.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Étape 3 */}
-              <div className="bg-gradient-to-r from-zinc-900 to-black border-l-4 border-green-400 rounded-2xl p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center text-4xl font-black text-black">
-                    3
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <h3 className="text-3xl font-bold text-white">Progresse</h3>
-                    <p className="text-xl text-white/70">
-                      Stats, streak, badges. Comme Duolingo, mais pour la lecture.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </section>
-
-        {/* SLOGAN FINAL */}
-        <section className="py-32 px-4 bg-gradient-to-b from-black via-reed-primary/20 to-black">
-          <div className="max-w-6xl mx-auto text-center space-y-16">
-            
-            <h2 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black leading-[0.9] tracking-tight">
-              <span className="text-white">Si c'est pas</span>
-              <br />
-              <span className="text-white">sur </span>
-              <span className="text-reed-light">VREAD</span>
-              <span className="text-white">,</span>
-              <br />
-              <span className="text-white/40">tu l'as pas lu.</span>
-            </h2>
-            
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-reed-light to-amber-400 hover:from-reed-secondary hover:to-amber-500 text-black px-20 py-10 text-3xl font-black rounded-2xl shadow-2xl hover:scale-105 transition-all"
-              asChild
-            >
-              <Link to="/auth" className="flex items-center gap-4">
-                Commencer maintenant
-                <ArrowRight className="w-8 h-8" />
-              </Link>
-            </Button>
-            
-            <div className="pt-12 flex flex-wrap justify-center gap-12 text-white/50">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-reed-light mb-2">370</div>
-                <div className="text-sm uppercase">Lecteurs</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-reed-light mb-2">1.2K</div>
-                <div className="text-sm uppercase">Validations</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-reed-light mb-2">26</div>
-                <div className="text-sm uppercase">Livres/sem</div>
-              </div>
-            </div>
-            
-          </div>
-        </section>
-
-        {/* FOOTER */}
-        <footer className="border-t border-white/5 py-12 px-4 bg-black">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="flex items-center gap-4">
-                <LogoVreadPng size={32} className="opacity-60" />
-                <span className="text-white/40 text-sm">© 2025 VREAD</span>
-              </div>
-              <div className="flex gap-8 text-sm text-white/40">
-                <Link to="/about" className="hover:text-white transition-colors">À propos</Link>
-                <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
-                <Link to="/press" className="hover:text-white transition-colors">Presse</Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
+        <ViralHero />
+        <StatsStrip />
+        <LiveTicker />
+        <div id="proof-demo">
+          <ProofDemo />
+        </div>
+        <ChallengeCTA />
+        <WallOfLove />
       </div>
+
+      <AppFooter />
     </>
   );
 }
