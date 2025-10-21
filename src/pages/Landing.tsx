@@ -378,23 +378,3 @@ export default function Landing() {
     </>
   );
 }
-```
-
----
-
-## ✨ Mise en Scène Narrative
-
-### 📚 Avant le Clic
-```
-Pile de 10 livres colorés empilés
-Sur chaque tranche : D-E-U-X-L-I-V-R-E-S
-(une lettre par livre, verticale)
-```
-
-### 🎬 Après le Clic
-```
-8 livres disparaissent (tombent et tournent)
-2 livres blancs brillants restent
-
-Livre 1 (bas) : tranche = "DEUX"
-Livre 2 (haut) : tranche = "LIVRES"
