@@ -51,7 +51,7 @@ export default function Landing() {
               seulement
             </h1>
             
-            {/* Pile - 10 LIVRES EMPILÉS */}
+            {/* Pile */}
             <div 
               className="py-8 cursor-pointer"
               onClick={() => setRevealed(true)}
@@ -62,10 +62,10 @@ export default function Landing() {
             >
               <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
                 
-                {/* 10 livres TOUS empilés au début */}
+                {/* 10 livres */}
                 {[0,1,2,3,4,5,6,7,8,9].map((i) => {
-                  const isBottom = i === 8; // LIVRES
-                  const isTop = i === 9;    // DEUX
+                  const isBottom = i === 8;
+                  const isTop = i === 9;
                   const shouldStay = isBottom || isTop;
                   
                   return (
@@ -73,15 +73,12 @@ export default function Landing() {
                       key={i}
                       className="absolute left-0 right-0 transition-all duration-700"
                       style={{
-                        // AVANT : pile normale de 10 livres
-                        // APRÈS : 2 livres aux positions finales, 8 disparaissent
                         bottom: revealed 
                           ? (shouldStay ? (isBottom ? '0px' : '60px') : '-120px')
-                          : `${(9-i) * 26}px`, // ✅ Pile de 10 livres espacés de 26px
+                          : `${(9-i) * 26}px`,
                         opacity: revealed && !shouldStay ? 0 : 1,
                       }}
                     >
-                      {/* Livre */}
                       <div 
                         className="w-full h-14 rounded-xl flex items-center justify-center relative border-2 transition-all duration-700"
                         style={{
@@ -92,7 +89,6 @@ export default function Landing() {
                             : '0 5px 20px rgba(0,0,0,0.4)',
                         }}
                       >
-                        {/* Lignes décoratives */}
                         {!revealed && (
                           <>
                             <div className="absolute top-3 left-4 right-4 h-px bg-white/20" />
@@ -100,7 +96,6 @@ export default function Landing() {
                           </>
                         )}
                         
-                        {/* Lettre OU mot final */}
                         <span 
                           className="font-black transition-all duration-700"
                           style={{
@@ -116,13 +111,11 @@ export default function Landing() {
                           }
                         </span>
                         
-                        {/* Shine */}
                         {shouldStay && revealed && (
                           <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent rounded-xl pointer-events-none" />
                         )}
                       </div>
                       
-                      {/* Tranche 3D */}
                       <div 
                         className="absolute -right-2.5 top-0 w-2.5 h-14 rounded-r-xl transition-all duration-700"
                         style={{
@@ -175,22 +168,20 @@ export default function Landing() {
               </Button>
             </div>
             
-            {/* Slogan ULTRA-VISIBLE */}
+            {/* Slogan CHIC - FOND TERRACOTTA */}
             <div className="pt-20 pb-12">
               <div className="relative inline-block max-w-4xl">
-                {/* Halo massif */}
-                <div className="absolute inset-0 bg-gradient-radial from-white/20 via-white/5 to-transparent blur-3xl scale-[2]" />
+                {/* Halo subtil */}
+                <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
                 
-                {/* Cadre premium */}
-                <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-[2rem] px-16 py-14 border-2 border-white/30 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-                  <p className="text-4xl md:text-5xl lg:text-6xl text-white font-serif leading-relaxed">
-                    Si ce n'est pas sur{' '}
-                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-reed-light to-amber-300 drop-shadow-[0_2px_10px_rgba(238,220,200,0.8)]">
-                      VREAD
-                    </span>
-                    ,
+                {/* Cadre terracotta chic */}
+                <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-[2rem] px-16 py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                  <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed">
+                    <span className="text-white/95">Si ce n'est pas sur</span>{' '}
+                    <span className="text-white font-black">VREAD</span>
+                    <span className="text-white/95">,</span>
                     <br />
-                    <span className="text-white/90">tu ne l'as pas lu.</span>
+                    <span className="text-white/95">tu ne l'as pas lu.</span>
                   </p>
                 </div>
               </div>
