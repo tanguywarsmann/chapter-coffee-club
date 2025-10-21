@@ -50,7 +50,7 @@ export default function Landing() {
     <>
       <Helmet>
         <title>
-          VREAD — L'appli qui t'accompagne dans ta lecture, page après page
+          VREAD — Si ce n'est pas sur Vread, tu ne l'as pas lu.
         </title>
         <meta
           name="description"
@@ -180,10 +180,6 @@ export default function Landing() {
                 className="mb-8 font-serif text-4xl font-bold text-white md:text-5xl"
               >
                 Prêt à recommencer à lire ?
-              </h2>
-              <p className="mx-auto max-w-2xl text-xl font-light leading-relaxed text-white/95 md:text-2xl">
-                Rejoignez des milliers de lecteurs qui ont redécouvert le plaisir de la lecture avec VREAD.
-              </p>
             </div>
 
             <Button
