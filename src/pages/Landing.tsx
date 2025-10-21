@@ -54,7 +54,7 @@ export default function Landing() {
           {/* Stats minimalistes */}
           <div className="pt-8">
             <p className="text-white/60 text-sm">
-              370 lecteurs · Gratuit
+              +400 lecteurs · Gratuit
             </p>
           </div>
           
@@ -80,48 +80,3 @@ export default function Landing() {
     </>
   );
 }
-```
-
----
-
-## 🎨 Ce Qui Change
-
-### ✅ Couleurs VREAD
-- Gradient `from-reed-primary via-reed-primary to-reed-secondary`
-- Bouton blanc sur fond coloré
-
-### ✅ Meilleur Alignement
-- Tout centré verticalement et horizontalement
-- Spacing cohérent avec `space-y-16`
-- Chiffre "2" intégré dans le texte
-
-### ✅ Logo En Avant
-- Plus gros (96px)
-- Bordure blanche subtile
-- Background blur
-- **Animation pulse douce** (3 secondes loop)
-
-### ✅ Structure Simplifiée
-1. Logo animé
-2. Phrase complète avec chiffre "2" géant au milieu
-3. CTA massif blanc
-4. Slogan en italique
-5. Stats minuscules
-
----
-
-## 🎯 Résultat Visuel
-```
-        [Logo VREAD animé]
-
-    Sur 10 livres achetés,
-           seulement
-              2
-         sont finis.
-
-      [Finir mes livres]
-
-  Si ce n'est pas sur VREAD,
-      tu ne l'as pas lu.
-
-    370 lecteurs · Gratuit
