@@ -94,9 +94,9 @@ export default function Landing() {
         </section>
 
         {/* FEATURES */}
-        <section className="bg-white/15 px-4 py-16 backdrop-blur-sm">
-          <div className="mx-auto w-full max-w-screen-xl text-center">
-            <h2 className="mb-10 font-serif text-3xl font-bold text-white md:text-4xl">
+          <section className="px-4 py-16" role="region" aria-labelledby="cta-heading">
+          <div className="mx-auto flex max-w-screen-md flex-col items-center gap-6 text-center">
+            <h2 id="cta-heading" className="font-serif text-3xl font-bold text-white md:text-4xl">
               Si c'est pas sur Vread, tu ne l'as pas lu.
             </h2>
 
