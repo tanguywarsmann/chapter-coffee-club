@@ -1,11 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { texts } from "@/i18n/texts";
 import { BookPlus, Crown, MessageSquare } from "lucide-react";
 
 interface DesktopNavProps {
-  isAdmin?: boolean;
+  isAdmin?: boolean;  // si inutilisé, supprime-le ou renomme en _isAdmin
   isPremium?: boolean;
 }
 
@@ -17,12 +16,29 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
           {texts.home}
         </Button>
       </Link>
+
       <Link to="/explore">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.explore}
         </Button>
       </Link>
-            {!isPremium && (
+
+      {/* 3e item : Récompenses */}
+      <Link to="/achievements">
+        <Button variant="ghost" className="hover:text-logo-accent">
+          {texts.achievements}
+        </Button>
+      </Link>
+
+      {/* 4e item : Premium ou Demander un livre, selon le statut */}
+      {isPremium ? (
+        <Link to="/request-book">
+          <Button variant="ghost" className="hover:text-logo-accent">
+            <BookPlus className="mr-2 h-4 w-4" />
+            Demander un livre
+          </Button>
+        </Link>
+      ) : (
         <Link to="/premium">
           <Button variant="ghost" className="hover:text-logo-accent">
             <Crown className="mr-2 h-4 w-4 text-yellow-500" />
@@ -30,50 +46,43 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
           </Button>
         </Link>
       )}
-      {isPremium && (
-        <Link to="/request-book">
-          <Button variant="ghost" className="hover:text-logo-accent">
-            <BookPlus className="mr-2 h-4 w-4" />
-            Demander un livre
-          </Button>
-        </Link>
-      <Link to="/achievements">
-        <Button variant="ghost" className="hover:text-logo-accent">
-          {texts.achievements}
-        </Button>
-      </Link>
+
       <Link to="/reading-list">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.readingList}
         </Button>
       </Link>
+
       <Link to="/discover">
         <Button variant="ghost" className="hover:text-logo-accent">
           {texts.discover}
         </Button>
       </Link>
+
       <Link to="/feedback">
         <Button variant="ghost" className="hover:text-logo-accent">
           <MessageSquare className="mr-2 h-4 w-4" />
           Feedback
         </Button>
       </Link>
+
       <Link to="/blog">
         <Button variant="ghost" className="hover:text-logo-accent">
           Blog
         </Button>
       </Link>
+
       <Link to="/a-propos">
         <Button variant="ghost" className="hover:text-logo-accent">
           À propos
         </Button>
       </Link>
+
       <Link to="/presse">
         <Button variant="ghost" className="hover:text-logo-accent">
           Presse
         </Button>
       </Link>
-      )}
     </nav>
   );
 };
