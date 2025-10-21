@@ -68,21 +68,35 @@ export default function Landing() {
     }
   };
 
-  // Lettres pour chaque livre : D-E-U-X-L-I-V-R-E-S
+  // Lettres initiales désordonnées
   const letters = ['D', 'E', 'U', 'X', 'L', 'I', 'V', 'R', 'E', 'S'];
   
-  // Couleurs harmonieuses VREAD (plus foncées pour contraste avec lettres blanches)
+  // Couleurs riches et variées pour livres reconnaissables
   const bookColors = [
-    { from: '#8B4513', to: '#5C2E0F' },  // Marron foncé
-    { from: '#A0522D', to: '#6B3410' },  // Sienna foncé
-    { from: '#8B7355', to: '#5C4A37' },  // Beige foncé
-    { from: '#996633', to: '#6B4423' },  // Caramel foncé
-    { from: '#8B6F47', to: '#5C4A2F' },  // Sable foncé
-    { from: '#704214', to: '#4A2C0E' },  // Marron très foncé
-    { from: '#9C6644', to: '#6B4430' },  // Terre foncée
-    { from: '#A67B5B', to: '#70533D' },  // Caramel moyen
-    { from: '#8B6F47', to: '#5C4A2F' },  // Sable doré foncé
-    { from: '#B85C38', to: '#8B4513' },  // Terracotta foncé
+    { from: '#8B2500', to: '#5C1800', spine: '#6B1E00' },     // Rouge brique
+    { from: '#CD7F32', to: '#8B5A2B', spine: '#A0683C' },     // Bronze
+    { from: '#2F4F4F', to: '#1C3030', spine: '#254040' },     // Vert forêt
+    { from: '#8B4513', to: '#5C2E0F', spine: '#6B3410' },     // Marron chocolat
+    { from: '#4A5D23', to: '#2F3B17', spine: '#3A4C1D' },     // Olive
+    { from: '#800020', to: '#5C0017', spine: '#6B001B' },     // Bordeaux
+    { from: '#6B4423', to: '#4A2F18', spine: '#56391D' },     // Caramel foncé
+    { from: '#556B2F', to: '#3A4720', spine: '#475927' },     // Vert olive foncé
+    { from: '#704214', to: '#4A2C0E', spine: '#5A3411' },     // Terre de sienne
+    { from: '#8B6914', to: '#5C4609', spine: '#6B560E' },     // Or antique
+  ];
+
+  // Positions initiales désordonnées (chaos)
+  const initialPositions = [
+    { x: -30, y: -20, rotation: -35, scale: 0.85 },
+    { x: 25, y: -15, rotation: 48, scale: 0.92 },
+    { x: -18, y: 18, rotation: -62, scale: 0.88 },
+    { x: 32, y: 12, rotation: 25, scale: 0.95 },
+    { x: -25, y: -8, rotation: 72, scale: 0.90 },
+    { x: 15, y: 22, rotation: -18, scale: 0.87 },
+    { x: -35, y: 15, rotation: 45, scale: 0.93 },
+    { x: 28, y: -18, rotation: -55, scale: 0.89 },
+    { x: -12, y: 25, rotation: 38, scale: 0.91 },
+    { x: 20, y: -25, rotation: -42, scale: 0.86 },
   ];
 
   return (
@@ -95,7 +109,7 @@ export default function Landing() {
       <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col">
         
         <div className="flex-1 flex items-center justify-center px-6 py-12">
-          <div className="w-full max-w-2xl space-y-12 text-center">
+          <div className="w-full max-w-3xl space-y-12 text-center">
             
             {/* Logo */}
             <div className="relative inline-block">
@@ -112,8 +126,8 @@ export default function Landing() {
               seulement
             </h1>
             
-            {/* Pile */}
-            <div className="py-4 relative">
+            {/* Zone magique avec livres */}
+            <div className="py-8 relative">
               
               {/* Confettis mobile */}
               {isMobile && (
@@ -141,9 +155,9 @@ export default function Landing() {
                 </div>
               )}
               
-              {/* Pile interactive */}
+              {/* Zone interactive magique */}
               <div 
-                className="relative cursor-pointer select-none outline-none hover:scale-105 transition-transform"
+                className="relative cursor-pointer select-none outline-none transition-transform hover:scale-[1.02]"
                 onClick={handleReveal}
                 onTouchStart={(e) => {
                   e.preventDefault();
@@ -157,100 +171,124 @@ export default function Landing() {
                     handleReveal();
                   }
                 }}
-                aria-label="Cliquer pour révéler les livres terminés"
+                aria-label="Cliquer pour réorganiser les livres"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {/* Container pile */}
-                <div className="relative mx-auto w-32 h-44 md:w-40 md:h-52">
+                {/* Container central */}
+                <div className="relative mx-auto w-full h-96 md:h-[28rem] flex items-center justify-center">
                   
-                  {/* 10 livres */}
+                  {/* 10 livres avec effet magique */}
                   {Array.from({ length: 10 }).map((_, i) => {
-                    const isFinished = i === 1 || i === 7;
-                    const stackIndex = 9 - i;
+                    const isFinished = i === 3 || i === 7; // Livres qui restent
                     const colorPalette = bookColors[i];
                     const letter = letters[i];
+                    const initialPos = initialPositions[i];
                     
                     // Texte final après reveal
                     const finalText = revealed && isFinished 
-                      ? (i === 1 ? 'DEUX' : 'LIVRES')
+                      ? (i === 3 ? '2' : 'LIVRES')
                       : letter;
                     
                     return (
                       <div
                         key={i}
-                        className="absolute left-1/2 -translate-x-1/2 transition-all duration-700"
+                        className="absolute transition-all duration-[1200ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                         style={{
-                          bottom: revealed 
-                            ? (isFinished ? `${(i === 1 ? 0 : 40)}px` : '-120px')
-                            : `${stackIndex * 14}px`,
-                          opacity: revealed ? (isFinished ? 1 : 0) : 0.96 - (stackIndex * 0.02),
-                          zIndex: 10 - stackIndex,
-                          transform: revealed && !isFinished 
-                            ? `translateX(${-50 + (i * 30 - 150)}%) translateY(120px) rotate(${i * 20 - 90}deg) scale(0.7)`
-                            : 'translateX(-50%)',
+                          left: revealed ? '50%' : `calc(50% + ${initialPos.x}%)`,
+                          top: revealed 
+                            ? (isFinished ? (i === 3 ? '55%' : '40%') : '50%')
+                            : `calc(50% + ${initialPos.y}%)`,
+                          transform: revealed
+                            ? (isFinished 
+                                ? 'translate(-50%, -50%) rotate(0deg) scale(1)' 
+                                : `translate(-50%, -50%) rotate(${initialPos.rotation * 2}deg) scale(0) translateY(200px)`)
+                            : `translate(-50%, -50%) rotate(${initialPos.rotation}deg) scale(${initialPos.scale})`,
+                          opacity: revealed ? (isFinished ? 1 : 0) : 0.95,
+                          zIndex: revealed && isFinished ? 20 : 10 - i,
                         }}
                       >
-                        {/* Livre avec lettre GÉANTE sur le DOS */}
-                        <div className={`
-                          w-32 h-10 md:w-40 md:h-12
-                          rounded-lg
-                          transition-all duration-700
-                          relative
-                          flex items-center justify-center
-                          ${isFinished && revealed
-                            ? 'bg-gradient-to-br from-white via-amber-50 to-white shadow-[0_8px_40px_rgba(238,220,200,1),0_0_60px_rgba(238,220,200,0.8),0_0_4px_rgba(255,255,255,1)] border-2 border-amber-200/80' 
-                            : `shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_2px_0_rgba(255,255,255,0.15)] border-2 border-white/15`
-                          }
-                        `}
-                        style={{
-                          background: isFinished && revealed 
-                            ? undefined 
-                            : `linear-gradient(135deg, ${colorPalette.from} 0%, ${colorPalette.to} 100%)`
-                        }}
-                        >
-                          {/* Lignes décoratives haut/bas */}
-                          <div className={`absolute top-2 left-3 right-3 h-px ${isFinished && revealed ? 'bg-amber-300/40' : 'bg-white/20'}`} />
-                          <div className={`absolute bottom-2 left-3 right-3 h-px ${isFinished && revealed ? 'bg-amber-300/40' : 'bg-white/20'}`} />
-                          
-                          {/* LETTRE GÉANTE AU CENTRE DU DOS */}
-                          <div className={`
-                            text-4xl md:text-5xl font-black
-                            transition-all duration-700
-                            ${isFinished && revealed 
-                              ? 'text-reed-primary/70' 
-                              : 'text-white/95 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]'
-                            }
-                          `}
-                          style={{
-                            letterSpacing: revealed && isFinished && finalText.length > 1 ? '-2px' : '0px',
-                            fontSize: revealed && isFinished ? '18px' : undefined,
-                            fontWeight: revealed && isFinished ? '900' : undefined,
-                          }}
+                        {/* Livre en 3D */}
+                        <div className="relative">
+                          {/* Corps du livre */}
+                          <div 
+                            className={`
+                              w-48 h-16 md:w-56 md:h-20
+                              rounded-lg
+                              transition-all duration-1000
+                              relative
+                              flex items-center justify-center
+                              ${isFinished && revealed
+                                ? 'bg-gradient-to-br from-white via-amber-50 to-white shadow-[0_12px_50px_rgba(238,220,200,1),0_0_80px_rgba(238,220,200,0.9),0_0_6px_rgba(255,255,255,1)] border-3 border-amber-200' 
+                                : 'shadow-[0_6px_20px_rgba(0,0,0,0.4),inset_0_3px_0_rgba(255,255,255,0.2),inset_0_-2px_0_rgba(0,0,0,0.3)] border-2 border-white/20'
+                              }
+                            `}
+                            style={{
+                              background: isFinished && revealed 
+                                ? undefined 
+                                : `linear-gradient(135deg, ${colorPalette.from} 0%, ${colorPalette.to} 100%)`,
+                            }}
                           >
-                            {finalText}
+                            {/* Détails du livre (rainures) */}
+                            <div className={`absolute inset-y-3 left-4 right-4 border-l-2 border-r-2 ${isFinished && revealed ? 'border-amber-300/30' : 'border-white/15'}`} />
+                            <div className={`absolute top-4 left-4 right-4 h-px ${isFinished && revealed ? 'bg-amber-300/30' : 'bg-white/20'}`} />
+                            <div className={`absolute bottom-4 left-4 right-4 h-px ${isFinished && revealed ? 'bg-amber-300/30' : 'bg-white/20'}`} />
+                            
+                            {/* LETTRE ou TEXTE FINAL */}
+                            <div 
+                              className={`
+                                font-black
+                                transition-all duration-1000
+                                ${isFinished && revealed 
+                                  ? 'text-reed-primary/70' 
+                                  : 'text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.6)]'
+                                }
+                              `}
+                              style={{
+                                fontSize: revealed && isFinished 
+                                  ? (i === 3 ? '72px' : '28px') 
+                                  : '56px',
+                                letterSpacing: revealed && isFinished && finalText.length > 1 ? '-1px' : '0px',
+                              }}
+                            >
+                              {finalText}
+                            </div>
+                            
+                            {/* Effet brillance livre terminé */}
+                            {isFinished && revealed && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-transparent to-transparent rounded-lg pointer-events-none" />
+                            )}
                           </div>
                           
-                          {/* Shine effect sur livres finis */}
-                          {isFinished && revealed && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent rounded-lg pointer-events-none" />
-                          )}
+                          {/* Tranche 3D (épaisseur) */}
+                          <div 
+                            className={`
+                              absolute top-0 -right-3 w-3 h-16 md:h-20
+                              rounded-r-lg
+                              transition-all duration-1000
+                            `}
+                            style={{
+                              background: isFinished && revealed 
+                                ? 'linear-gradient(180deg, #fff 0%, #F5E6D3 100%)' 
+                                : `linear-gradient(180deg, ${colorPalette.spine} 0%, ${colorPalette.to} 100%)`,
+                              boxShadow: '3px 0 12px rgba(0,0,0,0.3)',
+                            }}
+                          />
+                          
+                          {/* Tranche bas (effet 3D) */}
+                          <div 
+                            className={`
+                              absolute -bottom-2 left-0 right-0 h-2
+                              rounded-b-lg
+                              transition-all duration-1000
+                            `}
+                            style={{
+                              background: isFinished && revealed 
+                                ? 'linear-gradient(90deg, #F5E6D3 0%, #EEDCC8 100%)' 
+                                : `linear-gradient(90deg, ${colorPalette.to} 0%, ${colorPalette.from} 50%, ${colorPalette.to} 100%)`,
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
+                            }}
+                          />
                         </div>
-                        
-                        {/* Tranche visible (côté) */}
-                        <div 
-                          className={`
-                            absolute top-0 -right-2 w-2 h-10 md:h-12
-                            rounded-r-lg
-                            transition-all duration-700
-                            ${isFinished && revealed ? 'bg-gradient-to-b from-white to-amber-100' : ''}
-                          `}
-                          style={{
-                            background: isFinished && revealed 
-                              ? undefined 
-                              : `linear-gradient(180deg, ${colorPalette.to} 0%, ${colorPalette.from} 100%)`,
-                            boxShadow: '2px 0 8px rgba(0,0,0,0.2)',
-                          }}
-                        />
                       </div>
                     );
                   })}
@@ -258,8 +296,8 @@ export default function Landing() {
                 </div>
                 
                 {!revealed && (
-                  <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-white/50 text-xs animate-bounce whitespace-nowrap pointer-events-none">
-                    {isMobile ? 'Touche la pile' : 'Clique sur la pile'}
+                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 text-white/50 text-sm animate-bounce whitespace-nowrap pointer-events-none">
+                    {isMobile ? 'Touche pour réorganiser' : 'Clique pour réorganiser'}
                   </div>
                 )}
                 
@@ -272,7 +310,7 @@ export default function Landing() {
                     setRevealed(false);
                     setConfetti([]);
                   }}
-                  className="mt-10 text-white/60 hover:text-white/90 text-xs underline underline-offset-4 transition-colors"
+                  className="mt-12 text-white/60 hover:text-white/90 text-sm underline underline-offset-4 transition-colors"
                 >
                   Recommencer
                 </button>
