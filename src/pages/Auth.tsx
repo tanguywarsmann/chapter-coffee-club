@@ -4,17 +4,78 @@ import { Helmet } from "react-helmet-async";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AppFooter from "@/components/layout/AppFooter";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
-
-// Remplace ces imports si tes chemins diffèrent
-import SignupForm from "@/components/auth/SignupForm";
-import LoginForm from "@/components/auth/LoginForm";
+// ⚠️ Adapter le chemin si différent dans ton projet
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AuthPage() {
   const [params] = useSearchParams();
   const initialMode = params.get("mode") === "login" ? "login" : "signup";
   const [mode, setMode] = React.useState<"signup" | "login">(initialMode as "signup" | "login");
+
+  // On tape large pour éviter des erreurs de typings si ton contexte varie
+  const auth = useAuth() as any;
+
+  // SIGNUP state
+  const [sEmail, setSEmail] = React.useState("");
+  const [sPwd, setSPwd] = React.useState("");
+  const [sPwd2, setSPwd2] = React.useState("");
+  const [sLoading, setSLoading] = React.useState(false);
+  const [sError, setSError] = React.useState<string | null>(null);
+  const [sDone, setSDone] = React.useState(false);
+
+  // LOGIN state
+  const [lEmail, setLEmail] = React.useState("");
+  const [lPwd, setLPwd] = React.useState("");
+  const [lLoading, setLLoading] = React.useState(false);
+  const [lError, setLError] = React.useState<string | null>(null);
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setSError(null);
+    if (sPwd !== sPwd2) {
+      setSError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    setSLoading(true);
+    try {
+      // Essayons d'abord le contexte d'auth
+      if (typeof auth?.signUp === "function") {
+        await auth.signUp(sEmail, sPwd);
+      } else if (auth?.supabase?.auth?.signUp) {
+        await auth.supabase.auth.signUp({ email: sEmail, password: sPwd });
+      } else {
+        throw new Error("Aucune méthode d’inscription disponible.");
+      }
+      setSDone(true);
+    } catch (err: any) {
+      setSError(err?.message || "Inscription impossible.");
+    } finally {
+      setSLoading(false);
+    }
+  }
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLError(null);
+    setLLoading(true);
+    try {
+      if (typeof auth?.signIn === "function") {
+        await auth.signIn(lEmail, lPwd);
+      } else if (auth?.supabase?.auth?.signInWithPassword) {
+        await auth.supabase.auth.signInWithPassword({ email: lEmail, password: lPwd });
+      } else {
+        throw new Error("Aucune méthode de connexion disponible.");
+      }
+    } catch (err: any) {
+      setLError(err?.message || "Connexion impossible.");
+    } finally {
+      setLLoading(false);
+    }
+  }
 
   return (
     <>
@@ -26,7 +87,7 @@ export default function AuthPage() {
       <div className="min-h-screen bg-gradient-to-br from-reed-primary via-reed-primary to-reed-secondary">
         <section className="px-4 py-16">
           <div className="mx-auto flex max-w-md flex-col items-center text-center">
-            {/* Logo compact */}
+            {/* Logo */}
             <div className="rounded-3xl border-4 border-[#EEDCC8] p-4 shadow-xl bg-white/5 backdrop-blur-sm">
               <LogoVreadPng size={72} className="h-16 w-16" />
             </div>
@@ -54,6 +115,7 @@ export default function AuthPage() {
                     </TabsTrigger>
                   </TabsList>
 
+                  {/* SIGNUP */}
                   <TabsContent value="signup" className="mt-6">
                     <Card className="border-0 bg-transparent shadow-none">
                       <CardHeader className="px-0">
@@ -63,30 +125,76 @@ export default function AuthPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="px-0">
-                        {/* Ton formulaire d'inscription existant */}
-                        <SignupForm />
+                        {sDone ? (
+                          <p className="rounded-xl bg-white/10 p-3 text-left text-white">
+                            Compte créé. Vérifie tes emails pour confirmer.
+                          </p>
+                        ) : (
+                          <form id="signup-form" onSubmit={handleSignup} className="space-y-4">
+                            <div className="text-left">
+                              <Label htmlFor="s-email" className="text-white/90">Email</Label>
+                              <Input
+                                id="s-email"
+                                type="email"
+                                value={sEmail}
+                                onChange={(e) => setSEmail(e.target.value)}
+                                className="bg-white"
+                                required
+                                autoComplete="email"
+                              />
+                            </div>
+                            <div className="text-left">
+                              <Label htmlFor="s-pwd" className="text-white/90">Mot de passe</Label>
+                              <Input
+                                id="s-pwd"
+                                type="password"
+                                value={sPwd}
+                                onChange={(e) => setSPwd(e.target.value)}
+                                className="bg-white"
+                                required
+                                minLength={6}
+                                autoComplete="new-password"
+                              />
+                            </div>
+                            <div className="text-left">
+                              <Label htmlFor="s-pwd2" className="text-white/90">Confirmer le mot de passe</Label>
+                              <Input
+                                id="s-pwd2"
+                                type="password"
+                                value={sPwd2}
+                                onChange={(e) => setSPwd2(e.target.value)}
+                                className="bg-white"
+                                required
+                                minLength={6}
+                                autoComplete="new-password"
+                              />
+                            </div>
 
-                        {/* CTA massif + lien discret vers login */}
-                        <div className="mt-4 flex items-center justify-between">
-                          <Button
-                            type="submit"
-                            form="signup-form"     // Assure-toi que ton <form id="signup-form"> existe dans SignupForm
-                            className="bg-white px-6 py-5 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker"
-                          >
-                            Créer mon compte
-                          </Button>
-                          <button
-                            type="button"
-                            onClick={() => setMode("login")}
-                            className="text-sm text-white/90 underline decoration-white/60 underline-offset-4"
-                          >
-                            Déjà inscrit ? Se connecter
-                          </button>
-                        </div>
+                            {sError && <p className="text-left text-sm text-red-200">{sError}</p>}
+
+                            <div className="mt-4 flex items-center justify-between">
+                              <Button
+                                type="submit"
+                                disabled={sLoading}
+                                className="bg-white px-6 py-5 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60"
+                              >
+                                {sLoading ? "Création..." : "Créer mon compte"}
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={() => setMode("login")}
+                                className="text-sm text-white/90 underline decoration-white/60 underline-offset-4"
+                              >
+                                Déjà inscrit ? Se connecter
+                              </button>
+                            </div>
+                          </form>
+                        )}
                       </CardContent>
                     </Card>
                   </TabsContent>
 
+                  {/* LOGIN */}
                   <TabsContent value="login" className="mt-6">
                     <Card className="border-0 bg-transparent shadow-none">
                       <CardHeader className="px-0">
@@ -96,19 +204,51 @@ export default function AuthPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="px-0">
-                        {/* Ton formulaire de connexion existant */}
-                        <LoginForm />
+                        <form id="login-form" onSubmit={handleLogin} className="space-y-4">
+                          <div className="text-left">
+                            <Label htmlFor="l-email" className="text-white/90">Email</Label>
+                            <Input
+                              id="l-email"
+                              type="email"
+                              value={lEmail}
+                              onChange={(e) => setLEmail(e.target.value)}
+                              className="bg-white"
+                              required
+                              autoComplete="email"
+                            />
+                          </div>
+                          <div className="text-left">
+                            <Label htmlFor="l-pwd" className="text-white/90">Mot de passe</Label>
+                            <Input
+                              id="l-pwd"
+                              type="password"
+                              value={lPwd}
+                              onChange={(e) => setLPwd(e.target.value)}
+                              className="bg-white"
+                              required
+                              autoComplete="current-password"
+                            />
+                          </div>
 
-                        {/* Lien clair pour basculer vers la création */}
-                        <div className="mt-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setMode("signup")}
-                            className="text-sm text-white/90 underline decoration-white/60 underline-offset-4"
-                          >
-                            Première fois ? Créer un compte
-                          </button>
-                        </div>
+                          {lError && <p className="text-left text-sm text-red-200">{lError}</p>}
+
+                          <div className="mt-4 flex items-center justify-between">
+                            <Button
+                              type="submit"
+                              disabled={lLoading}
+                              className="bg-white px-6 py-5 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60"
+                            >
+                              {lLoading ? "Connexion..." : "Se connecter"}
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => setMode("signup")}
+                              className="text-sm text-white/90 underline decoration-white/60 underline-offset-4"
+                            >
+                              Première fois ? Créer un compte
+                            </button>
+                          </div>
+                        </form>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -116,7 +256,6 @@ export default function AuthPage() {
               </CardContent>
             </Card>
 
-            {/* Optionnel: aide microcopy en bas */}
             <p className="mt-4 text-xs text-white/80">
               En créant un compte, tu acceptes nos conditions d’utilisation.
             </p>
@@ -128,3 +267,4 @@ export default function AuthPage() {
     </>
   );
 }
+
