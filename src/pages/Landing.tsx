@@ -6,9 +6,6 @@ import { useState } from "react";
 
 export default function Landing() {
   const [revealed, setRevealed] = useState(false);
-  
-  // Indices des 2 livres terminés (positions 1 et 7 pour équilibre visuel)
-  const finishedBooks = [1, 7];
 
   return (
     <>
@@ -17,166 +14,151 @@ export default function Landing() {
         <meta name="description" content="Sur 10 livres achetés, seulement 2 sont finis." />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center px-6 py-12">
         
-        {/* Grain texture subtil */}
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PC9maWx0ZXI+PHBhdGggZD0iTTAgMGgzMDB2MzAwSDB6IiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9Ii4wNSIvPjwvc3ZnPg==')]" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-4xl space-y-16 text-center">
+        <div className="w-full max-w-2xl space-y-12 text-center">
           
-          {/* Logo avec glow */}
+          {/* Logo */}
           <div className="relative inline-block">
-            <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full scale-150 animate-pulse" />
-            <div className="relative">
-              <LogoVreadPng size={120} />
-            </div>
+            <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full animate-pulse" />
+            <LogoVreadPng size={96} className="relative" />
           </div>
           
-          {/* Texte principal */}
-          <div className="space-y-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed">
-              Sur 10 livres achetés,
-              <br />
-              seulement
-            </h1>
-            
-            {/* Bibliothèque interactive */}
-            <div className="py-12">
-              <div 
-                className="relative cursor-pointer group"
-                onClick={() => setRevealed(true)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setRevealed(true)}
-                aria-label="Cliquer pour révéler les livres terminés"
-              >
-                {/* Étagère */}
-                <div className="relative mx-auto max-w-2xl">
+          {/* Titre */}
+          <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-light px-4">
+            Sur 10 livres achetés,
+            <br />
+            seulement
+          </h1>
+          
+          {/* Pile de livres verticale */}
+          <div className="py-8">
+            <div 
+              className="relative cursor-pointer select-none"
+              onClick={() => setRevealed(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setRevealed(true)}
+              aria-label="Cliquer pour révéler les livres terminés"
+            >
+              {/* Container pile */}
+              <div className="relative mx-auto w-32 h-96 md:w-40 md:h-[28rem]">
+                
+                {/* Pile de 10 livres */}
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const isFinished = i === 1 || i === 7; // 2 livres finis
+                  const stackIndex = 9 - i; // Inverse pour empiler du bas vers le haut
                   
-                  {/* Planche d'étagère */}
-                  <div className="absolute -bottom-2 left-0 right-0 h-3 bg-gradient-to-b from-amber-900/40 to-amber-950/60 rounded-sm shadow-lg" />
-                  
-                  {/* Livres */}
-                  <div className="flex justify-center items-end gap-3 pb-4 px-4">
-                    {Array.from({ length: 10 }).map((_, i) => {
-                      const isFinished = finishedBooks.includes(i);
-                      const bookColors = [
-                        'from-slate-700 to-slate-800',
-                        'from-slate-600 to-slate-700',
-                        'from-slate-700 to-slate-800',
-                        'from-slate-650 to-slate-750',
-                        'from-slate-700 to-slate-800',
-                        'from-slate-600 to-slate-700',
-                        'from-slate-700 to-slate-800',
-                        'from-slate-650 to-slate-750',
-                        'from-slate-700 to-slate-800',
-                        'from-slate-600 to-slate-700',
-                      ];
-                      
-                      return (
-                        <div 
-                          key={i}
-                          className="relative"
-                          style={{
-                            animation: revealed && isFinished 
-                              ? `bookPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.1}s both`
-                              : 'none'
-                          }}
-                        >
-                          {/* Livre non terminé */}
-                          <div className={`
-                            w-8 h-32 md:w-10 md:h-40 lg:w-12 lg:h-48
-                            bg-gradient-to-br ${bookColors[i]}
-                            rounded-sm
-                            shadow-[0_2px_8px_rgba(0,0,0,0.3)]
-                            border-l-2 border-white/5
-                            relative
-                            transition-all duration-300
-                            ${!revealed ? 'group-hover:-translate-y-2' : ''}
-                          `}>
-                            {/* Détails du dos de livre */}
-                            <div className="absolute inset-y-2 left-1 right-1 border-l border-r border-white/5" />
-                            <div className="absolute top-4 left-1 right-1 h-px bg-white/5" />
-                            <div className="absolute bottom-4 left-1 right-1 h-px bg-white/5" />
+                  return (
+                    <div
+                      key={i}
+                      className="absolute left-1/2 -translate-x-1/2 transition-all duration-700"
+                      style={{
+                        bottom: revealed 
+                          ? (isFinished ? `${(isFinished && i === 1 ? 0 : 60)}px` : '-100px')
+                          : `${stackIndex * 38}px`,
+                        opacity: revealed ? (isFinished ? 1 : 0) : 0.9 - (stackIndex * 0.05),
+                        zIndex: 10 - stackIndex,
+                        transform: revealed && !isFinished 
+                          ? `translateX(${-50 + (i * 20 - 100)}%) translateY(100px) rotate(${i * 15 - 60}deg) scale(0.8)`
+                          : 'translateX(-50%)',
+                      }}
+                    >
+                      {/* Livre */}
+                      <div className={`
+                        w-32 h-10 md:w-40 md:h-12
+                        rounded-md
+                        transition-all duration-700
+                        ${isFinished 
+                          ? 'bg-gradient-to-br from-white via-amber-50 to-white shadow-[0_8px_32px_rgba(238,220,200,0.6),0_0_48px_rgba(238,220,200,0.4),0_0_2px_rgba(238,220,200,1)] border-2 border-amber-100/50' 
+                          : 'bg-gradient-to-br from-slate-700 to-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.3)] border border-white/10'
+                        }
+                      `}>
+                        {/* Détails du dos */}
+                        <div className={`
+                          absolute inset-y-1 left-2 right-2 
+                          border-l border-r 
+                          ${isFinished ? 'border-amber-200/40' : 'border-white/5'}
+                        `} />
+                        
+                        {/* Lignes horizontales */}
+                        <div className={`absolute top-2 left-2 right-2 h-px ${isFinished ? 'bg-amber-200/30' : 'bg-white/5'}`} />
+                        <div className={`absolute bottom-2 left-2 right-2 h-px ${isFinished ? 'bg-amber-200/30' : 'bg-white/5'}`} />
+                        
+                        {/* Checkmark sur livres finis */}
+                        {isFinished && revealed && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-reed-primary/60" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
                           </div>
-                          
-                          {/* Livre terminé (overlay) */}
-                          {isFinished && revealed && (
-                            <div className={`
-                              absolute inset-0
-                              w-8 h-32 md:w-10 md:h-40 lg:w-12 lg:h-48
-                              bg-gradient-to-br from-white via-amber-50 to-amber-100
-                              rounded-sm
-                              shadow-[0_4px_20px_rgba(238,220,200,0.6),0_0_40px_rgba(238,220,200,0.3)]
-                              border-l-2 border-amber-200
-                              transform
-                            `}>
-                              {/* Détails dorés */}
-                              <div className="absolute inset-y-2 left-1 right-1 border-l border-r border-amber-300/30" />
-                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <div className="w-4 h-4 text-reed-primary opacity-70">
-                                  <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                  </svg>
-                                </div>
-                              </div>
-                              {/* Shine effect */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-sm" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Prompt de clic */}
-                  {!revealed && (
-                    <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-white/60 text-sm animate-bounce">
-                      Clique sur les livres ↑
+                        )}
+                        
+                        {/* Shine effect sur finis */}
+                        {isFinished && (
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent rounded-md" />
+                        )}
+                      </div>
+                      
+                      {/* Tranche du livre (côté) */}
+                      <div className={`
+                        absolute top-0 -right-1 w-1 h-10 md:h-12
+                        ${isFinished ? 'bg-amber-100/80' : 'bg-slate-900/80'}
+                        rounded-r-sm
+                      `} />
                     </div>
-                  )}
-                  
+                  );
+                })}
+                
+              </div>
+              
+              {/* Compteur géant */}
+              <div className="relative -mt-8">
+                <div className={`
+                  text-8xl md:text-9xl font-black 
+                  transition-all duration-1000
+                  ${revealed 
+                    ? 'text-white opacity-100 scale-100' 
+                    : 'text-white/30 opacity-50 scale-90'
+                  }
+                `}>
+                  {revealed ? '2' : '10'}
                 </div>
               </div>
               
-              {/* Légende */}
-              <div className="flex items-center justify-center gap-6 mt-12 text-white/80 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-8 bg-gradient-to-br from-slate-700 to-slate-800 rounded-sm border-l-2 border-white/5" />
-                  <span>Achetés</span>
+              {/* Prompt */}
+              {!revealed && (
+                <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 text-white/60 text-sm animate-bounce whitespace-nowrap">
+                  Touche la pile ↑
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-8 bg-gradient-to-br from-white to-amber-100 rounded-sm border-l-2 border-amber-200 shadow-lg" />
-                  <span>Terminés</span>
-                </div>
-              </div>
-              
-              {/* Reset button */}
-              {revealed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRevealed(false);
-                  }}
-                  className="mt-6 text-white/70 hover:text-white text-sm underline underline-offset-4 transition-colors"
-                >
-                  Rejouer
-                </button>
               )}
+              
             </div>
             
-            <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light">
-              sont finis.
-            </h2>
+            {/* Reset */}
+            {revealed && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRevealed(false);
+                }}
+                className="mt-8 text-white/70 hover:text-white text-sm underline underline-offset-4 transition-colors"
+              >
+                Recommencer
+              </button>
+            )}
           </div>
+          
+          {/* Texte final */}
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-light px-4">
+            sont finis.
+          </h2>
           
           {/* CTA */}
           <div className="pt-8">
             <Button 
               size="lg"
-              className="bg-white hover:bg-white/95 text-reed-primary px-16 py-8 text-3xl font-bold rounded-full shadow-2xl hover:scale-105 transition-all duration-300"
+              className="bg-white hover:bg-white/95 text-reed-primary px-12 py-7 text-2xl md:text-3xl font-bold rounded-full shadow-2xl hover:scale-105 transition-all duration-300"
               asChild
             >
               <Link to="/auth">Finir mes livres</Link>
@@ -184,14 +166,14 @@ export default function Landing() {
           </div>
           
           {/* Slogan */}
-          <div className="pt-8">
-            <p className="text-2xl md:text-3xl text-white/90 font-serif italic">
+          <div className="pt-12 px-4">
+            <p className="text-xl md:text-2xl text-white/90 font-serif italic leading-relaxed">
               Si ce n'est pas sur VREAD,
               <br />
               tu ne l'as pas lu.
             </p>
             
-            <p className="text-white/60 text-sm mt-8">
+            <p className="text-white/60 text-sm mt-6">
               370 lecteurs · Gratuit
             </p>
           </div>
@@ -199,22 +181,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Animations CSS */}
       <style>{`
-        @keyframes bookPop {
-          0% {
-            transform: translateY(20px) scale(0.9);
-            opacity: 0;
-          }
-          50% {
-            transform: translateY(-8px) scale(1.05);
-          }
-          100% {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-          }
-        }
-        
         @media (prefers-reduced-motion: reduce) {
           * {
             animation: none !important;
