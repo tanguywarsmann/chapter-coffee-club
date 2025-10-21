@@ -68,18 +68,21 @@ export default function Landing() {
     }
   };
 
-  // Couleurs des livres - palette VREAD harmonieuse
+  // Lettres pour chaque livre : D-E-U-X-L-I-V-R-E-S
+  const letters = ['D', 'E', 'U', 'X', 'L', 'I', 'V', 'R', 'E', 'S'];
+  
+  // Couleurs harmonieuses VREAD
   const bookColors = [
-    { from: '#B85C38', to: '#8B4513' },    // Terracotta → Marron
-    { from: '#D2691E', to: '#A0522D' },    // Chocolat → Sienna
-    { from: '#CD853F', to: '#8B7355' },    // Tan → Beige foncé
-    { from: '#DEB887', to: '#D2B48C' },    // Beige → Tan clair
-    { from: '#C19A6B', to: '#996633' },    // Caramel → Marron moyen
-    { from: '#B8956A', to: '#8B7355' },    // Sable → Beige
-    { from: '#A0826D', to: '#704214' },    // Taupe → Marron foncé
-    { from: '#BC987E', to: '#9C6644' },    // Beige rosé → Terre
-    { from: '#C9A875', to: '#A67B5B' },    // Biscuit → Caramel foncé
-    { from: '#B0926A', to: '#8B6F47' },    // Sable doré → Marron clair
+    { from: '#B85C38', to: '#8B4513' },
+    { from: '#D2691E', to: '#A0522D' },
+    { from: '#CD853F', to: '#8B7355' },
+    { from: '#DEB887', to: '#D2B48C' },
+    { from: '#C19A6B', to: '#996633' },
+    { from: '#B8956A', to: '#8B7355' },
+    { from: '#A0826D', to: '#704214' },
+    { from: '#BC987E', to: '#9C6644' },
+    { from: '#C9A875', to: '#A67B5B' },
+    { from: '#B0926A', to: '#8B6F47' },
   ];
 
   return (
@@ -93,9 +96,9 @@ export default function Landing() {
         
         {/* Contenu principal */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
-          <div className="w-full max-w-2xl space-y-20 text-center">
+          <div className="w-full max-w-2xl space-y-12 text-center">
             
-            {/* Logo premium avec cadre élégant */}
+            {/* Logo premium */}
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-gradient-radial from-white/30 via-white/10 to-transparent blur-3xl scale-150 animate-pulse" />
               <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-[2rem] p-10 border-2 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
@@ -103,15 +106,15 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Titre */}
+            {/* Titre - MOINS D'ESPACE */}
             <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-light px-4 leading-relaxed">
               Sur 10 livres achetés,
               <br />
               seulement
             </h1>
             
-            {/* Pile + Confettis */}
-            <div className="py-8 relative">
+            {/* Pile + Confettis - ESPACE RÉDUIT */}
+            <div className="py-4 relative">
               
               {/* Confettis mobile only */}
               {isMobile && (
@@ -158,14 +161,20 @@ export default function Landing() {
                 aria-label="Cliquer pour révéler les livres terminés"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {/* Container pile compact */}
-                <div className="relative mx-auto w-20 h-36 md:w-24 md:h-40">
+                {/* Container pile - LIVRES PLUS GROS */}
+                <div className="relative mx-auto w-24 h-40 md:w-32 md:h-48">
                   
-                  {/* 10 livres avec couleurs harmonieuses */}
+                  {/* 10 livres avec lettres */}
                   {Array.from({ length: 10 }).map((_, i) => {
                     const isFinished = i === 1 || i === 7;
                     const stackIndex = 9 - i;
                     const colorPalette = bookColors[i];
+                    const letter = letters[i];
+                    
+                    // Après reveal : afficher "DEUX" sur livre 1, "LIVRES" sur livre 7
+                    const finalText = revealed && isFinished 
+                      ? (i === 1 ? 'DEUX' : 'LIVRES')
+                      : letter;
                     
                     return (
                       <div
@@ -173,8 +182,8 @@ export default function Landing() {
                         className="absolute left-1/2 -translate-x-1/2 transition-all duration-700"
                         style={{
                           bottom: revealed 
-                            ? (isFinished ? `${(i === 1 ? 0 : 32)}px` : '-100px')
-                            : `${stackIndex * 12}px`, // Réduit de 19px à 12px
+                            ? (isFinished ? `${(i === 1 ? 0 : 36)}px` : '-100px')
+                            : `${stackIndex * 12}px`,
                           opacity: revealed ? (isFinished ? 1 : 0) : 0.95 - (stackIndex * 0.03),
                           zIndex: 10 - stackIndex,
                           transform: revealed && !isFinished 
@@ -183,7 +192,7 @@ export default function Landing() {
                         }}
                       >
                         <div className={`
-                          w-20 h-6 md:w-24 md:h-7
+                          w-24 h-8 md:w-32 md:h-10
                           rounded-md
                           transition-all duration-700
                           relative
@@ -198,46 +207,58 @@ export default function Landing() {
                             : `linear-gradient(135deg, ${colorPalette.from} 0%, ${colorPalette.to} 100%)`
                         }}
                         >
-                          {/* Détails du dos de livre */}
+                          {/* Détails du dos */}
                           <div className={`
-                            absolute inset-y-1 left-1.5 right-1.5 
+                            absolute inset-y-1 left-2 right-2 
                             border-l border-r 
                             ${isFinished && revealed ? 'border-amber-200/40' : 'border-white/10'}
                           `} />
                           
-                          {/* Lignes horizontales décoratives */}
-                          <div className={`absolute top-1.5 left-1.5 right-1.5 h-px ${isFinished && revealed ? 'bg-amber-200/30' : 'bg-white/10'}`} />
-                          <div className={`absolute bottom-1.5 left-1.5 right-1.5 h-px ${isFinished && revealed ? 'bg-amber-200/30' : 'bg-white/10'}`} />
+                          {/* Lignes décoratives */}
+                          <div className={`absolute top-2 left-2 right-2 h-px ${isFinished && revealed ? 'bg-amber-200/30' : 'bg-white/10'}`} />
+                          <div className={`absolute bottom-2 left-2 right-2 h-px ${isFinished && revealed ? 'bg-amber-200/30' : 'bg-white/10'}`} />
                           
-                          {/* Checkmark sur livres finis */}
-                          {isFinished && revealed && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-reed-primary/60" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          )}
-                          
-                          {/* Shine effect sur livres finis */}
+                          {/* Shine */}
                           {isFinished && revealed && (
                             <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-transparent rounded-md" />
                           )}
                         </div>
                         
-                        {/* Tranche du livre */}
+                        {/* Tranche du livre avec LETTRE */}
                         <div 
                           className={`
-                            absolute top-0 -right-1 w-1 h-6 md:h-7
+                            absolute top-0 -right-1.5 w-1.5 h-8 md:w-2 md:h-10
                             rounded-r-md
                             transition-all duration-700
-                            ${isFinished && revealed ? 'bg-amber-100/90' : ''}
+                            flex items-center justify-center
+                            overflow-hidden
+                            ${isFinished && revealed ? 'bg-gradient-to-b from-white to-amber-50' : ''}
                           `}
                           style={{
                             background: isFinished && revealed 
                               ? undefined 
                               : `linear-gradient(180deg, ${colorPalette.to} 0%, ${colorPalette.from} 100%)`
                           }}
-                        />
+                        >
+                          {/* Lettre verticale sur la tranche */}
+                          <div 
+                            className={`
+                              absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                              text-[9px] md:text-[10px] font-black tracking-tighter
+                              whitespace-nowrap
+                              transition-all duration-700
+                              ${isFinished && revealed ? 'text-reed-primary/80' : 'text-white/90'}
+                            `}
+                            style={{
+                              writingMode: 'vertical-rl',
+                              textOrientation: 'mixed',
+                              transform: 'rotate(180deg)',
+                              letterSpacing: revealed && isFinished ? '0.5px' : '0px',
+                            }}
+                          >
+                            {finalText}
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -291,7 +312,7 @@ export default function Landing() {
           </div>
         </div>
         
-        {/* Footer discret et élégant */}
+        {/* Footer */}
         <footer className="py-8 px-6 border-t border-white/10">
           <div className="max-w-2xl mx-auto">
             <nav className="flex items-center justify-center gap-8 text-sm">
@@ -357,3 +378,23 @@ export default function Landing() {
     </>
   );
 }
+```
+
+---
+
+## ✨ Mise en Scène Narrative
+
+### 📚 Avant le Clic
+```
+Pile de 10 livres colorés empilés
+Sur chaque tranche : D-E-U-X-L-I-V-R-E-S
+(une lettre par livre, verticale)
+```
+
+### 🎬 Après le Clic
+```
+8 livres disparaissent (tombent et tournent)
+2 livres blancs brillants restent
+
+Livre 1 (bas) : tranche = "DEUX"
+Livre 2 (haut) : tranche = "LIVRES"
