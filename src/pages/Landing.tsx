@@ -49,7 +49,7 @@ export default function Landing() {
     <>
       <Helmet>
         <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu</title>
-        <meta name="description" content="Sur 10 livres achetés, seulement 2 sont finis." />
+        <meta name="description" content=" En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col">
@@ -67,9 +67,11 @@ export default function Landing() {
             
             {/* Titre */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed px-4">
-              Sur 10 livres achetés,
+              En moyenne,
               <br />
-              seulement
+              sur dix livres achetés,
+              <br />
+             on finit seulement
             </h1>
             
             {/* Pile */}
@@ -176,7 +178,9 @@ export default function Landing() {
             
             {/* Texte final */}
             <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light px-4">
-              sont finis.
+             Avec Vread,
+               <br />
+            tu les finis tous.
             </h2>
             
             {/* CTA ULTRA-MASSIF */}
@@ -203,7 +207,7 @@ export default function Landing() {
                 <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-[2rem] px-16 py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
                   <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed">
                     <span className="text-white/95">Si ce n'est pas sur</span>{' '}
-                    <span className="text-white font-black">VREAD</span>
+                    <span className="text-white font-black">Vread</span>
                     <span className="text-white/95">,</span>
                     <br />
                     <span className="text-white/95">tu ne l'as pas lu.</span>
