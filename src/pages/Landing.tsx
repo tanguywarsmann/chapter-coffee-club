@@ -183,7 +183,7 @@ export default function Landing() {
               tu les finis tous.
             </h2>
             
-            {/* CTA HARMONIEUX */}
+            {/* CTA */}
             <div className="pt-16 w-full flex flex-col items-center gap-6">
               <Button 
                 size="lg"
@@ -195,7 +195,7 @@ export default function Landing() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-50 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
               </Button>
-              
+            </div>
             
             {/* Slogan */}
             <div className="pt-20 pb-12 w-full flex justify-center">
