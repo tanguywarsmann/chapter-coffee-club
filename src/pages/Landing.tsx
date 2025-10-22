@@ -65,7 +65,7 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Titre - CENTRÉ */}
+            {/* Titre */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full">
               En moyenne,
               <br />
@@ -74,7 +74,7 @@ export default function Landing() {
               on finit seulement
             </h1>
             
-            {/* Pile - CENTRÉ */}
+            {/* Pile */}
             <div 
               className="py-8 cursor-pointer flex flex-col items-center w-full"
               onClick={() => {
@@ -157,7 +157,6 @@ export default function Landing() {
                 
               </div>
               
-              {/* Texte "Clique pour révéler" - CENTRÉ */}
               {!revealed && (
                 <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full">
                   {isMobile ? 'Touche pour révéler' : 'Clique pour révéler'}
@@ -177,34 +176,37 @@ export default function Landing() {
               )}
             </div>
             
-            {/* Texte final - CENTRÉ */}
+            {/* Texte final */}
             <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light text-center w-full">
               Avec Vread,
               <br />
               tu les finis tous.
             </h2>
             
-            {/* CTA ULTRA-MASSIF */}
-            <div className="pt-12 w-full flex justify-center">
+            {/* CTA ULTRA-VISIBLE - NOIR */}
+            <div className="pt-16 w-full flex flex-col items-center gap-4">
               <Button 
                 size="lg"
-                className="group relative bg-white hover:bg-white text-reed-primary px-24 py-12 text-5xl md:text-6xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-110 transition-all duration-300 border-4 border-amber-200"
+                className="group relative bg-black hover:bg-black text-white px-28 py-14 text-6xl md:text-7xl font-black rounded-full shadow-[0_30px_100px_rgba(0,0,0,0.6)] hover:shadow-[0_35px_120px_rgba(0,0,0,0.7)] hover:scale-110 transition-all duration-300 border-4 border-white"
                 asChild
               >
-                <Link to="/auth">
-                  <span className="relative z-10 drop-shadow-lg">Finir mes livres</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-100 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                <Link to="/auth" className="flex items-center gap-6">
+                  <span className="relative z-10">Finir mes livres</span>
+                  <span className="text-5xl md:text-6xl">→</span>
                 </Link>
               </Button>
+              
+              {/* Texte d'aide sous le bouton */}
+              <p className="text-white/70 text-xl font-light">
+                Gratuit · Sans engagement
+              </p>
             </div>
             
-            {/* Slogan CHIC - FOND TERRACOTTA */}
+            {/* Slogan CHIC */}
             <div className="pt-20 pb-12 w-full flex justify-center">
               <div className="relative inline-block max-w-4xl">
-                {/* Halo subtil */}
                 <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
                 
-                {/* Cadre terracotta chic */}
                 <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-[2rem] px-16 py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
                   <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed text-center">
                     <span className="text-white/95">Si ce n'est pas sur</span>{' '}
