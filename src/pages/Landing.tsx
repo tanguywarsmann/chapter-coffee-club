@@ -183,16 +183,16 @@ export default function Landing() {
               tu les finis tous.
             </h2>
             
-            {/* CTA */}
+            {/* CTA MOCHA MOUSSE - AGRANDI */}
             <div className="pt-16 w-full flex flex-col items-center gap-6">
               <Button 
                 size="lg"
-                className="group relative bg-white hover:bg-white text-[#8B4513] px-16 py-8 text-4xl md:text-5xl font-black rounded-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] hover:shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:scale-105 transition-all duration-300 border-2 border-white/40"
+                className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-20 py-10 text-5xl md:text-6xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0]"
                 asChild
               >
                 <Link to="/auth">
                   <span className="relative z-10">Clique ici pour finir tes livres</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-50 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
               </Button>
             </div>
