@@ -49,13 +49,13 @@ export default function Landing() {
     <>
       <Helmet>
         <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu</title>
-        <meta name="description" content=" En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
+        <meta name="description" content="En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col">
         
         <div className="flex-1 flex items-center justify-center px-6 py-8">
-          <div className="w-full max-w-4xl space-y-8 text-center">
+          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
             
             {/* Logo */}
             <div className="relative inline-block mb-6">
@@ -65,18 +65,18 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Titre */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed px-4">
+            {/* Titre - CENTRÉ */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full">
               En moyenne,
               <br />
               sur dix livres achetés,
               <br />
-             on finit seulement
+              on finit seulement
             </h1>
             
-            {/* Pile */}
+            {/* Pile - CENTRÉ */}
             <div 
-              className="py-8 cursor-pointer"
+              className="py-8 cursor-pointer flex flex-col items-center w-full"
               onClick={() => {
                 setRevealed(true);
                 triggerConfetti();
@@ -87,7 +87,7 @@ export default function Landing() {
                 triggerConfetti();
               }}
             >
-              <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
+              <div className="relative" style={{ width: '200px', height: '300px' }}>
                 
                 {/* 10 livres */}
                 {[0,1,2,3,4,5,6,7,8,9].map((i) => {
@@ -157,8 +157,9 @@ export default function Landing() {
                 
               </div>
               
+              {/* Texte "Clique pour révéler" - CENTRÉ */}
               {!revealed && (
-                <p className="text-white/60 text-lg mt-10 animate-bounce font-light">
+                <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full">
                   {isMobile ? 'Touche pour révéler' : 'Clique pour révéler'}
                 </p>
               )}
@@ -176,15 +177,15 @@ export default function Landing() {
               )}
             </div>
             
-            {/* Texte final */}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light px-4">
-             Avec Vread,
-               <br />
-            tu les finis tous.
+            {/* Texte final - CENTRÉ */}
+            <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light text-center w-full">
+              Avec Vread,
+              <br />
+              tu les finis tous.
             </h2>
             
             {/* CTA ULTRA-MASSIF */}
-            <div className="pt-12">
+            <div className="pt-12 w-full flex justify-center">
               <Button 
                 size="lg"
                 className="group relative bg-white hover:bg-white text-reed-primary px-24 py-12 text-5xl md:text-6xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-110 transition-all duration-300 border-4 border-amber-200"
@@ -198,14 +199,14 @@ export default function Landing() {
             </div>
             
             {/* Slogan CHIC - FOND TERRACOTTA */}
-            <div className="pt-20 pb-12">
+            <div className="pt-20 pb-12 w-full flex justify-center">
               <div className="relative inline-block max-w-4xl">
                 {/* Halo subtil */}
                 <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
                 
                 {/* Cadre terracotta chic */}
                 <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-[2rem] px-16 py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
-                  <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed">
+                  <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed text-center">
                     <span className="text-white/95">Si ce n'est pas sur</span>{' '}
                     <span className="text-white font-black">Vread</span>
                     <span className="text-white/95">,</span>
