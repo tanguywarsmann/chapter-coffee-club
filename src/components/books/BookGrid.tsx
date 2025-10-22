@@ -53,11 +53,6 @@ export function BookGrid({
 
   const handleAddBook = async (bookId: string) => {
     toast.success("Livre ajouté à ta liste !");
-    if (localStorage.getItem("onboardingDone") !== "true") {
-      setTimeout(() => {
-        navigate(`/books/${bookId}`);
-      }, 400);
-    }
   };
 
   if (!books.length) {

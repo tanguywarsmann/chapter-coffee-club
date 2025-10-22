@@ -21,12 +21,6 @@ const Sonner = lazy(() =>
   }))
 );
 
-// Lazy load non-critical components
-const UserOnboarding = lazy(() => 
-  import("./components/onboarding/UserOnboarding").then(mod => ({
-    default: mod.UserOnboarding
-  }))
-);
 import AppRouter from "./components/navigation/AppRouter";
 import { CanonicalManager } from "@/components/seo/CanonicalManager";
 import { OGUrlManager } from "@/components/seo/OGUrlManager";
@@ -50,13 +44,6 @@ const AppContent = () => {
           className="toaster w-full max-w-sm sm:max-w-sm"
         />
       </Suspense>
-      
-      {/* Only show onboarding if user is not authenticated and auth is initialized */}
-      {isInitialized && !user && (
-        <Suspense fallback={null}>
-          <UserOnboarding />
-        </Suspense>
-      )}
       
       <ServiceWorkerUpdater />
       
