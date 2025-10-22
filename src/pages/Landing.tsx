@@ -192,7 +192,7 @@ export default function Landing() {
                 asChild
               >
                 <Link to="/auth">
-                  <span className="relative z-10">Commence gratuitement</span>
+                  <span className="relative z-9">Commence gratuitement</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
               </Button>
