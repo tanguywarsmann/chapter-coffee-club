@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { useState, useEffect } from "react";
+import confetti from 'canvas-confetti';
 
 export default function Landing() {
   const [revealed, setRevealed] = useState(false);
@@ -23,6 +24,26 @@ export default function Landing() {
     '#8B4513', '#A0522D', '#8B7355', '#996633', '#8B6F47',
     '#704214', '#9C6644', '#A67B5B', '#8B6F47', '#B85C38'
   ];
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 200,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#10b981', '#3b82f6', '#f59e0b']
+    });
+    
+    if (window.confetti) {
+      setTimeout(() => {
+        window.confetti({
+          particleCount: 100,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+      }, 500);
+    }
+  };
 
   return (
     <>
@@ -54,10 +75,14 @@ export default function Landing() {
             {/* Pile */}
             <div 
               className="py-8 cursor-pointer"
-              onClick={() => setRevealed(true)}
+              onClick={() => {
+                setRevealed(true);
+                triggerConfetti();
+              }}
               onTouchStart={(e) => {
                 e.preventDefault();
                 setRevealed(true);
+                triggerConfetti();
               }}
             >
               <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
