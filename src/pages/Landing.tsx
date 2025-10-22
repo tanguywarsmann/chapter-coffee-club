@@ -52,21 +52,22 @@ export default function Landing() {
         <meta name="description" content="En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col">
+      {/* Container principal avec overflow-x hidden */}
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden">
         
-        <div className="flex-1 flex items-center justify-center px-6 py-8">
-          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full overflow-x-hidden">
+          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center overflow-x-hidden">
             
             {/* Logo */}
             <div className="relative inline-block mb-6">
               <div className="absolute inset-0 bg-white/20 blur-3xl animate-pulse" />
-              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-10 border-2 border-white/20 shadow-2xl">
-                <LogoVreadPng size={140} />
+              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-10 border-2 border-white/20 shadow-2xl">
+                <LogoVreadPng size={120} className="md:w-[140px]" />
               </div>
             </div>
             
             {/* Titre */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full px-2 md:px-4">
               En moyenne,
               <br />
               sur dix livres achetés,
@@ -76,7 +77,7 @@ export default function Landing() {
             
             {/* Pile */}
             <div 
-              className="py-8 cursor-pointer flex flex-col items-center w-full"
+              className="py-8 cursor-pointer flex flex-col items-center w-full overflow-x-hidden"
               onClick={() => {
                 setRevealed(true);
                 triggerConfetti();
@@ -158,7 +159,7 @@ export default function Landing() {
               </div>
               
               {!revealed && (
-                <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full">
+                <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full px-4">
                   {isMobile ? 'Touche pour révéler' : 'Clique pour révéler'}
                 </p>
               )}
@@ -177,34 +178,33 @@ export default function Landing() {
             </div>
             
             {/* Texte final */}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl text-white font-light text-center w-full">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl text-white font-light text-center w-full px-2 md:px-4">
               Avec Vread,
               <br />
               tu les finis tous.
             </h2>
             
-         {/* CTA MOCHA MOUSSE - AGRANDI EN DESKTOP */}
-<div className="pt-16 w-full flex flex-col items-center gap-6">
-  <Button 
-    size="lg"
-    className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-12 md:px-32 lg:px-40 py-8 md:py-10 lg:py-12 text-4xl md:text-5xl lg:text-6xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0]"
-    asChild
-  >
-    <Link to="/auth">
-      <span className="relative z-10">Commence gratuitement</span>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    </Link>
-  </Button>
-  
-</div>
+            {/* CTA */}
+            <div className="pt-16 w-full flex flex-col items-center gap-6 px-4">
+              <Button 
+                size="lg"
+                className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-8 md:px-28 lg:px-36 py-6 md:py-10 lg:py-11 text-3xl md:text-5xl lg:text-5xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0] whitespace-nowrap max-w-full"
+                asChild
+              >
+                <Link to="/auth">
+                  <span className="relative z-10">Commence gratuitement</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </Link>
+              </Button>
+            </div>
             
             {/* Slogan */}
-            <div className="pt-20 pb-12 w-full flex justify-center">
-              <div className="relative inline-block max-w-4xl">
+            <div className="pt-20 pb-12 w-full flex justify-center px-4">
+              <div className="relative inline-block w-full max-w-4xl">
                 <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
                 
-                <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-[2rem] px-16 py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
-                  <p className="text-4xl md:text-5xl lg:text-6xl font-serif leading-relaxed text-center">
+                <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-2xl md:rounded-[2rem] px-8 md:px-16 py-10 md:py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                  <p className="text-2xl md:text-5xl lg:text-6xl font-serif leading-relaxed text-center">
                     <span className="text-white/95">Si ce n'est pas sur</span>{' '}
                     <span className="text-white font-black">Vread</span>
                     <span className="text-white/95">,</span>
@@ -219,16 +219,16 @@ export default function Landing() {
         </div>
         
         {/* Footer */}
-        <footer className="py-12 border-t border-white/10">
-          <nav className="flex items-center justify-center gap-12 text-lg">
+        <footer className="py-12 border-t border-white/10 w-full overflow-x-hidden">
+          <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-base md:text-lg px-4">
             <Link to="/blog" className="text-white/50 hover:text-white transition-colors font-light">
               Blog
             </Link>
-            <span className="text-white/30 text-2xl">·</span>
+            <span className="text-white/30 text-xl md:text-2xl">·</span>
             <Link to="/press" className="text-white/50 hover:text-white transition-colors font-light">
               Presse
             </Link>
-            <span className="text-white/30 text-2xl">·</span>
+            <span className="text-white/30 text-xl md:text-2xl">·</span>
             <Link to="/about" className="text-white/50 hover:text-white transition-colors font-light">
               Contact
             </Link>
