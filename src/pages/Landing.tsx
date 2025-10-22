@@ -52,11 +52,11 @@ export default function Landing() {
         <meta name="description" content="En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
       </Helmet>
 
-      {/* Container principal avec overflow-x hidden */}
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden">
+      {/* Container principal - overflow différent mobile/desktop */}
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden md:overflow-x-visible">
         
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full overflow-x-hidden">
-          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center overflow-x-hidden">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full">
+          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
             
             {/* Logo */}
             <div className="relative inline-block mb-6">
@@ -67,7 +67,7 @@ export default function Landing() {
             </div>
             
             {/* Titre */}
-            <h1 className="text-3xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full px-2 md:px-4">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl text-white font-light leading-relaxed text-center w-full">
               En moyenne,
               <br />
               sur dix livres achetés,
@@ -77,7 +77,7 @@ export default function Landing() {
             
             {/* Pile */}
             <div 
-              className="py-8 cursor-pointer flex flex-col items-center w-full overflow-x-hidden"
+              className="py-8 cursor-pointer flex flex-col items-center w-full"
               onClick={() => {
                 setRevealed(true);
                 triggerConfetti();
@@ -88,7 +88,7 @@ export default function Landing() {
                 triggerConfetti();
               }}
             >
-              <div className="relative" style={{ width: '200px', height: '300px' }}>
+              <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
                 
                 {/* 10 livres */}
                 {[0,1,2,3,4,5,6,7,8,9].map((i) => {
@@ -159,7 +159,7 @@ export default function Landing() {
               </div>
               
               {!revealed && (
-                <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full px-4">
+                <p className="text-white/60 text-lg mt-10 animate-bounce font-light text-center w-full">
                   {isMobile ? 'Touche pour révéler' : 'Clique pour révéler'}
                 </p>
               )}
@@ -178,21 +178,21 @@ export default function Landing() {
             </div>
             
             {/* Texte final */}
-            <h2 className="text-3xl md:text-5xl lg:text-6xl text-white font-light text-center w-full px-2 md:px-4">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl text-white font-light text-center w-full">
               Avec Vread,
               <br />
               tu les finis tous.
             </h2>
             
-            {/* CTA */}
-            <div className="pt-16 w-full flex flex-col items-center gap-6 px-4">
+            {/* CTA - ÉLARGI SUR MOBILE */}
+            <div className="pt-16 w-full flex flex-col items-center gap-6">
               <Button 
                 size="lg"
-                className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-8 md:px-28 lg:px-36 py-6 md:py-10 lg:py-11 text-3xl md:text-5xl lg:text-5xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0] whitespace-nowrap max-w-full"
+                className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-12 sm:px-20 md:px-28 lg:px-36 py-7 sm:py-8 md:py-10 lg:py-11 text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0] whitespace-nowrap w-[90%] sm:w-auto max-w-full"
                 asChild
               >
-                <Link to="/auth">
-                  <span className="relative z-9">Commence gratuitement</span>
+                <Link to="/auth" className="flex items-center justify-center">
+                  <span className="relative z-10">Commence gratuitement</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
               </Button>
@@ -219,7 +219,7 @@ export default function Landing() {
         </div>
         
         {/* Footer */}
-        <footer className="py-12 border-t border-white/10 w-full overflow-x-hidden">
+        <footer className="py-12 border-t border-white/10 w-full">
           <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-base md:text-lg px-4">
             <Link to="/blog" className="text-white/50 hover:text-white transition-colors font-light">
               Blog
