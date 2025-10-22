@@ -139,6 +139,22 @@ export default function Home() {
             <MainContent {...mainContentProps} />
           </div>
         </main>
+
+        <footer className="py-12 border-t border-white/10 bg-gradient-to-br from-reed-primary to-reed-secondary">
+          <nav className="flex items-center justify-center gap-12 text-lg">
+            <a href="/blog" className="text-white/50 hover:text-white transition-colors font-light">
+              Blog
+            </a>
+            <span className="text-white/30 text-2xl">·</span>
+            <a href="/presse" className="text-white/50 hover:text-white transition-colors font-light">
+              Presse
+            </a>
+            <span className="text-white/30 text-2xl">·</span>
+            <a href="/a-propos" className="text-white/50 hover:text-white transition-colors font-light">
+              Contact
+            </a>
+          </nav>
+        </footer>
       </section>
     </AuthGuard>
   );

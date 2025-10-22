@@ -32,9 +32,6 @@ export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean } = {}):
     { to: "/reading-list", label: texts.readingList, icon: BookCheck, ariaLabel: `Aller à ${texts.readingList}` },
     { to: "/discover", label: texts.discover, icon: Users, ariaLabel: `Aller à ${texts.discover}` },
     { to: "/feedback", label: "Feedback", icon: MessageSquare, ariaLabel: "Aller au Feedback" },
-    { to: "/blog", label: "Blog", icon: BookOpen, ariaLabel: "Aller au Blog" },
-    { to: "/a-propos", label: "À propos", icon: Users, ariaLabel: "Aller à À propos" },
-    { to: "/presse", label: "Presse", icon: Users, ariaLabel: "Aller à Presse" },
   ];
 
   return items;
