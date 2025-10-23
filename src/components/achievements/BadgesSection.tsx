@@ -4,15 +4,20 @@ import { BadgeRarityProgress } from "./BadgeRarityProgress";
 import { Badge } from "@/types/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserBadges } from "@/hooks/useUserBadges";
-import { availableBadges } from "@/services/badgeService";
+import { fetchAvailableBadges } from "@/services/badgeService";
 import { Award, Sparkles, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export function BadgesSection() {
   const { user } = useAuth();
-  const { data: earnedBadges = [], isLoading } = useUserBadges(user?.id || '');
+  const { data: earnedBadges = [], isLoading: isLoadingUserBadges } = useUserBadges(user?.id || '');
+  const { data: allBadges = [], isLoading: isLoadingAllBadges } = useQuery({
+    queryKey: ['all-badges'],
+    queryFn: fetchAvailableBadges,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
-  // Use real available badges instead of mock data
-  const allBadges: Badge[] = availableBadges;
+  const isLoading = isLoadingUserBadges || isLoadingAllBadges;
 
   // Show loading state
   if (isLoading) {

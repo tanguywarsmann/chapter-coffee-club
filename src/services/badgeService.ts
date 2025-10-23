@@ -1,46 +1,55 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/types/badge";
 import { toast } from "sonner";
 
-export const availableBadges: Badge[] = [
-  {
-    id: "premier-livre",
-    slug: "premier-livre",
-    name: "Premier livre terminé",
-    description: "Félicitations ! Vous avez terminé votre premier livre sur VREAD.",
-    icon: "🎉",
-    color: "green-500",
-    rarity: "common"
-  },
-  {
-    id: "serie-7-jours",
-    slug: "serie-7-jours", 
-    name: "Série de 7 jours",
-    description: "Vous avez lu pendant 7 jours consécutifs sans interruption !",
-    icon: "🔥",
-    color: "orange-500",
-    rarity: "rare"
-  },
-  {
-    id: "lecteur-assidu",
-    slug: "lecteur-assidu",
-    name: "Lecteur assidu",
-    description: "Vous avez validé 50 segments de lecture.",
-    icon: "📚",
-    color: "blue-500", 
-    rarity: "epic"
-  },
-  {
-    id: "badge_test_insertion",
-    slug: "badge_test_insertion",
-    name: "Badge de test",
-    description: "Badge utilisé pour les tests de développement.",
-    icon: "🧪",
-    color: "purple-500",
-    rarity: "common"
+// Cache for available badges (populated from database)
+let cachedBadges: Badge[] | null = null;
+
+/**
+ * Fetches all available badges from database
+ */
+export const fetchAvailableBadges = async (): Promise<Badge[]> => {
+  if (cachedBadges) {
+    return cachedBadges;
   }
-];
+
+  try {
+    const { data, error } = await supabase
+      .from('badges')
+      .select('id, slug, name, description, icon, color, rarity')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching badges:', error);
+      return [];
+    }
+
+    cachedBadges = data || [];
+    return cachedBadges;
+  } catch (error) {
+    console.error('Error fetching badges:', error);
+    return [];
+  }
+};
+
+/**
+ * Gets available badges (uses cache if available)
+ * @deprecated Use fetchAvailableBadges() instead for async loading
+ */
+export const getAvailableBadges = (): Badge[] => {
+  return cachedBadges || [];
+};
+
+/**
+ * For backward compatibility - use fetchAvailableBadges() instead
+ * @deprecated This will be empty until fetchAvailableBadges() is called
+ */
+export let availableBadges: Badge[] = [];
+
+// Initialize badges cache on module load
+fetchAvailableBadges().then(badges => {
+  availableBadges = badges;
+});
 
 /**
  * Vérifie si un badge est déjà débloqué pour un utilisateur
@@ -68,11 +77,13 @@ export const isBadgeUnlocked = async (userId: string, badgeId: string): Promise<
 
 /**
  * Débloque un nouveau badge pour un utilisateur
+ * @deprecated Use autoGrantBadges() instead for automatic attribution
  */
 export const unlockBadge = async (userId: string, badgeId: string): Promise<boolean> => {
   try {
-    // Vérifier si le badge existe dans la liste des badges disponibles
-    const badgeExists = availableBadges.some(badge => badge.id === badgeId || badge.slug === badgeId);
+    const badges = await fetchAvailableBadges();
+    const badgeExists = badges.some(badge => badge.id === badgeId || badge.slug === badgeId);
+
     if (!badgeExists) {
       console.error(`Badge non trouvé: ${badgeId}`);
       return false;
@@ -102,8 +113,11 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
     }
 
     console.log(`✅ Badge débloqué avec succès: ${badgeId} pour l'utilisateur ${userId}`);
-    toast.success(`Nouveau badge débloqué : ${availableBadges.find(b => b.id === badgeId)?.name || badgeId}`);
-    
+    const badgeInfo = badges.find(b => b.id === badgeId);
+    if (badgeInfo) {
+      toast.success(`Nouveau badge débloqué : ${badgeInfo.name}`);
+    }
+
     return true;
   } catch (error) {
     console.error('Erreur lors du débloquage du badge:', error);
@@ -116,9 +130,22 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
  */
 export const getUserBadges = async (userId: string): Promise<Badge[]> => {
   try {
+    // Fetch badges with complete info using JOIN
     const { data, error } = await supabase
       .from('user_badges')
-      .select('badge_id, earned_at')
+      .select(`
+        badge_id,
+        earned_at,
+        badges:badge_id (
+          id,
+          slug,
+          name,
+          description,
+          icon,
+          color,
+          rarity
+        )
+      `)
       .eq('user_id', userId);
 
     if (error) {
@@ -126,22 +153,22 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
       return [];
     }
 
-    // Mapper les badges avec leurs informations complètes
-    const userBadges = data.map(userBadge => {
-      const badgeInfo = availableBadges.find(badge => 
-        badge.id === userBadge.badge_id || badge.slug === userBadge.badge_id
-      );
-
-      if (!badgeInfo) {
-        console.warn(`Badge non trouvé dans availableBadges: ${userBadge.badge_id}`);
-        return null;
-      }
-
-      return {
-        ...badgeInfo,
-        dateEarned: new Date(userBadge.earned_at).toLocaleDateString('fr-FR')
-      };
-    }).filter(badge => badge !== null) as Badge[];
+    // Map to Badge format
+    const userBadges = data
+      .filter(ub => ub.badges) // Filter out any null badges
+      .map(ub => {
+        const badgeData = ub.badges as any;
+        return {
+          id: badgeData.id,
+          slug: badgeData.slug,
+          name: badgeData.name,
+          description: badgeData.description,
+          icon: badgeData.icon,
+          color: badgeData.color,
+          rarity: badgeData.rarity,
+          dateEarned: new Date(ub.earned_at).toLocaleDateString('fr-FR')
+        } as Badge;
+      });
 
     return userBadges;
   } catch (error) {
@@ -151,87 +178,77 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
 };
 
 /**
- * Enregistre une session de lecture pour les statistiques
+ * Auto-grants all eligible badges to a user using SQL function
+ * This is the NEW recommended way to grant badges automatically
  */
-export const recordReadingSession = async (
-  userId: string, 
-  startTime: Date, 
-  endTime: Date
-): Promise<void> => {
+export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
   try {
-    const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
-    
-    if (durationMinutes < 1) {
-      return; // Ignorer les sessions trop courtes
+    const { data, error } = await supabase
+      .rpc('auto_grant_badges', { p_user_id: userId });
+
+    if (error) {
+      console.error('Error auto-granting badges:', error);
+      return [];
     }
 
-    console.log(`📊 Session de lecture enregistrée: ${durationMinutes} minutes pour l'utilisateur ${userId}`);
-    
-    // Ici, vous pourriez enregistrer dans une table de sessions si nécessaire
-    // Pour l'instant, on log juste pour le debugging
-    
+    // Show toasts for newly granted badges
+    if (data && data.length > 0) {
+      const newBadges = data.filter((row: any) => row.newly_granted);
+
+      for (const row of newBadges) {
+        toast.success(`🏆 Nouveau badge débloqué : ${row.badge_name}`);
+      }
+
+      // Return the badges in the expected format
+      const badges = await fetchAvailableBadges();
+      return newBadges.map((row: any) => {
+        const badge = badges.find(b => b.id === row.badge_id);
+        return badge || {
+          id: row.badge_id,
+          slug: '',
+          name: row.badge_name,
+          description: '',
+          icon: '🏆',
+          color: 'blue-500',
+          rarity: 'common'
+        } as Badge;
+      });
+    }
+
+    return [];
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement de la session:', error);
+    console.error('Error auto-granting badges:', error);
+    return [];
   }
 };
 
 /**
  * Vérifie et débloque automatiquement les badges basés sur les statistiques
+ * @deprecated Use autoGrantBadges() instead - it uses SQL views for better performance
  */
 export const checkAndUnlockBadges = async (userId: string): Promise<Badge[]> => {
+  // Use the new auto-grant system
+  return autoGrantBadges(userId);
+};
+
+/**
+ * Enregistre une session de lecture pour les statistiques
+ * @deprecated Not used anymore - sessions are tracked via reading_validations
+ */
+export const recordReadingSession = async (
+  userId: string,
+  startTime: Date,
+  endTime: Date
+): Promise<void> => {
   try {
-    const newBadges: Badge[] = [];
-    
-    // Récupérer les statistiques de l'utilisateur
-    const { data: progressData, error: progressError } = await supabase
-      .from('reading_progress')
-      .select('*')
-      .eq('user_id', userId);
+    const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-    if (progressError) {
-      console.error('Erreur lors de la récupération des progrès:', progressError);
-      return [];
+    if (durationMinutes < 1) {
+      return;
     }
 
-    const { data: validationData, error: validationError } = await supabase
-      .from('reading_validations')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (validationError) {
-      console.error('Erreur lors de la récupération des validations:', validationError);
-      return [];
-    }
-
-    // Vérifier le badge "Premier livre terminé"
-    const completedBooks = progressData?.filter(p => p.status === 'completed') || [];
-    if (completedBooks.length >= 1) {
-      const wasUnlocked = await isBadgeUnlocked(userId, 'premier-livre');
-      if (!wasUnlocked) {
-        const success = await unlockBadge(userId, 'premier-livre');
-        if (success) {
-          const badge = availableBadges.find(b => b.id === 'premier-livre');
-          if (badge) newBadges.push(badge);
-        }
-      }
-    }
-
-    // Vérifier le badge "Lecteur assidu" (50 validations)
-    const validationCount = validationData?.length || 0;
-    if (validationCount >= 50) {
-      const wasUnlocked = await isBadgeUnlocked(userId, 'lecteur-assidu');
-      if (!wasUnlocked) {
-        const success = await unlockBadge(userId, 'lecteur-assidu');
-        if (success) {
-          const badge = availableBadges.find(b => b.id === 'lecteur-assidu');
-          if (badge) newBadges.push(badge);
-        }
-      }
-    }
-
-    return newBadges;
+    console.log(`📊 Session de lecture enregistrée: ${durationMinutes} minutes pour l'utilisateur ${userId}`);
   } catch (error) {
-    console.error('Erreur lors de la vérification des badges:', error);
-    return [];
+    console.error('Erreur lors de l\'enregistrement de la session:', error);
   }
 };
