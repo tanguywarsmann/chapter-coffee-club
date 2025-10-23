@@ -1,7 +1,6 @@
 
 import { clearProgressCache, getBookReadingProgress } from "./progressService";
 import { mutate } from "swr";
-import { recordReadingActivity } from "@/services/streakService";
 import { addXP } from "@/services/user/levelService";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
@@ -15,7 +14,7 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
   mutate((key) => typeof key === 'string' && key.includes(`jokers-info-${book_id}`), undefined, { revalidate: true });
   mutate(() => getBookReadingProgress(user_id, book_id), undefined, { revalidate: true });
 
-  await recordReadingActivity(user_id);
+  // NOTE: recordReadingActivity() removed - streaks now calculated from reading_validations table via get_user_streaks() SQL function
   await addXP(user_id, 10);
 
   const newBadges = await checkBadgesForUser(user_id, true);

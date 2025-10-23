@@ -1,3 +1,22 @@
+/**
+ * @deprecated This service is DEPRECATED and should NOT be used.
+ *
+ * PROBLEM: This service uses localStorage to track reading streaks, which is unreliable:
+ * - Data is lost when user clears browser cache
+ * - Not synchronized across devices
+ * - Not accessible server-side (edge functions, cron jobs)
+ * - Can be out of sync with actual validation data
+ *
+ * NEW APPROACH: Streaks are now calculated server-side from reading_validations table
+ * using the SQL function get_user_streaks() in migration 20251023173450_fix_streaks_calculation.sql
+ *
+ * HOW TO MIGRATE:
+ * - Use get_user_stats() which internally calls get_user_streaks()
+ * - For direct access, call the SQL function get_user_streaks(user_id)
+ * - Remove any calls to recordReadingActivity(), getUserStreak() from this file
+ *
+ * This file is kept only for backwards compatibility and will be removed in future.
+ */
 
 import { ReadingActivity, ReadingStreak } from "@/types/reading";
 
