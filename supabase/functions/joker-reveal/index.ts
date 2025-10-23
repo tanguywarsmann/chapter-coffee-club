@@ -106,6 +106,19 @@ Deno.serve(async (req) => {
     });
   }
 
+  // AUDIT FIX: Règle min segments côté serveur (critique)
+  const JOKER_MIN_SEGMENTS = 3;
+  
+  if (bookInfo.expected_segments < JOKER_MIN_SEGMENTS && body.consume !== false) {
+    console.error('[JOKER-REVEAL] Book below minimum segments:', bookInfo.expected_segments);
+    return new Response(JSON.stringify({ 
+      error: "Jokers indisponibles: livre trop court (moins de 3 segments)" 
+    }), {
+      status: 403, 
+      headers: { "content-type": "application/json", ...cors(origin) }
+    });
+  }
+
   // Calculer les jokers autorisés
   const jokersAllowed = Math.floor(bookInfo.expected_segments / 10) + 1;
   
