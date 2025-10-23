@@ -3,130 +3,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BadgeRarityProgress } from "./BadgeRarityProgress";
 import { Badge } from "@/types/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { Award, Sparkles } from "lucide-react";
+import { useUserBadges } from "@/hooks/useUserBadges";
+import { availableBadges } from "@/services/badgeService";
+import { Award, Sparkles, Loader2 } from "lucide-react";
 
 export function BadgesSection() {
   const { user } = useAuth();
-  
-  // For the specific user f5e55556-c5ae-40dc-9909-88600a13393b, show unlocked badges
-  const earnedBadges: Badge[] = user?.id === 'f5e55556-c5ae-40dc-9909-88600a13393b' ? [
-    {
-      id: "lecteur-assidu",
-      slug: "lecteur-assidu",
-      name: "Lecteur assidu",
-      description: "Vous avez validé 50 segments de lecture.",
-      icon: "🔥",
-      color: "blue-500",
-      rarity: "epic",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "serie-7-jours",
-      slug: "serie-7-jours", 
-      name: "Série de 7 jours",
-      description: "Vous avez lu pendant 7 jours consécutifs sans interruption !",
-      icon: "🔒",
-      color: "orange-500",
-      rarity: "rare",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "premier-livre",
-      slug: "premier-livre",
-      name: "Premier livre terminé",
-      description: "Félicitations ! Vous avez terminé votre premier livre sur VREAD.",
-      icon: "🎉",
-      color: "green-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge_test_insertion",
-      slug: "badge_test_insertion",
-      name: "Badge de test",
-      description: "Badge utilisé pour les tests de développement.",
-      icon: "🧪",
-      color: "purple-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    // Add more badges to reach 10 total
-    {
-      id: "badge-5",
-      slug: "badge-5",
-      name: "Lecteur régulier",
-      description: "Vous lisez régulièrement depuis plusieurs semaines.",
-      icon: "📚",
-      color: "blue-400",
-      rarity: "rare",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge-6",
-      slug: "badge-6",
-      name: "Explorateur",
-      description: "Vous avez exploré différents genres littéraires.",
-      icon: "🌟",
-      color: "yellow-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge-7",
-      slug: "badge-7",
-      name: "Persévérant",
-      description: "Vous continuez à lire malgré les difficultés.",
-      icon: "💪",
-      color: "red-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge-8",
-      slug: "badge-8",
-      name: "Critique",
-      description: "Vous analysez et réfléchissez sur vos lectures.",
-      icon: "🎯",
-      color: "indigo-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge-9",
-      slug: "badge-9",
-      name: "Passionné",
-      description: "Votre passion pour la lecture est évidente.",
-      icon: "❤️",
-      color: "pink-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    },
-    {
-      id: "badge-10",
-      slug: "badge-10",
-      name: "Inspirant",
-      description: "Vous inspirez les autres à lire davantage.",
-      icon: "✨",
-      color: "amber-500",
-      rarity: "common",
-      dateEarned: new Date().toLocaleDateString('fr-FR')
-    }
-  ] : [];
+  const { data: earnedBadges = [], isLoading } = useUserBadges(user?.id || '');
 
-  // Mock all badges for rarity calculation
-  const allBadges: Badge[] = [
-    ...earnedBadges,
-    // Add mock badges for rarity calculation
-    ...Array.from({ length: 90 }, (_, i) => ({
-      id: `mock-badge-${i}`,
-      slug: `mock-badge-${i}`,
-      name: `Badge ${i}`,
-      description: `Description ${i}`,
-      icon: "🏆",
-      color: "gray-500",
-      rarity: i < 10 ? "legendary" : i < 40 ? "epic" : i < 70 ? "rare" : "common"
-    } as Badge))
-  ];
+  // Use real available badges instead of mock data
+  const allBadges: Badge[] = availableBadges;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/10 to-reed-secondary/10 rounded-3xl blur-2xl" />
+
+        <Card className="relative border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-reed-secondary/40 to-reed-light/40 border-b border-white/20">
+            <CardTitle className="font-serif text-reed-darker flex items-center gap-3 text-h4">
+              <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
+                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
+              </div>
+              <span className="flex-1 min-w-0">Badges Débloqués</span>
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 sm:p-8 flex items-center justify-center min-h-[200px]">
+            <Loader2 className="h-8 w-8 animate-spin text-reed-primary" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
 
   return (
     <div className="relative">
