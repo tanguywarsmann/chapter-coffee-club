@@ -1,58 +1,20 @@
+// chapter-coffee-club/src/services/reading/validationService.ts
 
 import { toast } from "sonner";
 import { ValidateReadingRequest, ValidateReadingResponse } from "@/types/reading";
 import { getQuestionForBookSegment } from "../questionService";
 import { checkUserSession } from "./validationSessionUtils";
-import { checkDefensiveProgress } from "./progressDefensiveCheck";
-import { insertReadingProgress, updateReadingProgress } from "./progressInsertOrUpdate";
-import { insertReadingValidation } from "./readingValidationInsert";
 import { handleBadgeAndQuestWorkflow } from "./badgeAndQuestWorkflow";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { mutate } from 'swr';
-import { PAGES_PER_SEGMENT } from "@/utils/constants";
 
 type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
 
 /**
- * Calcule le nombre de jokers autorisés selon le nombre de segments
- */
-function calculateJokersAllowed(expectedSegments: number): number {
-  return Math.floor(expectedSegments / 10) + 1;
-}
-
-/**
- * Compte le nombre de jokers déjà utilisés pour une lecture
- */
-async function getUsedJokersCount(progressId: string): Promise<number> {
-  try {
-    const { data, error } = await supabase
-      .from('reading_validations')
-      .select('id')
-      .eq('progress_id', progressId)
-      .eq('used_joker', true);
-    if (error) return 0;
-    return data?.length || 0;
-  } catch {
-    return 0;
-  }
-}
-
-async function getSegmentsRead(progressId: string): Promise<number> {
-  try {
-    const { data, error } = await supabase
-      .from('reading_validations')
-      .select('segment')
-      .eq('progress_id', progressId);
-    if (error) return 0;
-    return data?.length || 0;
-  } catch {
-    return 0;
-  }
-}
-
-/**
- * Valide un segment de lecture
+ * Valide un segment de lecture via la RPC atomique côté serveur.
+ * - Évite tout roll-back (upsert OR sur used_joker/correct).
+ * - Verrouille (advisory lock) pour empêcher les doubles clics concurrents.
+ * - Met à jour reading_progress côté DB (monotone).
  */
 export const validateReading = async (
   request: ValidateReadingRequest
@@ -60,87 +22,97 @@ export const validateReading = async (
   try {
     await checkUserSession(request.user_id);
 
-    // Defensive check for progress record
-    const currentProgress = await checkDefensiveProgress(request.user_id, request.book_id);
-    let progressId = currentProgress?.id;
-
-    // Get book info
+    // 1) Infos livre (pour slug & cohérence)
     const { data: bookData, error: bookError } = await supabase
-      .from('books_public')
-      .select('total_pages, total_chapters, expected_segments, slug')
-      .eq('id', request.book_id)
+      .from("books_public")
+      .select("slug, total_pages")
+      .eq("id", request.book_id)
       .maybeSingle();
-    if (bookError || !bookData) throw new Error("❌ Impossible de récupérer les informations du livre");
-    const totalPages = bookData.total_pages || 0;
 
-    // Fixed page calculation
-    const calculatedPage = (request.segment + 1) * PAGES_PER_SEGMENT;
-    const newCurrentPage = Math.min(calculatedPage, totalPages);
-    const updatedCurrentPage = Math.max(newCurrentPage, currentProgress?.current_page || 0);
-    const clampedPage = Math.min(updatedCurrentPage, totalPages);
-
-    const newStatus: ReadingProgressStatus = clampedPage >= totalPages ? 'completed' : 'in_progress';
-
-    // Insert new progress if needed
-    let progressRow = currentProgress;
-    if (!progressId) {
-      progressRow = await insertReadingProgress(
-        request.user_id, request.book_id, clampedPage, totalPages, newStatus
-      );
-      progressId = progressRow.id;
-    } else {
-      if (request.segment <= (await getSegmentsRead(progressId))) {
-        return {
-          message: "Segment déjà validé",
-          current_page: currentProgress.current_page || 0,
-          already_validated: true,
-          next_segment_question: null
-        };
-      }
-      progressRow = await updateReadingProgress(progressId, request.user_id, clampedPage, newStatus);
+    if (bookError || !bookData) {
+      throw new Error("❌ Impossible de récupérer les informations du livre");
     }
 
-    // Get question for segment using book slug
-    const question = await getQuestionForBookSegment(bookData.slug || request.book_id, request.segment);
+    // 2) Question du segment (nécessaire pour p_question_id)
+    //    NB: getQuestionForBookSegment doit renvoyer { id, ... }
+    const question = await getQuestionForBookSegment(
+      bookData.slug || request.book_id,
+      request.segment
+    );
+    if (!question?.id) {
+      throw new Error("❌ Question introuvable pour ce segment");
+    }
 
-    // The correct answer and joker logic are now handled by the calling code
-    // We accept the used_joker parameter directly
-    const correct = request.correct !== undefined ? request.correct : true;
-    const used_joker = request.used_joker || false;
-
-    // Insert reading validation
-    await insertReadingValidation(
-      request.user_id,
-      request.book_id,
-      request.segment,
-      question,
-      progressId,
-      used_joker
+    // 3) Appel unique à la RPC de validation (idempotente)
+    //    - p_used_joker = request.used_joker (par défaut false)
+    //    - p_correct    = request.correct ?? true (joker => true)
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc(
+      "force_validate_segment_beta",
+      {
+        p_book_id: request.book_id,        // TEXT dans le schéma actuel
+        p_question_id: question.id,        // UUID question
+        p_answer: (request as any).answer ?? "", // si tu passes une réponse libre côté client
+        p_user_id: request.user_id,        // UUID user
+        p_used_joker: !!request.used_joker,
+        p_correct: request.correct !== undefined ? !!request.correct : true,
+      }
     );
 
-    // Badge/XP/Quest workflow and cache invalidation
+    if (rpcErr) {
+      console.error("[validateReading] RPC error:", rpcErr);
+      throw new Error(rpcErr.message || "Échec validation (RPC)");
+    }
+
+    const rpcRow = Array.isArray(rpcRes) ? rpcRes[0] : rpcRes;
+    if (!rpcRow?.progress_id) {
+      // Défensif: la RPC doit toujours renvoyer un progress_id
+      throw new Error("RPC ok mais progress_id manquant");
+    }
+
+    // 4) Lire le progress ACTUEL depuis la DB (source de vérité)
+    const { data: progress, error: progressErr } = await supabase
+      .from("reading_progress")
+      .select("current_page, status")
+      .eq("id", rpcRow.progress_id)
+      .maybeSingle();
+
+    if (progressErr || !progress) {
+      // Fallback minimal si la lecture échoue: on ne bloque pas l'expérience
+      console.warn("[validateReading] Progress fetch failed:", progressErr);
+    }
+
+    const currentPage = progress?.current_page ?? 0;
+    const status = (progress?.status as ReadingProgressStatus) ?? "in_progress";
+
+    // 5) Déterminer si le segment était déjà validé (idempotence)
+    //    La RPC renvoie action = 'inserted' | 'updated'
+    const alreadyValidated = rpcRow?.action === "updated";
+
+    // 6) Workflow badges / quêtes (utilise les valeurs réelles)
+    const nextSegmentNumber = request.segment + 1;
     const newBadges = await handleBadgeAndQuestWorkflow(
-      request,
-      progressId,
-      clampedPage,
-      request.segment + 1,
-      request.book_id,
-      request.user_id,
-      question
-    );
+      request,               // payload initial
+      rpcRow.progress_id,    // progress id
+      currentPage,           // page courante post-RPC
+      nextSegmentNumber,     // prochain segment (indice humain)
+      request.book_id,       // book
+      request.user_id,       // user
+      question               // question qui vient d'être validée
+    ).catch((e) => {
+      console.warn("[validateReading] badge workflow failed (non bloquant):", e);
+      return undefined;
+    });
 
-    // Updated progress
-    // No longer: await clearProgressCache(request.user_id); (done in workflow)
+    // 7) Réponse compatible avec l'existant
     return {
-      message: "Segment validé avec succès",
-      current_page: clampedPage,
-      already_validated: false,
-      next_segment_question: null, // filled by getQuestionForBookSegment if needed
-      newBadges,
+      message: alreadyValidated ? "Segment déjà validé (idempotent)" : "Segment validé avec succès",
+      current_page: currentPage,
+      already_validated: alreadyValidated,
+      next_segment_question: null, // si besoin, à remplir via getQuestionForBookSegment ailleurs
+      ...(newBadges ? { newBadges } : {}),
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Erreur inconnue";
-    // Ne pas masquer, toast concis + log complet
     console.error("[validateReading] failure:", error);
     toast.error(`Échec de la validation: ${msg}`);
     throw new Error(msg);
