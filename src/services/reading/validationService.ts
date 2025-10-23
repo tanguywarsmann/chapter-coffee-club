@@ -63,36 +63,58 @@ export const validateReading = async (
       throw new Error(rpcErr.message || "Échec validation (RPC)");
     }
 
-    const rpcRow = Array.isArray(rpcRes) ? rpcRes[0] : rpcRes;
-    if (!rpcRow?.progress_id) {
-      // Défensif: la RPC doit toujours renvoyer un progress_id
-      throw new Error("RPC ok mais progress_id manquant");
-    }
+    // Normalisation: supporte jsonb (objet) ET table (array de rows)
+    const row: any = Array.isArray(rpcRes) ? rpcRes[0] : (rpcRes ?? {});
+    const progressId: string | undefined =
+      row.progress_id ?? row.progressId ?? row.progress ?? row.data?.progress_id ?? undefined;
+    const action: string | undefined = row.action ?? row.data?.action ?? undefined;
 
     // 4) Lire le progress ACTUEL depuis la DB (source de vérité)
-    const { data: progress, error: progressErr } = await supabase
-      .from("reading_progress")
-      .select("current_page, status")
-      .eq("id", rpcRow.progress_id)
-      .maybeSingle();
+    let currentPage = 0;
+    if (progressId) {
+      const { data: progress, error: progressErr } = await supabase
+        .from("reading_progress")
+        .select("current_page, status")
+        .eq("id", progressId)
+        .maybeSingle();
+      
+      if (!progressErr && progress) {
+        currentPage = progress.current_page ?? 0;
+      }
+    } else {
+      // Fallback si la RPC ne renvoie pas progress_id
+      const { data: progress, error: progressErr } = await supabase
+        .from("reading_progress")
+        .select("current_page, status")
+        .eq("user_id", request.user_id)
+        .eq("book_id", request.book_id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (progressErr || !progress) {
-      // Fallback minimal si la lecture échoue: on ne bloque pas l'expérience
-      console.warn("[validateReading] Progress fetch failed:", progressErr);
+      if (!progressErr && progress) {
+        currentPage = progress.current_page ?? 0;
+      }
     }
 
-    const currentPage = progress?.current_page ?? 0;
-    const status = (progress?.status as ReadingProgressStatus) ?? "in_progress";
-
     // 5) Déterminer si le segment était déjà validé (idempotence)
-    //    La RPC renvoie action = 'inserted' | 'updated'
-    const alreadyValidated = rpcRow?.action === "updated";
+    let alreadyValidated = action === "updated";
+    if (!alreadyValidated) {
+      const { data: existing, error: existingErr } = await supabase
+        .from("reading_validations")
+        .select("id")
+        .eq("user_id", request.user_id)
+        .eq("book_id", request.book_id)
+        .eq("segment", request.segment)
+        .limit(1);
+      if (!existingErr) alreadyValidated = (existing?.length ?? 0) > 0;
+    }
 
     // 6) Workflow badges / quêtes (utilise les valeurs réelles)
     const nextSegmentNumber = request.segment + 1;
     const newBadges = await handleBadgeAndQuestWorkflow(
       request,               // payload initial
-      rpcRow.progress_id,    // progress id
+      progressId || null,    // progress id
       currentPage,           // page courante post-RPC
       nextSegmentNumber,     // prochain segment (indice humain)
       request.book_id,       // book

@@ -9,24 +9,33 @@ export interface JokerUsageResult {
   message: string;
 }
 
+export interface JokerRevealResponse {
+  answer: string;
+  jokers?: { allowed: number; used: number; remaining: number };
+  meta?: Record<string, unknown>;
+}
+
 export async function useJokerAndReveal(params: {
   bookId: string;
   questionId: string;
   userId: string;
   expectedSegments?: number;
-}): Promise<string> {
+}): Promise<JokerRevealResponse> {
   // Garde-fou service: vérifier la contrainte avant l'appel
   if (!canUseJokers(params.expectedSegments ?? 0)) {
     throw new Error("Joker indisponible: nécessite au moins 3 segments.");
   }
   
   // Single call - Edge Function consumes joker and returns answer
-  return getCorrectAnswerAfterJoker({
+  const answer = await getCorrectAnswerAfterJoker({
     bookId: params.bookId,
     questionId: params.questionId,
     userId: params.userId,
     consume: true
   });
+  
+  // Normalize to object format
+  return { answer };
 }
 
 /**
