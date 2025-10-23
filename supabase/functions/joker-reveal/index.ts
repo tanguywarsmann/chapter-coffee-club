@@ -1,12 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-type Payload = {
-  bookId?: string;
-  questionId: string;
-  userId?: string;
-  consume?: boolean;
-};
+type Payload = { bookId?: string; questionId: string; userId?: string; consume?: boolean };
 
 const cors = (origin: string | null) => ({
   "Access-Control-Allow-Origin": origin ?? "*",
@@ -14,183 +9,121 @@ const cors = (origin: string | null) => ({
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 });
 
+const json = (obj: unknown, init: ResponseInit = {}, origin: string | null = null) =>
+  new Response(JSON.stringify(obj), {
+    ...init,
+    headers: { "content-type": "application/json", ...cors(origin), ...(init.headers ?? {}) },
+  });
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
-
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-
-  let body: Payload;
   try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-  if (!body?.questionId) {
-    return new Response(JSON.stringify({ error: "Missing questionId" }), {
-      status: 400, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
+    if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
+    if (req.method !== "POST") return json({ error: "Method not allowed" }, { status: 405 }, origin);
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-  });
+    let body: Payload;
+    try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, { status: 400 }, origin); }
+    if (!body?.questionId) return json({ error: "Missing questionId" }, { status: 400 }, origin);
 
-  const { data: me, error: meErr } = await supabase.auth.getUser();
-  if (meErr || !me?.user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-  const userId = body.userId ?? me.user.id;
+    // Auth
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }
+    );
+    const { data: me, error: meErr } = await supabase.auth.getUser();
+    if (meErr || !me?.user) return json({ error: "Unauthorized" }, { status: 401 }, origin);
+    const userId = body.userId ?? me.user.id;
+    const wantConsume = body.consume !== false; // default: consume
 
-  console.log('[JOKER-REVEAL] Request body:', body);
-  console.log('[JOKER-REVEAL] Authenticated user:', me.user.id);
-
-  // Si bookId manque, on le déduit via questionId
-  let bookId = body.bookId;
-  let questionAnswer = "";
-  
-  if (!bookId) {
+    // 1) Résoudre question -> book + answer
     const { data: qrow, error: qErr } = await supabase
       .from("reading_questions")
-      .select("id, book_id, answer")
+      .select("book_id, answer")
       .eq("id", body.questionId)
       .single();
-    if (qErr || !qrow?.book_id) {
-      console.error('[JOKER-REVEAL] Question not found:', qErr);
-      return new Response(JSON.stringify({ error: "Question not found" }), {
-        status: 404, headers: { "content-type": "application/json", ...cors(origin) },
-      });
-    }
-    bookId = qrow.book_id as string;
-    questionAnswer = qrow.answer;
-    console.log('[JOKER-REVEAL] Resolved bookId from question:', bookId);
-  } else {
-    // Récupère la bonne réponse
-    const { data: q, error: ansErr } = await supabase
-      .from("reading_questions")
-      .select("answer")
-      .eq("id", body.questionId)
+    if (qErr || !qrow?.book_id) return json({ error: "Question not found" }, { status: 404 }, origin);
+
+    const bookId = body.bookId ?? (qrow.book_id as string);
+    const questionAnswer = qrow.answer ?? "";
+
+    // 2) Règles serveur (min segments)
+    const { data: bookInfo, error: bookErr } = await supabase
+      .from("books")
+      .select("expected_segments")
+      .eq("id", bookId)
       .single();
-    if (ansErr || !q?.answer) {
-      console.error('[JOKER-REVEAL] Answer not found:', ansErr);
-      return new Response(JSON.stringify({ error: "Answer not found" }), {
-        status: 404, headers: { "content-type": "application/json", ...cors(origin) },
-      });
+    if (bookErr || !bookInfo) return json({ error: "Book not found" }, { status: 404 }, origin);
+
+    const JOKER_MIN_SEGMENTS = parseInt(Deno.env.get("JOKER_MIN_SEGMENTS") ?? "3", 10);
+    if (bookInfo.expected_segments < JOKER_MIN_SEGMENTS && wantConsume) {
+      return json({ error: "Jokers indisponibles: livre trop court (moins de 3 segments)" }, { status: 403 }, origin);
     }
-    questionAnswer = q.answer;
-  }
 
-  // Vérif quota joker - SANS le RPC use_joker qui fait la déduction
-  // On vérifie juste si on PEUT utiliser un joker
-  const { data: bookInfo, error: bookErr } = await supabase
-    .from("books")
-    .select("expected_segments")
-    .eq("id", bookId)
-    .single();
-  
-  if (bookErr || !bookInfo) {
-    console.error('[JOKER-REVEAL] Book not found:', bookErr);
-    return new Response(JSON.stringify({ error: "Book not found" }), {
-      status: 404, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
+    // 3) Quota simple
+    const jokersAllowed = Math.floor((bookInfo.expected_segments ?? 0) / 10) + 1;
 
-  // AUDIT FIX: Règle min segments côté serveur (critique)
-  const JOKER_MIN_SEGMENTS = 3;
-  
-  if (bookInfo.expected_segments < JOKER_MIN_SEGMENTS && body.consume !== false) {
-    console.error('[JOKER-REVEAL] Book below minimum segments:', bookInfo.expected_segments);
-    return new Response(JSON.stringify({ 
-      error: "Jokers indisponibles: livre trop court (moins de 3 segments)" 
-    }), {
-      status: 403, 
-      headers: { "content-type": "application/json", ...cors(origin) }
-    });
-  }
-
-  // Calculer les jokers autorisés
-  const jokersAllowed = Math.floor(bookInfo.expected_segments / 10) + 1;
-  
-  // Compter les jokers déjà utilisés
-  const { data: progressData, error: progressErr } = await supabase
-    .from("reading_progress")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("book_id", bookId)
-    .single();
-
-  if (progressErr || !progressData) {
-    console.error('[JOKER-REVEAL] Progress not found:', progressErr);
-    return new Response(JSON.stringify({ error: "Reading progress not found" }), {
-      status: 404, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-
-  const { data: validations, error: validErr } = await supabase
-    .from("reading_validations")
-    .select("id")
-    .eq("progress_id", progressData.id)
-    .eq("used_joker", true);
-
-  if (validErr) {
-    console.error('[JOKER-REVEAL] Error counting jokers:', validErr);
-    return new Response(JSON.stringify({ error: "Error checking joker usage" }), {
-      status: 500, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-
-  const jokersUsed = validations?.length || 0;
-  const jokersRemaining = jokersAllowed - jokersUsed;
-
-  console.log('[JOKER-REVEAL] Joker check:', {
-    expected_segments: bookInfo.expected_segments,
-    jokersAllowed,
-    jokersUsed,
-    jokersRemaining
-  });
-
-  if (jokersRemaining <= 0 && body.consume !== false) {
-    return new Response(JSON.stringify({ error: "Plus aucun joker disponible pour ce livre" }), {
-      status: 403, headers: { "content-type": "application/json", ...cors(origin) },
-    });
-  }
-
-  // Marquer l'usage du joker si demandé (créer une validation avec used_joker: true)
-  if (body.consume !== false) {
-    const { error: markErr } = await supabase
+    // 4) Décompte utilisé (sans dépendre de progress_id)
+    const { count: jokersUsed, error: countErr } = await supabase
       .from("reading_validations")
-      .insert({
-        user_id: userId,
-        book_id: bookId,
-        progress_id: progressData.id,
-        question_id: body.questionId,
-        answer: questionAnswer,
-        used_joker: true,
-        correct: true,
-        revealed_answer_at: new Date().toISOString()
-      });
-    
-    if (markErr) {
-      console.error('[JOKER-REVEAL] Error marking joker usage:', markErr);
-      return new Response(JSON.stringify({ error: markErr.message }), {
-        status: 400, headers: { "content-type": "application/json", ...cors(origin) },
-      });
-    }
-    console.log('[JOKER-REVEAL] Joker usage recorded successfully');
-  }
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("book_id", bookId)
+      .eq("used_joker", true);
+    if (countErr) return json({ error: "Error checking joker usage" }, { status: 500 }, origin);
 
-  return new Response(JSON.stringify({ answer: questionAnswer }), {
-    status: 200, headers: { "content-type": "application/json", ...cors(origin) },
-  });
+    const remainingBefore = Math.max(0, (jokersAllowed ?? 0) - (jokersUsed ?? 0));
+    if (remainingBefore <= 0 && wantConsume) {
+      return json({ error: "Plus aucun joker disponible pour ce livre" }, { status: 403 }, origin);
+    }
+
+    // 5) Consommation idempotente via RPC (fallback safe si absente)
+    let meta: Record<string, unknown> | undefined;
+    if (wantConsume) {
+      const { error: rpcErr } = await supabase.rpc("force_validate_segment_beta", {
+        p_book_id: bookId,            // TEXT (compat)
+        p_question_id: body.questionId,
+        p_answer: "",                 // on ne valide pas la réponse ici
+        p_user_id: userId,
+        p_used_joker: true,
+        p_correct: true,
+      });
+
+      if (rpcErr) {
+        // Compat: ne casse pas l'UI. Renvoie 200 + meta.conflict
+        meta = { conflict: true, reason: rpcErr.message ?? "RPC error" };
+
+        // Fallback “soft” UNIQUEMENT si la RPC n’existe pas (ex: 42883)
+        if ((rpcErr as any).message?.includes("does not exist")) {
+          const { error: legacyErr } = await supabase
+            .from("reading_validations")
+            .insert({
+              user_id: userId,
+              book_id: bookId,
+              question_id: body.questionId,
+              answer: questionAnswer,
+              used_joker: true,
+              correct: true,
+              revealed_answer_at: new Date().toISOString(),
+            });
+          if (legacyErr) meta = { ...meta, legacyInsertFailed: true, legacyReason: legacyErr.message };
+        }
+      }
+    }
+
+    // 6) Réponse (toujours 200 pour compat)
+    const remainingAfter = wantConsume ? Math.max(0, remainingBefore - 1) : remainingBefore;
+    return json(
+      {
+        answer: questionAnswer,               // ← champ attendu par l’UI actuelle
+        jokers: { allowed: jokersAllowed, used: (jokersUsed ?? 0) + (wantConsume ? 1 : 0), remaining: remainingAfter },
+        ...(meta ? { meta } : {}),
+      },
+      { status: 200 },
+      origin
+    );
+  } catch (e) {
+    console.error("[joker-reveal] fatal:", e);
+    return json({ error: "Internal error" }, { status: 500 }, origin);
+  }
 });
