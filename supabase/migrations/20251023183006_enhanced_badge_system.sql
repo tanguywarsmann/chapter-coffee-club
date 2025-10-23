@@ -17,6 +17,19 @@ CREATE TABLE IF NOT EXISTS public.badges (
   created_at timestamptz DEFAULT now()
 );
 
+-- Add category column if it doesn't exist (for existing tables)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'badges'
+    AND column_name = 'category'
+  ) THEN
+    ALTER TABLE public.badges ADD COLUMN category text NOT NULL DEFAULT 'general';
+  END IF;
+END $$;
+
 -- ============================================================================
 -- 2. INSERT 25 COMPREHENSIVE BADGES
 -- ============================================================================
