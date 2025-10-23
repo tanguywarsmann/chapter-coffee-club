@@ -287,6 +287,24 @@ export type Database = {
         }
         Relationships: []
       }
+      book_completion_awards: {
+        Row: {
+          awarded_at: string
+          book_id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          book_id: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          book_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       book_requests: {
         Row: {
           book_author: string | null
@@ -1506,6 +1524,16 @@ export type Database = {
           published_at?: string | null
           slug?: string | null
           title?: string | null
+        }
+        Relationships: []
+      }
+      xp_health_check: {
+        Row: {
+          last_refreshed: string | null
+          niveau_moyen: number | null
+          profiles_orphelins: number | null
+          profils_valides_sans_level: number | null
+          xp_moyen: number | null
         }
         Relationships: []
       }
