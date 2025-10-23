@@ -1515,10 +1515,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
-      discover_feed: {
-        Args: { lim?: number; uid: string }
-        Returns: Json
-      }
+      discover_feed: { Args: { lim?: number; uid: string }; Returns: Json }
       feed_get_v1: {
         Args: { p_limit?: number; p_offset?: number; p_viewer?: string }
         Returns: {
@@ -1574,10 +1571,7 @@ export type Database = {
           username: string
         }[]
       }
-      get_current_user_admin_status: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      get_current_user_admin_status: { Args: never; Returns: boolean }
       get_public_profile: {
         Args: { target_id: string }
         Returns: {
@@ -1627,14 +1621,12 @@ export type Database = {
           xp: number
         }[]
       }
-      unaccent: {
-        Args: { "": string }
-        Returns: string
+      increment_user_xp: {
+        Args: { p_amount?: number; p_user_id: string }
+        Returns: Json
       }
-      unaccent_init: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
+      rebuild_user_xp: { Args: { p_user_id: string }; Returns: Json }
+      unaccent: { Args: { "": string }; Returns: string }
       use_joker: {
         Args: { p_book_id: string; p_segment: number; p_user_id: string }
         Returns: {
