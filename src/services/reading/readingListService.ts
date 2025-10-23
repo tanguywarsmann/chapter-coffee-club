@@ -220,3 +220,82 @@ export const fetchBooksForStatus = async (readingListData: any, status: string, 
   // Fallback pour l'ancien format si nécessaire
   return [];
 };
+
+/**
+ * Supprime un livre du statut "to_read"
+ * @returns La ligne supprimée pour permettre l'undo, ou null si échec
+ */
+export const removeFromToRead = async (bookId: string): Promise<ProgressRow | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("Utilisateur non authentifié");
+    }
+
+    // Récupérer la ligne avant suppression (pour undo)
+    const { data: existingRow, error: selectError } = await supabase
+      .from('reading_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('book_id', bookId)
+      .eq('status', 'to_read')
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("Erreur lors de la récupération:", selectError);
+      throw new Error("Impossible de vérifier le statut du livre");
+    }
+
+    if (!existingRow) {
+      throw new Error("Livre non trouvé dans « À lire »");
+    }
+
+    // Supprimer la ligne
+    const { error: deleteError } = await supabase
+      .from('reading_progress')
+      .delete()
+      .eq('id', existingRow.id);
+
+    if (deleteError) {
+      console.error("Erreur lors de la suppression:", deleteError);
+      throw new Error("Impossible de retirer le livre");
+    }
+
+    console.log(`Livre retiré de "À lire": ${bookId}`);
+    return existingRow;
+  } catch (error) {
+    console.error("Erreur dans removeFromToRead:", error);
+    throw error;
+  }
+};
+
+/**
+ * Restaure un livre dans "to_read" (pour undo)
+ */
+export const restoreToRead = async (row: ProgressRow): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('reading_progress')
+      .insert([{
+        id: row.id,
+        user_id: row.user_id,
+        book_id: row.book_id,
+        current_page: row.current_page,
+        total_pages: row.total_pages,
+        status: row.status,
+        started_at: row.started_at,
+        updated_at: row.updated_at
+      }]);
+
+    if (error) {
+      console.error("Erreur lors de la restauration:", error);
+      throw new Error("Impossible de restaurer le livre");
+    }
+
+    console.log("Livre restauré dans « À lire »");
+  } catch (error) {
+    console.error("Erreur dans restoreToRead:", error);
+    throw error;
+  }
+};

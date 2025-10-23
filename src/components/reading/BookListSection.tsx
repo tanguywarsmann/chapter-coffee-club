@@ -4,10 +4,11 @@ console.log("Import de BookListSection.tsx OK");
 import React, { useMemo } from 'react';
 import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { usePaginatedBooks } from '@/hooks/usePaginatedBooks';
 import { LoadMoreButton } from '@/components/ui/load-more-button';
+import { useRemoveFromToRead } from '@/hooks/useRemoveFromToRead';
 
 interface BookListSectionProps {
   title: string;
@@ -20,6 +21,7 @@ interface BookListSectionProps {
   hideUnavailableBooks?: boolean;
   enablePagination?: boolean;
   initialPageSize?: number;
+  showRemoveButton?: boolean; // New prop for to_read items
 }
 
 export function BookListSection({
@@ -32,8 +34,10 @@ export function BookListSection({
   showDate = false,
   hideUnavailableBooks = false,
   enablePagination = false,
-  initialPageSize = 8
+  initialPageSize = 8,
+  showRemoveButton = false
 }: BookListSectionProps) {
+  const { handleRemove, removingBookId } = useRemoveFromToRead();
   // Filtrer les livres à afficher selon le paramètre hideUnavailableBooks
   const filteredBooks = useMemo(() => {
     const validBooks = Array.isArray(books) ? books : [];
@@ -97,7 +101,23 @@ export function BookListSection({
           const bookIdentifier = book.id || book.slug || '';
             
           return (
-            <div key={bookIdentifier} className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 bg-background rounded-lg border border-border">
+            <div key={bookIdentifier} className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 bg-background rounded-lg border border-border relative group">
+              {/* Remove button for to_read items */}
+              {showRemoveButton && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemove(bookIdentifier, book.title || 'Ce livre');
+                  }}
+                  disabled={removingBookId === bookIdentifier}
+                  className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 hover:bg-destructive/10 border border-border hover:border-destructive/50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 disabled:opacity-50"
+                  aria-label={`Retirer "${book.title}" de « À lire »`}
+                >
+                  <X className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
+                </button>
+              )}
+              
               {/* Book cover */}
               <div className="book-cover w-20 h-28 sm:w-20 sm:h-28 mx-auto sm:mx-0 overflow-hidden flex-shrink-0 relative">
                 {(() => {

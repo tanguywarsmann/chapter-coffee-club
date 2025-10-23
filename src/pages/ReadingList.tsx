@@ -100,6 +100,7 @@ export default function ReadingList() {
             onAction={navigateToBook}
             enablePagination={books.toRead.length > 8}
             initialPageSize={8}
+            showRemoveButton={true}
           />
         )}
         
