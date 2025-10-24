@@ -2,7 +2,6 @@
 import { Badge } from "@/types/badge";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/contexts/AuthContext";
 
 // Define the props for the component
 export interface BadgeRarityProgressProps {
@@ -20,12 +19,11 @@ interface RarityInfo {
   progressColor: string;
 }
 
-export function BadgeRarityProgress({ 
-  earnedBadges, 
-  allBadges, 
-  className 
+export function BadgeRarityProgress({
+  earnedBadges,
+  allBadges,
+  className
 }: BadgeRarityProgressProps) {
-  const { user } = useAuth();
   
   // Define rarity configurations with their display properties
   const rarities: RarityInfo[] = [
@@ -61,25 +59,11 @@ export function BadgeRarityProgress({
 
   // Group badges by rarity
   const calculateProgress = (rarity: string) => {
-    // For the specific user, use hardcoded values
-    if (user?.id === 'f5e55556-c5ae-40dc-9909-88600a13393b') {
-      switch (rarity) {
-        case 'epic':
-          return { earned: 1, total: 10, percentage: 10 };
-        case 'rare':
-          return { earned: 2, total: 30, percentage: 7 };
-        case 'common':
-          return { earned: 7, total: 100, percentage: 7 };
-        default:
-          return { earned: 0, total: 0, percentage: 0 };
-      }
-    }
-    
-    // Default calculation for other users
+    // Calculate based on actual badges
     const totalBadges = allBadges.filter(badge => badge.rarity === rarity).length;
     const earnedCount = earnedBadges.filter(badge => badge.rarity === rarity).length;
     const percentage = totalBadges > 0 ? Math.round((earnedCount / totalBadges) * 100) : 0;
-    
+
     return {
       earned: earnedCount,
       total: totalBadges,
@@ -91,9 +75,9 @@ export function BadgeRarityProgress({
     <div className={cn("space-y-3", className)}>
       {rarities.map(rarity => {
         const progress = calculateProgress(rarity.name);
-        
-        // Skip rarities with no badges (except for the specific user)
-        if (progress.total === 0 && user?.id !== 'f5e55556-c5ae-40dc-9909-88600a13393b') return null;
+
+        // Skip rarities with no badges
+        if (progress.total === 0) return null;
         
         return (
           <div key={rarity.name} className="space-y-1">
