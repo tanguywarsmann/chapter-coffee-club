@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				serif: ['Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -91,7 +95,8 @@ export default {
 			},
 			fontSize: {
 				// Système typographique professionnel optimisé
-				'hero': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '800', letterSpacing: '-0.01em' }],
+				// Lora weights loaded: 500, 600, 700 (no 800!)
+				'hero': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.01em' }],
 				'h1': ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '0' }],
 				'h2': ['clamp(1.5rem, 3vw, 2.25rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '0' }],
 				'h3': ['clamp(1.25rem, 2.5vw, 2rem)', { lineHeight: '1.4', fontWeight: '600' }],
@@ -123,11 +128,7 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'progress': 'progress 1s ease-out forwards'
-			},
-		fontFamily: {
-			serif: ['Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-			sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
-		}
+			}
 		}
 	},
 	plugins: [
