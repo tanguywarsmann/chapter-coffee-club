@@ -130,6 +130,8 @@ export const createStreakBadge = (days: number, endDate: string): Badge => {
   
   return {
     id,
+    label: name,
+    slug: id,
     name,
     description,
     icon: "🔥",

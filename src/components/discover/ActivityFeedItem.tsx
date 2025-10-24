@@ -17,6 +17,8 @@ interface ActivityFeedItemProps {
     timestamp: string;
     badge?: {
       name: string;
+      label: string;
+      slug: string;
       icon: string;
       rarity: 'common' | 'rare' | 'epic' | 'legendary';
     };
