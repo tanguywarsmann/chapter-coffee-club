@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				serif: ['Playfair Display', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+				serif: ['Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
 				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
 			},
 			colors: {
@@ -95,13 +95,12 @@ export default {
 			},
 			fontSize: {
 				// Système typographique professionnel optimisé
-				// hero/h1/h2 utilisent font-serif (Playfair Display 600/700)
-				// h3/h4/body utilisent font-sans (Inter 400/600)
+				// Lora weights loaded: 500, 600, 700 (no 800!)
 				'hero': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.01em' }],
 				'h1': ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '0' }],
 				'h2': ['clamp(1.5rem, 3vw, 2.25rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '0' }],
 				'h3': ['clamp(1.25rem, 2.5vw, 2rem)', { lineHeight: '1.4', fontWeight: '600' }],
-				'h4': ['clamp(1.125rem, 2vw, 1.5rem)', { lineHeight: '1.4', fontWeight: '600' }],
+				'h4': ['clamp(1.125rem, 2vw, 1.5rem)', { lineHeight: '1.4', fontWeight: '500' }],
 				'body': ['clamp(1rem, 1.5vw, 1.125rem)', { lineHeight: '1.6', fontWeight: '400' }],
 				'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
 				'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.02em' }],

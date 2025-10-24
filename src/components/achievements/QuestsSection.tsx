@@ -50,7 +50,7 @@ export function QuestsSection() {
             <span className="flex-1 min-w-0">Quêtes Accomplies</span>
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
           </CardTitle>
-          <CardDescription className="text-reed-dark font-light">
+          <CardDescription className="text-reed-dark">
             Exploits spéciaux déverrouillés par vos actions
           </CardDescription>
         </CardHeader>
@@ -78,7 +78,7 @@ export function QuestsSection() {
                 </div>
               </div>
               <h3 className="font-serif text-h4 text-reed-darker mb-3">Aucune quête accomplie</h3>
-              <p className="text-reed-dark font-light leading-relaxed px-4">
+              <p className="text-reed-dark leading-relaxed px-4">
                 Continuez à lire pour débloquer vos premières quêtes<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>et découvrir des récompenses exceptionnelles
               </p>

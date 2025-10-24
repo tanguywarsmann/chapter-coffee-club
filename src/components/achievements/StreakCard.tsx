@@ -80,7 +80,7 @@ export function StreakCard({ currentStreak = 0, longestStreak = 0 }: StreakCardP
             <div className="font-serif text-coffee-darker">
               {getStreakMessage(currentStreak)}
             </div>
-            <p className="text-body-sm font-light text-coffee-medium mt-1 italic">
+            <p className="text-body-sm text-coffee-medium mt-1 italic">
               {getMotivationalQuote(currentStreak)}
             </p>
           </div>
