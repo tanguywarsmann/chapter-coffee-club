@@ -242,7 +242,7 @@ AND (
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION auto_grant_badges(p_user_id uuid DEFAULT NULL)
-RETURNS TABLE(user_id uuid, badge_id uuid, badge_name text, newly_granted boolean)
+RETURNS TABLE(granted_user_id uuid, granted_badge_id uuid, badge_name text, newly_granted boolean)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
