@@ -2,24 +2,52 @@
 -- This migration adds 20+ badges and automatic attribution logic
 
 -- ============================================================================
--- 1. ENSURE BADGES TABLE EXISTS
+-- 1. ENSURE BADGES TABLE EXISTS AND HAS ALL REQUIRED COLUMNS
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS public.badges (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug text UNIQUE NOT NULL,
-  name text NOT NULL,
-  description text NOT NULL,
-  icon text NOT NULL,
-  color text NOT NULL,
-  rarity text NOT NULL CHECK (rarity IN ('common', 'rare', 'epic', 'legendary')),
-  category text NOT NULL,
+  label text NOT NULL,
+  description text,
+  icon_url text,
   created_at timestamptz DEFAULT now()
 );
 
--- Add category column if it doesn't exist (for existing tables)
+-- Add missing columns to existing badges table
 DO $$
 BEGIN
+  -- Add icon column for emoji icons (separate from icon_url)
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'badges'
+    AND column_name = 'icon'
+  ) THEN
+    ALTER TABLE public.badges ADD COLUMN icon text;
+  END IF;
+
+  -- Add color column
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'badges'
+    AND column_name = 'color'
+  ) THEN
+    ALTER TABLE public.badges ADD COLUMN color text NOT NULL DEFAULT 'gray-500';
+  END IF;
+
+  -- Add rarity column
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'badges'
+    AND column_name = 'rarity'
+  ) THEN
+    ALTER TABLE public.badges ADD COLUMN rarity text NOT NULL DEFAULT 'common';
+  END IF;
+
+  -- Add category column
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_schema = 'public'
@@ -27,6 +55,19 @@ BEGIN
     AND column_name = 'category'
   ) THEN
     ALTER TABLE public.badges ADD COLUMN category text NOT NULL DEFAULT 'general';
+  END IF;
+END $$;
+
+-- Add rarity constraint after column is created
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'badges_rarity_check'
+  ) THEN
+    ALTER TABLE public.badges
+    ADD CONSTRAINT badges_rarity_check
+    CHECK (rarity IN ('common', 'rare', 'epic', 'legendary'));
   END IF;
 END $$;
 
@@ -38,7 +79,7 @@ END $$;
 DELETE FROM public.badges WHERE slug IN ('badge_test_insertion');
 
 -- Insert all badges (use ON CONFLICT to allow re-running)
-INSERT INTO public.badges (slug, name, description, icon, color, rarity, category) VALUES
+INSERT INTO public.badges (slug, label, description, icon, color, rarity, category) VALUES
   -- LIVRES COMPLÉTÉS (Books Completed)
   ('premier-livre', 'Premier Livre', 'Félicitations ! Vous avez terminé votre premier livre.', '🎉', 'green-500', 'common', 'books'),
   ('lecteur-debutant', 'Lecteur Débutant', 'Vous avez terminé 3 livres. Continue !', '📗', 'green-600', 'common', 'books'),
@@ -81,7 +122,7 @@ INSERT INTO public.badges (slug, name, description, icon, color, rarity, categor
   ('pionnier', 'Pionnier', 'Vous étiez là dès les débuts de VREAD !', '🚀', 'purple-600', 'legendary', 'special')
 
 ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
+  label = EXCLUDED.label,
   description = EXCLUDED.description,
   icon = EXCLUDED.icon,
   color = EXCLUDED.color,
