@@ -191,7 +191,7 @@ SELECT
   s.user_id,
   b.id AS badge_id,
   b.slug,
-  b.name,
+  b.label,
   b.category
 FROM v_user_badge_stats s
 CROSS JOIN badges b
@@ -261,7 +261,7 @@ BEGIN
   RETURNING
     user_badges.user_id,
     user_badges.badge_id,
-    (SELECT name FROM badges WHERE id = user_badges.badge_id),
+    (SELECT label FROM badges WHERE id = user_badges.badge_id),
     true;
 END;
 $$;
