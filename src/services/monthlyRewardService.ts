@@ -67,6 +67,8 @@ function createMonthlyRewardBadge(year: number, month: number): Badge {
   
   return {
     id: `gift-${year}-${formattedMonth}`,
+    label: `Cadeau du mois : ${monthName} ${year}`,
+    slug: `gift-${year}-${formattedMonth}`,
     name: `Cadeau du mois : ${monthName} ${year}`,
     description: `Récompense pour avoir validé plus de 10 segments en ${monthName} ${year}`,
     icon: '🎁',

@@ -92,11 +92,11 @@ export async function getDiscoverActivities() {
     ];
 
     const badges = [
-      { name: "Focus 7 jours", icon: "🔥", rarity: 'rare' as const },
-      { name: "Premier livre terminé", icon: "🎉", rarity: 'common' as const },
-      { name: "Lecteur assidu", icon: "📚", rarity: 'epic' as const },
-      { name: "Marathon de lecture", icon: "🏃", rarity: 'legendary' as const },
-      { name: "Retour en force", icon: "💪", rarity: 'rare' as const }
+      { name: "Focus 7 jours", label: "Focus 7 jours", slug: "focus-7-jours", icon: "🔥", rarity: 'rare' as const },
+      { name: "Premier livre terminé", label: "Premier livre terminé", slug: "premier-livre", icon: "🎉", rarity: 'common' as const },
+      { name: "Lecteur assidu", label: "Lecteur assidu", slug: "lecteur-assidu", icon: "📚", rarity: 'epic' as const },
+      { name: "Marathon de lecture", label: "Marathon de lecture", slug: "marathon-lecture", icon: "🏃", rarity: 'legendary' as const },
+      { name: "Retour en force", label: "Retour en force", slug: "retour-en-force", icon: "💪", rarity: 'rare' as const }
     ];
 
     // Activités plus naturelles

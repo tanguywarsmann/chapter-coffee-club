@@ -16,7 +16,7 @@ export const fetchAvailableBadges = async (): Promise<Badge[]> => {
   try {
     const { data, error } = await supabase
       .from('badges')
-      .select('id, slug, label, description, icon, color, rarity, category')
+      .select('id, slug, label, description, icon, color, rarity')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -24,7 +24,7 @@ export const fetchAvailableBadges = async (): Promise<Badge[]> => {
       return [];
     }
 
-    cachedBadges = data || [];
+    cachedBadges = (data || []) as unknown as Badge[];
     return cachedBadges;
   } catch (error) {
     console.error('Error fetching badges:', error);
@@ -186,7 +186,7 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
 export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
   try {
     const { data, error } = await supabase
-      .rpc('auto_grant_badges', { p_user_id: userId });
+      .rpc('auto_grant_badges' as any, { p_user_id: userId });
 
     if (error) {
       console.error('Error auto-granting badges:', error);
@@ -194,11 +194,11 @@ export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
     }
 
     // Show toasts for newly granted badges
-    if (data && data.length > 0) {
-      const newBadges = data.filter((row: any) => row.newly_granted);
+    if (data && Array.isArray(data) && data.length > 0) {
+      const newBadges = Array.isArray(data) ? data.filter((row: any) => row.newly_granted) : [];
 
       for (const row of newBadges) {
-        toast.success(`🏆 Nouveau badge débloqué : ${row.badge_name}`);
+        toast.success(`🏆 Nouveau badge débloqué : ${(row as any).badge_name || 'Badge'}`);
       }
 
       // Return the badges in the expected format
