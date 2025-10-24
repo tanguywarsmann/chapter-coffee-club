@@ -135,7 +135,7 @@ export async function getDiscoverActivities() {
       content = content.replace('{book}', book);
       content = content.replace('{days}', String(Math.floor(Math.random() * 5) + 2));
       content = content.replace('{streak}', String(Math.floor(Math.random() * 15) + 5));
-      content = content.replace('{badge}', badge.name);
+      content = content.replace('{badge}', badge.label);
 
       if (template.type === 'badge_earned') {
         activityBadge = badge;

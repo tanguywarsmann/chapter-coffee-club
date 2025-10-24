@@ -16,7 +16,7 @@ export const fetchAvailableBadges = async (): Promise<Badge[]> => {
   try {
     const { data, error } = await supabase
       .from('badges')
-      .select('id, slug, name, description, icon, color, rarity')
+      .select('id, slug, label, description, icon, color, rarity, category')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -115,7 +115,7 @@ export const unlockBadge = async (userId: string, badgeId: string): Promise<bool
     console.log(`✅ Badge débloqué avec succès: ${badgeId} pour l'utilisateur ${userId}`);
     const badgeInfo = badges.find(b => b.id === badgeId);
     if (badgeInfo) {
-      toast.success(`Nouveau badge débloqué : ${badgeInfo.name}`);
+      toast.success(`Nouveau badge débloqué : ${badgeInfo.label}`);
     }
 
     return true;
@@ -139,11 +139,12 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
         badges:badge_id (
           id,
           slug,
-          name,
+          label,
           description,
           icon,
           color,
-          rarity
+          rarity,
+          category
         )
       `)
       .eq('user_id', userId);
@@ -161,11 +162,12 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
         return {
           id: badgeData.id,
           slug: badgeData.slug,
-          name: badgeData.name,
+          label: badgeData.label,
           description: badgeData.description,
           icon: badgeData.icon,
           color: badgeData.color,
           rarity: badgeData.rarity,
+          category: badgeData.category,
           dateEarned: new Date(ub.earned_at).toLocaleDateString('fr-FR')
         } as Badge;
       });
@@ -202,11 +204,11 @@ export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
       // Return the badges in the expected format
       const badges = await fetchAvailableBadges();
       return newBadges.map((row: any) => {
-        const badge = badges.find(b => b.id === row.badge_id);
+        const badge = badges.find(b => b.id === row.granted_badge_id);
         return badge || {
-          id: row.badge_id,
+          id: row.granted_badge_id,
           slug: '',
-          name: row.badge_name,
+          label: row.badge_name,
           description: '',
           icon: '🏆',
           color: 'blue-500',

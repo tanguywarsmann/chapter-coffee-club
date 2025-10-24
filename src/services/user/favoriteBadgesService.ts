@@ -83,13 +83,13 @@ export async function getUserFavoriteBadges(userId: string): Promise<Badge[]> {
     // Mapper les données sur le type Badge
     return (badgesData || []).map((badge: BadgeRecord) => ({
       id: badge.id,
-      name: badge.name || badge.label || "Badge",
+      label: badge.label || "Badge",
+      slug: badge.slug || "",
       description: badge.description || "",
       icon: badge.icon || "🏆",
       icon_url: badge.icon_url || "",
-      slug: badge.slug || "",
       color: badge.color || "yellow-300",
-      rarity: badge.rarity as 'common' | 'rare' | 'epic' | 'legendary' || "common"
+      rarity: (badge.rarity as 'common' | 'rare' | 'epic' | 'legendary') || "common"
     }));
   } catch (error) {
     console.error("Error fetching favorite badges:", error);

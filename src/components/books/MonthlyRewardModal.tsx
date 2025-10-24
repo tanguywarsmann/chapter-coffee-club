@@ -78,7 +78,7 @@ export function MonthlyRewardModal({
           </div>
           
           <p className="text-center text-h4 text-amber-700 font-medium">
-            {badge.name}
+            {badge.label}
           </p>
           
           <p className="text-center text-body-sm text-amber-600">

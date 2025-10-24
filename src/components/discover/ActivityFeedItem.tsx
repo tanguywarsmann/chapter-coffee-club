@@ -109,7 +109,7 @@ export function ActivityFeedItem({ user, activity }: ActivityFeedItemProps) {
             
             {activity.badge && (
               <Badge className={`text-caption ${getBadgeColor(activity.badge.rarity)}`}>
-                {activity.badge.icon} {activity.badge.name}
+                {activity.badge.icon} {activity.badge.label}
               </Badge>
             )}
           </div>

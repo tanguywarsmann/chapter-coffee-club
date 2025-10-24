@@ -82,7 +82,7 @@ export function BadgesSection() {
                     <div className="relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1 text-center">
                       <div className="text-h2 mb-3">{badge.icon}</div>
                       <h3 className="font-serif font-semibold text-reed-darker text-body-sm sm:text-body mb-2 break-words">
-                        {badge.name}
+                        {badge.label}
                       </h3>
                       <p className="text-caption sm:text-body-sm text-reed-dark font-light leading-relaxed break-words">
                         {badge.description}
