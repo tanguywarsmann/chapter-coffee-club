@@ -124,10 +124,10 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'progress': 'progress 1s ease-out forwards'
 			},
-			fontFamily: {
-				serif: ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
-				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
-			}
+		fontFamily: {
+			serif: ['Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+			sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+		}
 		}
 	},
 	plugins: [

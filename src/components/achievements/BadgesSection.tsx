@@ -58,7 +58,7 @@ export function BadgesSection() {
             <span className="flex-1 min-w-0">Badges Débloqués</span>
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
           </CardTitle>
-          <CardDescription className="text-reed-dark font-light">
+          <CardDescription className="text-reed-dark">
             Vos accomplissements par ordre de rareté
           </CardDescription>
         </CardHeader>
@@ -84,11 +84,11 @@ export function BadgesSection() {
                       <h3 className="font-serif font-semibold text-reed-darker text-body-sm sm:text-body mb-2 break-words">
                         {badge.label}
                       </h3>
-                      <p className="text-caption sm:text-body-sm text-reed-dark font-light leading-relaxed break-words">
+                      <p className="text-caption sm:text-body-sm text-reed-dark leading-relaxed break-words">
                         {badge.description}
                       </p>
                       {badge.dateEarned && (
-                        <p className="text-caption text-reed-medium mt-2 font-light">
+                        <p className="text-caption text-reed-medium mt-2">
                           Obtenu le {badge.dateEarned}
                         </p>
                       )}
@@ -116,7 +116,7 @@ export function BadgesSection() {
                 <h3 className="font-serif text-reed-darker text-h4 mb-2">
                   Aucun badge débloqué
                 </h3>
-                <p className="text-reed-dark font-light">
+                <p className="text-reed-dark">
                   Continuez à lire pour débloquer vos premiers badges !
                 </p>
               </div>

@@ -56,7 +56,7 @@ export function ChallengesSection() {
             <span className="flex-1 min-w-0">Défis en Cours</span>
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
           </CardTitle>
-          <CardDescription className="text-reed-dark font-light">
+          <CardDescription className="text-reed-dark">
             Relevez ces défis pour progresser encore plus vite
           </CardDescription>
         </CardHeader>
@@ -81,7 +81,7 @@ export function ChallengesSection() {
                       <h3 className="font-serif font-semibold text-reed-darker text-h4 mb-2 break-words">
                         {challenge.title}
                       </h3>
-                      <p className="text-reed-dark font-light leading-relaxed break-words">
+                      <p className="text-reed-dark leading-relaxed break-words">
                         {challenge.description}
                       </p>
                     </div>
@@ -119,7 +119,7 @@ export function ChallengesSection() {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <div className="text-caption text-reed-dark font-light">
+                      <div className="text-caption text-reed-dark">
                         {Math.round((challenge.progress / challenge.total) * 100)}% accompli
                       </div>
                       {challenge.progress >= challenge.total && (
