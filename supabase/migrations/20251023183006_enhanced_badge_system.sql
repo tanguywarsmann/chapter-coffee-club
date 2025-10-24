@@ -136,38 +136,38 @@ ON CONFLICT (slug) DO UPDATE SET
 -- Helper view: user statistics
 CREATE OR REPLACE VIEW v_user_badge_stats AS
 SELECT
-  u.id AS user_id,
+  p.id AS user_id,
 
   -- Books completed
   (SELECT COUNT(DISTINCT book_id)
    FROM reading_progress
-   WHERE user_id = u.id AND status = 'completed') AS books_completed,
+   WHERE user_id = p.id AND status = 'completed') AS books_completed,
 
   -- Total validations
   (SELECT COUNT(*)
    FROM reading_validations
-   WHERE user_id = u.id) AS total_validations,
+   WHERE user_id = p.id) AS total_validations,
 
   -- Total pages read
   (SELECT COALESCE(SUM(current_page), 0)::int
    FROM reading_progress
-   WHERE user_id = u.id) AS pages_read,
+   WHERE user_id = p.id) AS pages_read,
 
   -- Current and best streak
-  (SELECT (get_user_streaks(u.id)->>'current')::int) AS streak_current,
-  (SELECT (get_user_streaks(u.id)->>'best')::int) AS streak_best,
+  (SELECT (get_user_streaks(p.id)->>'current')::int) AS streak_current,
+  (SELECT (get_user_streaks(p.id)->>'best')::int) AS streak_best,
 
   -- Books completed this month
   (SELECT COUNT(DISTINCT book_id)
    FROM reading_progress
-   WHERE user_id = u.id
+   WHERE user_id = p.id
      AND status = 'completed'
      AND updated_at >= date_trunc('month', CURRENT_DATE)) AS books_this_month,
 
   -- Has book completed in less than 7 days
   (SELECT EXISTS(
     SELECT 1 FROM reading_progress
-    WHERE user_id = u.id
+    WHERE user_id = p.id
       AND status = 'completed'
       AND updated_at - started_at < INTERVAL '7 days'
   )) AS has_fast_read_7d,
@@ -175,15 +175,15 @@ SELECT
   -- Has book completed in less than 3 days
   (SELECT EXISTS(
     SELECT 1 FROM reading_progress
-    WHERE user_id = u.id
+    WHERE user_id = p.id
       AND status = 'completed'
       AND updated_at - started_at < INTERVAL '3 days'
   )) AS has_fast_read_3d,
 
   -- User creation date (for pioneer badge)
-  u.created_at AS user_created_at
+  p.created_at AS user_created_at
 
-FROM auth.users u;
+FROM profiles p;
 
 -- View: All badges users should have but don't
 CREATE OR REPLACE VIEW v_missing_badges AS
