@@ -380,7 +380,7 @@ export default function Profile() {
                             {badge.icon || "🏆"}
                           </div>
                           <p className="text-xs text-coffee-darker font-medium line-clamp-2 break-words">
-                            {badge.name}
+                            {badge.label}
                           </p>
                         </div>
                       ))}
@@ -439,7 +439,7 @@ export default function Profile() {
                           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-coffee-light to-coffee-medium rounded-full mx-auto mb-3 flex items-center justify-center text-2xl sm:text-3xl">
                             {badge.icon || "🏆"}
                           </div>
-                          <h4 className="font-medium text-coffee-darker mb-1 text-sm sm:text-base break-words">{badge.name}</h4>
+                          <h4 className="font-medium text-coffee-darker mb-1 text-sm sm:text-base break-words">{badge.label}</h4>
                           <p className="text-xs sm:text-sm text-coffee-medium line-clamp-2 break-words">{badge.description}</p>
                         </div>
                       ))}
