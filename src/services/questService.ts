@@ -10,12 +10,33 @@ type UserQuestRecord = Database['public']['Tables']['user_quests']['Row'];
 
 // Définition des quêtes disponibles
 export const availableQuests: Quest[] = [
+  // LECTURE HORAIRE
   {
     slug: 'early_reader' as QuestSlug,
     title: 'Lecteur matinal',
     description: 'Lire un livre avant 7h du matin',
-    icon: 'sun'
+    icon: 'sunrise'
   },
+  {
+    slug: 'night_owl' as QuestSlug,
+    title: 'Marathon nocturne',
+    description: 'Lire après 22h (noctambule de la lecture)',
+    icon: 'moon'
+  },
+  {
+    slug: 'sunday_reader' as QuestSlug,
+    title: 'Lecteur du dimanche',
+    description: 'Lire un dimanche (détente garantie)',
+    icon: 'coffee'
+  },
+  {
+    slug: 'weekend_warrior' as QuestSlug,
+    title: 'Week-end de lecture',
+    description: 'Lire le samedi ET le dimanche',
+    icon: 'calendar'
+  },
+
+  // VALIDATIONS
   {
     slug: 'triple_valide' as QuestSlug,
     title: 'Triple validation',
@@ -23,10 +44,44 @@ export const availableQuests: Quest[] = [
     icon: 'zap'
   },
   {
+    slug: 'centurion' as QuestSlug,
+    title: 'Centurion',
+    description: 'Valider 100 segments de lecture au total',
+    icon: 'shield'
+  },
+
+  // LIVRES
+  {
+    slug: 'first_book' as QuestSlug,
+    title: 'Premier pas',
+    description: 'Terminer votre tout premier livre',
+    icon: 'book-open'
+  },
+  {
+    slug: 'bibliophile' as QuestSlug,
+    title: 'Bibliophile',
+    description: 'Terminer 5 livres au total',
+    icon: 'library'
+  },
+  {
     slug: 'multi_booker' as QuestSlug,
     title: 'Multi-lecteur',
     description: 'Avoir 3 livres en cours de lecture simultanément',
     icon: 'books'
+  },
+
+  // VITESSE & RÉGULARITÉ
+  {
+    slug: 'speed_reader' as QuestSlug,
+    title: 'Vitesse de croisière',
+    description: 'Terminer un livre en moins de 7 jours',
+    icon: 'rocket'
+  },
+  {
+    slug: 'fire_streak' as QuestSlug,
+    title: 'Série de feu',
+    description: 'Lire pendant 7 jours consécutifs',
+    icon: 'flame'
   },
   {
     slug: 'back_on_track' as QuestSlug,
@@ -131,28 +186,112 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
       return;
     }
 
+    // Récupérer les livres terminés
+    const completedBooks = readingProgress.filter(p => p.status === 'completed');
+
     // Vérifier chaque quête disponible
     for (const quest of availableQuests) {
       let shouldUnlock = false;
 
       switch (quest.slug) {
+        // ===== LECTURE HORAIRE =====
+        case 'early_reader':
+          // Vérifier si l'utilisateur a lu avant 7h
+          if (validations && validations.length > 0) {
+            shouldUnlock = validations.some(v => {
+              const hour = new Date(v.validated_at).getHours();
+              return hour < 7;
+            });
+          }
+          break;
+
+        case 'night_owl':
+          // Vérifier si l'utilisateur a lu après 22h
+          if (validations && validations.length > 0) {
+            shouldUnlock = validations.some(v => {
+              const hour = new Date(v.validated_at).getHours();
+              return hour >= 22;
+            });
+          }
+          break;
+
+        case 'sunday_reader':
+          // Vérifier si l'utilisateur a lu un dimanche
+          if (validations && validations.length > 0) {
+            shouldUnlock = validations.some(v => {
+              const day = new Date(v.validated_at).getDay();
+              return day === 0; // 0 = dimanche
+            });
+          }
+          break;
+
+        case 'weekend_warrior':
+          // Vérifier si l'utilisateur a lu le samedi ET le dimanche
+          if (validations && validations.length >= 2) {
+            const hasSaturday = validations.some(v => new Date(v.validated_at).getDay() === 6);
+            const hasSunday = validations.some(v => new Date(v.validated_at).getDay() === 0);
+            shouldUnlock = hasSaturday && hasSunday;
+          }
+          break;
+
+        // ===== VALIDATIONS =====
         case 'triple_valide':
           // Vérifier si l'utilisateur a validé 3 segments dans la même journée
           if (validations && validations.length >= 3) {
             const today = new Date().toISOString().split('T')[0];
-            const todayValidations = validations.filter(v => 
+            const todayValidations = validations.filter(v =>
               v.validated_at.startsWith(today)
             );
             shouldUnlock = todayValidations.length >= 3;
           }
           break;
-          
+
+        case 'centurion':
+          // Vérifier si l'utilisateur a validé 100 segments au total
+          shouldUnlock = validations && validations.length >= 100;
+          break;
+
+        // ===== LIVRES =====
+        case 'first_book':
+          // Vérifier si l'utilisateur a terminé son premier livre
+          shouldUnlock = completedBooks.length >= 1;
+          break;
+
+        case 'bibliophile':
+          // Vérifier si l'utilisateur a terminé 5 livres
+          shouldUnlock = completedBooks.length >= 5;
+          break;
+
         case 'multi_booker':
           // Vérifier si l'utilisateur a 3 livres en cours
           const inProgressBooks = readingProgress.filter(p => p.status === 'in_progress');
           shouldUnlock = inProgressBooks.length >= 3;
           break;
-          
+
+        // ===== VITESSE & RÉGULARITÉ =====
+        case 'speed_reader':
+          // Vérifier si l'utilisateur a terminé un livre en moins de 7 jours
+          shouldUnlock = completedBooks.some(book => {
+            if (!book.started_at) return false;
+            const startDate = new Date(book.started_at);
+            const endDate = new Date(book.updated_at);
+            const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            return daysDiff < 7;
+          });
+          break;
+
+        case 'fire_streak':
+          // Vérifier si l'utilisateur a un streak actuel ou meilleur de 7 jours
+          // Cette fonction existe déjà dans la DB (get_user_streaks)
+          const { data: streakData, error: streakError } = await supabase
+            .rpc('get_user_streaks', { user_id: userId });
+
+          if (!streakError && streakData) {
+            const bestStreak = streakData.best || 0;
+            shouldUnlock = bestStreak >= 7;
+          }
+          break;
+
         case 'back_on_track':
           // Vérifier si l'utilisateur a repris la lecture après 7 jours
           if (validations && validations.length >= 2) {
@@ -162,7 +301,7 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
             shouldUnlock = daysDifference >= 7;
           }
           break;
-          
+
         default:
           break;
       }
