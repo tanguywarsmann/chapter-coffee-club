@@ -8,6 +8,36 @@ import { toast } from "sonner";
 
 type UserQuestRecord = Database['public']['Tables']['user_quests']['Row'];
 
+// Cache for available quests (populated from database)
+let cachedQuests: Quest[] | null = null;
+
+/**
+ * Fetches all available quests from database
+ */
+export const fetchAvailableQuests = async (): Promise<Quest[]> => {
+  if (cachedQuests) {
+    return cachedQuests;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('quests')
+      .select('slug, title, description, icon, category')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching quests:', error);
+      return [];
+    }
+
+    cachedQuests = (data || []) as Quest[];
+    return cachedQuests;
+  } catch (error) {
+    console.error('Error fetching quests:', error);
+    return [];
+  }
+};
+
 // Helper functions pour gérer les timezones
 const getLocalHour = (isoDate: string, userTimezone?: string): number => {
   const timezone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -31,88 +61,24 @@ const getLocalDateString = (isoDate: string, userTimezone?: string): string => {
   return date.toLocaleDateString('en-CA', { timeZone: timezone }); // format YYYY-MM-DD
 };
 
-// Définition des quêtes disponibles
-export const availableQuests: Quest[] = [
-  // LECTURE HORAIRE
-  {
-    slug: 'early_reader' as QuestSlug,
-    title: 'Lecteur matinal',
-    description: 'Lire un livre avant 7h du matin',
-    icon: 'sunrise'
-  },
-  {
-    slug: 'night_owl' as QuestSlug,
-    title: 'Marathon nocturne',
-    description: 'Lire après 22h (noctambule de la lecture)',
-    icon: 'moon'
-  },
-  {
-    slug: 'sunday_reader' as QuestSlug,
-    title: 'Lecteur du dimanche',
-    description: 'Lire un dimanche (détente garantie)',
-    icon: 'coffee'
-  },
-  {
-    slug: 'weekend_warrior' as QuestSlug,
-    title: 'Week-end de lecture',
-    description: 'Lire le samedi ET le dimanche',
-    icon: 'calendar'
-  },
+/**
+ * Gets available quests from cache
+ * @deprecated Use fetchAvailableQuests() for async loading
+ */
+export const getAvailableQuests = (): Quest[] => {
+  return cachedQuests || [];
+};
 
-  // VALIDATIONS
-  {
-    slug: 'triple_valide' as QuestSlug,
-    title: 'Triple validation',
-    description: 'Valider 3 segments de lecture en une seule journée',
-    icon: 'zap'
-  },
-  {
-    slug: 'centurion' as QuestSlug,
-    title: 'Centurion',
-    description: 'Valider 100 segments de lecture au total',
-    icon: 'shield'
-  },
+/**
+ * Available quests - populated from database on module load
+ * @deprecated Use fetchAvailableQuests() instead for async loading
+ */
+export let availableQuests: Quest[] = [];
 
-  // LIVRES
-  {
-    slug: 'first_book' as QuestSlug,
-    title: 'Premier pas',
-    description: 'Terminer votre tout premier livre',
-    icon: 'book-open'
-  },
-  {
-    slug: 'bibliophile' as QuestSlug,
-    title: 'Bibliophile',
-    description: 'Terminer 5 livres au total',
-    icon: 'library'
-  },
-  {
-    slug: 'multi_booker' as QuestSlug,
-    title: 'Multi-lecteur',
-    description: 'Avoir 3 livres en cours de lecture simultanément',
-    icon: 'books'
-  },
-
-  // VITESSE & RÉGULARITÉ
-  {
-    slug: 'speed_reader' as QuestSlug,
-    title: 'Vitesse de croisière',
-    description: 'Terminer un livre en moins de 7 jours',
-    icon: 'rocket'
-  },
-  {
-    slug: 'fire_streak' as QuestSlug,
-    title: 'Série de feu',
-    description: 'Lire pendant 7 jours consécutifs',
-    icon: 'flame'
-  },
-  {
-    slug: 'back_on_track' as QuestSlug,
-    title: 'De retour sur les rails',
-    description: 'Reprendre la lecture après une pause de 7 jours',
-    icon: 'refresh'
-  }
-];
+// Initialize quests cache on module load
+fetchAvailableQuests().then(quests => {
+  availableQuests = quests;
+});
 
 /**
  * Complète une quête pour un utilisateur
@@ -159,15 +125,19 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
     }
 
     console.log(`✅ Quête terminée avec succès: ${questSlug} pour l'utilisateur ${userId}`);
-    
-    // Ajouter des points XP pour la complétion d'une quête (50 XP)
-    const xpSuccess = await addXP(userId, 50);
+
+    // Récupérer les infos de la quête depuis la DB pour obtenir le XP reward
+    const quests = await fetchAvailableQuests();
+    const questInfo = quests.find(q => q.slug === questSlug);
+
+    // Ajouter des points XP pour la complétion d'une quête (depuis la DB)
+    const xpReward = 50; // Default fallback
+    const xpSuccess = await addXP(userId, xpReward);
     if (xpSuccess) {
-      console.log(`✅ XP ajouté pour la quête: +50 XP`);
+      console.log(`✅ XP ajouté pour la quête: +${xpReward} XP`);
     }
 
     // Notifier l'utilisateur
-    const questInfo = availableQuests.find(q => q.slug === questSlug);
     if (questInfo) {
       toast.success(`Quête terminée : ${questInfo.title}`, {
         duration: 5000,
@@ -193,6 +163,9 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
     }
 
     console.log(`🔍 Vérification des quêtes pour l'utilisateur ${userId}`);
+
+    // Récupérer les quêtes disponibles depuis la DB
+    const availableQuests = await fetchAvailableQuests();
 
     // Récupérer la progression de lecture de l'utilisateur
     const readingProgress = await getUserReadingProgress(userId);
@@ -378,6 +351,9 @@ export const getUserQuests = async (userId: string): Promise<UserQuest[]> => {
       return [];
     }
 
+    // Récupérer les détails des quêtes depuis la DB
+    const availableQuests = await fetchAvailableQuests();
+
     // Mapper les quêtes de l'utilisateur pour inclure les détails de la quête
     const userQuests = data.map(item => {
       const questDetails = availableQuests.find(q => q.slug === item.quest_slug);
@@ -403,7 +379,11 @@ export const getQuestStats = async (userId: string): Promise<{
   completionRate: number;
 }> => {
   try {
-    const userQuests = await getUserQuests(userId);
+    const [userQuests, availableQuests] = await Promise.all([
+      getUserQuests(userId),
+      fetchAvailableQuests()
+    ]);
+
     const completed = userQuests.length;
     const total = availableQuests.length;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -415,6 +395,7 @@ export const getQuestStats = async (userId: string): Promise<{
     };
   } catch (error) {
     console.error("Error fetching quest stats:", error);
+    const availableQuests = await fetchAvailableQuests();
     return {
       completed: 0,
       total: availableQuests.length,

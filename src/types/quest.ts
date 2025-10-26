@@ -3,7 +3,8 @@ export interface Quest {
   slug: string;
   title: string;
   description: string;
-  icon?: string;
+  icon: string;
+  category?: string; // horaire, validations, livres, vitesse, regularite
 }
 
 export interface UserQuest {
