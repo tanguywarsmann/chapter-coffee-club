@@ -460,3 +460,97 @@ export const getQuestStats = async (userId: string): Promise<{
     };
   }
 };
+
+/**
+ * Calcule la progression vers une quête spécifique (pour affichage)
+ * Retourne { current, target } pour les quêtes graduelles, null pour les autres
+ */
+export const getQuestProgress = async (
+  userId: string,
+  questSlug: string
+): Promise<{ current: number; target: number } | null> => {
+  try {
+    if (!userId || !questSlug) return null;
+
+    // Récupérer les données nécessaires
+    const readingProgress = await getUserReadingProgress(userId);
+    const { data: validations } = await supabase
+      .from('reading_validations')
+      .select('*')
+      .eq('user_id', userId)
+      .order('validated_at', { ascending: false });
+
+    if (!validations) return null;
+
+    const completedBooks = readingProgress.filter(p => p.status === 'completed');
+    const { data: streakData } = await supabase.rpc('get_user_streaks' as any, { user_id: userId });
+    const currentStreak = (streakData as any)?.current || 0;
+
+    // Calculer la progression selon la quête
+    switch (questSlug) {
+      case 'marathon_reader': {
+        // 10 validations en 1 journée - trouver le max atteint aujourd'hui
+        const today = getLocalDateString(new Date().toISOString());
+        const todayValidations = validations.filter(v =>
+          getLocalDateString(v.validated_at) === today
+        ).length;
+        return { current: Math.min(todayValidations, 10), target: 10 };
+      }
+
+      case 'night_marathon': {
+        // 5 validations entre 22h-6h
+        const nightValidations = validations.filter(v => {
+          const hour = getLocalHour(v.validated_at);
+          return hour >= 22 || hour < 6;
+        }).length;
+        return { current: Math.min(nightValidations, 5), target: 5 };
+      }
+
+      case 'binge_reading': {
+        // 3 livres en 7 jours - trouver le max sur une fenêtre glissante
+        if (completedBooks.length < 3) {
+          return { current: completedBooks.length, target: 3 };
+        }
+
+        const sortedBooks = [...completedBooks].sort((a, b) =>
+          new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
+        );
+
+        let maxInWeek = 0;
+        for (let i = 0; i <= sortedBooks.length - 3; i++) {
+          const firstBook = new Date(sortedBooks[i].updated_at);
+          const thirdBook = new Date(sortedBooks[i + 2].updated_at);
+          const daysDiff = Math.floor((thirdBook.getTime() - firstBook.getTime()) / (1000 * 60 * 60 * 24));
+          if (daysDiff <= 7) {
+            maxInWeek = 3;
+            break;
+          }
+        }
+        return { current: maxInWeek || completedBooks.length, target: 3 };
+      }
+
+      case 'unstoppable': {
+        // 30 jours consécutifs
+        return { current: Math.min(currentStreak, 30), target: 30 };
+      }
+
+      case 'punctual': {
+        // Même heure pendant 7 jours - logique complexe, on retourne null
+        // (trop complexe pour un simple indicateur de progression)
+        return null;
+      }
+
+      case 'perfect_month': {
+        // 1 validation/jour pendant 30 jours
+        return { current: Math.min(currentStreak, 30), target: 30 };
+      }
+
+      // Quêtes non graduelles (événements uniques)
+      default:
+        return null;
+    }
+  } catch (error) {
+    console.error(`Error calculating progress for quest ${questSlug}:`, error);
+    return null;
+  }
+};

@@ -9,9 +9,10 @@ interface QuestCardProps {
   quest?: UserQuest;
   questInfo: Quest;
   isLocked?: boolean;
+  progress?: { current: number; target: number } | null;
 }
 
-export function QuestCard({ quest, questInfo, isLocked = false }: QuestCardProps) {
+export function QuestCard({ quest, questInfo, isLocked = false, progress }: QuestCardProps) {
   const getIcon = () => {
     const icon = quest?.quest?.icon || questInfo?.icon;
     if (!icon) return <Award className="h-5 w-5" />;
@@ -53,6 +54,22 @@ export function QuestCard({ quest, questInfo, isLocked = false }: QuestCardProps
               <p className="text-body-sm text-gray-600 italic mt-1">
                 Accomplissez l'exploit pour découvrir les détails...
               </p>
+              {/* Indicateur de progression pour quêtes graduelles */}
+              {progress && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-caption text-gray-600 font-medium">
+                      Progression : {progress.current} / {progress.target}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-amber-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min((progress.current / progress.target) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               {questInfo.xp_reward && (
                 <p className="text-caption text-gray-500 mt-2 flex items-center gap-1">
                   <Zap className="h-3 w-3" />
