@@ -32,7 +32,7 @@ export default function Achievements() {
 
           <main className="container max-w-6xl mx-auto px-4 py-8 sm:py-12">
             <div className="text-center mb-8 px-4">
-              <h1 className="text-h1 font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'keep-all' }}>
+              <h1 className="text-h1 font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
                 Vos Accomplissements
               </h1>
               <p className="text-body text-reed-dark">
@@ -58,7 +58,7 @@ export default function Achievements() {
         <main className="container max-w-6xl mx-auto px-4 py-8 sm:py-12">
           {/* Simplified header - no decorations */}
           <div className="text-center mb-10 sm:mb-12 px-4">
-            <h1 className="text-h1 sm:text-hero font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'keep-all' }}>
+            <h1 className="text-h1 sm:text-hero font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
               Vos Accomplissements
             </h1>
             <p className="text-body sm:text-lg text-reed-dark">
