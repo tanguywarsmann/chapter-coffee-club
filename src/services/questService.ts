@@ -20,7 +20,8 @@ export const fetchAvailableQuests = async (): Promise<Quest[]> => {
   }
 
   try {
-    const { data, error } = await supabase
+    // Type assertion until Supabase types are regenerated
+    const { data, error } = await (supabase as any)
       .from('quests')
       .select('slug, title, description, icon, category, xp_reward')
       .order('created_at', { ascending: true });
@@ -91,7 +92,8 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
     }
 
     // Vérifier si la quête est déjà débloquée
-    const { data: existingQuest, error: questError } = await supabase
+    // Type assertion until Supabase types are regenerated
+    const { data: existingQuest, error: questError } = await (supabase as any)
       .from('user_quests')
       .select('*')
       .eq('user_id', userId)
@@ -109,7 +111,8 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
     }
 
     // Insérer la quête terminée dans la table user_quests
-    const { data, error } = await supabase
+    // Type assertion until Supabase types are regenerated
+    const { data, error } = await (supabase as any)
       .from('user_quests')
       .insert({
         user_id: userId,
@@ -387,7 +390,8 @@ export const getUserQuests = async (userId: string): Promise<UserQuest[]> => {
       return [];
     }
 
-    const { data, error } = await supabase
+    // Type assertion until Supabase types are regenerated
+    const { data, error } = await (supabase as any)
       .from('user_quests')
       .select('*')
       .eq('user_id', userId)
