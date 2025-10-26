@@ -1,14 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserQuest } from "@/types/quest";
+import { UserQuest, Quest } from "@/types/quest";
 import { QuestCard } from "./QuestCard";
-import { getUserQuests } from "@/services/questService";
+import { getUserQuests, fetchAvailableQuests } from "@/services/questService";
 import { supabase } from "@/integrations/supabase/client";
 import { Compass, Sparkles, Scroll, Star } from "lucide-react";
 
 export function QuestsSection() {
-  const [quests, setQuests] = useState<UserQuest[]>([]);
+  const [unlockedQuests, setUnlockedQuests] = useState<UserQuest[]>([]);
+  const [allQuests, setAllQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -16,15 +17,19 @@ export function QuestsSection() {
     const fetchUserAndQuests = async () => {
       try {
         setLoading(true);
-        
+
         // Récupérer l'utilisateur connecté
         const { data } = await supabase.auth.getUser();
         if (data?.user) {
           setUserId(data.user.id);
-          
-          // Récupérer les quêtes de l'utilisateur
+
+          // Récupérer TOUTES les quêtes disponibles
+          const available = await fetchAvailableQuests();
+          setAllQuests(available);
+
+          // Récupérer les quêtes débloquées par l'utilisateur
           const userQuests = await getUserQuests(data.user.id);
-          setQuests(userQuests);
+          setUnlockedQuests(userQuests);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des quêtes:", error);
@@ -32,7 +37,7 @@ export function QuestsSection() {
         setLoading(false);
       }
     };
-    
+
     fetchUserAndQuests();
   }, []);
 
@@ -61,27 +66,39 @@ export function QuestsSection() {
                 <div key={i} className="h-20 sm:h-24 bg-gradient-to-r from-reed-secondary/30 to-reed-light/30 animate-pulse rounded-2xl" />
               ))}
             </div>
-          ) : quests.length > 0 ? (
-            <div className="space-y-6">
-              {quests.map((quest) => (
-                <QuestCard key={quest.id} quest={quest} />
-              ))}
-            </div>
           ) : (
-            <div className="text-center py-12 sm:py-16">
-              <div className="flex justify-center mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/20 to-reed-secondary/20 rounded-3xl blur-xl" />
-                  <div className="relative p-6 bg-gradient-to-br from-reed-secondary/30 to-reed-light/30 rounded-3xl border border-white/30">
-                    <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-reed-primary" />
+            <div className="space-y-6">
+              {/* Afficher toutes les quêtes (locked + unlocked) */}
+              {allQuests.map((quest) => {
+                // Trouver si cette quête est débloquée
+                const userQuest = unlockedQuests.find(uq => uq.quest_slug === quest.slug);
+
+                return (
+                  <QuestCard
+                    key={quest.slug}
+                    quest={userQuest}
+                    questInfo={quest}
+                    isLocked={!userQuest}
+                  />
+                );
+              })}
+
+              {allQuests.length === 0 && (
+                <div className="text-center py-12 sm:py-16">
+                  <div className="flex justify-center mb-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/20 to-reed-secondary/20 rounded-3xl blur-xl" />
+                      <div className="relative p-6 bg-gradient-to-br from-reed-secondary/30 to-reed-light/30 rounded-3xl border border-white/30">
+                        <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-reed-primary" />
+                      </div>
+                    </div>
                   </div>
+                  <h3 className="font-serif text-h4 text-reed-darker mb-3">Aucune quête disponible</h3>
+                  <p className="text-reed-dark leading-relaxed px-4">
+                    Les quêtes seront bientôt disponibles
+                  </p>
                 </div>
-              </div>
-              <h3 className="font-serif text-h4 text-reed-darker mb-3">Aucune quête accomplie</h3>
-              <p className="text-reed-dark leading-relaxed px-4">
-                Continuez à lire pour débloquer vos premières quêtes<br className="hidden sm:block" />
-                <span className="sm:hidden"> </span>et découvrir des récompenses exceptionnelles
-              </p>
+              )}
             </div>
           )}
         </CardContent>

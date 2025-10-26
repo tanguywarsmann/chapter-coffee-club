@@ -6,6 +6,7 @@ import { UserQuest } from "@/types/quest";
 import { addXP } from "@/services/user/levelService";
 import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useReadingProgress } from "./useReadingProgress";
+import { toast } from "sonner";
 
 interface UseQuizCompletionProps {
   book: Book | null;
@@ -77,6 +78,18 @@ export const useQuizCompletion = ({
       if (result?.newQuests && result.newQuests.length > 0) {
         console.log("🏆 Nouvelles quêtes débloquées:", result.newQuests);
         setNewQuests(result.newQuests);
+
+        // Toast spécial pour les quêtes (plus prestigieux que les badges)
+        result.newQuests.forEach((quest: any) => {
+          const questTitle = quest.quest?.title || quest.quest_slug;
+          const xpReward = quest.quest?.xp_reward || 100;
+
+          toast.success(`🏆 Challenge Complété : ${questTitle}`, {
+            description: `+${xpReward} XP • Exploit rare débloqué !`,
+            duration: 8000, // Plus long que les badges (8s vs 6s)
+            className: 'quest-toast-special bg-gradient-to-r from-amber-100 to-yellow-100 border-2 border-amber-400',
+          });
+        });
       } else {
         setNewQuests([]);
       }
