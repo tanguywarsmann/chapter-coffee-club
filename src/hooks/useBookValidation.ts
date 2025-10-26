@@ -45,6 +45,8 @@ export const useBookValidation = ({
   const sessionStartTimeRef = useRef<Date | null>(null);
   const [showBadgeDialog, setShowBadgeDialog] = useState(false);
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
+  const [showQuestDialog, setShowQuestDialog] = useState(false);
+  const [unlockedQuests, setUnlockedQuests] = useState<any[]>([]);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
   
   // FIX P0-1: Store confetti timers for cleanup to prevent memory leaks
@@ -129,6 +131,8 @@ export const useBookValidation = ({
   const {
     newBadges,
     setNewBadges,
+    newQuests,
+    setNewQuests,
     handleQuizComplete
   } = useQuizCompletion({
     book,
@@ -261,7 +265,14 @@ export const useBookValidation = ({
           setUnlockedBadges(result.newBadges);
           setShowBadgeDialog(true);
         }
-        
+
+        // Check for new quests
+        if (result?.newQuests && result.newQuests.length > 0) {
+          console.log("🏆 New quests unlocked:", result.newQuests);
+          setUnlockedQuests(result.newQuests);
+          setShowQuestDialog(true);
+        }
+
         // Handle completed books
         if ((currentBook || book)?.isCompleted) {
           const completedBooks = localStorage.getItem(`completed_books_${userId}`)
@@ -349,6 +360,10 @@ export const useBookValidation = ({
     showBadgeDialog,
     setShowBadgeDialog,
     unlockedBadges,
+    showQuestDialog,
+    setShowQuestDialog,
+    unlockedQuests,
+    newQuests,
     monthlyReward,
     showMonthlyReward,
     setShowMonthlyReward,
@@ -379,6 +394,9 @@ export const useBookValidation = ({
     forceRefresh,
     showBadgeDialog,
     unlockedBadges,
+    showQuestDialog,
+    unlockedQuests,
+    newQuests,
     monthlyReward,
     showMonthlyReward,
     handleMainButtonClick,

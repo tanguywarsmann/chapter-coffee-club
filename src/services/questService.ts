@@ -83,12 +83,13 @@ fetchAvailableQuests().then(quests => {
 
 /**
  * Complète une quête pour un utilisateur
+ * @returns UserQuest si nouvelle quête débloquée, null si déjà débloquée ou erreur
  */
-export const completeQuest = async (userId: string, questSlug: string): Promise<boolean> => {
+export const completeQuest = async (userId: string, questSlug: string): Promise<UserQuest | null> => {
   try {
     if (!userId || !questSlug) {
       console.error("completeQuest: userId and questSlug are required");
-      return false;
+      return null;
     }
 
     // Vérifier si la quête est déjà débloquée
@@ -102,12 +103,12 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
 
     if (questError && questError.code !== 'PGRST116') {
       console.error("Error checking existing quest:", questError);
-      return false;
+      return null;
     }
 
     if (existingQuest) {
       console.log("Quest already unlocked:", questSlug);
-      return true; // Quête déjà débloquée
+      return null; // Quête déjà débloquée
     }
 
     // Insérer la quête terminée dans la table user_quests
@@ -124,7 +125,7 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
 
     if (error) {
       console.error("Error completing quest:", error);
-      return false;
+      return null;
     }
 
     console.log(`✅ Quête challengeante terminée avec succès: ${questSlug} pour l'utilisateur ${userId}`);
@@ -140,29 +141,31 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
       console.log(`✅ XP ajouté pour la quête challengeante: +${xpReward} XP`);
     }
 
-    // Notifier l'utilisateur avec emoji spécial pour les challenges
-    if (questInfo) {
-      toast.success(`🏆 Challenge complété : ${questInfo.title} (+${xpReward} XP)`, {
-        duration: 6000,
-      });
-    }
-    
-    return true;
+    // Enrichir les données de la quête avec les infos de la DB
+    const userQuest: UserQuest = {
+      ...data,
+      quest: questInfo,
+    };
+
+    return userQuest;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     console.error("Error completing quest:", errorMsg);
-    return false;
+    return null;
   }
 };
 
 /**
  * Vérifie les quêtes d'un utilisateur et les débloque selon certaines conditions
+ * @returns Array de UserQuest nouvellement débloquées
  */
-export const checkUserQuests = async (userId: string): Promise<void> => {
+export const checkUserQuests = async (userId: string): Promise<UserQuest[]> => {
+  const newlyUnlockedQuests: UserQuest[] = [];
+
   try {
     if (!userId) {
       console.error("checkUserQuests: userId is required");
-      return;
+      return [];
     }
 
     console.log(`🔍 Vérification des quêtes pour l'utilisateur ${userId}`);
@@ -369,15 +372,18 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
       }
 
       if (shouldUnlock) {
-        const success = await completeQuest(userId, quest.slug);
-        if (success) {
+        const unlockedQuest = await completeQuest(userId, quest.slug);
+        if (unlockedQuest) {
           console.log(`🎉 Quête challengeante débloquée: ${quest.slug}`);
+          newlyUnlockedQuests.push(unlockedQuest);
         }
       }
     }
   } catch (error) {
     console.error("Error checking user quests:", error);
   }
+
+  return newlyUnlockedQuests;
 };
 
 /**

@@ -18,7 +18,7 @@ type ReadingProgressStatus = Database['public']['Enums']['reading_status'];
  */
 export const validateReading = async (
   request: ValidateReadingRequest
-): Promise<ValidateReadingResponse & { newBadges?: any[] }> => {
+): Promise<ValidateReadingResponse & { newBadges?: any[]; newQuests?: any[] }> => {
   try {
     await checkUserSession(request.user_id);
 
@@ -112,7 +112,7 @@ export const validateReading = async (
 
     // 6) Workflow badges / quêtes (utilise les valeurs réelles)
     const nextSegmentNumber = request.segment + 1;
-    const newBadges = await handleBadgeAndQuestWorkflow(
+    const workflowResult = await handleBadgeAndQuestWorkflow(
       request,               // payload initial
       progressId || null,    // progress id
       currentPage,           // page courante post-RPC
@@ -122,7 +122,7 @@ export const validateReading = async (
       question               // question qui vient d'être validée
     ).catch((e) => {
       console.warn("[validateReading] badge workflow failed (non bloquant):", e);
-      return undefined;
+      return { newBadges: undefined, newQuests: undefined };
     });
 
     // 7) Réponse compatible avec l'existant
@@ -131,7 +131,8 @@ export const validateReading = async (
       current_page: currentPage,
       already_validated: alreadyValidated,
       next_segment_question: null, // si besoin, à remplir via getQuestionForBookSegment ailleurs
-      ...(newBadges ? { newBadges } : {}),
+      ...(workflowResult?.newBadges ? { newBadges: workflowResult.newBadges } : {}),
+      ...(workflowResult?.newQuests ? { newQuests: workflowResult.newQuests } : {}),
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Erreur inconnue";

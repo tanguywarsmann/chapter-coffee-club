@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
+import { UserQuest } from "@/types/quest";
 import { addXP } from "@/services/user/levelService";
 import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useReadingProgress } from "./useReadingProgress";
@@ -20,6 +21,7 @@ export const useQuizCompletion = ({
   onProgressUpdate
 }: UseQuizCompletionProps) => {
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const [newQuests, setNewQuests] = useState<UserQuest[]>([]);
   const { forceRefresh } = useReadingProgress();
 
   const handleQuizComplete = async (correct: boolean, useJoker?: boolean) => {
@@ -62,7 +64,7 @@ export const useQuizCompletion = ({
       // Check if there are any newly unlocked badges
       if (result?.newBadges && result.newBadges.length > 0) {
         setNewBadges(result.newBadges);
-        
+
         // Ajouter des XP supplémentaires pour un streak (30 XP)
         if (userId && result.newBadges.some(badge => badge.id && badge.id.includes('streak'))) {
           await addXP(userId, 30);
@@ -70,7 +72,15 @@ export const useQuizCompletion = ({
       } else {
         setNewBadges([]);
       }
-      
+
+      // Check if there are any newly unlocked quests
+      if (result?.newQuests && result.newQuests.length > 0) {
+        console.log("🏆 Nouvelles quêtes débloquées:", result.newQuests);
+        setNewQuests(result.newQuests);
+      } else {
+        setNewQuests([]);
+      }
+
       return result;
     } catch (error) {
       console.error("Error in quiz completion:", error);
@@ -89,6 +99,8 @@ export const useQuizCompletion = ({
   return {
     newBadges,
     setNewBadges,
+    newQuests,
+    setNewQuests,
     handleQuizComplete
   };
 };
