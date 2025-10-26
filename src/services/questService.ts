@@ -22,7 +22,7 @@ export const fetchAvailableQuests = async (): Promise<Quest[]> => {
   try {
     const { data, error } = await supabase
       .from('quests')
-      .select('slug, title, description, icon, category')
+      .select('slug, title, description, icon, category, xp_reward')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -124,23 +124,23 @@ export const completeQuest = async (userId: string, questSlug: string): Promise<
       return false;
     }
 
-    console.log(`✅ Quête terminée avec succès: ${questSlug} pour l'utilisateur ${userId}`);
+    console.log(`✅ Quête challengeante terminée avec succès: ${questSlug} pour l'utilisateur ${userId}`);
 
     // Récupérer les infos de la quête depuis la DB pour obtenir le XP reward
     const quests = await fetchAvailableQuests();
     const questInfo = quests.find(q => q.slug === questSlug);
 
-    // Ajouter des points XP pour la complétion d'une quête (depuis la DB)
-    const xpReward = 50; // Default fallback
+    // Ajouter des points XP pour la complétion d'une quête (XP depuis la DB)
+    const xpReward = questInfo?.xp_reward || 100; // Default fallback pour challenges
     const xpSuccess = await addXP(userId, xpReward);
     if (xpSuccess) {
-      console.log(`✅ XP ajouté pour la quête: +${xpReward} XP`);
+      console.log(`✅ XP ajouté pour la quête challengeante: +${xpReward} XP`);
     }
 
-    // Notifier l'utilisateur
+    // Notifier l'utilisateur avec emoji spécial pour les challenges
     if (questInfo) {
-      toast.success(`Quête terminée : ${questInfo.title}`, {
-        duration: 5000,
+      toast.success(`🏆 Challenge complété : ${questInfo.title} (+${xpReward} XP)`, {
+        duration: 6000,
       });
     }
     
@@ -185,14 +185,139 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
     // Récupérer les livres terminés
     const completedBooks = readingProgress.filter(p => p.status === 'completed');
 
-    // Vérifier chaque quête disponible
+    // Récupérer les données de streak
+    const { data: streakData } = await supabase.rpc('get_user_streaks' as any, { user_id: userId });
+    const currentStreak = (streakData as any)?.current || 0;
+    const bestStreak = (streakData as any)?.best || 0;
+
+    // Vérifier chaque quête challengeante disponible
     for (const quest of availableQuests) {
       let shouldUnlock = false;
 
       switch (quest.slug) {
-        // ===== LECTURE HORAIRE =====
-        case 'early_reader':
-          // Vérifier si l'utilisateur a lu avant 7h (heure locale)
+        // ===== MARATHONS - Défis intenses =====
+        case 'marathon_reader':
+          // 10 validations en 1 journée
+          if (validations && validations.length >= 10) {
+            const validationsByDate: { [key: string]: number } = {};
+            validations.forEach(v => {
+              const date = getLocalDateString(v.validated_at);
+              validationsByDate[date] = (validationsByDate[date] || 0) + 1;
+            });
+            shouldUnlock = Object.values(validationsByDate).some(count => count >= 10);
+          }
+          break;
+
+        case 'binge_reading':
+          // 3 livres terminés en 7 jours
+          if (completedBooks.length >= 3) {
+            // Grouper les livres par période de 7 jours
+            const sortedBooks = [...completedBooks].sort((a, b) =>
+              new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
+            );
+
+            for (let i = 0; i <= sortedBooks.length - 3; i++) {
+              const firstBook = new Date(sortedBooks[i].updated_at);
+              const thirdBook = new Date(sortedBooks[i + 2].updated_at);
+              const daysDiff = Math.floor((thirdBook.getTime() - firstBook.getTime()) / (1000 * 60 * 60 * 24));
+              if (daysDiff <= 7) {
+                shouldUnlock = true;
+                break;
+              }
+            }
+          }
+          break;
+
+        case 'night_marathon':
+          // 5 validations entre 22h-6h
+          if (validations && validations.length >= 5) {
+            const nightValidations = validations.filter(v => {
+              const hour = getLocalHour(v.validated_at);
+              return hour >= 22 || hour < 6;
+            });
+            shouldUnlock = nightValidations.length >= 5;
+          }
+          break;
+
+        // ===== VITESSE & PERFORMANCE - Défis de rapidité =====
+        case 'lightning_reader':
+          // Livre 300+ pages en <3 jours
+          shouldUnlock = completedBooks.some(book => {
+            if (!book.started_at || !book.total_pages || book.total_pages < 300) return false;
+            const startDate = new Date(book.started_at);
+            const endDate = new Date(book.updated_at);
+            const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            return daysDiff < 3;
+          });
+          break;
+
+        case 'speed_demon':
+          // Livre en <24h
+          shouldUnlock = completedBooks.some(book => {
+            if (!book.started_at) return false;
+            const startDate = new Date(book.started_at);
+            const endDate = new Date(book.updated_at);
+            const hoursDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+            return hoursDiff < 24;
+          });
+          break;
+
+        case 'sprinter':
+          // 50+ pages en 1 session (on vérifie si current_page a augmenté de 50+ d'un coup)
+          // Pour l'instant, on vérifie juste si un livre a plus de 50 pages lues
+          shouldUnlock = readingProgress.some(book =>
+            book.current_page && book.current_page >= 50
+          );
+          break;
+
+        // ===== VARIÉTÉ & EXPLORATION - Défis de diversité =====
+        case 'explorer':
+          // 3 livres de genres différents en 30 jours
+          // Pour l'instant simplifié : 3 livres terminés en 30 jours
+          if (completedBooks.length >= 3) {
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const recentBooks = completedBooks.filter(book =>
+              new Date(book.updated_at) >= thirtyDaysAgo
+            );
+            shouldUnlock = recentBooks.length >= 3;
+          }
+          break;
+
+        case 'completionist':
+          // 3+ livres du même auteur (on vérifie via book_id patterns ou on simplifie)
+          // Simplifié pour l'instant : 3 livres terminés
+          shouldUnlock = completedBooks.length >= 3;
+          break;
+
+        // ===== RÉGULARITÉ EXTRÊME - Défis de constance =====
+        case 'unstoppable':
+          // 30 jours consécutifs
+          shouldUnlock = currentStreak >= 30 || bestStreak >= 30;
+          break;
+
+        case 'punctual':
+          // Même heure (±1h) pendant 7 jours consécutifs
+          if (validations && validations.length >= 7) {
+            // Grouper par jour et vérifier si heures similaires
+            const last7Days = validations.slice(0, 7);
+            const hours = last7Days.map(v => getLocalHour(v.validated_at));
+
+            // Vérifier si toutes les heures sont dans une fourchette de ±1h
+            const minHour = Math.min(...hours);
+            const maxHour = Math.max(...hours);
+            shouldUnlock = (maxHour - minHour) <= 2; // ±1h de différence
+          }
+          break;
+
+        case 'perfect_month':
+          // 1 validation/jour pendant 30 jours
+          shouldUnlock = currentStreak >= 30 || bestStreak >= 30;
+          break;
+
+        // ===== HORAIRES SPÉCIAUX - Défis de timing =====
+        case 'early_bird':
+          // Lire avant 7h (heure locale)
           if (validations && validations.length > 0) {
             shouldUnlock = validations.some(v => {
               const hour = getLocalHour(v.validated_at);
@@ -202,27 +327,17 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
           break;
 
         case 'night_owl':
-          // Vérifier si l'utilisateur a lu après 22h (heure locale)
+          // Lire après 23h (heure locale)
           if (validations && validations.length > 0) {
             shouldUnlock = validations.some(v => {
               const hour = getLocalHour(v.validated_at);
-              return hour >= 22;
-            });
-          }
-          break;
-
-        case 'sunday_reader':
-          // Vérifier si l'utilisateur a lu un dimanche (timezone local)
-          if (validations && validations.length > 0) {
-            shouldUnlock = validations.some(v => {
-              const day = getLocalDay(v.validated_at);
-              return day === 0; // 0 = dimanche
+              return hour >= 23;
             });
           }
           break;
 
         case 'weekend_warrior':
-          // Vérifier si l'utilisateur a lu le samedi ET le dimanche du MÊME weekend
+          // Lire le samedi ET le dimanche du MÊME weekend
           if (validations && validations.length >= 2) {
             shouldUnlock = validations.some(satValidation => {
               const satDay = getLocalDay(satValidation.validated_at);
@@ -246,74 +361,6 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
           }
           break;
 
-        // ===== VALIDATIONS =====
-        case 'triple_valide':
-          // Vérifier si l'utilisateur a validé 3 segments dans la même journée
-          if (validations && validations.length >= 3) {
-            const today = new Date().toISOString().split('T')[0];
-            const todayValidations = validations.filter(v =>
-              v.validated_at.startsWith(today)
-            );
-            shouldUnlock = todayValidations.length >= 3;
-          }
-          break;
-
-        case 'centurion':
-          // Vérifier si l'utilisateur a validé 100 segments au total
-          shouldUnlock = validations && validations.length >= 100;
-          break;
-
-        // ===== LIVRES =====
-        case 'first_book':
-          // Vérifier si l'utilisateur a terminé son premier livre
-          shouldUnlock = completedBooks.length >= 1;
-          break;
-
-        case 'bibliophile':
-          // Vérifier si l'utilisateur a terminé 5 livres
-          shouldUnlock = completedBooks.length >= 5;
-          break;
-
-        case 'multi_booker':
-          // Vérifier si l'utilisateur a 3 livres en cours
-          const inProgressBooks = readingProgress.filter(p => p.status === 'in_progress');
-          shouldUnlock = inProgressBooks.length >= 3;
-          break;
-
-        // ===== VITESSE & RÉGULARITÉ =====
-        case 'speed_reader':
-          // Vérifier si l'utilisateur a terminé un livre en moins de 7 jours
-          shouldUnlock = completedBooks.some(book => {
-            if (!book.started_at) return false;
-            const startDate = new Date(book.started_at);
-            const endDate = new Date(book.updated_at);
-            const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            return daysDiff < 7;
-          });
-          break;
-
-        case 'fire_streak':
-          // Vérifier si l'utilisateur a un streak actuel ou meilleur de 7 jours
-          // Cette fonction existe déjà dans la DB (get_user_streaks)
-          const { data: streakData, error: streakError } = await supabase
-            .rpc('get_user_streaks' as any, { user_id: userId });
-
-          if (!streakError && streakData) {
-            const bestStreak = (streakData as any).best || 0;
-            shouldUnlock = bestStreak >= 7;
-          }
-          break;
-
-        case 'back_on_track':
-          // Vérifier si l'utilisateur a repris la lecture après 7 jours
-          if (validations && validations.length >= 2) {
-            const lastValidation = new Date(validations[0].validated_at);
-            const previousValidation = new Date(validations[1].validated_at);
-            const daysDifference = Math.floor((lastValidation.getTime() - previousValidation.getTime()) / (1000 * 60 * 60 * 24));
-            shouldUnlock = daysDifference >= 7;
-          }
-          break;
-
         default:
           break;
       }
@@ -321,7 +368,7 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
       if (shouldUnlock) {
         const success = await completeQuest(userId, quest.slug);
         if (success) {
-          console.log(`🎉 Quête automatiquement débloquée: ${quest.slug}`);
+          console.log(`🎉 Quête challengeante débloquée: ${quest.slug}`);
         }
       }
     }

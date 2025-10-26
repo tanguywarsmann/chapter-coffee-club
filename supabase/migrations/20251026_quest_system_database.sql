@@ -19,35 +19,39 @@ CREATE TABLE IF NOT EXISTS public.quests (
 -- Add category constraint
 ALTER TABLE public.quests
 ADD CONSTRAINT quests_category_check
-CHECK (category IN ('horaire', 'validations', 'livres', 'vitesse', 'regularite'));
+CHECK (category IN ('marathons', 'vitesse', 'variete', 'regularite', 'horaires'));
 
 -- Add index on slug for faster lookups
 CREATE INDEX IF NOT EXISTS idx_quests_slug ON public.quests(slug);
 
 -- ============================================================================
--- 2. INSERT 12 QUESTS
+-- 2. INSERT 14 CHALLENGING QUESTS
 -- ============================================================================
 
 INSERT INTO public.quests (slug, title, description, icon, category, xp_reward) VALUES
-  -- LECTURE HORAIRE (4 quests)
-  ('early_reader', 'Lecteur matinal', 'Lire un livre avant 7h du matin', 'sunrise', 'horaire', 50),
-  ('night_owl', 'Marathon nocturne', 'Lire après 22h (noctambule de la lecture)', 'moon', 'horaire', 50),
-  ('sunday_reader', 'Lecteur du dimanche', 'Lire un dimanche (détente garantie)', 'coffee', 'horaire', 50),
-  ('weekend_warrior', 'Week-end de lecture', 'Lire le samedi ET le dimanche', 'calendar', 'horaire', 75),
+  -- MARATHONS - Défis intenses (3 quests)
+  ('marathon_reader', 'Marathon du Lecteur', 'Valider 10 segments en une seule journée', 'trophy', 'marathons', 150),
+  ('binge_reading', 'Binge Reading', 'Terminer 3 livres en moins de 7 jours', 'flame', 'marathons', 200),
+  ('night_marathon', 'Marathon Nocturne', 'Valider 5 segments entre 22h et 6h du matin', 'moon-star', 'marathons', 150),
 
-  -- VALIDATIONS (2 quests)
-  ('triple_valide', 'Triple validation', 'Valider 3 segments de lecture en une seule journée', 'zap', 'validations', 50),
-  ('centurion', 'Centurion', 'Valider 100 segments de lecture au total', 'shield', 'validations', 100),
+  -- VITESSE & PERFORMANCE - Défis de rapidité (3 quests)
+  ('lightning_reader', 'Éclair Littéraire', 'Terminer un livre de 300+ pages en moins de 3 jours', 'zap', 'vitesse', 200),
+  ('speed_demon', 'Démon de Vitesse', 'Terminer un livre en moins de 24 heures', 'rocket', 'vitesse', 250),
+  ('sprinter', 'Sprint de Lecture', 'Lire 50 pages ou plus en une seule session', 'gauge', 'vitesse', 100),
 
-  -- LIVRES (3 quests)
-  ('first_book', 'Premier pas', 'Terminer votre tout premier livre', 'book-open', 'livres', 75),
-  ('bibliophile', 'Bibliophile', 'Terminer 5 livres au total', 'library', 'livres', 100),
-  ('multi_booker', 'Multi-lecteur', 'Avoir 3 livres en cours de lecture simultanément', 'books', 'livres', 50),
+  -- VARIÉTÉ & EXPLORATION - Défis de diversité (2 quests)
+  ('explorer', 'Explorateur Littéraire', 'Terminer 3 livres de genres différents en 30 jours', 'compass', 'variete', 150),
+  ('completionist', 'Complétiste', 'Terminer 3 livres ou plus du même auteur', 'library', 'variete', 150),
 
-  -- VITESSE & RÉGULARITÉ (3 quests)
-  ('speed_reader', 'Vitesse de croisière', 'Terminer un livre en moins de 7 jours', 'rocket', 'vitesse', 75),
-  ('fire_streak', 'Série de feu', 'Lire pendant 7 jours consécutifs', 'flame', 'regularite', 100),
-  ('back_on_track', 'De retour sur les rails', 'Reprendre la lecture après une pause de 7 jours', 'refresh', 'regularite', 50)
+  -- RÉGULARITÉ EXTRÊME - Défis de constance (3 quests)
+  ('unstoppable', 'Inarrêtable', 'Lire pendant 30 jours consécutifs sans interruption', 'fire', 'regularite', 300),
+  ('punctual', 'Ponctuel', 'Lire à la même heure (±1h) pendant 7 jours consécutifs', 'clock', 'regularite', 150),
+  ('perfect_month', 'Mois Parfait', 'Valider au moins 1 segment chaque jour pendant 30 jours', 'calendar-check', 'regularite', 250),
+
+  -- HORAIRES SPÉCIAUX - Défis de timing (3 quests)
+  ('early_bird', 'Lève-tôt Littéraire', 'Lire avant 7h du matin', 'sunrise', 'horaires', 75),
+  ('night_owl', 'Hibou de Nuit', 'Lire après 23h', 'moon', 'horaires', 75),
+  ('weekend_warrior', 'Guerrier du Week-end', 'Lire le samedi ET le dimanche du même week-end', 'calendar-days', 'horaires', 100)
 
 ON CONFLICT (slug) DO UPDATE SET
   title = EXCLUDED.title,
@@ -79,10 +83,10 @@ END $$;
 -- 4. COMMENTS FOR DOCUMENTATION
 -- ============================================================================
 
-COMMENT ON TABLE public.quests IS 'All available quests in the system';
+COMMENT ON TABLE public.quests IS 'All available challenging quests in the system (different from badges - more difficult and event-based)';
 COMMENT ON COLUMN public.quests.slug IS 'Unique identifier for the quest (used in user_quests)';
-COMMENT ON COLUMN public.quests.category IS 'Quest category: horaire, validations, livres, vitesse, regularite';
-COMMENT ON COLUMN public.quests.xp_reward IS 'XP points awarded when quest is completed';
+COMMENT ON COLUMN public.quests.category IS 'Quest category: marathons (intense), vitesse (speed), variete (variety), regularite (consistency), horaires (timing)';
+COMMENT ON COLUMN public.quests.xp_reward IS 'XP points awarded when quest is completed (75-300 XP for challenging quests)';
 
 -- ============================================================================
 -- 5. GRANT PERMISSIONS
