@@ -8,6 +8,29 @@ import { toast } from "sonner";
 
 type UserQuestRecord = Database['public']['Tables']['user_quests']['Row'];
 
+// Helper functions pour gérer les timezones
+const getLocalHour = (isoDate: string, userTimezone?: string): number => {
+  const timezone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const date = new Date(isoDate);
+  const localDateStr = date.toLocaleString('en-US', { timeZone: timezone, hour12: false });
+  const localDate = new Date(localDateStr);
+  return localDate.getHours();
+};
+
+const getLocalDay = (isoDate: string, userTimezone?: string): number => {
+  const timezone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const date = new Date(isoDate);
+  const localDateStr = date.toLocaleString('en-US', { timeZone: timezone, weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' });
+  const localDate = new Date(localDateStr);
+  return localDate.getDay();
+};
+
+const getLocalDateString = (isoDate: string, userTimezone?: string): string => {
+  const timezone = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const date = new Date(isoDate);
+  return date.toLocaleDateString('en-CA', { timeZone: timezone }); // format YYYY-MM-DD
+};
+
 // Définition des quêtes disponibles
 export const availableQuests: Quest[] = [
   // LECTURE HORAIRE
@@ -196,41 +219,57 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
       switch (quest.slug) {
         // ===== LECTURE HORAIRE =====
         case 'early_reader':
-          // Vérifier si l'utilisateur a lu avant 7h
+          // Vérifier si l'utilisateur a lu avant 7h (heure locale)
           if (validations && validations.length > 0) {
             shouldUnlock = validations.some(v => {
-              const hour = new Date(v.validated_at).getHours();
+              const hour = getLocalHour(v.validated_at);
               return hour < 7;
             });
           }
           break;
 
         case 'night_owl':
-          // Vérifier si l'utilisateur a lu après 22h
+          // Vérifier si l'utilisateur a lu après 22h (heure locale)
           if (validations && validations.length > 0) {
             shouldUnlock = validations.some(v => {
-              const hour = new Date(v.validated_at).getHours();
+              const hour = getLocalHour(v.validated_at);
               return hour >= 22;
             });
           }
           break;
 
         case 'sunday_reader':
-          // Vérifier si l'utilisateur a lu un dimanche
+          // Vérifier si l'utilisateur a lu un dimanche (timezone local)
           if (validations && validations.length > 0) {
             shouldUnlock = validations.some(v => {
-              const day = new Date(v.validated_at).getDay();
+              const day = getLocalDay(v.validated_at);
               return day === 0; // 0 = dimanche
             });
           }
           break;
 
         case 'weekend_warrior':
-          // Vérifier si l'utilisateur a lu le samedi ET le dimanche
+          // Vérifier si l'utilisateur a lu le samedi ET le dimanche du MÊME weekend
           if (validations && validations.length >= 2) {
-            const hasSaturday = validations.some(v => new Date(v.validated_at).getDay() === 6);
-            const hasSunday = validations.some(v => new Date(v.validated_at).getDay() === 0);
-            shouldUnlock = hasSaturday && hasSunday;
+            shouldUnlock = validations.some(satValidation => {
+              const satDay = getLocalDay(satValidation.validated_at);
+              if (satDay !== 6) return false; // Pas un samedi
+              
+              // Obtenir la date du samedi en timezone locale
+              const satDateStr = getLocalDateString(satValidation.validated_at);
+              const satDate = new Date(satDateStr + 'T00:00:00');
+              
+              // Calculer le dimanche suivant
+              const sunDate = new Date(satDate);
+              sunDate.setDate(sunDate.getDate() + 1);
+              const expectedSundayStr = sunDate.toISOString().split('T')[0];
+              
+              // Chercher une validation ce dimanche précis
+              return validations.some(sunValidation => {
+                const sunDateStr = getLocalDateString(sunValidation.validated_at);
+                return sunDateStr === expectedSundayStr && getLocalDay(sunValidation.validated_at) === 0;
+              });
+            });
           }
           break;
 
@@ -284,10 +323,10 @@ export const checkUserQuests = async (userId: string): Promise<void> => {
           // Vérifier si l'utilisateur a un streak actuel ou meilleur de 7 jours
           // Cette fonction existe déjà dans la DB (get_user_streaks)
           const { data: streakData, error: streakError } = await supabase
-            .rpc('get_user_streaks', { user_id: userId });
+            .rpc('get_user_streaks' as any, { user_id: userId });
 
           if (!streakError && streakData) {
-            const bestStreak = streakData.best || 0;
+            const bestStreak = (streakData as any).best || 0;
             shouldUnlock = bestStreak >= 7;
           }
           break;
