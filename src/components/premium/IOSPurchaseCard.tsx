@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Crown, Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 import { appleIAPService } from '@/services/iap/appleIAPService';
+import { RevenueCatProduct } from '@/services/iap/types';
 import { PremiumBadge } from './PremiumBadge';
 import { toast } from '@/hooks/use-toast';
 
@@ -10,7 +11,7 @@ export function IOSPurchaseCard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<RevenueCatProduct | null>(null);
 
   useEffect(() => {
     initializeIAP();
@@ -80,7 +81,7 @@ export function IOSPurchaseCard() {
     );
   }
 
-  const displayPrice = product?.price || '29,99 €';
+  const displayPrice = product?.priceString || '29,99 €';
 
   return (
     <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50 md:scale-105 md:z-10">
