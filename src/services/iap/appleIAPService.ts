@@ -7,7 +7,8 @@ import { toast } from '@/hooks/use-toast';
 class AppleIAPService {
   private productId = 'com.vread.app.lifetime';
   private isInitialized = false;
-  private apiKey = ''; // Sera configuré via les secrets Supabase
+  // Clé publique SDK RevenueCat (safe pour le client)
+  private apiKey = 'appl_LqGBafbkvvzjeVyWijyguTTO0yB';
 
   /**
    * Initialise RevenueCat SDK
@@ -21,17 +22,8 @@ class AppleIAPService {
 
     try {
       console.log('[IAP] Initializing RevenueCat SDK...');
-      
-      // Récupérer l'API key depuis les secrets (sera ajouté en Phase 5)
-      const { data } = await supabase.functions.invoke('get-revenuecat-config');
-      this.apiKey = data?.apiKey || '';
 
-      if (!this.apiKey) {
-        console.warn('[IAP] RevenueCat API key not configured');
-        return;
-      }
-
-      // Configuration du SDK RevenueCat
+      // Configuration du SDK RevenueCat avec la clé publique
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
       await Purchases.configure({
         apiKey: this.apiKey,
