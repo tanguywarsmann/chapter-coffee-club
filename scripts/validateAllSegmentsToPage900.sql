@@ -52,10 +52,9 @@ BEGIN
     ) THEN
       -- Récupérer une question pour ce segment
       SELECT id INTO v_question_id
-      FROM questions
-      WHERE book_slug = (SELECT slug FROM books_public WHERE id = v_book_id)
-        AND segment_start <= v_segment
-        AND segment_end >= v_segment
+      FROM reading_questions
+      WHERE book_id = v_book_id
+        AND segment = v_segment
       LIMIT 1;
 
       IF v_question_id IS NULL THEN
