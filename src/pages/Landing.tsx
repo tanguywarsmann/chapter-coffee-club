@@ -188,7 +188,7 @@ export default function Landing() {
             <div className="pt-16 w-full flex flex-col items-center gap-6">
          <Button
   size="lg"
-  className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-12 sm:px-20 md:px-28 lg:px-36 py-7 sm:py-8 md:py-10 lg:py-11 text-xl sm:text-3xl md:text-5xl lg:text-5xl font-bold rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0] whitespace-nowrap w-[90%] sm:w-auto max-w-full"
+  className="group relative bg-[#E8DCC8] hover:bg-[#E8DCC8] text-[#6B4423] px-12 sm:px-20 md:px-28 lg:px-36 py-7 sm:py-8 md:py-10 lg:py-11 text-xl sm:text-3xl md:text-5xl lg:text-5xl font-serif font-bold rounded-full shadow-[0_25px_80px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_100px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 border-2 border-[#D4C4B0] whitespace-nowrap w-[90%] sm:w-auto max-w-full"
   asChild
 >
   <Link to="/auth" className="flex items-center justify-center">
