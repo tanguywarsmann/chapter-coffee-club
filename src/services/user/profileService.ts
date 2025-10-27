@@ -259,6 +259,7 @@ export async function searchUsers(query: string, limit: number = 5): Promise<Pro
       is_admin: null, // Never expose admin status in search results
       is_premium: false, // Not relevant for search results
       premium_since: null, // Not relevant for search results
+      premium_type: '', // Not relevant for search results
       onboarding_seen_at: null, // Not relevant for search results
       onboarding_version: null // Not relevant for search results
     }));

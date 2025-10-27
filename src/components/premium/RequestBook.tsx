@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { BookPlus, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { Capacitor } from '@capacitor/core';
 
 export function RequestBook() {
   const { user, isPremium } = useAuth();
@@ -88,6 +89,8 @@ export function RequestBook() {
 
   // Paywall si pas Premium
   if (!isPremium) {
+    const isIOS = Capacitor.getPlatform() === 'ios';
+    
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="p-8 text-center">
@@ -98,7 +101,7 @@ export function RequestBook() {
             Nous créons les questions de compréhension et ajoutons le livre sous 48-72h.
           </p>
           <Button onClick={() => navigate('/premium')} size="lg">
-            Découvrir Premium - 50€/an
+            {isIOS ? 'Découvrir Premium (In-App Purchase)' : 'Découvrir Premium - 50€/an'}
           </Button>
         </Card>
       </div>
