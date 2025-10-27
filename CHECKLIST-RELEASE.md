@@ -48,6 +48,15 @@
 - [ ] **Crash Logs**: Check Xcode Organizer for crashes within 24h
 - [ ] **Performance**: App responsive, no significant lag
 
+## 🧪 iOS-Specific Tests
+
+- [ ] **No Service Worker**: Open Safari Web Inspector → Console, verify NO "service worker" messages
+- [ ] **No Update Toasts**: Verify NO "Mise à jour VREAD disponible" toast appears in native app
+- [ ] **Status Bar**: Verify iOS status bar does not overlap app header
+- [ ] **Offline Mode**: Verify app works offline (native cache, not PWA)
+- [ ] **Build Verification**: Check `dist/` folder has NO `sw.js` or `workbox-*.js` files after build
+- [ ] **Local Notifications**: If enabled, test notification permissions and delivery
+
 ## 🚨 Rollback Plan
 
 If issues detected:
