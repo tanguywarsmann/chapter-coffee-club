@@ -200,7 +200,7 @@ export default function Landing() {
             
             {/* Slogan */}
             <div className="pt-20 pb-12 w-full flex justify-center px-4">
-              <div className="relative inline-block w-full max-w-4xl">
+              <div className="relative w-full max-w-4xl mx-auto">
                 <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
                 
                 <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-2xl md:rounded-[2rem] px-8 md:px-16 py-10 md:py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
