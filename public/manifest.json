@@ -1,11 +1,16 @@
 {
   "name": "VREAD",
   "short_name": "VREAD",
+  "description": "L'appli qui t'accompagne dans ta lecture, page après page",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#B05F2C",
-  "description": "L'appli qui t'accompagne dans ta lecture, page après page",
+  "theme_color": "#AE6841",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["education", "books", "lifestyle"],
   "icons": [
     {
       "src": "/branding/vread-logo-192.png",
