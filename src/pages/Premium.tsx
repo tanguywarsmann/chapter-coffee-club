@@ -218,18 +218,20 @@ export default function Premium() {
           </div>
           )}
 
-          {/* Trust Section */}
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              ✓ Paiement 100% sécurisé par Stripe
-            </p>
-            <p className="text-sm text-muted-foreground">
-              ✓ Annulation possible à tout moment
-            </p>
-            <p className="text-sm text-muted-foreground">
-              ✓ Accès immédiat après paiement
-            </p>
-          </div>
+          {/* Trust Section - Adapté selon la plateforme */}
+          {!isIOS && (
+            <div className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
+                ✓ Paiement 100% sécurisé par Stripe
+              </p>
+              <p className="text-sm text-muted-foreground">
+                ✓ Annulation possible à tout moment
+              </p>
+              <p className="text-sm text-muted-foreground">
+                ✓ Accès immédiat après paiement
+              </p>
+            </div>
+          )}
 
           {/* FAQ Section */}
           <div className="mt-16 max-w-3xl mx-auto">
