@@ -6,6 +6,7 @@ import { queryClient } from "@/lib/query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
+import { Capacitor } from "@capacitor/core";
 
 console.info("[APP] App component loading");
 
@@ -30,6 +31,7 @@ const AppContent = () => {
   const location = useLocation();
   const isLanding = location.pathname === '/landing';
   const { user, isInitialized } = useAuth();
+  const isCapacitor = Capacitor.isNativePlatform();
 
   return (
     <>
@@ -45,7 +47,8 @@ const AppContent = () => {
         />
       </Suspense>
       
-      <ServiceWorkerUpdater />
+      {/* PWA Service Worker - disabled in native Capacitor */}
+      {!isCapacitor && <ServiceWorkerUpdater />}
       
       <CanonicalManager />
       <OGUrlManager />

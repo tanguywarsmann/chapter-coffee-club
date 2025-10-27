@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Check, Crown, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AppHeader } from '@/components/layout/AppHeader';
+import { Capacitor } from '@capacitor/core';
+import { IOSPurchaseCard } from '@/components/premium/IOSPurchaseCard';
 
 export default function Premium() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const isIOS = Capacitor.getPlatform() === 'ios';
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -41,7 +44,17 @@ export default function Premium() {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {isIOS ? (
+            // Sur iOS : Afficher uniquement la carte IAP
+            <div className="max-w-md mx-auto mb-12">
+              <IOSPurchaseCard />
+              <p className="text-center text-sm text-muted-foreground mt-6">
+                💡 Sur iOS, les achats sont gérés par l'App Store
+              </p>
+            </div>
+          ) : (
+            // Sur Web/PWA : Afficher les cartes Stripe
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
             {/* CARTE 1 - GRATUIT */}
             <Card className="p-8">
               <h3 className="text-2xl font-bold mb-2">Gratuit</h3>
@@ -203,19 +216,22 @@ export default function Premium() {
               </Button>
             </Card>
           </div>
+          )}
 
-          {/* Trust Section */}
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              ✓ Paiement 100% sécurisé par Stripe
-            </p>
-            <p className="text-sm text-muted-foreground">
-              ✓ Annulation possible à tout moment
-            </p>
-            <p className="text-sm text-muted-foreground">
-              ✓ Accès immédiat après paiement
-            </p>
-          </div>
+          {/* Trust Section - Adapté selon la plateforme */}
+          {!isIOS && (
+            <div className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
+                ✓ Paiement 100% sécurisé par Stripe
+              </p>
+              <p className="text-sm text-muted-foreground">
+                ✓ Annulation possible à tout moment
+              </p>
+              <p className="text-sm text-muted-foreground">
+                ✓ Accès immédiat après paiement
+              </p>
+            </div>
+          )}
 
           {/* FAQ Section */}
           <div className="mt-16 max-w-3xl mx-auto">

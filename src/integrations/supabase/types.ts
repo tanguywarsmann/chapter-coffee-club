@@ -98,6 +98,42 @@ export type Database = {
           },
         ]
       }
+      apple_iap_receipts: {
+        Row: {
+          created_at: string
+          expires_date: string | null
+          id: string
+          product_id: string
+          purchase_date: string
+          receipt_data: string
+          transaction_id: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_date?: string | null
+          id?: string
+          product_id: string
+          purchase_date: string
+          receipt_data: string
+          transaction_id: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_date?: string | null
+          id?: string
+          product_id?: string
+          purchase_date?: string
+          receipt_data?: string
+          transaction_id?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
@@ -847,6 +883,7 @@ export type Database = {
           onboarding_seen_at: string | null
           onboarding_version: number | null
           premium_since: string | null
+          premium_type: string | null
           updated_at: string | null
           username: string | null
         }
@@ -860,6 +897,7 @@ export type Database = {
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
           premium_since?: string | null
+          premium_type?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -873,6 +911,7 @@ export type Database = {
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
           premium_since?: string | null
+          premium_type?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1621,6 +1660,20 @@ export type Database = {
           id?: string | null
           question?: string | null
           segment?: number | null
+        }
+        Relationships: []
+      }
+      v_apple_iap_summary: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          expires_date: string | null
+          product_id: string | null
+          purchase_date: string | null
+          subscription_status: string | null
+          transaction_id: string | null
+          user_id: string | null
+          username: string | null
         }
         Relationships: []
       }
