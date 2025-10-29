@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { generateAndSaveCover, listBooksNeedingCover } from '@/utils/generateCover'
 import { useAuth } from '@/contexts/AuthContext'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

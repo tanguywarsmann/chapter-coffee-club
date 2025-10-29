@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileText, Database } from "lucide-react";
 import { generateCsvExport } from "@/components/admin/utils/csvExport";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ExportSQLButtonFinal from "@/components/admin/ExportSQLButtonFinal";
 import { texts } from "@/i18n/texts";
@@ -25,14 +25,13 @@ export default function Admin() {
   const handleExportCsv = async () => {
     try {
       await generateCsvExport();
-      toast({
-        title: "Export réussi : le fichier CSV des segments manquants a été téléchargé",
+      toast.success("le fichier CSV des segments manquants a été téléchargé", {
+        description: "Export réussi"
       });
     } catch (error) {
       console.error("Erreur lors de l'export CSV:", error);
-      toast({
-        title: "Erreur d'export : impossible de générer le fichier CSV",
-        variant: "destructive",
+      toast.error("impossible de générer le fichier CSV", {
+        description: "Erreur d'export"
       });
     }
   };
@@ -76,14 +75,13 @@ export default function Admin() {
       a.remove();
       URL.revokeObjectURL(url);
       
-      toast({
-        title: "Export complet réussi : le fichier SQL a été téléchargé",
+      toast.success("le fichier SQL a été téléchargé", {
+        description: "Export complet réussi"
       });
     } catch (error) {
       console.error("Erreur lors de l'export complet:", error);
-      toast({
-        title: "Erreur d'export : impossible de générer le fichier SQL complet",
-        variant: "destructive",
+      toast.error("impossible de générer le fichier SQL complet", {
+        description: "Erreur d'export"
       });
     }
   };

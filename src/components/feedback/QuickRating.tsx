@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { submitQuickRating, getQuickRatingsStats } from "@/services/feedback/feedbackService";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 const emojis = [
@@ -15,7 +15,6 @@ const emojis = [
 
 export function QuickRating() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [stats, setStats] = useState<number[]>([0, 0, 0, 0, 0]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,10 +34,8 @@ export function QuickRating() {
 
   async function handleRating(rating: number) {
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Connecte-toi pour donner ton avis !",
-        variant: "destructive"
+      toast.error("Connecte-toi pour donner ton avis !", {
+        description: "Connexion requise"
       });
       return;
     }
@@ -54,18 +51,15 @@ export function QuickRating() {
       document.body.appendChild(confetti);
       setTimeout(() => confetti.remove(), 1500);
 
-      toast({
-        title: "Merci ! 🌱",
-        description: "Tu viens de gagner 5 points"
+      toast.success("Tu viens de gagner 5 points", {
+        description: "Merci ! 🌱"
       });
 
       await loadStats();
     } catch (error: any) {
       console.error('Error submitting rating:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'envoyer ton avis",
-        variant: "destructive"
+      toast.error(error.message || "Impossible d'envoyer ton avis", {
+        description: "Erreur"
       });
     } finally {
       setIsLoading(false);

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { followUser, unfollowUser, isFollowing } from "@/services/user/profileService";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserPlus, UserMinus } from "lucide-react";
 
@@ -15,7 +15,6 @@ interface FollowButtonProps {
 export function FollowButton({ targetUserId, onFollowChange, hideUnfollow = false }: FollowButtonProps) {
   const [following, setFollowing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -45,27 +44,21 @@ export function FollowButton({ targetUserId, onFollowChange, hideUnfollow = fals
     try {
       if (following) {
         await unfollowUser(targetUserId);
-        toast({
-          title: "Désabonné",
-          description: "Vous ne suivez plus cet utilisateur.",
-          variant: "default"
+        toast.success("Vous ne suivez plus cet utilisateur.", {
+          description: "Désabonné"
         });
         setFollowing(false);
       } else {
         await followUser(targetUserId);
-        toast({
-          title: "Abonné",
-          description: "Vous suivez maintenant cet utilisateur.",
-          variant: "default"
+        toast.success("Vous suivez maintenant cet utilisateur.", {
+          description: "Abonné"
         });
         setFollowing(true);
       }
       if (onFollowChange) onFollowChange();
     } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue",
-        variant: "destructive"
+      toast.error(error.message || "Une erreur est survenue", {
+        description: "Erreur"
       });
     } finally {
       setIsLoading(false);

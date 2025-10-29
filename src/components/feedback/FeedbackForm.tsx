@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { createFeedback, CreateFeedbackData } from "@/services/feedback/feedbackService";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -32,7 +32,6 @@ interface Props {
 
 export function FeedbackForm({ onSuccess, onCancel }: Props) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<CreateFeedbackData>>({
@@ -41,19 +40,15 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
 
   async function handleSubmit() {
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Connecte-toi pour donner ton feedback !",
-        variant: "destructive"
+      toast.error("Connecte-toi pour donner ton feedback !", {
+        description: "Connexion requise"
       });
       return;
     }
 
     if (!formData.type || !formData.title || !formData.description) {
-      toast({
-        title: "Champs manquants",
-        description: "Remplis tous les champs obligatoires",
-        variant: "destructive"
+      toast.error("Remplis tous les champs obligatoires", {
+        description: "Champs manquants"
       });
       return;
     }
@@ -63,9 +58,8 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
       const result = await createFeedback(formData as CreateFeedbackData);
       setStep(3);
       
-      toast({
-        title: "🎉 Merci champion !",
-        description: `Tu viens de gagner +${result.points_awarded} points !`
+      toast.success(`Tu viens de gagner +${result.points_awarded} points !`, {
+        description: "🎉 Merci champion !"
       });
 
       setTimeout(() => {
@@ -73,10 +67,8 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
       }, 3000);
     } catch (error: any) {
       console.error('Error submitting feedback:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'envoyer ton feedback",
-        variant: "destructive"
+      toast.error(error.message || "Impossible d'envoyer ton feedback", {
+        description: "Erreur"
       });
     } finally {
       setIsLoading(false);

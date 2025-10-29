@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 import { RevenueCatProduct, RevenueCatPackage } from './types';
 import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 class AppleIAPService {
   private productId = 'com.vread.app.lifetime';

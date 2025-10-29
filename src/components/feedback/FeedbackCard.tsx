@@ -7,7 +7,7 @@ import { ThumbsUp, MessageSquare, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Props {
   feedback: FeedbackSubmission;
@@ -31,7 +31,6 @@ const statusConfig = {
 };
 
 export function FeedbackCard({ feedback, onVoteChange }: Props) {
-  const { toast } = useToast();
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(feedback.has_voted);
   const [votesCount, setVotesCount] = useState(feedback.votes_count);
@@ -47,19 +46,16 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
       setVotesCount(hasVoted ? votesCount - 1 : votesCount + 1);
       
       if (!hasVoted) {
-        toast({
-          title: "Vote enregistré ! 🎉",
-          description: "+2 points gagnés"
+        toast.success("+2 points gagnés", {
+          description: "Vote enregistré ! 🎉"
         });
       }
 
       onVoteChange?.();
     } catch (error: any) {
       console.error('Error voting:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible de voter",
-        variant: "destructive"
+      toast.error(error.message || "Impossible de voter", {
+        description: "Erreur"
       });
     } finally {
       setIsVoting(false);

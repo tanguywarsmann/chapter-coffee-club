@@ -10,13 +10,8 @@ import { Capacitor } from "@capacitor/core";
 
 console.info("[APP] App component loading");
 
-// Lazy load toast components for better code splitting
-const Toaster = lazy(() => 
-  import("@/components/ui/toaster").then(mod => ({
-    default: mod.Toaster
-  }))
-);
-const Sonner = lazy(() => 
+// Lazy load Sonner toast component for better code splitting
+const Sonner = lazy(() =>
   import("@/components/ui/sonner").then(mod => ({
     default: mod.Sonner
   }))
@@ -35,9 +30,7 @@ const AppContent = () => {
 
   return (
     <>
-      {/* Global JSON-LD in body for visibility */}<Suspense fallback={null}>
-        <Toaster />
-      </Suspense>
+      {/* Global JSON-LD in body for visibility */}
       <Suspense fallback={null}>
         <Sonner
           richColors={false}

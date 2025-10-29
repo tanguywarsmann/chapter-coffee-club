@@ -5,7 +5,7 @@ import { Check, Sparkles } from 'lucide-react';
 import { appleIAPService } from '@/services/iap/appleIAPService';
 import { RevenueCatProduct } from '@/services/iap/types';
 import { PremiumBadge } from './PremiumBadge';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function IOSPurchaseCard() {
   const [isLoading, setIsLoading] = useState(true);

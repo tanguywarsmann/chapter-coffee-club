@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -21,7 +21,6 @@ interface ProfileNameFormProps {
 
 export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,17 +42,14 @@ export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProp
       
       if (error) throw error;
       
-      toast({
-        title: "Nom de profil enregistré",
-        description: "Votre nom public a été mis à jour avec succès.",
+      toast.success("Votre nom public a été mis à jour avec succès.", {
+        description: "Nom de profil enregistré"
       });
       
       onSave();
     } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de l'enregistrement du nom.",
-        variant: "destructive"
+      toast.error(error.message || "Une erreur est survenue lors de l'enregistrement du nom.", {
+        description: "Erreur"
       });
     } finally {
       setIsLoading(false);

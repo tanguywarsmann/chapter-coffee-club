@@ -13,14 +13,13 @@ import {
   PopoverContent, 
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function NotificationsBell() {
   const [notifications, setNotifications] = useState<VreadNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   // Load notifications
   useEffect(() => {
@@ -57,13 +56,13 @@ export function NotificationsBell() {
           n.type === "weekly_digest"  ? (n.meta?.msg ?? "Ton résumé hebdomadaire est prêt") :
           "Nouvelle notification";
 
-        toast({ title: "📢 Notification", description: msg });
+        toast.success(msg, { description: "📢 Notification" });
       });
       unsub = unsubscribe;
     })();
 
     return () => { if (unsub) unsub(); };
-  }, [toast]);
+  }, []);
 
   const handleMarkAsRead = (notificationId: string) => {
     setNotifications(prev => 

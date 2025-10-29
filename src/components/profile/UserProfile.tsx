@@ -10,13 +10,12 @@ import { getFollowerCounts } from "@/services/user/profileService";
 import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
 import { FollowButton } from "./FollowButton";
 import { useParams } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { ProfileNameForm } from "./ProfileNameForm";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
 
 export function UserProfile() {
   const { user, isPremium } = useAuth();
-  const { toast } = useToast();
   const params = useParams();
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
@@ -58,10 +57,8 @@ export function UserProfile() {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les données utilisateur",
-          variant: "destructive"
+        toast.error("Impossible de charger les données utilisateur", {
+          description: "Erreur"
         });
       } finally {
         setLoading(false);
@@ -69,7 +66,7 @@ export function UserProfile() {
     }
     
     fetchUserData();
-  }, [profileUserId, toast]);
+  }, [profileUserId]);
 
   const refreshCounts = async () => {
     if (!profileUserId) return;

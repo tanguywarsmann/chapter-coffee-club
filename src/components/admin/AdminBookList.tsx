@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { BookMetadataEditor } from "@/components/admin/BookMetadataEditor";
 import { AddBookForm } from "@/components/admin/AddBookForm";
 import { DeleteBookDialog } from "@/components/admin/DeleteBookDialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { generateAndSaveCover } from "@/utils/generateCover";
 import { Book } from "@/types/book";
 
@@ -59,8 +59,8 @@ export function AdminBookList() {
       if (fetchError) throw fetchError;
       
       if (!segmentsAtZero || segmentsAtZero.length === 0) {
-        toast({
-          title: "Information : Aucun segment avec index 0 n'a été trouvé.",
+        toast("Aucun segment avec index 0 n'a été trouvé.", {
+          description: "Information"
         });
         setIsFixingSegments(false);
         return;
@@ -113,8 +113,8 @@ export function AdminBookList() {
         }
       }
       
-      toast({
-        title: `Correction des segments terminée : ${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`,
+      toast.success(`${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`, {
+        description: "Correction des segments terminée"
       });
       
       // Rafraîchir les données
@@ -122,9 +122,8 @@ export function AdminBookList() {
       
     } catch (error: any) {
       console.error("Erreur lors de la correction des segments:", error);
-      toast({
-        title: `Erreur : Impossible de corriger les segments: ${error.message}`,
-        variant: "destructive",
+      toast.error(`Impossible de corriger les segments: ${error.message}`, {
+        description: "Erreur"
       });
     } finally {
       setIsFixingSegments(false);
@@ -267,16 +266,13 @@ export function AdminBookList() {
     
     try {
       const url = await generateAndSaveCover(book);
-      toast({
-        title: `Couverture générée pour "${book.title}"`,
-        description: `URL: ${url}`,
+      toast.success(`URL: ${url}`, {
+        description: `Couverture générée pour "${book.title}"`
       });
       handleBookUpdate();
     } catch (error: any) {
-      toast({
-        title: "Erreur lors de la génération de la couverture",
-        description: error.message,
-        variant: "destructive",
+      toast.error(error.message, {
+        description: "Erreur lors de la génération de la couverture"
       });
     } finally {
       setGeneratingCovers(prev => {
