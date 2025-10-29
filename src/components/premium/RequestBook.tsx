@@ -25,31 +25,19 @@ export function RequestBook() {
     e.preventDefault();
 
     if (!user) {
-      toast({
-        title: 'Connexion requise',
-        description: 'Connecte-toi pour continuer',
-        variant: 'destructive'
-      });
+      toast.error('Connecte-toi pour continuer');
       navigate('/auth');
       return;
     }
 
     if (!isPremium) {
-      toast({
-        title: 'Premium requis',
-        description: 'Cette fonctionnalité est réservée aux membres Premium',
-        variant: 'destructive'
-      });
+      toast.error('Cette fonctionnalité est réservée aux membres Premium');
       navigate('/premium');
       return;
     }
 
     if (!formData.title.trim()) {
-      toast({
-        title: 'Titre requis',
-        description: 'Le titre du livre est obligatoire',
-        variant: 'destructive'
-      });
+      toast.error('Le titre du livre est obligatoire');
       return;
     }
 
@@ -68,20 +56,13 @@ export function RequestBook() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Demande envoyée !',
-        description: 'Nous traiterons ta demande sous 48-72h. Tu seras notifié par email.'
-      });
+      toast.success('Nous traiterons ta demande sous 48-72h. Tu seras notifié par email.');
       
       // Reset form
       setFormData({ title: '', author: '', isbn: '', reason: '' });
     } catch (error) {
       console.error('Error submitting book request:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible d\'envoyer la demande. Réessaye plus tard.',
-        variant: 'destructive'
-      });
+      toast.error('Impossible d\'envoyer la demande. Réessaye plus tard.');
     } finally {
       setIsSubmitting(false);
     }

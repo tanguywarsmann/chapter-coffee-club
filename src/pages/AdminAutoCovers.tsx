@@ -32,13 +32,13 @@ export default function AdminAutoCovers() {
       const data = await listBooksNeedingCover(limit, variant==='all' ? 'all' : variant as any)
       setBooks(data); setDone(0); setFailed([])
     } catch (e:any) {
-      toast({ title: 'Erreur de chargement', description: e.message, variant: 'destructive' })
+      toast.error(e.message)
     }
   }
 
   async function runBatch() {
     if (!books.length) { 
-      toast({ title: 'Rien à faire' })
+      toast('Rien à faire')
       return
     }
     setRunning(true); setDone(0); setFailed([])
@@ -59,10 +59,7 @@ export default function AdminAutoCovers() {
     }
     await Promise.all(Array.from({length: Math.min(POOL, books.length)}, next))
     setRunning(false)
-    toast({ 
-      title: 'Batch terminé', 
-      description: `${books.length - failed.length} OK, ${failed.length} erreurs` 
-    })
+    toast.success(`Batch terminé : ${books.length - failed.length} OK, ${failed.length} erreurs`)
   }
 
   const progress = useMemo(()=> books.length? Math.round(done*100/books.length) : 0, [done, books.length])

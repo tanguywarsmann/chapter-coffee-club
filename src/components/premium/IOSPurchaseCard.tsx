@@ -28,19 +28,11 @@ export function IOSPurchaseCard() {
         console.log('[iOS Purchase] Product loaded:', products[0]);
       } else {
         console.warn('[iOS Purchase] No products found');
-        toast({
-          title: 'Erreur de chargement',
-          description: 'Impossible de récupérer les informations du produit',
-          variant: 'destructive'
-        });
+        toast.error('Impossible de récupérer les informations du produit');
       }
     } catch (error) {
       console.error('[iOS Purchase] Initialization error:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible d\'initialiser le store Apple',
-        variant: 'destructive'
-      });
+      toast.error('Impossible d\'initialiser le store Apple');
     } finally {
       setIsLoading(false);
     }

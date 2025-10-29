@@ -83,11 +83,7 @@ class AppleIAPService {
    */
   async purchaseLifetime(): Promise<boolean> {
     if (!this.isIOS()) {
-      toast({
-        title: 'Erreur',
-        description: 'Les achats in-app ne sont disponibles que sur iOS',
-        variant: 'destructive'
-      });
+      toast.error('Les achats in-app ne sont disponibles que sur iOS');
       return false;
     }
 
@@ -125,26 +121,16 @@ class AppleIAPService {
       // Activer Premium dans le profil
       await this.activatePremium('apple');
 
-      toast({
-        title: 'Achat réussi ! 🎉',
-        description: 'Tu as maintenant accès à Premium à vie',
-      });
+      toast.success('Tu as maintenant accès à Premium à vie 🎉');
 
       return true;
     } catch (error: any) {
       console.error('[IAP] Purchase error:', error);
       
       if (error.code === '1' || error.message?.includes('cancelled')) {
-        toast({
-          title: 'Achat annulé',
-          description: 'Tu as annulé l\'achat',
-        });
+        toast('Tu as annulé l\'achat');
       } else {
-        toast({
-          title: 'Erreur d\'achat',
-          description: 'Impossible de finaliser l\'achat. Réessaye plus tard.',
-          variant: 'destructive'
-        });
+        toast.error('Impossible de finaliser l\'achat. Réessaye plus tard.');
       }
       
       return false;
@@ -157,11 +143,7 @@ class AppleIAPService {
    */
   async restorePurchases(): Promise<boolean> {
     if (!this.isIOS()) {
-      toast({
-        title: 'Erreur',
-        description: 'Les achats in-app ne sont disponibles que sur iOS',
-        variant: 'destructive'
-      });
+      toast.error('Les achats in-app ne sont disponibles que sur iOS');
       return false;
     }
 
@@ -176,28 +158,18 @@ class AppleIAPService {
       const hasLifetime = customerInfo.customerInfo.entitlements.active['premium'] !== undefined;
 
       if (hasLifetime) {
-        toast({
-          title: 'Achat restauré !',
-          description: 'Ton accès Premium a été restauré',
-        });
+        toast.success('Ton accès Premium a été restauré');
         
         // Activer Premium dans le profil
         await this.activatePremium('apple');
         return true;
       } else {
-        toast({
-          title: 'Aucun achat trouvé',
-          description: 'Aucun achat Premium n\'a été trouvé sur ce compte Apple',
-        });
+        toast('Aucun achat Premium n\'a été trouvé sur ce compte Apple');
         return false;
       }
     } catch (error) {
       console.error('[IAP] Restore error:', error);
-      toast({
-        title: 'Erreur de restauration',
-        description: 'Impossible de restaurer les achats. Réessaye plus tard.',
-        variant: 'destructive'
-      });
+      toast.error('Impossible de restaurer les achats. Réessaye plus tard.');
       return false;
     }
   }
