@@ -284,11 +284,16 @@ export const useBookValidation = ({
           
           // ✅ Phase 3.3: Notification après livre terminé avec lien vers le flux
           setTimeout(() => {
-            toast("📚 Livre terminé ! Bravo !", {
-              description: "Ton exploit est maintenant visible dans le flux communauté",
-              duration: 6000,
+            toast.success("Livre terminé !", {
+              description: "Ton exploit est visible dans le flux",
+              duration: 5000,
+              icon: "📚",
+              action: {
+                label: "Voir le flux",
+                onClick: () => window.location.href = "/discover"
+              }
             });
-          }, 2000); // Après les confettis
+          }, 2000);
         }
         
         // Record reading session

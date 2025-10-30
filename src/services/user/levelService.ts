@@ -137,19 +137,23 @@ export async function addXP(userId: string, amount: number): Promise<boolean> {
     
     // Notifier si l'utilisateur a gagné un niveau
     if (result.new_level > result.old_level) {
-      toast.success(`Niveau supérieur ! Vous êtes maintenant niveau ${result.new_level}`, {
+      toast.success(`Niveau ${result.new_level} atteint !`, {
+        description: "Tu progresses, bravo !",
         duration: 5000,
+        icon: "🎉",
       });
       console.log(`🎉 Niveau supérieur ! Utilisateur ${userId} est maintenant niveau ${result.new_level}`);
     } else {
-      // ✅ Phase 3.1: Notification quand proche du prochain niveau
+      // ✅ Phase 1.2: Fixed - notification avant le seuil
       const xpForNext = getXPForNextLevel(result.new_level);
       const xpRemaining = xpForNext - result.new_xp;
       
-      if (xpRemaining > 0 && xpRemaining <= 20) {
+      // Notification si on est à 30 XP ou moins du prochain niveau
+      if (xpRemaining > 0 && xpRemaining <= 30) {
         toast(`Plus que ${xpRemaining} XP pour le niveau ${result.new_level + 1} !`, {
           description: "Continue comme ça !",
           duration: 3000,
+          icon: "⚡",
         });
       }
     }

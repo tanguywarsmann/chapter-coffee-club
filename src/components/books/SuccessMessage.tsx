@@ -48,10 +48,15 @@ export function SuccessMessage({ isOpen, onClose, segment, userId }: SuccessMess
           </div>
         </DialogHeader>
         
-        {/* ✅ Phase 3.2: Contenu amélioré avec XP et progression */}
+        {/* ✅ Phase 3.2 & 4.3: Badge XP avec animation pulse */}
         <div className="py-4 text-center space-y-4">
           {/* Badge XP */}
-          <div className="flex items-center justify-center gap-2">
+          <div 
+            className="flex items-center justify-center gap-2 animate-pulse"
+            role="status" 
+            aria-live="polite"
+            aria-label="Vous avez gagné 10 points d'expérience"
+          >
             <span className="text-3xl font-bold text-green-600">+10 XP</span>
             {userLevel && (
               <span className="text-sm text-muted-foreground">
