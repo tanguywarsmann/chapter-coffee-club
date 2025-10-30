@@ -241,15 +241,14 @@ export const useBookValidation = ({
     // SI JOKER UTILISÉ ET CORRECT -> PAS DE VALIDATION SUPPLÉMENTAIRE
     if (useJoker && correct) {
       console.log("🃏 Joker used successfully - skipping RPC validation");
+      // ✅ Phase 2.2: Confetti consolidé - un seul appel
       showConfetti();
-      // Retourner immédiatement sans appeler handleQuizComplete
       return { success: true, newBadges: [] };
     }
 
+    // ✅ Phase 2.2: Un seul appel showConfetti() pour validation normale
     if (correct) {
       console.log("🎉 Showing confetti and success animations");
-      console.log("🎊 showConfetti function:", showConfetti);
-      console.log("🎊 showConfetti type:", typeof showConfetti);
       showConfetti();
     }
     
@@ -282,6 +281,14 @@ export const useBookValidation = ({
             completedBooks.push(currentBook || book);
             localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
           }
+          
+          // ✅ Phase 3.3: Notification après livre terminé avec lien vers le flux
+          setTimeout(() => {
+            toast("📚 Livre terminé ! Bravo !", {
+              description: "Ton exploit est maintenant visible dans le flux communauté",
+              duration: 6000,
+            });
+          }, 2000); // Après les confettis
         }
         
         // Record reading session

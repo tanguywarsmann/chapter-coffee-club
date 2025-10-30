@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { addXP } from "@/services/user/levelService";
 
 export interface ValidateArgs {
   bookId: string;
@@ -68,6 +69,19 @@ export async function validateReadingSegmentBeta(args: ValidateArgs): Promise<an
     }
 
     console.log("[validateReadingSegmentBeta] Success:", data);
+    
+    // ✅ Phase 1.1: Ajouter +10 XP pour chaque validation réussie (sans joker)
+    const result = data as any; // Cast pour accéder aux propriétés
+    if (result?.ok && args.userId && !args.usedJoker) {
+      try {
+        await addXP(args.userId, 10);
+        console.log("✅ +10 XP ajoutés pour la validation du segment");
+      } catch (xpError) {
+        console.error("⚠️ Erreur lors de l'ajout d'XP:", xpError);
+        // Ne pas bloquer la validation si l'XP échoue
+      }
+    }
+    
     return data;
   } catch (err) {
     console.error("[validateReadingSegmentBeta] Exception:", err);

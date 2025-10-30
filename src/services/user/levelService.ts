@@ -141,6 +141,17 @@ export async function addXP(userId: string, amount: number): Promise<boolean> {
         duration: 5000,
       });
       console.log(`🎉 Niveau supérieur ! Utilisateur ${userId} est maintenant niveau ${result.new_level}`);
+    } else {
+      // ✅ Phase 3.1: Notification quand proche du prochain niveau
+      const xpForNext = getXPForNextLevel(result.new_level);
+      const xpRemaining = xpForNext - result.new_xp;
+      
+      if (xpRemaining > 0 && xpRemaining <= 20) {
+        toast(`Plus que ${xpRemaining} XP pour le niveau ${result.new_level + 1} !`, {
+          description: "Continue comme ça !",
+          duration: 3000,
+        });
+      }
     }
     
     return true;

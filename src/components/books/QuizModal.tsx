@@ -154,7 +154,11 @@ export function QuizModal({
       console.log("✅ Validation result:", result);
 
       if (result?.ok) {
-        toast.success("Réponse correcte ! Segment validé !");
+        // ✅ Phase 1.2: Afficher les XP dans le toast
+        toast.success("✅ Segment validé !", {
+          description: "+10 XP • Prochain segment dans 30 pages",
+          duration: 4000,
+        });
         if (!hasCalledComplete.current) {
           hasCalledComplete.current = true;
           onComplete({ correct: true, useJoker: false });

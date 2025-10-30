@@ -31,34 +31,15 @@ export const useQuizCompletion = ({
       const result = await originalHandleQuizComplete(correct, useJoker);
       
       if (correct && userId && book?.id) {
-        // Force immediate refresh of multiple data sources for mobile
-        console.log("🔄 Rafraîchissement immédiat après validation réussie (enhanced mobile)");
+        // ✅ Phase 2.1: Optimisation - Un seul refresh au lieu de 3
+        console.log("🔄 Rafraîchissement immédiat après validation réussie");
         
-        // 1. Force refresh of reading progress hook
+        // Force refresh of reading progress hook
         forceRefresh();
         
-        // 2. Trigger parent component update
+        // Trigger parent component update
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
-        }
-        
-        // 3. Multiple attempts to get fresh book progress data for mobile compatibility
-        const refreshAttempts = [0, 100, 300]; // Immediate, then delayed attempts
-        
-        for (const delay of refreshAttempts) {
-          setTimeout(async () => {
-            try {
-              const updatedProgress = await getBookReadingProgress(userId, book.id);
-              if (updatedProgress) {
-                console.log(`📚 Progression mise à jour (attempt delay: ${delay}ms):`, {
-                  chaptersRead: updatedProgress.chaptersRead,
-                  progressPercent: updatedProgress.progressPercent
-                });
-              }
-            } catch (error) {
-              console.error(`Erreur lors de la récupération (attempt delay: ${delay}ms):`, error);
-            }
-          }, delay);
         }
       }
       

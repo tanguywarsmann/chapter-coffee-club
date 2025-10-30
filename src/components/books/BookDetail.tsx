@@ -269,6 +269,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             jokersAllowed={jokersAllowed}
             jokersRemaining={jokersRemaining}
             isUsingJoker={isUsingJoker}
+            userId={user?.id} // ✅ Passer userId pour SuccessMessage
             onValidationClose={() => setShowValidationModal(false)}
             onValidationConfirm={handleModalValidationConfirm}
             onQuizClose={() => setShowQuiz(false)}
