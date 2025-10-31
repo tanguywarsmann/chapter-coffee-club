@@ -21,6 +21,8 @@ import AdminBookRequests from '@/pages/AdminBookRequests';
 import FinishedChatPage from '@/pages/FinishedChatPage';
 import About from '@/pages/About';
 import Press from '@/pages/Press';
+import Duolingo from '@/pages/Duolingo';
+import Strava from '@/pages/Strava';
 import NotFound from '@/pages/NotFound';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -66,8 +68,10 @@ const AppRouter = () => {
       <Route path="/feedback" element={<Feedback />} />
       
       {/* Public Pages */}
-      <Route path="/a-propos" element={<About />} />
-      <Route path="/presse" element={<Press />} />
+        <Route path="/a-propos" element={<About />} />
+        <Route path="/presse" element={<Press />} />
+        <Route path="/duolingo" element={<Duolingo />} />
+        <Route path="/strava" element={<Strava />} />
       <Route path="/sitemap.xml" element={<SitemapXML />} />
 
       {/* Aliases with redirects */}
