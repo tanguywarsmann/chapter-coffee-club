@@ -13,7 +13,35 @@ export default function Duolingo() {
         description="Comparaison complète entre VREAD et Duolingo pour apprendre le français. Découvrez quelle app correspond le mieux à votre niveau et vos objectifs de lecture."
         canonical="https://www.vread.fr/duolingo"
         ogType="article"
+        tags={["duolingo", "apprendre français", "lecture", "comparaison", "application français", "DELF", "DALF"]}
       />
+
+      {/* JSON-LD Structured Data for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "VREAD et Duolingo : Comparaison complète pour apprendre le français",
+          "description": "Comparaison détaillée entre VREAD et Duolingo pour apprendre le français. Analyse des forces, faiblesses, prix et recommandations selon votre niveau.",
+          "url": "https://www.vread.fr/duolingo",
+          "author": {
+            "@type": "Organization",
+            "name": "VREAD"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "VREAD",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.vread.fr/logo.png"
+            }
+          },
+          "datePublished": "2025-01-15",
+          "dateModified": new Date().toISOString().split('T')[0],
+          "mainEntityOfPage": "https://www.vread.fr/duolingo",
+          "keywords": "duolingo, apprendre français, lecture, comparaison, application français, DELF, DALF, B2, C1, C2"
+        })}
+      </script>
 
       <article className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Breadcrumbs */}

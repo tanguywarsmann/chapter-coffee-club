@@ -12,7 +12,35 @@ export default function Strava() {
         description="Vous aimez Strava pour le running ? Découvrez VREAD, qui applique la même approche de tracking et motivation à la lecture de livres français."
         canonical="https://www.vread.fr/strava"
         ogType="article"
+        tags={["strava", "lecture", "tracking", "progression", "stats", "gamification", "habitude lecture"]}
       />
+
+      {/* JSON-LD Structured Data for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "VREAD : Le Strava de la lecture",
+          "description": "Découvrez comment VREAD applique les principes de tracking et gamification de Strava à la lecture de livres français. Stats, séries, badges et progression.",
+          "url": "https://www.vread.fr/strava",
+          "author": {
+            "@type": "Organization",
+            "name": "VREAD"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "VREAD",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.vread.fr/logo.png"
+            }
+          },
+          "datePublished": "2025-01-15",
+          "dateModified": new Date().toISOString().split('T')[0],
+          "mainEntityOfPage": "https://www.vread.fr/strava",
+          "keywords": "strava lecture, tracking lecture, stats lecture, progression lecture, gamification, habitude lecture, séries lecture"
+        })}
+      </script>
 
       <article className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Breadcrumbs */}
