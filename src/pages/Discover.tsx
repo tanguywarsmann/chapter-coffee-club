@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDiscover } from "@/hooks/useDiscover";
 import { RealActivityFeed } from "@/components/discover/RealActivityFeed";
 import { RealCommunityStats } from "@/components/discover/RealCommunityStats";
-import { RealReadersAccordion } from "@/components/discover/RealReadersAccordion";
+import { RealReadersSection } from "@/components/discover/RealReadersSection";
 
 export default function Discover() {
   const { user } = useAuth();
@@ -15,14 +15,17 @@ export default function Discover() {
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-coffee-lightest via-white to-coffee-light/30">
         <AppHeader />
-        <main className="mx-auto w-full px-4 max-w-none py-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-serif font-medium text-coffee-darker mb-2">
-              Découvrir des lecteurs
-            </h1>
-            <p className="text-coffee-dark font-light">
-              Explorez la communauté et suivez l'activité des autres lecteurs
-            </p>
+        <main className="mx-auto w-full px-4 max-w-7xl py-6">
+          {/* Hero Section */}
+          <div className="mb-12 text-center relative overflow-hidden rounded-3xl bg-gradient-to-br from-coffee-medium/10 via-coffee-light/20 to-amber-50/30 p-8 md:p-12 border border-coffee-light/30 shadow-lg">
+            <div className="relative z-10">
+              <h1 className="text-4xl md:text-5xl font-bold font-serif text-coffee-darker mb-4 animate-fade-in">
+                Découvrir la communauté
+              </h1>
+              <p className="text-lg md:text-xl text-coffee-dark font-light max-w-2xl mx-auto">
+                Explorez l'activité des lecteurs, suivez leur progression et rejoignez une communauté passionnée
+              </p>
+            </div>
           </div>
           
           {error && (
@@ -31,26 +34,26 @@ export default function Discover() {
             </div>
           )}
           
-          {/* Grille principale */}
+          {/* Grille principale avec optimisation ordre mobile */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Colonne principale - Fil d'actualité */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Sidebar droite - Statistiques (première sur mobile) */}
+            <div className="space-y-6 lg:order-2">
+              <RealCommunityStats 
+                stats={data?.stats || { readers: 0, followers: 0, following: 0 }} 
+                loading={isLoading} 
+              />
+            </div>
+            
+            {/* Colonne principale - Fil d'actualité (deuxième sur mobile) */}
+            <div className="lg:col-span-2 lg:order-1 space-y-6">
               <RealActivityFeed 
                 activities={data?.feed || []} 
                 loading={isLoading} 
               />
               
-              {/* Section lecteurs avec accordéon */}
-              <RealReadersAccordion 
+              {/* Section lecteurs - plus d'accordéon */}
+              <RealReadersSection 
                 readers={data?.readers || []} 
-                loading={isLoading} 
-              />
-            </div>
-            
-            {/* Sidebar droite - Statistiques */}
-            <div className="space-y-6">
-              <RealCommunityStats 
-                stats={data?.stats || { readers: 0, followers: 0, following: 0 }} 
                 loading={isLoading} 
               />
             </div>

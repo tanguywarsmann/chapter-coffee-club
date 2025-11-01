@@ -51,22 +51,26 @@ export function RealCommunityStats({ stats, loading }: RealCommunityStatsProps) 
   ];
 
   return (
-    <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
-      <CardHeader className="pb-3">
-        <CardTitle className="font-serif text-coffee-darker text-h4">
-          Statistiques de la communauté
+    <Card className="border-coffee-light bg-white/80 backdrop-blur-md shadow-lg">
+      <CardHeader className="pb-4 bg-gradient-to-r from-coffee-light/10 to-transparent">
+        <CardTitle className="font-serif text-coffee-darker text-h3 flex items-center gap-2">
+          <Users className="h-6 w-6 text-coffee-medium" />
+          Communauté
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {statItems.map((stat, index) => (
-          <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-coffee-light/10 to-coffee-medium/5">
-            <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+          <div 
+            key={index} 
+            className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-coffee-light/10 to-coffee-medium/5 hover:from-coffee-light/20 hover:to-coffee-medium/10 transition-all hover:shadow-md hover:scale-[1.02] cursor-default"
+          >
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
-              <span className="text-coffee-dark font-medium text-body-sm">{stat.label}</span>
+              <span className="text-coffee-dark font-medium">{stat.label}</span>
             </div>
-            <span className="font-bold text-coffee-darker text-h4">{stat.value}</span>
+            <span className="font-bold text-coffee-darker text-4xl tabular-nums">{stat.value}</span>
           </div>
         ))}
       </CardContent>
