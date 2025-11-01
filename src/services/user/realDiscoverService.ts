@@ -66,9 +66,14 @@ export async function getDiscoverData(userId: string): Promise<DiscoverData> {
     readersLength: rawData.readers?.length
   });
   
+  // Filtrer les lecteurs pour ne garder que ceux avec au moins 1 livre en cours
+  const activeReaders = Array.isArray(rawData.readers) 
+    ? rawData.readers.filter((reader: DiscoverReader) => reader.in_progress > 0)
+    : [];
+
   const result: DiscoverData = {
     feed: Array.isArray(rawData.feed) ? rawData.feed : [],
-    readers: Array.isArray(rawData.readers) ? rawData.readers : [],
+    readers: activeReaders,
     stats: rawData.stats || { readers: 0, followers: 0, following: 0 }
   };
   
