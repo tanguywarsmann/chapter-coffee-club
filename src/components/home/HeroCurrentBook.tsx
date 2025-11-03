@@ -22,9 +22,9 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
   if (isLoading) {
     return (
       <div className="animate-fade-in">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-6 md:p-8 min-h-[280px] flex items-center justify-center">
+        <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl p-8 md:p-10 min-h-[320px] flex items-center justify-center">
           <div className="animate-pulse space-y-4 w-full">
-            <div className="h-32 w-24 bg-muted rounded mx-auto" />
+            <div className="h-48 w-36 bg-muted rounded-xl mx-auto" />
             <div className="h-4 bg-muted rounded w-3/4 mx-auto" />
             <div className="h-4 bg-muted rounded w-1/2 mx-auto" />
           </div>
@@ -36,25 +36,27 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
   if (!currentReading) {
     return (
       <div className="animate-fade-in">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow p-8 md:p-12 min-h-[280px] flex flex-col items-center justify-center text-center space-y-6">
-          <div className="relative">
-            <Book className="h-16 w-16 text-coffee-dark" />
-            <Sparkles className="h-6 w-6 text-accent absolute -top-2 -right-2 animate-pulse" />
+        <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 p-10 md:p-14 min-h-[320px] flex flex-col items-center justify-center text-center space-y-6">
+          <div className="relative animate-float">
+            <div className="absolute inset-0 bg-brand-500/20 blur-2xl rounded-full" />
+            <Book className="relative h-20 w-20 text-brand-600" />
+            <Sparkles className="h-7 w-7 text-brand-500 absolute -top-2 -right-2 animate-glow" />
           </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-serif font-semibold text-coffee-darker">
+          <div className="space-y-3">
+            <h2 className="text-h1 font-serif font-semibold text-brand-900">
               Commencez votre voyage littéraire
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground max-w-md">
+            <p className="text-body-lg text-muted-foreground max-w-md">
               Découvrez notre collection de classiques et commencez à lire dès aujourd'hui
             </p>
           </div>
           <Button
             onClick={() => navigate("/discover")}
+            variant="premium"
             size="lg"
-            className="bg-coffee-dark hover:bg-coffee-darker text-white px-8 py-6 text-lg rounded-xl transition-all duration-300 hover:scale-[1.02]"
+            className="px-10 py-6 text-lg"
           >
-            Découvrir des livres
+            <span className="relative z-10">Découvrir des livres</span>
           </Button>
         </div>
       </div>
@@ -66,25 +68,29 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
 
   return (
     <div className="animate-fade-in">
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 md:p-8 min-h-[280px]">
-        <h2 className="text-xl md:text-2xl font-serif font-medium text-coffee-darker mb-6">
+      <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 md:p-10 min-h-[320px]">
+        <h2 className="text-h2 font-serif font-medium text-brand-900 mb-8">
           Votre lecture en cours
         </h2>
         
-        <div className="flex flex-col md:flex-row items-center gap-6">
-          {/* Book Cover */}
-          <div className="flex-shrink-0 group cursor-pointer" onClick={onContinueReading}>
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          {/* Book Cover with reflection */}
+          <div className="flex-shrink-0 group cursor-pointer relative" onClick={onContinueReading}>
             {imageSrc ? (
-              <Image
-                src={imageSrc}
-                alt={currentReading.title}
-                className="w-28 h-40 md:w-32 md:h-48 object-cover rounded-lg shadow-md group-hover:scale-[1.02] transition-transform duration-300"
-                priority
-                sizes="(max-width: 768px) 112px, 128px"
-              />
+              <div className="relative">
+                <Image
+                  src={imageSrc}
+                  alt={currentReading.title}
+                  className="w-36 h-54 object-cover rounded-xl shadow-2xl group-hover:scale-[1.03] transition-transform duration-300"
+                  priority
+                  sizes="144px"
+                />
+                {/* Reflection effect */}
+                <div className="absolute -bottom-4 left-0 right-0 h-20 bg-gradient-to-b from-black/5 to-transparent blur-xl" />
+              </div>
             ) : (
-              <div className="w-28 h-40 md:w-32 md:h-48 flex items-center justify-center bg-muted rounded-lg shadow-md">
-                <span className="text-4xl font-serif italic text-coffee-dark">
+              <div className="w-36 h-54 flex items-center justify-center bg-muted rounded-xl shadow-2xl">
+                <span className="text-5xl font-serif italic text-brand-600">
                   {currentReading.title.substring(0, 1)}
                 </span>
               </div>
@@ -92,27 +98,27 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
           </div>
 
           {/* Book Info */}
-          <div className="flex-1 w-full space-y-4">
+          <div className="flex-1 w-full space-y-5">
             <div>
               <h3 
-                className="text-xl md:text-2xl font-serif font-semibold text-coffee-darker mb-1 cursor-pointer hover:text-coffee-dark transition-colors"
+                className="text-h2 font-serif font-semibold text-brand-900 mb-2 cursor-pointer hover:text-brand-700 transition-colors"
                 onClick={onContinueReading}
               >
                 {currentReading.title}
               </h3>
-              <p className="text-base md:text-lg text-muted-foreground">
+              <p className="text-body-lg text-muted-foreground">
                 {currentReading.author}
               </p>
             </div>
 
-            {/* Progress */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
+            {/* Progress with gradient */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-body-sm text-muted-foreground">
                 <span>Progression</span>
-                <span className="font-medium text-coffee-darker">{progressPercentage}%</span>
+                <span className="font-semibold text-brand-700 text-body">{progressPercentage}%</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
-              <p className="text-sm text-muted-foreground">
+              <Progress value={progressPercentage} className="h-3" />
+              <p className="text-body-sm text-muted-foreground">
                 {Math.floor(currentReading.chaptersRead)} / {currentReading.totalChapters || currentReading.total_chapters || 0} segments validés
               </p>
             </div>
@@ -120,9 +126,10 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
             {/* CTA Button */}
             <Button
               onClick={onContinueReading}
-              className="w-full bg-coffee-dark hover:bg-coffee-darker text-white rounded-xl py-6 text-lg font-semibold transition-all duration-300 hover:scale-[1.02]"
+              variant="premium"
+              className="w-full py-7 text-lg font-semibold"
             >
-              Continuer la lecture
+              <span className="relative z-10">Continuer la lecture</span>
             </Button>
           </div>
         </div>

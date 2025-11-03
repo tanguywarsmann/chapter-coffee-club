@@ -67,43 +67,60 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Reed brand colors - Sienne Brûlée palette
-				reed: {
-					primary: '#AE6841', // Sienne Brûlée principale
-					secondary: '#DFC5A6', // Couleur complémentaire
-					light: '#F0E6D8', // Version très claire
-					dark: '#8B4A2E', // Version plus foncée
-					darker: '#6B3A23' // Version très foncée
+				// Unified brand palette
+				brand: {
+					50: 'hsl(30, 35%, 98%)',
+					100: 'hsl(35, 30%, 92%)',
+					200: 'hsl(35, 30%, 88%)',
+					300: 'hsl(35, 30%, 82%)',
+					400: 'hsl(25, 30%, 70%)',
+					500: 'hsl(25, 40%, 50%)',
+					600: 'hsl(25, 40%, 40%)',
+					700: 'hsl(25, 40%, 30%)',
+					800: 'hsl(25, 40%, 20%)',
+					900: 'hsl(25, 40%, 12%)',
 				},
+				// Legacy aliases for backwards compatibility
 				coffee: {
-					light: '#E6D7C3',
-					medium: '#C8B6A6',
-					dark: '#A0522D',
-					darker: '#8B4513',
+					lightest: 'hsl(30, 35%, 98%)',
+					light: 'hsl(35, 30%, 88%)',
+					medium: 'hsl(25, 30%, 70%)',
+					dark: 'hsl(25, 40%, 40%)',
+					darker: 'hsl(25, 40%, 30%)',
+					darkest: 'hsl(25, 40%, 20%)',
 				},
-				chocolate: {
-					light: '#D2B48C',
-					medium: '#A67B5B',
-					dark: '#6F4E37',
-					darkest: '#3B2F2F'
+				reed: {
+					primary: 'hsl(25, 40%, 50%)',
+					secondary: 'hsl(35, 30%, 82%)',
+					light: 'hsl(35, 30%, 92%)',
+					dark: 'hsl(25, 40%, 30%)',
+					darker: 'hsl(25, 40%, 20%)'
 				},
 				logo: {
-					background: '#B36A38', // Couleur ajustée pour mieux correspondre au marque-page
-					text: '#F0E6C9', // Couleur du texte ajustée pour correspondre au marque-page
-					accent: '#D4C6A1'  // Couleur d'accent basée sur la bordure du marque-page
+					background: 'hsl(25, 40%, 50%)',
+					text: 'hsl(35, 30%, 92%)',
+					accent: 'hsl(35, 30%, 82%)'
 				}
 			},
 			fontSize: {
-				// Système typographique professionnel optimisé
-				// Lora weights loaded: 500, 600, 700 (no 800!)
+				'display': ['clamp(3rem, 5vw + 1rem, 4.5rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
 				'hero': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.01em' }],
-				'h1': ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '0' }],
-				'h2': ['clamp(1.5rem, 3vw, 2.25rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '0' }],
-				'h3': ['clamp(1.25rem, 2.5vw, 2rem)', { lineHeight: '1.4', fontWeight: '600' }],
-				'h4': ['clamp(1.125rem, 2vw, 1.5rem)', { lineHeight: '1.4', fontWeight: '500' }],
-				'body': ['clamp(1rem, 1.5vw, 1.125rem)', { lineHeight: '1.6', fontWeight: '400' }],
+				'h1': ['clamp(2rem, 3vw + 0.5rem, 3rem)', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '0' }],
+				'h2': ['clamp(1.5rem, 2vw + 0.5rem, 2.25rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '0' }],
+				'h3': ['clamp(1.25rem, 1.5vw + 0.5rem, 1.875rem)', { lineHeight: '1.4', fontWeight: '600' }],
+				'h4': ['clamp(1.125rem, 0.5vw + 0.875rem, 1.5rem)', { lineHeight: '1.4', fontWeight: '500' }],
+				'body-lg': ['clamp(1.125rem, 0.5vw + 0.875rem, 1.25rem)', { lineHeight: '1.6' }],
+				'body': ['clamp(1rem, 0.25vw + 0.875rem, 1.125rem)', { lineHeight: '1.6', fontWeight: '400' }],
 				'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
 				'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.02em' }],
+			},
+			boxShadow: {
+				'xs': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+				'sm': '0 2px 8px 0 rgb(174 104 65 / 0.08)',
+				'md': '0 4px 16px 0 rgb(174 104 65 / 0.12)',
+				'lg': '0 8px 24px 0 rgb(174 104 65 / 0.16)',
+				'xl': '0 12px 32px 0 rgb(174 104 65 / 0.20)',
+				'2xl': '0 20px 48px 0 rgb(174 104 65 / 0.24)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -122,12 +139,27 @@ export default {
 				'progress': {
 					'0%': { width: '0%' },
 					'100%': { width: 'var(--progress-width)' }
+				},
+				'shimmer': {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(100%)' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'glow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.5' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'progress': 'progress 1s ease-out forwards'
+				'progress': 'progress 1s ease-out forwards',
+				'shimmer': 'shimmer 2s linear infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite',
 			}
 		}
 	},

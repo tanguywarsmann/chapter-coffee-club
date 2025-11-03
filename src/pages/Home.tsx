@@ -117,10 +117,13 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      <div className="relative isolate w-screen left-1/2 right-1/2 -translate-x-1/2 min-h-screen bg-gradient-to-br from-[hsl(30,35%,96%)] to-[hsl(35,30%,88%)] transition-all duration-300">
+      <div className="relative isolate w-screen left-1/2 right-1/2 -translate-x-1/2 min-h-screen bg-[#FAFAF8] transition-all duration-300">
+        {/* Subtle texture overlay */}
+        <div className="fixed inset-0 opacity-[0.02] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] bg-repeat" />
+        
         <AppHeader />
         
-        <main className="max-w-4xl mx-auto px-4 py-6 md:py-8 animate-fade-in focus:outline-none" tabIndex={-1}>
+        <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12 animate-fade-in focus:outline-none" tabIndex={-1}>
           <h1 className="sr-only">{texts.home} - VREAD</h1>
           
           <MainContent {...mainContentProps} />
