@@ -7,6 +7,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
 import { Capacitor } from "@capacitor/core";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 
 console.info("[APP] App component loading");
 
@@ -59,13 +60,15 @@ const App = () => {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </TooltipProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

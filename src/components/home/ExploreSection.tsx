@@ -3,6 +3,7 @@ import { SearchBar } from "@/components/books/SearchBar";
 import { ChevronDown, ChevronUp, Search, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ExploreSectionProps {
   onSearch: (query: string) => void;
@@ -13,6 +14,7 @@ export const ExploreSection = memo(function ExploreSection({
   onSearch,
   isSearching,
 }: ExploreSectionProps) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
@@ -27,7 +29,7 @@ export const ExploreSection = memo(function ExploreSection({
           <div className="flex items-center gap-3">
             <Search className="h-5 w-5 text-coffee-dark" />
             <h2 className="text-xl md:text-2xl font-serif font-medium text-coffee-darker">
-              Explorer
+              {t.explore.title}
             </h2>
           </div>
           {isExpanded ? (
@@ -48,7 +50,7 @@ export const ExploreSection = memo(function ExploreSection({
             <SearchBar
               onSearch={onSearch}
               isSearching={isSearching}
-              placeholder="Rechercher par titre, auteur..."
+              placeholder={t.common.searchPlaceholder}
             />
 
             {/* Discover Link */}
@@ -59,7 +61,7 @@ export const ExploreSection = memo(function ExploreSection({
                 className="text-coffee-dark hover:text-coffee-darker hover:bg-accent/10 transition-colors"
               >
                 <Compass className="h-4 w-4 mr-2" />
-                Découvrir tous les livres
+                {t.explore.discoverAll}
               </Button>
             </div>
           </div>

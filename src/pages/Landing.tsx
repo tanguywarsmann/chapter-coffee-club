@@ -4,8 +4,10 @@ import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { useState, useEffect } from "react";
 import confetti from 'canvas-confetti';
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function Landing() {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -48,8 +50,8 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>VREAD — Si ce n'est pas sur VREAD, tu ne l'as pas lu</title>
-        <meta name="description" content="En moyenne, sur 10 livres achetés, on finit seulement 2 livres." />
+        <title>{t.landing.title}</title>
+        <meta name="description" content={t.landing.description} />
       </Helmet>
 
       {/* Container principal - overflow différent mobile/desktop */}
@@ -68,11 +70,11 @@ export default function Landing() {
             
             {/* Titre */}
             <h1 className="text-hero text-white font-serif text-center w-full">
-              En moyenne,
+              {t.landing.heroTitle1}
               <br />
-              sur dix livres achetés,
+              {t.landing.heroTitle2}
               <br />
-              on finit seulement
+              {t.landing.heroTitle3}
             </h1>
             
             {/* Pile */}
@@ -134,7 +136,7 @@ export default function Landing() {
                           }}
                         >
                           {revealed && shouldStay 
-                            ? (isBottom ? 'LIVRES' : 'DEUX')
+                            ? (isBottom ? t.landing.twoBooks.split(' ')[1] : t.landing.twoBooks.split(' ')[0])
                             : letters[i]
                           }
                         </span>
@@ -160,7 +162,7 @@ export default function Landing() {
               
               {!revealed && (
                 <p className="text-white/60 text-body-sm mt-10 animate-bounce text-center w-full">
-                  {isMobile ? 'Touche pour révéler' : 'Clique pour révéler'}
+                  {isMobile ? t.landing.touchToReveal : t.landing.clickToReveal}
                 </p>
               )}
 
@@ -172,16 +174,16 @@ export default function Landing() {
                   }}
                   className="text-white/70 hover:text-white text-body-sm underline underline-offset-4 mt-10 transition-colors"
                 >
-                  Recommencer
+                  {t.landing.restart}
                 </button>
               )}
             </div>
             
             {/* Texte final */}
             <h2 className="text-hero text-white font-serif text-center w-full">
-              Avec Vread,
+              {t.landing.finalTitle1}
               <br />
-              tu les finis tous.
+              {t.landing.finalTitle2}
             </h2>
             
             {/* CTA - ÉLARGI SUR MOBILE */}
@@ -192,7 +194,7 @@ export default function Landing() {
   asChild
 >
   <Link to="/auth" className="flex items-center justify-center">
-    <span className="relative z-10">Commence gratuitement</span>
+    <span className="relative z-10">{t.landing.cta}</span>
     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
   </Link>
 </Button>
@@ -205,11 +207,11 @@ export default function Landing() {
                 
                 <div className="relative bg-gradient-to-br from-reed-primary/80 to-reed-secondary/80 backdrop-blur-sm rounded-2xl md:rounded-[2rem] px-8 md:px-16 py-10 md:py-14 border-2 border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
                   <p className="text-h2 font-serif text-center">
-                    <span className="text-white/95">Si ce n'est pas sur</span>{' '}
-                    <span className="text-white font-bold">Vread</span>
-                    <span className="text-white/95">,</span>
+                    <span className="text-white/95">{t.landing.sloganPart1}</span>{' '}
+                    <span className="text-white font-bold">{t.landing.sloganPart2}</span>
+                    <span className="text-white/95">{t.landing.sloganPart3}</span>
                     <br />
-                    <span className="text-white/95">tu ne l'as pas lu.</span>
+                    <span className="text-white/95">{t.landing.sloganPart4}</span>
                   </p>
                 </div>
               </div>
@@ -222,15 +224,15 @@ export default function Landing() {
         <footer className="py-12 border-t border-white/10 w-full">
           <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-body-sm px-4">
             <Link to="/blog" className="text-white/50 hover:text-white transition-colors">
-              Blog
+              {t.nav.blog}
             </Link>
             <span className="text-white/30 text-xl md:text-2xl">·</span>
             <Link to="/press" className="text-white/50 hover:text-white transition-colors">
-              Presse
+              {t.nav.press}
             </Link>
             <span className="text-white/30 text-xl md:text-2xl">·</span>
             <Link to="/about" className="text-white/50 hover:text-white transition-colors">
-              Contact
+              {t.nav.contact}
             </Link>
           </nav>
         </footer>

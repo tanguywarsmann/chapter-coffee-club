@@ -3,28 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function PublicHome() {
+  const { t } = useTranslation();
+  
   const features = [
     {
       icon: BookOpen,
-      title: "Lecture progressive",
-      description: "Reprenez goût à la lecture avec des segments courts et des validations régulières."
+      title: t.publicHome.features.progressive.title,
+      description: t.publicHome.features.progressive.description
     },
     {
       icon: Users,
-      title: "Communauté",
-      description: "Rejoignez une communauté de lecteurs passionnés et partagez vos découvertes."
+      title: t.publicHome.features.community.title,
+      description: t.publicHome.features.community.description
     },
     {
       icon: Trophy,
-      title: "Accomplissements",
-      description: "Débloquez des badges et suivez vos progrès de lecture au fil du temps."
+      title: t.publicHome.features.achievements.title,
+      description: t.publicHome.features.achievements.description
     },
     {
       icon: TrendingUp,
-      title: "Statistiques",
-      description: "Analysez vos habitudes de lecture et visualisez votre évolution."
+      title: t.publicHome.features.statistics.title,
+      description: t.publicHome.features.statistics.description
     }
   ];
 

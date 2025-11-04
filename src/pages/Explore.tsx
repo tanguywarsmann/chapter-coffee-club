@@ -3,12 +3,13 @@ import { supabase } from '@/integrations/supabase/client'
 import { BookCard } from '@/components/books/BookCard'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
-
 import { SearchBar } from "@/components/books/SearchBar";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 type Category = 'litterature' | 'religion' | 'essai' | 'bio'
 
 export default function Explore() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
@@ -72,13 +73,7 @@ export default function Explore() {
   }
 
   const getCategoryLabel = (cat: Category) => {
-    switch (cat) {
-      case 'litterature': return 'Littérature';
-      case 'religion': return 'Religion';
-      case 'essai': return 'Essai';
-      case 'bio': return 'Bio';
-      default: return 'Littérature';
-    }
+    return t.explore.categories[cat] || t.explore.categories.litterature;
   };
 
   const Tab = ({ value, label }: { value: Category; label: string }) => {

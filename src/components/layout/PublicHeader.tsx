@@ -2,8 +2,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
+import { LanguageToggle } from "./LanguageToggle";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export function PublicHeader() {
+  const { t } = useTranslation();
+  
   return (
     <header 
       className="sticky top-0 z-50 w-full border-b border-logo-accent/20 bg-logo-background/95 backdrop-blur supports-[backdrop-filter]:bg-logo-background/60"
@@ -28,34 +32,37 @@ export function PublicHeader() {
             to="/blog" 
             className="text-white/80 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-logo-background rounded px-2 py-1"
           >
-            Blog
+            {t.nav.blog}
           </Link>
           <Link 
             to="/a-propos" 
             className="text-white/80 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-logo-background rounded px-2 py-1"
           >
-            À propos
+            {t.nav.about}
           </Link>
           <Link 
             to="/presse" 
             className="text-white/80 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-logo-background rounded px-2 py-1"
           >
-            Presse
+            {t.nav.press}
           </Link>
         </nav>
         
-        <Button 
-          variant="default" 
-          className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background focus:ring-2 focus:ring-logo-accent focus:ring-offset-2" 
-          asChild
-        >
-          <Link 
-            to="/auth"
-            aria-label="Se connecter à votre compte VREAD"
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <Button 
+            variant="default" 
+            className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background focus:ring-2 focus:ring-logo-accent focus:ring-offset-2" 
+            asChild
           >
-            Se connecter
-          </Link>
-        </Button>
+            <Link 
+              to="/auth"
+              aria-label="Se connecter à votre compte VREAD"
+            >
+              {t.auth.signIn}
+            </Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

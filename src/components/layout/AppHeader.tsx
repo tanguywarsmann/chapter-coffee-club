@@ -8,10 +8,13 @@ import { DesktopNav } from "./header/DesktopNav";
 import { AvatarDropdown } from "./header/AvatarDropdown";
 import { HeaderLogo } from "./header/HeaderLogo";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
+import { LanguageToggle } from "./LanguageToggle";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export function AppHeader() {
   const isMobile = useIsMobile();
   const { user, isAdmin, isPremium } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <header
@@ -33,22 +36,26 @@ export function AppHeader() {
         
         {user ? (
           <div role="navigation" aria-label="Menu utilisateur" className="flex items-center gap-2">
+            <LanguageToggle />
             <NotificationsBell />
             <AvatarDropdown />
           </div>
         ) : (
-          <Button 
-            variant="default" 
-            className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background focus:ring-2 focus:ring-logo-accent focus:ring-offset-2" 
-            asChild
-          >
-            <Link 
-              to="/"
-              aria-label="Se connecter à votre compte VREAD"
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <Button 
+              variant="default" 
+              className="bg-logo-accent hover:bg-logo-accent/90 text-logo-background focus:ring-2 focus:ring-logo-accent focus:ring-offset-2" 
+              asChild
             >
-              Se connecter
-            </Link>
-          </Button>
+              <Link 
+                to="/"
+                aria-label="Se connecter à votre compte VREAD"
+              >
+                {t.auth.signIn}
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
     </header>

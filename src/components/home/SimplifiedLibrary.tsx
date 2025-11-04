@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface SimplifiedLibraryProps {
   progressItems: ReadingProgress[];
@@ -16,6 +17,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
   progressItems,
   isLoading,
 }: SimplifiedLibraryProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -27,7 +29,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
     return (
       <div className="space-y-4 animate-fade-in">
         <h2 className="text-xl md:text-2xl font-serif font-medium text-coffee-darker">
-          Ma bibliothèque
+          {t.home.myLibrary}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -49,17 +51,17 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
           <BookOpen className="h-12 w-12 text-muted-foreground mx-auto" />
           <div className="space-y-2">
             <h3 className="text-xl font-serif font-medium text-coffee-darker">
-              Aucun livre en cours
+              {t.home.noBooksInLibrary}
             </h3>
             <p className="text-base text-muted-foreground">
-              Explorez notre catalogue pour commencer votre lecture
+              {t.home.exploreCatalog}
             </p>
           </div>
           <Button
             onClick={() => navigate("/discover")}
             className="bg-coffee-dark hover:bg-coffee-darker text-white rounded-xl"
           >
-            Découvrir des livres
+            {t.home.discoverBooks}
           </Button>
         </div>
       </div>
@@ -71,7 +73,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl md:text-2xl font-serif font-medium text-coffee-darker">
-          Ma bibliothèque
+          {t.home.myLibrary}
         </h2>
         {hasMore && !isMobile && (
           <Button
@@ -79,7 +81,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
             onClick={() => navigate("/library")}
             className="text-coffee-dark hover:text-coffee-darker hover:bg-accent/10 transition-colors"
           >
-            Voir tout
+            {t.home.seeAll}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         )}
@@ -134,7 +136,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
                   {item.author}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {progressPercentage}% complété
+                  {progressPercentage}% {t.home.completed}
                 </p>
               </div>
             </div>
@@ -149,7 +151,7 @@ export const SimplifiedLibrary = memo(function SimplifiedLibrary({
           variant="outline"
           className="w-full rounded-xl border-coffee-light text-coffee-dark hover:bg-accent/10"
         >
-          Voir tous les {progressItems.length} livres
+          {t.home.viewAllBooks.replace('{{count}}', progressItems.length.toString())}
           <ChevronRight className="h-4 w-4 ml-2" />
         </Button>
       )}
