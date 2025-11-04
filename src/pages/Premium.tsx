@@ -6,18 +6,21 @@ import { Card } from '@/components/ui/card';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Capacitor } from '@capacitor/core';
 import { IOSPurchaseCard } from '@/components/premium/IOSPurchaseCard';
+import { AndroidPurchaseCard } from '@/components/premium/AndroidPurchaseCard';
 
 export default function Premium() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const isIOS = Capacitor.getPlatform() === 'ios';
+  const platform = Capacitor.getPlatform();
+  const isIOS = platform === 'ios';
+  const isAndroid = platform === 'android';
 
   useEffect(() => {
     console.log('[Premium Page] Component mounted');
-    console.log('[Premium Page] Platform:', Capacitor.getPlatform());
+    console.log('[Premium Page] Platform:', platform);
     console.log('[Premium Page] User authenticated:', !!user);
-  }, [user]);
+  }, [user, platform]);
 
   const handleUpgrade = async (stripeUrl: string) => {
     console.log('[Premium Page] Purchase button clicked');
@@ -78,6 +81,14 @@ export default function Premium() {
               <IOSPurchaseCard />
               <p className="text-center text-sm text-muted-foreground mt-6">
                 💡 Sur iOS, les achats sont gérés par l'App Store
+              </p>
+            </div>
+          ) : isAndroid ? (
+            // Sur Android : Afficher la carte RevenueCat Android
+            <div className="max-w-md mx-auto mb-12">
+              <AndroidPurchaseCard />
+              <p className="text-center text-sm text-muted-foreground mt-6">
+                💡 Sur Android, les achats sont gérés par Google Play Store
               </p>
             </div>
           ) : (
@@ -245,7 +256,7 @@ export default function Premium() {
           )}
 
           {/* Trust Section - Adapté selon la plateforme */}
-          {!isIOS && (
+          {!isIOS && !isAndroid && (
             <div className="text-center space-y-4">
               <p className="text-sm text-muted-foreground">
                 ✓ Paiement 100% sécurisé par Stripe

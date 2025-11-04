@@ -8,6 +8,7 @@ import { ConfettiProvider } from "@/components/confetti/ConfettiProvider"
 import './index.css'
 import { exposeAuditHelpers } from '@/utils/jokerAudit';
 import { JOKER_MIN_SEGMENTS_ENABLED, JOKER_MIN_SEGMENTS } from "@/utils/jokerConstraints";
+import { initRevenueCat } from '@/lib/revenuecat';
 
 console.info("[BOOTSTRAP] Loading React app");
 
@@ -34,6 +35,18 @@ if (import.meta.env.DEV) {
     }
   } catch (e) {
     console.warn('[StatusBar]', e);
+  }
+})();
+
+/** Android : Initialiser RevenueCat au démarrage */
+(async () => {
+  try {
+    if (Capacitor.getPlatform() === 'android') {
+      console.log('[BOOTSTRAP] Initializing RevenueCat for Android...');
+      await initRevenueCat();
+    }
+  } catch (e) {
+    console.warn('[RevenueCat]', e);
   }
 })();
 
