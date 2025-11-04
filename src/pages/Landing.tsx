@@ -5,6 +5,7 @@ import LogoVreadPng from "@/components/brand/LogoVreadPng";
 import { useState, useEffect } from "react";
 import confetti from 'canvas-confetti';
 import { useTranslation } from "@/i18n/LanguageContext";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -56,6 +57,11 @@ export default function Landing() {
 
       {/* Container principal - overflow différent mobile/desktop */}
       <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden md:overflow-x-visible">
+        
+        {/* Language toggle in top right */}
+        <div className="absolute top-4 right-4 z-50">
+          <LanguageToggle />
+        </div>
         
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full">
           <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">

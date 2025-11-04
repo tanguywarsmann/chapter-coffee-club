@@ -141,6 +141,19 @@ export const en: Translations = {
     signOut: "Sign Out",
     email: "Email",
     password: "Password",
+    createAccount: "Create an account",
+    welcome: "Welcome",
+    firstTimeHere: "First time here?",
+    createAccountIn30s: "Create an account in 30 seconds.",
+    confirmPassword: "Confirm password",
+    alreadyRegistered: "Already registered? Sign in",
+    passwordsDontMatch: "Passwords don't match.",
+    signupFailed: "Signup failed.",
+    loginFailed: "Login failed.",
+    signingUp: "Signing up...",
+    loggingIn: "Logging in...",
+    pageTitle: "VREAD | Create an account or sign in",
+    pageDescription: "Create an account in 30 seconds or sign in to VREAD.",
   },
 
   // Common
@@ -161,6 +174,12 @@ export const en: Translations = {
     searching: "Searching...",
     noResultsFound: "No results found",
     tryAnotherSearch: "Try another search",
+    seeAll: "See all",
+    discover: "Discover",
+    bookNotAvailable: "Book not available",
+    bookNotAvailableDescription: "The requested book is not available at the moment.",
+    discoverOtherBooks: "Discover other books",
+    recentBadges: "Recent badges",
   },
 
   // Language

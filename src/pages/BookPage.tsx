@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useExpectedSegments } from "@/hooks/useExpectedSegments";
 import { uiCanSurfaceJoker } from "@/utils/jokerUiGate";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ export default function BookPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const isMounted = useRef(true);
   
   // Debug pour le gating UI des jokers
@@ -261,13 +263,13 @@ export default function BookPage() {
           ) : (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center max-w-none">
-                <h2 className="text-xl font-medium text-coffee-darker mb-2">Livre non disponible</h2>
-                <p className="text-muted-foreground mb-4">Le livre demandé n'est pas disponible pour le moment.</p>
+                <h2 className="text-xl font-medium text-coffee-darker mb-2">{t.common.bookNotAvailable}</h2>
+                <p className="text-muted-foreground mb-4">{t.common.bookNotAvailableDescription}</p>
                 <button 
                   className="text-coffee-dark hover:text-coffee-darker underline"
                   onClick={() => navigate("/explore")}
                 >
-                  Découvrir d'autres livres
+                  {t.common.discoverOtherBooks}
                 </button>
               </div>
             </div>

@@ -26,8 +26,9 @@ import { getUserProfile, getDisplayName } from "@/services/user/userProfileServi
 import { getFollowerCounts } from "@/services/user/profileService";
 import { getUserBadges } from "@/services/badgeService";
 import { getUserReadingProgress } from "@/services/reading/progressService";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { 
-  getTotalPagesRead, 
+  getTotalPagesRead,
   getBooksReadCount, 
   getValidatedSegmentsCount, 
   getEstimatedReadingTime 
@@ -40,6 +41,7 @@ import { Link } from "react-router-dom";
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [profileData, setProfileData] = useState<any>(null);
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
   const [badges, setBadges] = useState<any[]>([]);
@@ -363,12 +365,12 @@ export default function Profile() {
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
                     <CardTitle className="text-lg sm:text-xl font-serif text-coffee-darker flex items-center gap-2 min-w-0">
                       <Award className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                      <span className="break-words">Badges récents</span>
+                      <span className="break-words">{t.common.recentBadges}</span>
                     </CardTitle>
                     <Button variant="outline" size="sm" asChild className="flex-shrink-0 text-xs sm:text-sm">
                       <Link to="/achievements">
-                        <span className="hidden sm:inline">Voir tout</span>
-                        <span className="sm:hidden">Tout</span>
+                        <span className="hidden sm:inline">{t.common.seeAll}</span>
+                        <span className="sm:hidden">{t.common.seeAll}</span>
                       </Link>
                     </Button>
                   </CardHeader>
