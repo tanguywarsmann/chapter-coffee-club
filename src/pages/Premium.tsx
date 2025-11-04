@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Check, Crown, Sparkles } from 'lucide-react';
+import { Check, Crown, Sparkles, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Capacitor } from '@capacitor/core';
@@ -10,37 +10,65 @@ import { IOSPurchaseCard } from '@/components/premium/IOSPurchaseCard';
 export default function Premium() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   const isIOS = Capacitor.getPlatform() === 'ios';
 
-  const handleUpgrade = async () => {
+  useEffect(() => {
+    console.log('[Premium Page] Component mounted');
+    console.log('[Premium Page] Platform:', Capacitor.getPlatform());
+    console.log('[Premium Page] User authenticated:', !!user);
+  }, [user]);
+
+  const handleUpgrade = async (stripeUrl: string) => {
+    console.log('[Premium Page] Purchase button clicked');
+    
     if (!user) {
+      console.log('[Premium Page] User not authenticated, redirecting to auth');
       window.location.href = '/auth';
       return;
     }
 
+    console.log('[Premium Page] Starting purchase flow for user:', user.id);
+    setIsPurchasing(true);
     setIsLoading(true);
 
     // Stripe Payment Link with user email and ID for webhook
-    const stripeUrl = `https://buy.stripe.com/cNi28q73k0oE7u3bBuejK00?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
-    
-    window.location.href = stripeUrl;
+    const fullUrl = `${stripeUrl}?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
+    console.log('[Premium Page] Redirecting to Stripe...');
+    window.location.href = fullUrl;
   };
 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-5xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Crown className="h-10 w-10 text-yellow-500" />
-              <h1 className="text-4xl md:text-5xl font-bold">Passe en Premium</h1>
+          {/* Hero Section - iPad Optimized */}
+          <div className="text-center mb-8 md:mb-12 px-4">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Crown className="h-12 w-12 md:h-14 md:w-14 text-yellow-500" />
+              <h1 className="text-4xl md:text-6xl font-bold">Premium à Vie</h1>
             </div>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Débloquer toutes les fonctionnalités de VREAD et demander l'ajout de n'importe quel livre
-            </p>
+            <div className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 rounded-xl p-6 md:p-8 mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-orange-600">
+                🚀 Offre de Lancement Exclusive
+              </h2>
+              <p className="text-lg md:text-xl text-foreground leading-relaxed max-w-3xl mx-auto font-medium">
+                Accès illimité à la demande de livres + toutes les fonctionnalités premium sans limite de temps. 
+                Offre de lancement à vie - Paiement unique, bénéfices permanents.
+              </p>
+            </div>
+            {!user && (
+              <div className="bg-blue-500/10 border-2 border-blue-500 rounded-lg p-4 md:p-6 max-w-2xl mx-auto">
+                <p className="text-base md:text-lg font-semibold text-blue-600">
+                  ℹ️ Connectez-vous pour acheter Premium
+                </p>
+                <p className="text-sm md:text-base text-muted-foreground mt-2">
+                  Parcourez les offres ci-dessous. Vous serez invité à vous connecter lors de l'achat.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Pricing Cards */}
@@ -139,20 +167,19 @@ export default function Premium() {
               </ul>
               
               <Button 
-                onClick={() => {
-                  if (!user) {
-                    window.location.href = '/auth';
-                    return;
-                  }
-                  setIsLoading(true);
-                  const stripeUrl = `https://buy.stripe.com/cNi28q73k0oE7u3bBuejK00?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
-                  window.location.href = stripeUrl;
-                }}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold"
+                onClick={() => handleUpgrade('https://buy.stripe.com/cNi28q73k0oE7u3bBu')}
+                disabled={isPurchasing}
+                className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold min-h-[56px] text-lg"
                 size="lg"
               >
-                {isLoading ? 'Redirection vers Stripe...' : 'Profiter de l\'offre - 29€ Lifetime'}
+                {isPurchasing ? (
+                  <span className="flex items-center gap-3">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    Chargement de l'achat...
+                  </span>
+                ) : (
+                  'Acheter - 29€ Lifetime'
+                )}
               </Button>
             </Card>
 
@@ -199,20 +226,19 @@ export default function Premium() {
               </ul>
               
               <Button 
-                onClick={() => {
-                  if (!user) {
-                    window.location.href = '/auth';
-                    return;
-                  }
-                  setIsLoading(true);
-                  const stripeUrl = `https://buy.stripe.com/7sYbJ0fzQ5IY5lV0WQejK01?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
-                  window.location.href = stripeUrl;
-                }}
-                disabled={isLoading}
-                className="w-full"
+                onClick={() => handleUpgrade('https://buy.stripe.com/7sYbJ0fzQ5IY5lV0WQ')}
+                disabled={isPurchasing}
+                className="w-full min-h-[56px] text-lg"
                 size="lg"
               >
-                {isLoading ? 'Redirection vers Stripe...' : 'Passer Premium - 50€/an'}
+                {isPurchasing ? (
+                  <span className="flex items-center gap-3">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    Chargement de l'achat...
+                  </span>
+                ) : (
+                  'Acheter - 50€/an'
+                )}
               </Button>
             </Card>
           </div>

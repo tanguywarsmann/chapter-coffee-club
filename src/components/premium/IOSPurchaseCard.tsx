@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, Loader2 } from 'lucide-react';
 import { appleIAPService } from '@/services/iap/appleIAPService';
 import { RevenueCatProduct } from '@/services/iap/types';
 import { PremiumBadge } from './PremiumBadge';
@@ -14,50 +14,64 @@ export function IOSPurchaseCard() {
   const [product, setProduct] = useState<RevenueCatProduct | null>(null);
 
   useEffect(() => {
+    console.log('[iOS Purchase Card] Component mounted');
     initializeIAP();
   }, []);
 
   const initializeIAP = async () => {
     try {
+      console.log('[iOS Purchase Card] Starting IAP initialization...');
       setIsLoading(true);
       await appleIAPService.initialize();
+      console.log('[iOS Purchase Card] IAP service initialized');
+      
       const products = await appleIAPService.getProducts();
+      console.log('[iOS Purchase Card] Products fetched:', products);
       
       if (products && products.length > 0) {
         setProduct(products[0]);
-        console.log('[iOS Purchase] Product loaded:', products[0]);
+        console.log('[iOS Purchase Card] Product loaded:', products[0]);
       } else {
-        console.warn('[iOS Purchase] No products found');
+        console.warn('[iOS Purchase Card] No products found');
         toast.error('Impossible de récupérer les informations du produit');
       }
     } catch (error) {
-      console.error('[iOS Purchase] Initialization error:', error);
+      console.error('[iOS Purchase Card] Initialization error:', error);
       toast.error('Impossible d\'initialiser le store Apple');
     } finally {
       setIsLoading(false);
+      console.log('[iOS Purchase Card] Initialization complete');
     }
   };
 
   const handlePurchase = async () => {
+    console.log('[iOS Purchase Card] Purchase button clicked');
     setIsPurchasing(true);
     try {
+      console.log('[iOS Purchase Card] Starting purchase flow...');
       const success = await appleIAPService.purchaseLifetime();
       if (!success) {
-        console.log('[iOS Purchase] Purchase cancelled or failed');
+        console.log('[iOS Purchase Card] Purchase cancelled or failed');
+      } else {
+        console.log('[iOS Purchase Card] Purchase successful');
       }
     } catch (error) {
-      console.error('[iOS Purchase] Purchase error:', error);
+      console.error('[iOS Purchase Card] Purchase error:', error);
     } finally {
       setIsPurchasing(false);
+      console.log('[iOS Purchase Card] Purchase flow complete');
     }
   };
 
   const handleRestore = async () => {
+    console.log('[iOS Purchase Card] Restore button clicked');
     setIsRestoring(true);
     try {
+      console.log('[iOS Purchase Card] Starting restore flow...');
       await appleIAPService.restorePurchases();
+      console.log('[iOS Purchase Card] Restore complete');
     } catch (error) {
-      console.error('[iOS Purchase] Restore error:', error);
+      console.error('[iOS Purchase Card] Restore error:', error);
     } finally {
       setIsRestoring(false);
     }
@@ -66,8 +80,10 @@ export function IOSPurchaseCard() {
   if (isLoading) {
     return (
       <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50">
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Chargement du store Apple...</p>
+        <div className="text-center py-12">
+          <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto mb-4" />
+          <p className="text-lg md:text-xl font-semibold text-foreground">Chargement du store Apple...</p>
+          <p className="text-sm text-muted-foreground mt-2">Connexion à l'App Store en cours</p>
         </div>
       </Card>
     );
@@ -132,25 +148,39 @@ export function IOSPurchaseCard() {
         </li>
       </ul>
       
-      {/* Bouton d'achat */}
+      {/* Bouton d'achat - iPad Optimized */}
       <Button 
         onClick={handlePurchase}
         disabled={isPurchasing || !product}
-        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3"
+        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg"
         size="lg"
       >
-        {isPurchasing ? 'Achat en cours...' : `Acheter - ${displayPrice}`}
+        {isPurchasing ? (
+          <span className="flex items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            Chargement de l'achat...
+          </span>
+        ) : (
+          `Acheter - ${displayPrice}`
+        )}
       </Button>
 
-      {/* Bouton restauration (obligatoire Apple) */}
+      {/* Bouton restauration (obligatoire Apple) - iPad Optimized */}
       <Button 
         onClick={handleRestore}
         disabled={isRestoring}
         variant="outline"
-        className="w-full"
-        size="sm"
+        className="w-full min-h-[48px] text-base"
+        size="lg"
       >
-        {isRestoring ? 'Restauration...' : 'Restaurer mes achats'}
+        {isRestoring ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Restauration...
+          </span>
+        ) : (
+          'Restaurer mes achats'
+        )}
       </Button>
 
       {/* Info légale Apple */}
