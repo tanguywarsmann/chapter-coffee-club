@@ -81,6 +81,8 @@ export const fr = {
     startReading: "Commencer la lecture",
     noCurrentReading: "Aucune lecture en cours",
     startYourNextAdventure: "Commencez votre prochaine aventure de lecture",
+    startLiteraryJourney: "Commencez votre voyage littéraire",
+    discoverCollection: "Découvrez notre collection de classiques et commencez à lire dès aujourd'hui",
     exploreBooks: "Explorer les livres",
     myLibrary: "Ma bibliothèque",
     noBooksInLibrary: "Aucun livre en cours",
@@ -91,6 +93,9 @@ export const fr = {
     completed: "complété",
     continueWhereYouLeftOff: "Reprends ta lecture",
     viewYourReadingStats: "Voir mes statistiques",
+    currentReading: "Votre lecture en cours",
+    progression: "Progression",
+    segmentsValidated: "segments validés",
   },
 
   // Explore Page

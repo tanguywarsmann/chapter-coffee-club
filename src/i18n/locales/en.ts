@@ -83,6 +83,8 @@ export const en: Translations = {
     startReading: "Start Reading",
     noCurrentReading: "No current reading",
     startYourNextAdventure: "Start your next reading adventure",
+    startLiteraryJourney: "Start your literary journey",
+    discoverCollection: "Discover our collection of classics and start reading today",
     exploreBooks: "Explore books",
     myLibrary: "My Library",
     noBooksInLibrary: "No books in progress",
@@ -93,6 +95,9 @@ export const en: Translations = {
     completed: "completed",
     continueWhereYouLeftOff: "Continue where you left off",
     viewYourReadingStats: "View my statistics",
+    currentReading: "Your current reading",
+    progression: "Progress",
+    segmentsValidated: "segments validated",
   },
 
   // Explore Page

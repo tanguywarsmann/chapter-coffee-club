@@ -5,6 +5,7 @@ import { Book, Sparkles } from "lucide-react";
 import Image from "@/components/ui/image";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface HeroCurrentBookProps {
   currentReading: BookWithProgress | null;
@@ -18,6 +19,7 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
   onContinueReading,
 }: HeroCurrentBookProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -44,10 +46,10 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
           </div>
           <div className="space-y-3">
             <h2 className="text-h1 font-serif font-semibold text-brand-900">
-              Commencez votre voyage littéraire
+              {t.home.startLiteraryJourney}
             </h2>
             <p className="text-body-lg text-muted-foreground max-w-md">
-              Découvrez notre collection de classiques et commencez à lire dès aujourd'hui
+              {t.home.discoverCollection}
             </p>
           </div>
           <Button
@@ -56,7 +58,7 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
             size="lg"
             className="px-10 py-6 text-lg"
           >
-            <span className="relative z-10">Découvrir des livres</span>
+            <span className="relative z-10">{t.home.discoverBooks}</span>
           </Button>
         </div>
       </div>
@@ -70,7 +72,7 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
     <div className="animate-fade-in">
       <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 md:p-10 min-h-[320px]">
         <h2 className="text-h2 font-serif font-medium text-brand-900 mb-8">
-          Votre lecture en cours
+          {t.home.currentReading}
         </h2>
         
         <div className="flex flex-col md:flex-row items-center gap-8">
@@ -114,12 +116,12 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
             {/* Progress with gradient */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-body-sm text-muted-foreground">
-                <span>Progression</span>
+                <span>{t.home.progression}</span>
                 <span className="font-semibold text-brand-700 text-body">{progressPercentage}%</span>
               </div>
               <Progress value={progressPercentage} className="h-3" />
               <p className="text-body-sm text-muted-foreground">
-                {Math.floor(currentReading.chaptersRead)} / {currentReading.totalChapters || currentReading.total_chapters || 0} segments validés
+                {Math.floor(currentReading.chaptersRead)} / {currentReading.totalChapters || currentReading.total_chapters || 0} {t.home.segmentsValidated}
               </p>
             </div>
 
@@ -129,7 +131,7 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
               variant="premium"
               className="w-full py-7 text-lg font-semibold"
             >
-              <span className="relative z-10">Continuer la lecture</span>
+              <span className="relative z-10">{t.home.continueReading}</span>
             </Button>
           </div>
         </div>
