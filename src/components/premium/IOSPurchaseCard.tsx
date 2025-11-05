@@ -22,46 +22,63 @@ export function IOSPurchaseCard() {
 
   const initializeIAP = async () => {
     try {
-      console.log('[iOS Purchase Card] Starting IAP initialization...');
+      console.log('[iOS Purchase Card] 🎬 Starting IAP initialization...');
       setIsLoading(true);
-      await appleIAPService.initialize();
-      console.log('[iOS Purchase Card] IAP service initialized');
       
+      // L'initialisation devrait déjà être faite dans main.tsx
+      console.log('[iOS Purchase Card] 🔧 Ensuring IAP service is initialized...');
+      await appleIAPService.initialize();
+      console.log('[iOS Purchase Card] ✅ IAP service ready');
+      
+      console.log('[iOS Purchase Card] 📦 Fetching products...');
       const products = await appleIAPService.getProducts();
-      console.log('[iOS Purchase Card] Products fetched:', products);
+      console.log('[iOS Purchase Card] ✓ Products fetched, count:', products?.length || 0);
       
       if (products && products.length > 0) {
         setProduct(products[0]);
-        console.log('[iOS Purchase Card] Product loaded:', products[0]);
+        console.log('[iOS Purchase Card] ✅ Product loaded successfully:');
+        console.log('  - ID:', products[0].identifier);
+        console.log('  - Title:', products[0].title);
+        console.log('  - Price:', products[0].priceString);
+        console.log('  - Currency:', products[0].currencyCode);
       } else {
-        console.warn('[iOS Purchase Card] No products found');
+        console.error('[iOS Purchase Card] ❌ No products found from RevenueCat');
         toast.error(t.premium.toast.error);
       }
     } catch (error) {
-      console.error('[iOS Purchase Card] Initialization error:', error);
+      console.error('[iOS Purchase Card] ❌ Initialization error:', error);
       toast.error(t.premium.toast.error);
     } finally {
       setIsLoading(false);
-      console.log('[iOS Purchase Card] Initialization complete');
+      console.log('[iOS Purchase Card] 🏁 Initialization complete');
     }
   };
 
   const handlePurchase = async () => {
-    console.log('[iOS Purchase Card] Purchase button clicked');
+    console.log('[iOS Purchase Card] 🛒 Purchase button clicked by user');
+    console.log('[iOS Purchase Card] Product available:', !!product);
+    console.log('[iOS Purchase Card] Already purchasing:', isPurchasing);
+    
+    if (isPurchasing) {
+      console.warn('[iOS Purchase Card] ⚠️ Purchase already in progress, ignoring click');
+      return;
+    }
+    
     setIsPurchasing(true);
     try {
-      console.log('[iOS Purchase Card] Starting purchase flow...');
+      console.log('[iOS Purchase Card] 🚀 Calling appleIAPService.purchaseLifetime()...');
       const success = await appleIAPService.purchaseLifetime();
+      
       if (!success) {
-        console.log('[iOS Purchase Card] Purchase cancelled or failed');
+        console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
-        console.log('[iOS Purchase Card] Purchase successful');
+        console.log('[iOS Purchase Card] ✅ Purchase successful!');
       }
     } catch (error) {
-      console.error('[iOS Purchase Card] Purchase error:', error);
+      console.error('[iOS Purchase Card] ❌ Purchase error:', error);
     } finally {
       setIsPurchasing(false);
-      console.log('[iOS Purchase Card] Purchase flow complete');
+      console.log('[iOS Purchase Card] 🏁 Purchase flow complete');
     }
   };
 

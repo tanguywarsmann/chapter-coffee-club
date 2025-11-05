@@ -16,23 +16,32 @@ class AppleIAPService {
    */
   async initialize(): Promise<void> {
     if (!this.isIOS()) {
-      console.log('[IAP] Not on iOS, skipping initialization');
+      console.log('[IAP] ❌ Not on iOS, skipping initialization');
+      return;
+    }
+
+    if (this.isInitialized) {
+      console.log('[IAP] ✅ Already initialized, skipping');
       return;
     }
 
     try {
-      console.log('[IAP] Initializing RevenueCat SDK...');
+      console.log('[IAP] 🚀 Starting RevenueCat SDK initialization...');
+      console.log('[IAP] API Key:', this.apiKey.substring(0, 10) + '...');
 
       // Configuration du SDK RevenueCat avec la clé publique
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+      console.log('[IAP] ✓ Log level set to DEBUG');
+      
       await Purchases.configure({
         apiKey: this.apiKey,
       });
+      console.log('[IAP] ✓ SDK configured with API key');
 
-      console.log('[IAP] RevenueCat SDK initialized');
       this.isInitialized = true;
+      console.log('[IAP] ✅ RevenueCat SDK FULLY initialized and ready');
     } catch (error) {
-      console.error('[IAP] Initialization error:', error);
+      console.error('[IAP] ❌ Initialization error:', error);
       throw error;
     }
   }
@@ -83,23 +92,31 @@ class AppleIAPService {
    */
   async purchaseLifetime(): Promise<boolean> {
     if (!this.isIOS()) {
+      console.error('[IAP] ❌ Not on iOS platform');
       toast.error('Les achats in-app ne sont disponibles que sur iOS');
       return false;
     }
 
     if (!this.isInitialized) {
+      console.log('[IAP] ⚠️ Not initialized, initializing now...');
       await this.initialize();
     }
 
     try {
-      console.log('[IAP] Starting purchase for:', this.productId);
+      console.log('[IAP] 🛒 Starting purchase flow for product:', this.productId);
 
       // Récupérer l'offering
+      console.log('[IAP] 📦 Fetching offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
+      console.log('[IAP] ✓ Offerings received:', offerings);
       
       if (!offerings.current) {
+        console.error('[IAP] ❌ No current offering available');
         throw new Error('No current offering available');
       }
+
+      console.log('[IAP] ✓ Current offering found:', offerings.current.identifier);
+      console.log('[IAP] Available packages:', offerings.current.availablePackages.map((p: any) => p.identifier));
 
       // Trouver le package lifetime
       const lifetimePackage = offerings.current.availablePackages.find(
@@ -107,15 +124,20 @@ class AppleIAPService {
       );
 
       if (!lifetimePackage) {
+        console.error('[IAP] ❌ Lifetime package not found in offerings');
         throw new Error('Lifetime package not found');
       }
+
+      console.log('[IAP] ✓ Lifetime package found:', lifetimePackage.identifier);
+      console.log('[IAP] 💰 Price:', lifetimePackage.product.priceString);
+      console.log('[IAP] 🚀 Launching Apple purchase dialog...');
 
       // Effectuer l'achat via RevenueCat
       const purchaseResult = await Purchases.purchasePackage({
         aPackage: lifetimePackage
       });
 
-      console.log('[IAP] Purchase successful:', purchaseResult);
+      console.log('[IAP] ✅ Purchase successful!', purchaseResult);
 
       // RevenueCat gère automatiquement la validation du receipt
       // Activer Premium dans le profil
@@ -125,11 +147,15 @@ class AppleIAPService {
 
       return true;
     } catch (error: any) {
-      console.error('[IAP] Purchase error:', error);
+      console.error('[IAP] ❌ Purchase error:', error);
+      console.error('[IAP] Error code:', error.code);
+      console.error('[IAP] Error message:', error.message);
       
       if (error.code === '1' || error.message?.includes('cancelled')) {
+        console.log('[IAP] User cancelled purchase');
         toast('Tu as annulé l\'achat');
       } else {
+        console.error('[IAP] Purchase failed with error:', error);
         toast.error('Impossible de finaliser l\'achat. Réessaye plus tard.');
       }
       
