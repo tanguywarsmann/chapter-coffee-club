@@ -25,6 +25,12 @@ export const AppFooter = () => {
             <Link to="/strava" className="hover:text-foreground transition-colors">
               Le Strava de la lecture
             </Link>
+            <Link to="/legal/privacy" className="hover:text-foreground transition-colors">
+              Confidentialité
+            </Link>
+            <Link to="/legal/terms" className="hover:text-foreground transition-colors">
+              CGU
+            </Link>
           </div>
           <div className="flex items-center gap-2 text-caption text-muted-foreground italic">
             <span>{APP_VERSION}</span>
