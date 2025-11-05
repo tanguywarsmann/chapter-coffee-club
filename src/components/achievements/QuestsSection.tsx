@@ -3,32 +3,25 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserQuest, Quest } from "@/types/quest";
 import { QuestCard } from "./QuestCard";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { getUserQuests, fetchAvailableQuests, getQuestProgress } from "@/services/questService";
 import { supabase } from "@/integrations/supabase/client";
 import { Compass, Sparkles, Scroll, Star } from "lucide-react";
 
 export function QuestsSection() {
+  const { t } = useTranslation();
   const [unlockedQuests, setUnlockedQuests] = useState<UserQuest[]>([]);
   const [allQuests, setAllQuests] = useState<Quest[]>([]);
   const [questProgress, setQuestProgress] = useState<Record<string, { current: number; target: number } | null>>({});
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Grouper les quêtes par catégorie
   const questsByCategory = {
     marathons: allQuests.filter(q => q.category === 'marathons'),
     vitesse: allQuests.filter(q => q.category === 'vitesse'),
     variete: allQuests.filter(q => q.category === 'variete'),
     regularite: allQuests.filter(q => q.category === 'regularite'),
     horaires: allQuests.filter(q => q.category === 'horaires'),
-  };
-
-  const categoryLabels = {
-    marathons: { icon: '📚', label: 'Marathons', desc: 'Défis intenses' },
-    vitesse: { icon: '⚡', label: 'Vitesse & Performance', desc: 'Défis de rapidité' },
-    variete: { icon: '🎯', label: 'Variété & Exploration', desc: 'Défis de diversité' },
-    regularite: { icon: '🔥', label: 'Régularité Extrême', desc: 'Défis de constance' },
-    horaires: { icon: '🌙', label: 'Horaires Spéciaux', desc: 'Défis temporels' },
   };
 
   useEffect(() => {
@@ -84,11 +77,11 @@ export function QuestsSection() {
             <div className="p-2 bg-gradient-to-br from-reed-light to-white rounded-xl flex-shrink-0">
               <Scroll className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
             </div>
-            <span className="flex-1 min-w-0">Quêtes Accomplies</span>
+            <span className="flex-1 min-w-0">{t.achievements.quests.title}</span>
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
           </CardTitle>
           <CardDescription className="text-reed-dark">
-            Exploits spéciaux déverrouillés par vos actions
+            {t.achievements.quests.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
@@ -104,11 +97,11 @@ export function QuestsSection() {
               {Object.entries(questsByCategory).map(([categoryKey, quests]) => {
                 if (quests.length === 0) return null;
 
-                const categoryInfo = categoryLabels[categoryKey as keyof typeof categoryLabels];
+                const catKey = categoryKey as keyof typeof t.achievements.quests.categories;
+                const categoryInfo = t.achievements.quests.categories[catKey];
 
                 return (
                   <div key={categoryKey} className="space-y-4">
-                    {/* En-tête de catégorie */}
                     <div className="flex items-center gap-3 pb-2 border-b-2 border-reed-primary/20">
                       <span className="text-2xl">{categoryInfo.icon}</span>
                       <div className="flex-1">
@@ -116,7 +109,7 @@ export function QuestsSection() {
                           {categoryInfo.label}
                         </h3>
                         <p className="text-caption text-reed-medium">
-                          {categoryInfo.desc} • {quests.length} quête{quests.length > 1 ? 's' : ''}
+                          {categoryInfo.desc} • {quests.length > 1 ? t.achievements.quests.questsCountPlural.replace('{count}', String(quests.length)) : t.achievements.quests.questsCount.replace('{count}', String(quests.length))}
                         </p>
                       </div>
                     </div>
@@ -152,9 +145,9 @@ export function QuestsSection() {
                       </div>
                     </div>
                   </div>
-                  <h3 className="font-serif text-h4 text-reed-darker mb-3">Aucune quête disponible</h3>
+                  <h3 className="font-serif text-h4 text-reed-darker mb-3">{t.achievements.quests.empty}</h3>
                   <p className="text-reed-dark leading-relaxed px-4">
-                    Les quêtes seront bientôt disponibles
+                    {t.achievements.quests.emptyDesc}
                   </p>
                 </div>
               )}

@@ -186,6 +186,221 @@ export const fr = {
     french: "Français",
     english: "English",
   },
+
+  // Premium
+  premium: {
+    title: "Premium à Vie",
+    earlyBirdBadge: "Offre de lancement - Limitée",
+    earlyBirdTitle: "🚀 Offre de Lancement Exclusive",
+    earlyBirdDesc: "Accès illimité à la demande de livres + toutes les fonctionnalités premium sans limite de temps. Offre de lancement à vie - Paiement unique, bénéfices permanents.",
+    loginRequired: "ℹ️ Connectez-vous pour acheter Premium",
+    loginRequiredDesc: "Parcourez les offres ci-dessous. Vous serez invité à vous connecter lors de l'achat.",
+    iosPurchaseNote: "💡 Sur iOS, les achats sont gérés par l'App Store",
+    androidPurchaseNote: "💡 Sur Android, les achats sont gérés par Google Play Store",
+    cards: {
+      free: {
+        title: "Gratuit",
+        price: "0€",
+        period: "pour toujours",
+        features: {
+          catalog: "Accès au catalogue de livres classiques",
+          checkpoints: "Validation par checkpoints toutes les ~30 pages",
+          tracking: "Suivi de progression et statistiques",
+          badges: "Badges et système de récompenses",
+          community: "Communauté de lecteurs",
+        },
+      },
+      lifetime: {
+        title: "Lifetime - Early Bird",
+        titleAlt: "Premium à Vie",
+        originalPrice: "99€",
+        price: "29€",
+        priceWithValue: "Acheter - {price} Lifetime",
+        period: "Accès à vie",
+        periodOnce: "Accès à vie - Paiement unique",
+        validUntil: "Valable jusqu'au 15 octobre",
+        iosNote: "🍎 Achat via App Store",
+        features: {
+          requestBooks: "Demander l'ajout de n'importe quel livre",
+          processing: "Traitement sous 48-72h",
+          advancedStats: "Statistiques de lecture avancées",
+          exclusiveBadges: "Badges exclusifs Premium",
+          prioritySupport: "Support prioritaire",
+          earlyAccess: "Accès anticipé aux nouvelles fonctionnalités",
+        },
+      },
+      annual: {
+        title: "Premium Annuel",
+        price: "50€",
+        period: "/an",
+        pricePerMonth: "Soit 4,17€/mois",
+        priceWithValue: "Acheter - {price}/an",
+      },
+    },
+    loading: {
+      purchase: "Chargement de l'achat...",
+      storeApple: "Chargement du store Apple...",
+      storeAndroid: "Chargement du store Android...",
+      connecting: "Connexion à l'App Store en cours",
+      restoring: "Restauration en cours...",
+    },
+    buttons: {
+      buy: "Acheter",
+      restore: "Restaurer mes achats",
+    },
+    trust: {
+      securePayment: "✓ Paiement 100% sécurisé par Stripe",
+      cancelAnytime: "✓ Annulation possible à tout moment",
+      immediateAccess: "✓ Accès immédiat après paiement",
+      appleManaged: "💡 Les achats sont gérés par Google Play Store",
+      appleNote: "Paiement traité par l'App Store. Pas d'abonnement, paiement unique.",
+    },
+    active: {
+      title: "Premium Actif ✓",
+      message: "Merci pour ton soutien ! Tu as accès à toutes les fonctionnalités Premium.",
+    },
+    toast: {
+      activated: "🎉 VREAD Premium activé !",
+      activatedDesc: "Tu as maintenant accès à toutes les fonctionnalités Premium",
+      notConfirmed: "Achat non confirmé",
+      notConfirmedDesc: "Vérifie ton compte Play Store",
+      cancelled: "Achat annulé",
+      error: "Erreur lors de l'achat",
+      errorDesc: "Réessaye plus tard",
+      restored: "✅ Achats restaurés !",
+      restoredDesc: "Ton accès Premium a été rétabli",
+      noRestore: "Aucun achat à restaurer",
+      noRestoreDesc: "Aucun achat Premium trouvé sur ce compte Google Play",
+      restoreError: "Erreur lors de la restauration",
+    },
+    faq: {
+      title: "Questions fréquentes",
+      howItWorks: {
+        question: "Comment fonctionne la demande de livre ?",
+        answer: "Une fois Premium, tu peux demander n'importe quel livre via le formulaire dédié. Nous créons les questions de compréhension et ajoutons le livre ASAP.",
+      },
+      howMany: {
+        question: "Combien de livres puis-je demander ?",
+        answer: "Deux livres par deux livres ! Tu dois valider un des deux livres demandés pour en obtenir un autre.",
+      },
+      cancel: {
+        question: "Puis-je annuler mon abonnement ?",
+        answer: "Oui, tu peux annuler à tout moment. Tu garderas l'accès Premium jusqu'à la fin de ta période payée.",
+      },
+    },
+  },
+
+  // Request Book
+  requestBook: {
+    title: "Demander un livre",
+    paywall: {
+      title: "Fonctionnalité Premium",
+      description: "Passe Premium pour demander l'ajout de n'importe quel livre dans VREAD. Nous créons les questions de compréhension et ajoutons le livre sous 48-72h.",
+      cta: "Découvrir Premium - 50€/an",
+      ctaIOS: "Découvrir Premium (In-App Purchase)",
+    },
+    form: {
+      title: "Titre du livre *",
+      titlePlaceholder: "Ex: L'Étranger",
+      author: "Auteur",
+      authorPlaceholder: "Ex: Albert Camus",
+      isbn: "ISBN (optionnel)",
+      isbnPlaceholder: "Ex: 978-2070360024",
+      reason: "Pourquoi ce livre ? (optionnel)",
+      reasonPlaceholder: "Ex: Classique de la littérature française que je veux lire pour mes études",
+      submit: "Envoyer la demande",
+      submitting: "Envoi en cours...",
+      info: "📚 Nous traitons les demandes sous 48-72h.",
+      infoEmail: "Tu seras notifié par email quand le livre sera disponible.",
+    },
+    toast: {
+      loginRequired: "Connecte-toi pour continuer",
+      premiumRequired: "Cette fonctionnalité est réservée aux membres Premium",
+      titleRequired: "Le titre du livre est obligatoire",
+      success: "Nous traiterons ta demande sous 48-72h. Tu seras notifié par email.",
+      error: "Impossible d'envoyer la demande. Réessaye plus tard.",
+    },
+  },
+
+  // Achievements
+  achievements: {
+    title: "Vos Accomplissements",
+    subtitle: "Célébrez votre parcours littéraire",
+    stats: {
+      booksRead: "Livres lus",
+      pagesRead: "Pages lues",
+      currentStreak: "Série actuelle",
+      bestStreak: "Record",
+      badges: "Badges",
+      record: "Record: {count}",
+    },
+    badges: {
+      title: "Badges Débloqués",
+      subtitle: "Vos accomplissements par ordre de rareté",
+      empty: "Aucun badge débloqué",
+      emptyDesc: "Continuez à lire pour débloquer vos premiers badges !",
+      earnedOn: "Obtenu le {date}",
+      rarity: {
+        legendary: "Lég.",
+        epic: "Épic.",
+        rare: "Rare",
+        common: "Com.",
+      },
+    },
+    quests: {
+      title: "Quêtes Accomplies",
+      subtitle: "Exploits spéciaux déverrouillés par vos actions",
+      empty: "Aucune quête disponible",
+      emptyDesc: "Les quêtes seront bientôt disponibles",
+      categories: {
+        marathons: {
+          icon: "📚",
+          label: "Marathons",
+          desc: "Défis intenses",
+        },
+        vitesse: {
+          icon: "⚡",
+          label: "Vitesse & Performance",
+          desc: "Défis de rapidité",
+        },
+        variete: {
+          icon: "🎯",
+          label: "Variété & Exploration",
+          desc: "Défis de diversité",
+        },
+        regularite: {
+          icon: "🔥",
+          label: "Régularité Extrême",
+          desc: "Défis de constance",
+        },
+        horaires: {
+          icon: "🌙",
+          label: "Horaires Spéciaux",
+          desc: "Défis temporels",
+        },
+      },
+      questsCount: "{count} quête",
+      questsCountPlural: "{count} quêtes",
+    },
+  },
+
+  // Discover
+  discover: {
+    title: "Découvrir la communauté",
+    subtitle: "Explorez l'activité des lecteurs, suivez leur progression et rejoignez une communauté passionnée",
+    error: "Une erreur est survenue lors du chargement des données.",
+  },
+
+  // Feedback
+  feedback: {
+    title: "🌱 Fais pousser VREAD avec nous",
+    subtitle: "Chaque feedback est une graine qui améliore l'expérience de toute la communauté",
+    buttons: {
+      give: "🚀 Donner mon feedback",
+      view: "👀 Voir les suggestions",
+    },
+    realTime: "🔥 En temps réel • Des centaines de feedbacks partagés",
+  },
 };
 
 export type Translations = typeof fr;

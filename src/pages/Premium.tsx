@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Check, Crown, Sparkles, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { AndroidPurchaseCard } from '@/components/premium/AndroidPurchaseCard';
 
 export default function Premium() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const platform = Capacitor.getPlatform();
@@ -35,7 +37,6 @@ export default function Premium() {
     setIsPurchasing(true);
     setIsLoading(true);
 
-    // Stripe Payment Link with user email and ID for webhook
     const fullUrl = `${stripeUrl}?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
     console.log('[Premium Page] Redirecting to Stripe...');
     window.location.href = fullUrl;
@@ -51,24 +52,23 @@ export default function Premium() {
           <div className="text-center mb-8 md:mb-12 px-4">
             <div className="flex items-center justify-center gap-3 mb-6">
               <Crown className="h-12 w-12 md:h-14 md:w-14 text-yellow-500" />
-              <h1 className="text-4xl md:text-6xl font-bold">Premium à Vie</h1>
+              <h1 className="text-4xl md:text-6xl font-bold">{t.premium.title}</h1>
             </div>
             <div className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 rounded-xl p-6 md:p-8 mb-6">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-orange-600">
-                🚀 Offre de Lancement Exclusive
+                {t.premium.earlyBirdTitle}
               </h2>
               <p className="text-lg md:text-xl text-foreground leading-relaxed max-w-3xl mx-auto font-medium">
-                Accès illimité à la demande de livres + toutes les fonctionnalités premium sans limite de temps. 
-                Offre de lancement à vie - Paiement unique, bénéfices permanents.
+                {t.premium.earlyBirdDesc}
               </p>
             </div>
             {!user && (
               <div className="bg-blue-500/10 border-2 border-blue-500 rounded-lg p-4 md:p-6 max-w-2xl mx-auto">
                 <p className="text-base md:text-lg font-semibold text-blue-600">
-                  ℹ️ Connectez-vous pour acheter Premium
+                  {t.premium.loginRequired}
                 </p>
                 <p className="text-sm md:text-base text-muted-foreground mt-2">
-                  Parcourez les offres ci-dessous. Vous serez invité à vous connecter lors de l'achat.
+                  {t.premium.loginRequiredDesc}
                 </p>
               </div>
             )}
@@ -76,104 +76,99 @@ export default function Premium() {
 
           {/* Pricing Cards */}
           {isIOS ? (
-            // Sur iOS : Afficher uniquement la carte IAP
             <div className="max-w-md mx-auto mb-12">
               <IOSPurchaseCard />
               <p className="text-center text-sm text-muted-foreground mt-6">
-                💡 Sur iOS, les achats sont gérés par l'App Store
+                {t.premium.iosPurchaseNote}
               </p>
             </div>
           ) : isAndroid ? (
-            // Sur Android : Afficher la carte RevenueCat Android
             <div className="max-w-md mx-auto mb-12">
               <AndroidPurchaseCard />
               <p className="text-center text-sm text-muted-foreground mt-6">
-                💡 Sur Android, les achats sont gérés par Google Play Store
+                {t.premium.androidPurchaseNote}
               </p>
             </div>
           ) : (
-            // Sur Web/PWA : Afficher les cartes Stripe
             <div className="grid md:grid-cols-3 gap-8 mb-12">
             {/* CARTE 1 - GRATUIT */}
             <Card className="p-8">
-              <h3 className="text-2xl font-bold mb-2">Gratuit</h3>
+              <h3 className="text-2xl font-bold mb-2">{t.premium.cards.free.title}</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold">0€</span>
-                <span className="text-muted-foreground ml-2 block text-sm mt-1">pour toujours</span>
+                <span className="text-4xl font-bold">{t.premium.cards.free.price}</span>
+                <span className="text-muted-foreground ml-2 block text-sm mt-1">{t.premium.cards.free.period}</span>
               </div>
               <ul className="space-y-4 mb-6">
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Accès au catalogue de livres classiques</span>
+                  <span>{t.premium.cards.free.features.catalog}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Validation par checkpoints toutes les ~30 pages</span>
+                  <span>{t.premium.cards.free.features.checkpoints}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Suivi de progression et statistiques</span>
+                  <span>{t.premium.cards.free.features.tracking}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Badges et système de récompenses</span>
+                  <span>{t.premium.cards.free.features.badges}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Communauté de lecteurs</span>
+                  <span>{t.premium.cards.free.features.community}</span>
                 </li>
               </ul>
             </Card>
 
-            {/* CARTE 2 - EARLY BIRD LIFETIME (MISE EN AVANT) */}
+            {/* CARTE 2 - EARLY BIRD LIFETIME */}
             <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50 md:scale-105 md:z-10">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
-                🔥 Offre de lancement - Limitée
+                {t.premium.earlyBirdBadge}
               </div>
               
               <div className="flex items-center gap-2 mb-2 mt-2">
-                <h3 className="text-2xl font-bold">Lifetime - Early Bird</h3>
+                <h3 className="text-2xl font-bold">{t.premium.cards.lifetime.title}</h3>
                 <Crown className="h-6 w-6 text-orange-500" />
               </div>
               
               <div className="mb-2">
-                <span className="text-sm text-muted-foreground line-through">99€</span>
+                <span className="text-sm text-muted-foreground line-through">{t.premium.cards.lifetime.originalPrice}</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold text-orange-600">29€</span>
+                  <span className="text-5xl font-bold text-orange-600">{t.premium.cards.lifetime.price}</span>
                   <Sparkles className="h-6 w-6 text-orange-500 animate-pulse" />
                 </div>
-                <span className="text-lg font-semibold text-orange-700">Accès à vie</span>
+                <span className="text-lg font-semibold text-orange-700">{t.premium.cards.lifetime.period}</span>
               </div>
               <p className="text-sm font-semibold text-orange-600 mb-6">
-                Valable jusqu'au 15 octobre
+                {t.premium.cards.lifetime.validUntil}
               </p>
               
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="font-semibold">
-                    Demander l'ajout de n'importe quel livre
-                  </span>
+                  <span className="font-semibold">{t.premium.cards.lifetime.features.requestBooks}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span>Traitement sous 48-72h</span>
+                  <span>{t.premium.cards.lifetime.features.processing}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span>Statistiques de lecture avancées</span>
+                  <span>{t.premium.cards.lifetime.features.advancedStats}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span>Badges exclusifs Premium</span>
+                  <span>{t.premium.cards.lifetime.features.exclusiveBadges}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span>Support prioritaire</span>
+                  <span>{t.premium.cards.lifetime.features.prioritySupport}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span>Accès anticipé aux nouvelles fonctionnalités</span>
+                  <span>{t.premium.cards.lifetime.features.earlyAccess}</span>
                 </li>
               </ul>
               
@@ -186,10 +181,10 @@ export default function Premium() {
                 {isPurchasing ? (
                   <span className="flex items-center gap-3">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    Chargement de l'achat...
+                    {t.premium.loading.purchase}
                   </span>
                 ) : (
-                  'Acheter - 29€ Lifetime'
+                  t.premium.cards.lifetime.priceWithValue.replace('{price}', '29€')
                 )}
               </Button>
             </Card>
@@ -197,42 +192,40 @@ export default function Premium() {
             {/* CARTE 3 - PREMIUM ANNUEL */}
             <Card className="p-8 border relative shadow-sm">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-2xl font-bold">Premium Annuel</h3>
+                <h3 className="text-2xl font-bold">{t.premium.cards.annual.title}</h3>
                 <Crown className="h-6 w-6 text-yellow-500" />
               </div>
               
               <div className="mb-2">
-                <span className="text-4xl font-bold">50€</span>
-                <span className="text-xl text-muted-foreground">/an</span>
+                <span className="text-4xl font-bold">{t.premium.cards.annual.price}</span>
+                <span className="text-xl text-muted-foreground">{t.premium.cards.annual.period}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-6">Soit 4,17€/mois</p>
+              <p className="text-sm text-muted-foreground mb-6">{t.premium.cards.annual.pricePerMonth}</p>
               
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="font-semibold">
-                    Demander l'ajout de n'importe quel livre
-                  </span>
+                  <span className="font-semibold">{t.premium.cards.lifetime.features.requestBooks}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Traitement sous 48-72h</span>
+                  <span>{t.premium.cards.lifetime.features.processing}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Statistiques de lecture avancées</span>
+                  <span>{t.premium.cards.lifetime.features.advancedStats}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Badges exclusifs Premium</span>
+                  <span>{t.premium.cards.lifetime.features.exclusiveBadges}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Support prioritaire</span>
+                  <span>{t.premium.cards.lifetime.features.prioritySupport}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Accès anticipé aux nouvelles fonctionnalités</span>
+                  <span>{t.premium.cards.lifetime.features.earlyAccess}</span>
                 </li>
               </ul>
               
@@ -245,53 +238,40 @@ export default function Premium() {
                 {isPurchasing ? (
                   <span className="flex items-center gap-3">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    Chargement de l'achat...
+                    {t.premium.loading.purchase}
                   </span>
                 ) : (
-                  'Acheter - 50€/an'
+                  t.premium.cards.annual.priceWithValue.replace('{price}', '50€')
                 )}
               </Button>
             </Card>
           </div>
           )}
 
-          {/* Trust Section - Adapté selon la plateforme */}
+          {/* Trust Section */}
           {!isIOS && !isAndroid && (
             <div className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                ✓ Paiement 100% sécurisé par Stripe
-              </p>
-              <p className="text-sm text-muted-foreground">
-                ✓ Annulation possible à tout moment
-              </p>
-              <p className="text-sm text-muted-foreground">
-                ✓ Accès immédiat après paiement
-              </p>
+              <p className="text-sm text-muted-foreground">{t.premium.trust.securePayment}</p>
+              <p className="text-sm text-muted-foreground">{t.premium.trust.cancelAnytime}</p>
+              <p className="text-sm text-muted-foreground">{t.premium.trust.immediateAccess}</p>
             </div>
           )}
 
           {/* FAQ Section */}
           <div className="mt-16 max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center">Questions fréquentes</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{t.premium.faq.title}</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-2">Comment fonctionne la demande de livre ?</h3>
-                <p className="text-muted-foreground">
-                  Une fois Premium, tu peux demander n'importe quel livre via le formulaire dédié. 
-                  Nous créons les questions de compréhension et ajoutons le livre ASAP.
-                </p>
+                <h3 className="font-semibold mb-2">{t.premium.faq.howItWorks.question}</h3>
+                <p className="text-muted-foreground">{t.premium.faq.howItWorks.answer}</p>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Combien de livres puis-je demander ?</h3>
-                <p className="text-muted-foreground">
-                  Deux livres par deux livres ! Tu dois valider un des deux livres demandés pour en obtenir un autre.
-                </p>
+                <h3 className="font-semibold mb-2">{t.premium.faq.howMany.question}</h3>
+                <p className="text-muted-foreground">{t.premium.faq.howMany.answer}</p>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Puis-je annuler mon abonnement ?</h3>
-                <p className="text-muted-foreground">
-                  Oui, tu peux annuler à tout moment. Tu garderas l'accès Premium jusqu'à la fin de ta période payée.
-                </p>
+                <h3 className="font-semibold mb-2">{t.premium.faq.cancel.question}</h3>
+                <p className="text-muted-foreground">{t.premium.faq.cancel.answer}</p>
               </div>
             </div>
           </div>

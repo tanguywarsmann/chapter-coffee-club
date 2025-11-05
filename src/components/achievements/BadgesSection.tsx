@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BadgeRarityProgress } from "./BadgeRarityProgress";
 import { Badge } from "@/types/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { useUserBadges } from "@/hooks/useUserBadges";
 import { fetchAvailableBadges } from "@/services/badgeService";
 import { Award, Sparkles, Loader2 } from "lucide-react";
@@ -10,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function BadgesSection() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data: earnedBadges = [], isLoading: isLoadingUserBadges } = useUserBadges(user?.id || '');
   const { data: allBadges = [], isLoading: isLoadingAllBadges } = useQuery({
     queryKey: ['all-badges'],
@@ -31,7 +33,7 @@ export function BadgesSection() {
               <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
                 <Award className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
               </div>
-              <span className="flex-1 min-w-0">Badges Débloqués</span>
+              <span className="flex-1 min-w-0">{t.achievements.badges.title}</span>
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
             </CardTitle>
           </CardHeader>
@@ -46,7 +48,6 @@ export function BadgesSection() {
 
   return (
     <div className="relative">
-      {/* Effet d'arrière-plan décoratif avec les couleurs Reed */}
       <div className="absolute inset-0 bg-gradient-to-br from-reed-primary/10 to-reed-secondary/10 rounded-3xl blur-2xl" />
 
       <Card className="relative border-0 bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden">
@@ -55,11 +56,11 @@ export function BadgesSection() {
             <div className="p-2 bg-gradient-to-br from-reed-secondary to-reed-light rounded-xl flex-shrink-0">
               <Award className="h-5 w-5 sm:h-6 sm:w-6 text-reed-primary" />
             </div>
-            <span className="flex-1 min-w-0">Badges Débloqués</span>
+            <span className="flex-1 min-w-0">{t.achievements.badges.title}</span>
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-reed-primary animate-pulse flex-shrink-0" />
           </CardTitle>
           <CardDescription className="text-reed-dark">
-            Vos accomplissements par ordre de rareté
+            {t.achievements.badges.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
@@ -89,11 +90,10 @@ export function BadgesSection() {
                       </p>
                       {badge.dateEarned && (
                         <p className="text-caption text-reed-medium mt-2">
-                          Obtenu le {badge.dateEarned}
+                          {t.achievements.badges.earnedOn.replace('{date}', badge.dateEarned)}
                         </p>
                       )}
 
-                      {/* Badge de rareté */}
                       <div className="absolute -top-2 -right-2">
                         <div className={`px-2 py-1 rounded-full text-caption font-medium ${
                           badge.rarity === 'legendary' ? 'bg-amber-100 text-amber-800' :
@@ -101,9 +101,9 @@ export function BadgesSection() {
                           badge.rarity === 'rare' ? 'bg-blue-100 text-blue-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {badge.rarity === 'legendary' ? 'Lég.' :
-                           badge.rarity === 'epic' ? 'Épic.' :
-                           badge.rarity === 'rare' ? 'Rare' : 'Com.'}
+                          {badge.rarity === 'legendary' ? t.achievements.badges.rarity.legendary :
+                           badge.rarity === 'epic' ? t.achievements.badges.rarity.epic :
+                           badge.rarity === 'rare' ? t.achievements.badges.rarity.rare : t.achievements.badges.rarity.common}
                         </div>
                       </div>
                     </div>
@@ -114,10 +114,10 @@ export function BadgesSection() {
               <div className="text-center py-12">
                 <div className="text-hero mb-4 opacity-30">🏆</div>
                 <h3 className="font-serif text-reed-darker text-h4 mb-2">
-                  Aucun badge débloqué
+                  {t.achievements.badges.empty}
                 </h3>
                 <p className="text-reed-dark">
-                  Continuez à lire pour débloquer vos premiers badges !
+                  {t.achievements.badges.emptyDesc}
                 </p>
               </div>
             )}

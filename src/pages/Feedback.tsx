@@ -5,10 +5,12 @@ import { FeedbackList } from "@/components/feedback/FeedbackList";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Feedback() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
@@ -18,10 +20,10 @@ export default function Feedback() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-12 space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold">
-          🌱 Fais pousser VREAD avec nous
+          {t.feedback.title}
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Chaque feedback est une graine qui améliore l'expérience de toute la communauté
+          {t.feedback.subtitle}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -36,19 +38,19 @@ export default function Feedback() {
             }}
             className="text-lg"
           >
-            🚀 Donner mon feedback
+            {t.feedback.buttons.give}
           </Button>
           <Button
             size="lg"
             variant="outline"
             onClick={() => document.getElementById('feedback-list')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            👀 Voir les suggestions
+            {t.feedback.buttons.view}
           </Button>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          🔥 En temps réel • Des centaines de feedbacks partagés
+          {t.feedback.realTime}
         </p>
       </div>
 

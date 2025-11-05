@@ -2,6 +2,7 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { useDiscover } from "@/hooks/useDiscover";
 import { RealActivityFeed } from "@/components/discover/RealActivityFeed";
 import { RealCommunityStats } from "@/components/discover/RealCommunityStats";
@@ -9,6 +10,7 @@ import { RealReadersSection } from "@/components/discover/RealReadersSection";
 
 export default function Discover() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data, isLoading, error } = useDiscover(user?.id);
 
   return (
@@ -20,17 +22,17 @@ export default function Discover() {
           <div className="mb-12 text-center relative overflow-hidden rounded-3xl bg-gradient-to-br from-coffee-medium/10 via-coffee-light/20 to-amber-50/30 p-8 md:p-12 border border-coffee-light/30 shadow-lg">
             <div className="relative z-10">
               <h1 className="text-4xl md:text-5xl font-bold font-serif text-coffee-darker mb-4 animate-fade-in">
-                Découvrir la communauté
+                {t.discover.title}
               </h1>
               <p className="text-lg md:text-xl text-coffee-dark font-light max-w-2xl mx-auto">
-                Explorez l'activité des lecteurs, suivez leur progression et rejoignez une communauté passionnée
+                {t.discover.subtitle}
               </p>
             </div>
           </div>
           
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              Une erreur est survenue lors du chargement des données.
+              {t.discover.error}
             </div>
           )}
           
