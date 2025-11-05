@@ -220,7 +220,7 @@ export const en: Translations = {
         priceWithValue: "Buy - {price} Lifetime",
         period: "Lifetime access",
         periodOnce: "Lifetime access - One-time payment",
-        validUntil: "Valid until October 15",
+        validUntil: "Valid until November 30",
         iosNote: "🍎 Purchase via App Store",
         features: {
           requestBooks: "Request any book to be added",
