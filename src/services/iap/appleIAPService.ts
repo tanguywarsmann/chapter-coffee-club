@@ -8,7 +8,7 @@ class AppleIAPService {
   private productId = 'com.vread.app.lifetime';
   private isInitialized = false;
   // Clé publique SDK RevenueCat (safe pour le client)
-  private apiKey = 'appl_LqGBafbkvvzjeVyWijyguTTO0yB';
+  private apiKey = 'appl_LqGBafbkvvzjeVyWijvguTTOQyB';
 
   /**
    * Initialise RevenueCat SDK
