@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,31 +24,32 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
     if (!email || !password) {
       toast.error("Veuillez remplir tous les champs");
       setIsLoading(false);
       return;
     }
-
+    
     try {
       // Tentative de connexion avec Supabase
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       // Afficher un message de succès
       toast.success("Connecté avec succès!");
-
+      
       // Attendre explicitement la récupération de la session
       const { data: sessionData } = await supabase.auth.getSession();
+      
       console.log("Session récupérée après connexion:", sessionData.session?.user?.id);
-
+      
       if (sessionData.session?.user) {
         // Si la session est bien récupérée, rediriger
         navigate("/home");
@@ -59,9 +61,11 @@ export function LoginForm() {
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
       let message = "Erreur de connexion";
+      
       if (error.message.includes("Invalid login credentials")) {
         message = "Email ou mot de passe incorrect";
       }
+      
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -74,7 +78,7 @@ export function LoginForm() {
         <SignUpForm />
         <div className="text-body-sm text-center">
           Déjà un compte?{" "}
-          <button
+          <button 
             onClick={() => setShowSignUp(false)}
             className="text-coffee-dark hover:text-coffee-darker font-semibold"
           >
@@ -123,11 +127,7 @@ export function LoginForm() {
                   className="border-coffee-medium"
                 />
               </div>
-              <Button
-                type="submit"
-                className="w-full bg-coffee-dark hover:bg-coffee-darker"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full bg-coffee-dark hover:bg-coffee-darker" disabled={isLoading}>
                 {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
             </div>
@@ -135,17 +135,18 @@ export function LoginForm() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4 pt-2">
           <div className="w-full text-center">
-            <button
+            <button 
               type="button"
               onClick={() => setShowForgotPassword(true)}
-              className="text-body-sm text-coffee-dark hover:text-coffee-darker underline underline-offset-4 font-medium"
+              className="text-sm text-coffee-dark hover:text-coffee-darker underline underline-offset-4 font-medium"
             >
               Mot de passe oublié?
             </button>
           </div>
+          
           <div className="text-body-sm text-center border-t border-border pt-4">
             Pas encore de compte?{" "}
-            <button
+            <button 
               type="button"
               onClick={() => setShowSignUp(true)}
               className="text-coffee-dark hover:text-coffee-darker font-semibold"
@@ -155,9 +156,10 @@ export function LoginForm() {
           </div>
         </CardFooter>
       </Card>
-      <ForgotPasswordModal
-        open={showForgotPassword}
-        onOpenChange={setShowForgotPassword}
+
+      <ForgotPasswordModal 
+        open={showForgotPassword} 
+        onOpenChange={setShowForgotPassword} 
       />
     </>
   );

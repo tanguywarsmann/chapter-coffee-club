@@ -60,10 +60,10 @@ const EnhancedAvatar = React.forwardRef<
   EnhancedAvatarProps
 >(({ src, alt, fallbackText, className, size = "md" }, ref) => {
   const sizeClasses = {
-    sm: "h-8 w-8 text-caption",
-    md: "h-10 w-10 text-body-sm", 
-    lg: "h-16 w-16 text-h4",
-    xl: "h-24 w-24 text-h3"
+    sm: "h-8 w-8 text-xs",
+    md: "h-10 w-10 text-sm", 
+    lg: "h-16 w-16 text-xl",
+    xl: "h-24 w-24 text-2xl"
   }
 
   const initials = fallbackText ? getUserInitials(fallbackText) : "U"

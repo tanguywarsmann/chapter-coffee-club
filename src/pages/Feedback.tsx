@@ -19,13 +19,13 @@ export default function Feedback() {
       <AppHeader />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-12 space-y-4">
-        <h1 className="text-h1 md:text-hero font-bold">
+        <h1 className="text-4xl md:text-5xl font-bold">
           {t.feedback.title}
         </h1>
-        <p className="text-h4 text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           {t.feedback.subtitle}
         </p>
-
+        
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             size="lg"
@@ -36,7 +36,7 @@ export default function Feedback() {
               }
               setShowForm(true);
             }}
-            className="text-body-lg"
+            className="text-lg"
           >
             {t.feedback.buttons.give}
           </Button>
@@ -49,7 +49,7 @@ export default function Feedback() {
           </Button>
         </div>
 
-        <p className="text-body-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {t.feedback.realTime}
         </p>
       </div>

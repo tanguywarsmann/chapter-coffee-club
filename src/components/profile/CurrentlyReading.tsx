@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/reading/progressService";
@@ -35,6 +36,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
     async function fetchCurrentlyReading() {
       try {
         setLoading(true);
+        
         const progress = await getUserReadingProgress(userId);
 
         if (!progress || progress.length === 0) {
@@ -48,6 +50,7 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
           const mostRecentBook = inProgressBooks.sort((a, b) => {
             return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
           })[0];
+
           setCurrentBook(mostRecentBook);
         } else {
           setCurrentBook(null);
@@ -118,23 +121,20 @@ export function CurrentlyReading({ userId }: CurrentlyReadingProps) {
           </div>
           <div className="flex-grow space-y-4">
             <h3 className="text-h4 font-medium text-coffee-darker">
-              <Link
-                to={`/books/${currentBook.book_id || currentBook.slug || ''}`}
-                className="hover:underline"
-              >
+              <Link to={`/books/${currentBook.book_id || currentBook.slug || ''}`} className="hover:underline">
                 {currentBook.book_title || "Titre inconnu"}
               </Link>
             </h3>
             <p className="text-body-sm text-muted-foreground">{currentBook.book_author || "Auteur inconnu"}</p>
+
             <div className="space-y-2">
-              <div className="flex justify-between text-body-sm">
+              <div className="flex justify-between text-sm">
                 <span className="text-coffee-dark">Progression</span>
                 <span className="font-medium">{progress}%</span>
               </div>
               <Progress value={progress} className="h-2" />
-              <div className="text-caption text-muted-foreground text-right">
-                {currentBook.chaptersRead} validation{currentBook.chaptersRead > 1 ? 's' : ''} sur{' '}
-                {currentBook.totalSegments || 0} segment{(currentBook.totalSegments || 0) > 1 ? 's' : ''}
+              <div className="text-xs text-muted-foreground text-right">
+                {currentBook.chaptersRead} validation{currentBook.chaptersRead > 1 ? 's' : ''} sur {currentBook.totalSegments || 0} segment{(currentBook.totalSegments || 0) > 1 ? 's' : ''}
               </div>
             </div>
           </div>

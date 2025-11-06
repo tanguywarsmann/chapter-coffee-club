@@ -81,9 +81,9 @@ export default function Explore() {
     return (
       <button
         onClick={() => { setCategory(value); setPage(1) }}
-        className={`px-4 py-2 text-body-sm rounded-lg transition-colors ${
-          active
-            ? 'bg-neutral text-neutral-foreground font-medium'
+        className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+          active 
+            ? 'bg-neutral text-neutral-foreground font-medium' 
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
         }`}
         aria-pressed={active}
@@ -96,10 +96,10 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-
+      
       <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
         <div className="space-y-4">
-          <h1 className="text-h2 font-serif font-medium text-coffee-darker">Explorer</h1>
+          <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Onglets catégories */}
@@ -121,10 +121,10 @@ export default function Explore() {
           </div>
         </div>
 
-        {loading && <p className="text-body-sm text-muted-foreground">Chargement des livres…</p>}
-        {error && <p className="text-body-sm text-destructive">{error}</p>}
+        {loading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         {!loading && !error && books.length === 0 && (
-          <p className="text-body-sm text-muted-foreground">Aucun livre dans cette catégorie.</p>
+          <p className="text-sm text-muted-foreground">Aucun livre dans cette catégorie.</p>
         )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -139,7 +139,7 @@ export default function Explore() {
           >
             Précédent
           </button>
-          <span className="text-body-sm text-muted-foreground">Page {page}</span>
+          <span className="text-sm text-muted-foreground">Page {page}</span>
           <button
             className="px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors"
             onClick={() => setPage(p => p + 1)}

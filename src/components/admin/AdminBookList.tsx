@@ -48,16 +48,16 @@ export function AdminBookList() {
   // Fonction pour corriger les segments commençant à 0
   const fixSegmentIndexing = async () => {
     setIsFixingSegments(true);
-
+    
     try {
       // Récupérer tous les segments avec index 0
       const { data: segmentsAtZero, error: fetchError } = await supabase
         .from('reading_questions')
         .select('id, book_slug, segment')
         .eq('segment', 0);
-
+      
       if (fetchError) throw fetchError;
-
+      
       if (!segmentsAtZero || segmentsAtZero.length === 0) {
         toast("Aucun segment avec index 0 n'a été trouvé.", {
           description: "Information"
@@ -65,10 +65,10 @@ export function AdminBookList() {
         setIsFixingSegments(false);
         return;
       }
-
+      
       // Pour chaque segment avec index 0, vérifiez s'il existe déjà un segment avec index 1
       const updatedCount = { success: 0, skipped: 0, failed: 0 };
-
+      
       for (const segment of segmentsAtZero) {
         // Vérifier si un segment 1 existe déjà pour ce livre
         const { data: existingSegments, error: checkError } = await supabase
@@ -77,20 +77,20 @@ export function AdminBookList() {
           .eq('book_slug', segment.book_slug)
           .eq('segment', 1)
           .maybeSingle();
-
+        
         if (checkError) {
           console.error(`Erreur lors de la vérification du segment 1 pour ${segment.book_slug}:`, checkError);
           updatedCount.failed++;
           continue;
         }
-
+        
         if (existingSegments) {
           // Si un segment 1 existe déjà, supprimer le segment 0
           const { error: deleteError } = await supabase
             .from('reading_questions')
             .delete()
             .eq('id', segment.id);
-
+          
           if (deleteError) {
             console.error(`Erreur lors de la suppression du segment 0 pour ${segment.book_slug}:`, deleteError);
             updatedCount.failed++;
@@ -103,7 +103,7 @@ export function AdminBookList() {
             .from('reading_questions')
             .update({ segment: 1 })
             .eq('id', segment.id);
-
+          
           if (updateError) {
             console.error(`Erreur lors de la mise à jour du segment 0 vers 1 pour ${segment.book_slug}:`, updateError);
             updatedCount.failed++;
@@ -112,14 +112,14 @@ export function AdminBookList() {
           }
         }
       }
-
+      
       toast.success(`${updatedCount.success} segments mis à jour, ${updatedCount.skipped} segments supprimés car redondants, ${updatedCount.failed} erreurs.`, {
         description: "Correction des segments terminée"
       });
-
+      
       // Rafraîchir les données
       fetchBooksValidationStatus();
-
+      
     } catch (error: any) {
       console.error("Erreur lors de la correction des segments:", error);
       toast.error(`Impossible de corriger les segments: ${error.message}`, {
@@ -135,33 +135,33 @@ export function AdminBookList() {
     console.log("Fetching books validation status...", new Date().toISOString());
     setIsLoading(true);
     setError(null);
-
+    
     try {
       // Récupérer tous les livres avec expected_segments
       const { data: booksData, error: booksError } = await supabase
         .from('books')
         .select('id, title, slug, total_pages, cover_url, expected_segments');
-
+      
       if (booksError) throw booksError;
-
+      
       // Récupérer l'état des segments depuis la vue
       const { data: statuses } = await supabase
         .from('book_segment_status')
         .select('*');
-
+      
       const bySlug = new Map(statuses?.map(s => [s.slug, s as BookSegmentStatus]) ?? []);
-
+      
       // Transformer les données pour l'affichage
       const booksWithStatus: BookValidationStatus[] = booksData.map(book => {
         const totalPages = book.total_pages || 0;
         const expectedSegments = book.expected_segments ?? 0;
         const statusData = bySlug.get(book.slug);
-
+        
         const availableQuestions = statusData?.available_questions ?? 0;
         const missingSegments = statusData?.missing_segments ?? [];
-        const status = statusData?.status === 'complete' ? 'complete' :
+        const status = statusData?.status === 'complete' ? 'complete' : 
                       statusData?.status === 'incomplete' ? 'incomplete' : 'missing';
-
+        
         // Create a BookValidationStatus object with all required fields
         return {
           id: book.id,
@@ -186,13 +186,13 @@ export function AdminBookList() {
           publicationYear: new Date().getFullYear(), // Default to current year
         };
       });
-
+      
       // Trier les livres : d'abord les incomplets, puis les manquants, puis les complets
       booksWithStatus.sort((a, b) => {
         const statusOrder = { incomplete: 0, missing: 1, complete: 2 };
         return statusOrder[a.status] - statusOrder[b.status];
       });
-
+      
       setBooks(booksWithStatus);
       console.log("Fetched", booksWithStatus.length, "books");
     } catch (err: any) {
@@ -263,7 +263,7 @@ export function AdminBookList() {
   // Handler pour générer une couverture
   const handleGenerateCover = async (book: BookValidationStatus) => {
     setGeneratingCovers(prev => new Set(prev).add(book.id));
-
+    
     try {
       const url = await generateAndSaveCover(book);
       toast.success(`URL: ${url}`, {
@@ -364,11 +364,11 @@ export function AdminBookList() {
           État des questions de validation ({books.length} livres)
         </h2>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleManualRefresh}
-            variant="outline"
-            size="sm"
-            className="gap-2"
+          <Button 
+            onClick={handleManualRefresh} 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
             disabled={isManuallyRefreshing}
           >
             {isManuallyRefreshing ? (
@@ -378,10 +378,10 @@ export function AdminBookList() {
             )}
             Recharger manuellement
           </Button>
-          <Button
-            onClick={fixSegmentIndexing}
-            variant="outline"
-            size="sm"
+          <Button 
+            onClick={fixSegmentIndexing} 
+            variant="outline" 
+            size="sm" 
             className="gap-2"
             disabled={isFixingSegments}
           >
@@ -435,7 +435,7 @@ export function AdminBookList() {
                       size="sm"
                       onClick={() => handleGenerateCover(book)}
                       disabled={generatingCovers.has(book.id)}
-                      className="text-caption px-2 py-1 h-6"
+                      className="text-xs px-2 py-1 h-6"
                     >
                       {generatingCovers.has(book.id) ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -452,9 +452,9 @@ export function AdminBookList() {
                   <div className="flex justify-end items-center gap-2">
                     <BookMetadataEditor book={book} onUpdate={handleBookUpdate} />
                     <MissingSegmentsDialog book={book} />
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
                       className="border-destructive hover:bg-destructive hover:text-destructive-foreground"
                       onClick={() => handleDeleteClick({id: book.id, title: book.title})}
                     >

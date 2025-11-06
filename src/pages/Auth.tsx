@@ -81,14 +81,14 @@ export default function AuthPage() {
         <div className="absolute top-4 right-4 z-50">
           <LanguageToggle />
         </div>
-
+        
         <section className="px-4 py-16">
           <div className="mx-auto flex max-w-md flex-col items-center text-center">
             <div className="rounded-3xl border-4 border-[#EEDCC8] p-4 shadow-xl bg-white/5 backdrop-blur-sm">
               <LogoVreadPng size={72} className="h-16 w-16" />
             </div>
 
-            <h1 className="mt-6 font-serif text-h2 text-white">{t.auth.welcome}</h1>
+            <h1 className="mt-6 font-serif text-3xl text-white">{t.auth.welcome}</h1>
             <p className="mt-1 text-white/90">{t.auth.firstTimeHere} <strong>{t.auth.createAccountIn30s}</strong></p>
 
             <Card className="mt-8 w-full rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
@@ -130,12 +130,12 @@ export default function AuthPage() {
                               <Label htmlFor="s-pwd2" className="text-white/90">{t.auth.confirmPassword}</Label>
                               <Input id="s-pwd2" type="password" value={sPwd2} onChange={(e) => setSPwd2(e.target.value)} className="bg-white" required minLength={6} autoComplete="new-password" />
                             </div>
-                            {sError && <p className="text-left text-body-sm text-red-200">{sError}</p>}
+                            {sError && <p className="text-left text-sm text-red-200">{sError}</p>}
                             <div className="mt-4 flex items-center justify-between">
                               <Button type="submit" disabled={sLoading} className="bg-white px-6 py-5 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60">
                                 {sLoading ? t.auth.signingUp : t.auth.createAccount}
                               </Button>
-                              <button type="button" onClick={() => setMode("login")} className="text-body-sm text-white/90 underline decoration-white/60 underline-offset-4">
+                              <button type="button" onClick={() => setMode("login")} className="text-sm text-white/90 underline decoration-white/60 underline-offset-4">
                                 {t.auth.alreadyRegistered}
                               </button>
                             </div>
@@ -161,12 +161,12 @@ export default function AuthPage() {
                             <Label htmlFor="l-pwd" className="text-white/90">{t.auth.password}</Label>
                             <Input id="l-pwd" type="password" value={lPwd} onChange={(e) => setLPwd(e.target.value)} className="bg-white" required autoComplete="current-password" />
                           </div>
-                          {lError && <p className="text-left text-body-sm text-red-200">{lError}</p>}
+                          {lError && <p className="text-left text-sm text-red-200">{lError}</p>}
                           <div className="mt-4 flex items-center justify-between">
                             <Button type="submit" disabled={lLoading} className="bg-white px-6 py-5 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60">
                               {lLoading ? t.auth.loggingIn : t.auth.signIn}
                             </Button>
-                            <button type="button" onClick={() => setMode("signup")} className="text-body-sm text-white/90 underline decoration-white/60 underline-offset-4">
+                            <button type="button" onClick={() => setMode("signup")} className="text-sm text-white/90 underline decoration-white/60 underline-offset-4">
                               {t.auth.firstTimeHere} {t.auth.createAccount}
                             </button>
                           </div>
@@ -178,7 +178,7 @@ export default function AuthPage() {
               </CardContent>
             </Card>
 
-            <p className="mt-4 text-caption text-white/80">En créant un compte, tu acceptes nos conditions d'utilisation.</p>
+            <p className="mt-4 text-xs text-white/80">En créant un compte, tu acceptes nos conditions d'utilisation.</p>
           </div>
         </section>
       </div>
@@ -187,3 +187,4 @@ export default function AuthPage() {
     </>
   );
 }
+

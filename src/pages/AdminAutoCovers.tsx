@@ -37,7 +37,7 @@ export default function AdminAutoCovers() {
   }
 
   async function runBatch() {
-    if (!books.length) {
+    if (!books.length) { 
       toast('Rien à faire')
       return
     }
@@ -97,13 +97,13 @@ export default function AdminAutoCovers() {
                       </SelectContent>
                     </Select>
                   </div>
-
+                  
                   <div className="space-y-2">
                     <Label>Limite</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={2000}
+                    <Input 
+                      type="number" 
+                      min={1} 
+                      max={2000} 
                       value={limit}
                       onChange={e=>setLimit(parseInt(e.target.value||'500',10))}
                     />
@@ -116,9 +116,9 @@ export default function AdminAutoCovers() {
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Rafraîchir
                       </Button>
-                      <Button
-                        onClick={runBatch}
-                        disabled={!books.length || running}
+                      <Button 
+                        onClick={runBatch} 
+                        disabled={!books.length || running} 
                         className="flex-1"
                       >
                         <Play className="h-4 w-4 mr-2" />
@@ -146,7 +146,7 @@ export default function AdminAutoCovers() {
                   <div className="font-medium mb-2">Échecs ({failed.length})</div>
                   <ul className="list-disc ml-5 space-y-1">
                     {failed.slice(0,10).map(f => (
-                      <li key={f.id} className="text-body-sm">
+                      <li key={f.id} className="text-sm">
                         {f.title} — {f.error}
                       </li>
                     ))}

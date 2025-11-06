@@ -14,13 +14,13 @@ export function PrivacyPolicy() {
         <meta name="description" content="Politique de confidentialité de VREAD : collecte, utilisation et protection de vos données personnelles." />
         <meta name="robots" content="index, follow" />
       </Helmet>
-
+      
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={() => navigate(-1)}
               className="flex items-center gap-2"
             >
@@ -31,22 +31,22 @@ export function PrivacyPolicy() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-h3 font-serif text-coffee-darker">
+              <CardTitle className="text-2xl font-serif text-coffee-darker">
                 Politique de Confidentialité
               </CardTitle>
             </CardHeader>
             <CardContent className="prose prose-coffee max-w-none space-y-6">
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">1. Introduction</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">1. Introduction</h2>
                 <p className="text-coffee-darker/80">
-                  VREAD ("nous", "notre") s'engage à protéger la vie privée de ses utilisateurs.
-                  Cette politique décrit comment nous collectons, utilisons et protégeons vos données personnelles
+                  VREAD ("nous", "notre") s'engage à protéger la vie privée de ses utilisateurs. 
+                  Cette politique décrit comment nous collectons, utilisons et protégeons vos données personnelles 
                   lorsque vous utilisez notre application mobile et web.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">2. Données collectées</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">2. Données collectées</h2>
                 <p className="text-coffee-darker/80">
                   Nous collectons les données suivantes :
                 </p>
@@ -60,7 +60,7 @@ export function PrivacyPolicy() {
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">3. Utilisation des données</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">3. Utilisation des données</h2>
                 <p className="text-coffee-darker/80">
                   Vos données sont utilisées pour :
                 </p>
@@ -78,7 +78,7 @@ export function PrivacyPolicy() {
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">4. Partage des données</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">4. Partage des données</h2>
                 <p className="text-coffee-darker/80">
                   Nous partageons vos données uniquement avec :
                 </p>
@@ -88,13 +88,13 @@ export function PrivacyPolicy() {
                   <li><strong>Fournisseurs de services</strong> : uniquement pour les services essentiels</li>
                 </ul>
                 <p className="text-coffee-darker/80 mt-2">
-                  Ces tiers sont contractuellement tenus de protéger vos données et de les utiliser
+                  Ces tiers sont contractuellement tenus de protéger vos données et de les utiliser 
                   uniquement pour les services demandés.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">5. Sécurité des données</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">5. Sécurité des données</h2>
                 <p className="text-coffee-darker/80">
                   Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées :
                 </p>
@@ -108,16 +108,16 @@ export function PrivacyPolicy() {
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">6. Conservation des données</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">6. Conservation des données</h2>
                 <p className="text-coffee-darker/80">
-                  Nous conservons vos données aussi longtemps que votre compte est actif ou que cela est
-                  nécessaire pour vous fournir nos services. Lorsque vous supprimez votre compte,
+                  Nous conservons vos données aussi longtemps que votre compte est actif ou que cela est 
+                  nécessaire pour vous fournir nos services. Lorsque vous supprimez votre compte, 
                   vos données personnelles sont supprimées définitivement dans un délai de 30 jours.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">7. Vos droits (RGPD)</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">7. Vos droits (RGPD)</h2>
                 <p className="text-coffee-darker/80">
                   Conformément au RGPD, vous disposez des droits suivants :
                 </p>
@@ -139,34 +139,34 @@ export function PrivacyPolicy() {
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">8. Données des mineurs</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">8. Données des mineurs</h2>
                 <p className="text-coffee-darker/80">
-                  VREAD est destiné aux utilisateurs de 13 ans et plus. Nous ne collectons pas
-                  sciemment de données personnelles d'enfants de moins de 13 ans. Si vous pensez
+                  VREAD est destiné aux utilisateurs de 13 ans et plus. Nous ne collectons pas 
+                  sciemment de données personnelles d'enfants de moins de 13 ans. Si vous pensez 
                   qu'un enfant nous a fourni des données personnelles, contactez-nous immédiatement.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">9. Cookies et technologies similaires</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">9. Cookies et technologies similaires</h2>
                 <p className="text-coffee-darker/80">
-                  Nous utilisons des cookies et technologies similaires pour améliorer votre expérience,
-                  analyser l'utilisation et personnaliser le contenu. Vous pouvez gérer vos préférences
+                  Nous utilisons des cookies et technologies similaires pour améliorer votre expérience, 
+                  analyser l'utilisation et personnaliser le contenu. Vous pouvez gérer vos préférences 
                   de cookies dans les paramètres de votre navigateur.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">10. Modifications de cette politique</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">10. Modifications de cette politique</h2>
                 <p className="text-coffee-darker/80">
-                  Nous pouvons modifier cette politique de confidentialité occasionnellement.
-                  Les modifications seront publiées sur cette page avec une date de mise à jour actualisée.
+                  Nous pouvons modifier cette politique de confidentialité occasionnellement. 
+                  Les modifications seront publiées sur cette page avec une date de mise à jour actualisée. 
                   Nous vous encourageons à consulter régulièrement cette page.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-h4 font-semibold text-coffee-dark">11. Contact et réclamations</h2>
+                <h2 className="text-xl font-semibold text-coffee-dark">11. Contact et réclamations</h2>
                 <p className="text-coffee-darker/80">
                   Pour toute question concernant cette politique ou vos données personnelles :
                 </p>
@@ -175,12 +175,12 @@ export function PrivacyPolicy() {
                   <li>Support : <a href="mailto:support@vread.fr" className="text-coffee-dark underline">support@vread.fr</a></li>
                 </ul>
                 <p className="text-coffee-darker/80 mt-2">
-                  Vous avez également le droit de déposer une plainte auprès de la CNIL (Commission Nationale
+                  Vous avez également le droit de déposer une plainte auprès de la CNIL (Commission Nationale 
                   de l'Informatique et des Libertés) si vous estimez que vos droits ne sont pas respectés.
                 </p>
               </section>
 
-              <p className="text-body-sm text-coffee-darker/60 border-t pt-4">
+              <p className="text-sm text-coffee-darker/60 border-t pt-4">
                 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}<br />
                 Version 1.1
               </p>

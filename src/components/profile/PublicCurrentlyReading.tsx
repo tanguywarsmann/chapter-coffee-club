@@ -1,4 +1,6 @@
+
 console.log("Import de PublicCurrentlyReading.tsx OK");
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserReadingProgress } from "@/services/reading/progressService";
@@ -15,15 +17,17 @@ interface PublicCurrentlyReadingProps {
 
 export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) {
   console.log("Rendering PublicCurrentlyReading", { userId: userId || "undefined" });
+  
   const [books, setBooks] = useState<ReadingProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Vérification de l'userId
   if (!userId) {
     console.warn("userId manquant dans PublicCurrentlyReading");
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Lectures en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
@@ -45,7 +49,7 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
           return;
         }
         const inProgress = progress.filter(p => p.status === "in_progress");
-        setBooks(inProgress.slice(0, 3));
+        setBooks(inProgress.slice(0, 3)); // Limite à 3 livres pour l'affichage
       } catch (error) {
         console.error("Erreur lors du chargement des lectures en cours:", error);
         setBooks([]);
@@ -65,7 +69,7 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Lectures en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -86,12 +90,12 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
     return (
       <Card className="border-coffee-light">
         <CardHeader>
-          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+          <CardTitle className="text-xl font-serif text-coffee-darker">Lectures en cours</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center p-6 text-center space-y-2">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <span className="text-h3 text-muted-foreground">📚</span>
+              <span className="text-2xl text-muted-foreground">📚</span>
             </div>
             <p className="text-muted-foreground">Aucune lecture en cours</p>
           </div>
@@ -103,16 +107,20 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
   return (
     <Card className="border-coffee-light">
       <CardHeader>
-        <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+        <CardTitle className="text-xl font-serif text-coffee-darker">Lectures en cours</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {books.map((book) => {
+            // Vérification du livre
             if (!book) {
               console.warn("Un livre de books est undefined");
               return null;
             }
+            
+            // S'assurer qu'on a un identifiant valide
             const bookIdentifier = book.book_id || book.slug || '';
+            
             return (
               <div key={book.id} className="flex flex-col space-y-3">
                 <div className="relative border border-coffee-light rounded-md overflow-hidden">
@@ -125,7 +133,7 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
                       />
                     ) : (
                       <div className="bg-coffee-lightest w-full h-full flex items-center justify-center">
-                        <span className="text-h1 text-coffee-medium">📖</span>
+                        <span className="text-4xl text-coffee-medium">📖</span>
                       </div>
                     )}
                   </AspectRatio>
@@ -136,11 +144,14 @@ export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) 
                       {book.book_title || "Titre inconnu"}
                     </Link>
                   </h3>
-                  <p className="text-body-sm text-muted-foreground">{book.book_author || "Auteur inconnu"}</p>
+                  <p className="text-sm text-muted-foreground">{book.book_author || "Auteur inconnu"}</p>
                 </div>
                 <div className="space-y-1">
-                  <Progress value={book.progressPercent} className="h-2 bg-coffee-lightest" />
-                  <p className="text-caption text-muted-foreground text-right">
+                  <Progress 
+                    value={book.progressPercent} 
+                    className="h-2 bg-coffee-lightest"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
                     {book.progressPercent}% terminé
                   </p>
                 </div>

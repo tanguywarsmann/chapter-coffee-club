@@ -57,7 +57,7 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
     try {
       const result = await createFeedback(formData as CreateFeedbackData);
       setStep(3);
-
+      
       toast.success(`Tu viens de gagner +${result.points_awarded} points !`, {
         description: "🎉 Merci champion !"
       });
@@ -78,7 +78,7 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
   if (step === 1) {
     return (
       <Card className="p-6">
-        <h2 className="text-h3 font-bold mb-2">🎯 De quoi veux-tu parler ?</h2>
+        <h2 className="text-2xl font-bold mb-2">🎯 De quoi veux-tu parler ?</h2>
         <p className="text-muted-foreground mb-6">
           Choisis le type de feedback que tu veux partager
         </p>
@@ -96,9 +96,9 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
                 setStep(2);
               }}
             >
-              <span className="text-h1">{emoji}</span>
+              <span className="text-4xl">{emoji}</span>
               <span className="font-semibold">{label}</span>
-              <span className="text-caption text-muted-foreground">+{points} pts</span>
+              <span className="text-xs text-muted-foreground">+{points} pts</span>
             </Button>
           ))}
         </div>
@@ -108,13 +108,13 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
 
   if (step === 2) {
     const selectedType = feedbackTypes.find(t => t.type === formData.type);
-
+    
     return (
       <Card className="p-6">
-        <h2 className="text-h3 font-bold mb-2">
+        <h2 className="text-2xl font-bold mb-2">
           {selectedType?.emoji} {selectedType?.label}
         </h2>
-
+        
         <div className="space-y-4">
           <div>
             <Label htmlFor="title">Titre *</Label>
@@ -135,7 +135,7 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
             <Textarea
               id="description"
               placeholder={
-                formData.type === 'bug'
+                formData.type === 'bug' 
                   ? "Quand je fais X, il se passe Y au lieu de Z"
                   : formData.type === 'feature'
                   ? "J'aimerais pouvoir X parce que Y"
@@ -146,7 +146,7 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
               rows={6}
               maxLength={500}
             />
-            <p className="text-caption text-muted-foreground text-right mt-1">
+            <p className="text-xs text-muted-foreground text-right mt-1">
               {formData.description?.length || 0}/500
             </p>
           </div>
@@ -206,19 +206,19 @@ export function FeedbackForm({ onSuccess, onCancel }: Props) {
   }
 
   const selectedType = feedbackTypes.find(t => t.type === formData.type);
-
+  
   return (
     <Card className="p-6 text-center">
       <div className="mb-6">
-        <h2 className="text-h2 font-bold mb-4">🎉 Merci champion ! 🎉</h2>
-        <p className="text-h4 text-green-600 font-semibold">
+        <h2 className="text-3xl font-bold mb-4">🎉 Merci champion ! 🎉</h2>
+        <p className="text-xl text-green-600 font-semibold">
           Tu viens de gagner +{selectedType?.points} points !
         </p>
       </div>
 
       <div className="bg-muted p-6 rounded-lg mb-6">
-        <p className="text-body-sm text-muted-foreground mb-2">🌱 Ton feedback fait grandir VREAD</p>
-        <p className="text-h4 font-semibold">Continue comme ça ! 💚</p>
+        <p className="text-sm text-muted-foreground mb-2">🌱 Ton feedback fait grandir VREAD</p>
+        <p className="text-lg font-semibold">Continue comme ça ! 💚</p>
       </div>
 
       <div className="flex gap-2">

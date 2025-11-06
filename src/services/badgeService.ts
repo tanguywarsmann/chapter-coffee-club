@@ -16,8 +16,8 @@ export const fetchAvailableBadges = async (): Promise<Badge[]> => {
   try {
     const { data, error } = await supabase
       .from('badges')
-      .select('id, slug, label, description, icon, color, rarity, category')
-      .order('created_at', { ascending: true });
+      .select('id, slug, label, description, icon, color, rarity')
+      .order('created_at', { ascending: true }) as unknown as { data: Badge[] | null, error: any };
 
     if (error) {
       console.error('Error fetching badges:', error);
@@ -186,7 +186,7 @@ export const getUserBadges = async (userId: string): Promise<Badge[]> => {
 export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
   try {
     const { data, error } = await supabase
-      .rpc('auto_grant_badges', { p_user_id: userId });
+      .rpc('auto_grant_badges' as any, { p_user_id: userId });
 
     if (error) {
       console.error('Error auto-granting badges:', error);

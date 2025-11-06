@@ -60,7 +60,7 @@ export default function Achievements() {
             <h1 className="text-h1 sm:text-hero font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
               {t.achievements.title}
             </h1>
-            <p className="text-body sm:text-body-lg text-reed-dark">
+            <p className="text-body sm:text-lg text-reed-dark">
               {t.achievements.subtitle}
             </p>
           </div>

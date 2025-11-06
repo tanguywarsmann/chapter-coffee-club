@@ -44,7 +44,7 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
       await voteFeedback(feedback.id);
       setHasVoted(!hasVoted);
       setVotesCount(hasVoted ? votesCount - 1 : votesCount + 1);
-
+      
       if (!hasVoted) {
         toast.success("+2 points gagnés", {
           description: "Vote enregistré ! 🎉"
@@ -73,7 +73,7 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
           disabled={isVoting}
         >
           <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
-          <span className="text-caption font-semibold">{votesCount}</span>
+          <span className="text-xs font-semibold">{votesCount}</span>
         </Button>
 
         <div className="flex-1 space-y-2">
@@ -82,7 +82,7 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
               {typeInfo.emoji} {typeInfo.label}
             </Badge>
             {feedback.category && (
-              <Badge variant="outline" className="text-caption">
+              <Badge variant="outline" className="text-xs">
                 {feedback.category}
               </Badge>
             )}
@@ -91,10 +91,10 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
             </Badge>
           </div>
 
-          <h3 className="font-semibold text-h4">{feedback.title}</h3>
-          <p className="text-muted-foreground text-body-sm">{feedback.description}</p>
+          <h3 className="font-semibold text-lg">{feedback.title}</h3>
+          <p className="text-muted-foreground text-sm">{feedback.description}</p>
 
-          <div className="flex items-center gap-4 text-caption text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             {!feedback.is_anonymous && feedback.profiles && (
               <div className="flex items-center gap-2">
                 <Avatar className="h-5 w-5">
@@ -109,7 +109,7 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
             {feedback.is_anonymous && (
               <span className="italic">Anonyme</span>
             )}
-
+            
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {formatDistanceToNow(new Date(feedback.created_at), {

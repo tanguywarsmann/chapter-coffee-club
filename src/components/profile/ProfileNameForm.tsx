@@ -22,7 +22,7 @@ interface ProfileNameFormProps {
 export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,20 +32,20 @@ export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProp
 
   const saveUsername = async (values: z.infer<typeof formSchema>) => {
     if (!user?.id) return;
-
+    
     setIsLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ username: values.username })
         .eq('id', user.id);
-
+      
       if (error) throw error;
-
+      
       toast.success("Votre nom public a été mis à jour avec succès.", {
         description: "Nom de profil enregistré"
       });
-
+      
       onSave();
     } catch (error: any) {
       toast.error(error.message || "Une erreur est survenue lors de l'enregistrement du nom.", {
@@ -55,7 +55,7 @@ export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProp
       setIsLoading(false);
     }
   };
-
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(saveUsername)} className="space-y-4">
@@ -66,21 +66,21 @@ export function ProfileNameForm({ currentUsername, onSave }: ProfileNameFormProp
             <FormItem>
               <FormLabel className="text-coffee-darker">Nom de profil</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Choisissez un nom public"
+                <Input 
+                  placeholder="Choisissez un nom public" 
                   className="bg-background"
                   {...field}
                 />
               </FormControl>
-              <p className="text-caption text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Ce nom sera visible par les autres utilisateurs.
               </p>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
+        <Button 
+          type="submit" 
           className="w-full bg-coffee-dark hover:bg-coffee-darker"
           disabled={isLoading}
         >
