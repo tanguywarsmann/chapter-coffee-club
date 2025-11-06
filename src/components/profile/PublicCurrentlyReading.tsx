@@ -1,1 +1,154 @@
- console.log("Import de PublicCurrentlyReading.tsx OK"); import { useState, useEffect } from "react"; import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; import { getUserReadingProgress } from "@/services/reading/progressService"; import { ReadingProgress } from "@/types/reading"; import { AspectRatio } from "@/components/ui/aspect-ratio"; import { Progress } from "@/components/ui/progress"; import { Skeleton } from "@/components/ui/skeleton"; import { Link } from "react-router-dom"; import Image from "@/components/ui/image"; interface PublicCurrentlyReadingProps { userId: string; } export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) { console.log("Rendering PublicCurrentlyReading", { userId: userId || "undefined" }); const [books, setBooks] = useState<ReadingProgress[]>([]); const [loading, setLoading] = useState(true); // Vérification de l'userId if (!userId) { console.warn("userId manquant dans PublicCurrentlyReading"); return ( <Card className="border-coffee-light"> <CardHeader> <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle> </CardHeader> <CardContent> <div className="flex items-center justify-center h-48 text-center text-muted-foreground"> Identifiant utilisateur manquant </div> </CardContent> </Card> ); } useEffect(() => { const fetchBooks = async () => { setLoading(true); try { const progress = await getUserReadingProgress(userId); if (!progress || !Array.isArray(progress)) { console.warn("Progrès de lecture non disponible ou invalide"); setBooks([]); return; } const inProgress = progress.filter(p => p.status === "in_progress"); setBooks(inProgress.slice(0, 3)); // Limite à 3 livres pour l'affichage } catch (error) { console.error("Erreur lors du chargement des lectures en cours:", error); setBooks([]); } finally { setLoading(false); } }; try { fetchBooks(); } catch (e) { console.error("Erreur dans useEffect [PublicCurrentlyReading]", e); } }, [userId]); if (loading) { return ( <Card className="border-coffee-light"> <CardHeader> <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle> </CardHeader> <CardContent> <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> {[1, 2, 3].map((i) => ( <div key={i} className="flex flex-col space-y-2"> <Skeleton className="h-48 w-full" /> <Skeleton className="h-4 w-3/4" /> <Skeleton className="h-4 w-1/2" /> </div> ))} </div> </CardContent> </Card> ); } if (books.length === 0) { return ( <Card className="border-coffee-light"> <CardHeader> <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle> </CardHeader> <CardContent> <div className="flex flex-col items-center justify-center p-6 text-center space-y-2"> <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center"> <span className="text-h3 text-muted-foreground">📚</span> </div> <p className="text-muted-foreground">Aucune lecture en cours</p> </div> </CardContent> </Card> ); } return ( <Card className="border-coffee-light"> <CardHeader> <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle> </CardHeader> <CardContent> <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> {books.map((book) => { // Vérification du livre if (!book) { console.warn("Un livre de books est undefined"); return null; } // S'assurer qu'on a un identifiant valide const bookIdentifier = book.book_id || book.slug || ''; return ( <div key={book.id} className="flex flex-col space-y-3"> <div className="relative border border-coffee-light rounded-md overflow-hidden"> <AspectRatio ratio={2/3}> {book.book_cover ? ( <Image src={book.book_cover} alt={book.book_title || "Couverture du livre"} className="object-cover w-full h-full" /> ) : ( <div className="bg-coffee-lightest w-full h-full flex items-center justify-center"> <span className="text-h1 text-coffee-medium">📖</span> </div> )} </AspectRatio> </div> <div> <h3 className="font-medium text-coffee-darker truncate"> <Link to={`/books/${bookIdentifier}`}> {book.book_title || "Titre inconnu"} </Link> </h3> <p className="text-body-sm text-muted-foreground">{book.book_author || "Auteur inconnu"}</p> </div> <div className="space-y-1"> <Progress value={book.progressPercent} className="h-2 bg-coffee-lightest" /> <p className="text-caption text-muted-foreground text-right"> {book.progressPercent}% terminé </p> </div> </div> ); })} </div> </CardContent> </Card> ); } 
+console.log("Import de PublicCurrentlyReading.tsx OK");
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getUserReadingProgress } from "@/services/reading/progressService";
+import { ReadingProgress } from "@/types/reading";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
+import Image from "@/components/ui/image";
+
+interface PublicCurrentlyReadingProps {
+  userId: string;
+}
+
+export function PublicCurrentlyReading({ userId }: PublicCurrentlyReadingProps) {
+  console.log("Rendering PublicCurrentlyReading", { userId: userId || "undefined" });
+  const [books, setBooks] = useState<ReadingProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  if (!userId) {
+    console.warn("userId manquant dans PublicCurrentlyReading");
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-48 text-center text-muted-foreground">
+            Identifiant utilisateur manquant
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      try {
+        const progress = await getUserReadingProgress(userId);
+        if (!progress || !Array.isArray(progress)) {
+          console.warn("Progrès de lecture non disponible ou invalide");
+          setBooks([]);
+          return;
+        }
+        const inProgress = progress.filter(p => p.status === "in_progress");
+        setBooks(inProgress.slice(0, 3));
+      } catch (error) {
+        console.error("Erreur lors du chargement des lectures en cours:", error);
+        setBooks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    try {
+      fetchBooks();
+    } catch (e) {
+      console.error("Erreur dans useEffect [PublicCurrentlyReading]", e);
+    }
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col space-y-2">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (books.length === 0) {
+    return (
+      <Card className="border-coffee-light">
+        <CardHeader>
+          <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center p-6 text-center space-y-2">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-h3 text-muted-foreground">📚</span>
+            </div>
+            <p className="text-muted-foreground">Aucune lecture en cours</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-coffee-light">
+      <CardHeader>
+        <CardTitle className="text-h4 font-serif text-coffee-darker">Lectures en cours</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {books.map((book) => {
+            if (!book) {
+              console.warn("Un livre de books est undefined");
+              return null;
+            }
+            const bookIdentifier = book.book_id || book.slug || '';
+            return (
+              <div key={book.id} className="flex flex-col space-y-3">
+                <div className="relative border border-coffee-light rounded-md overflow-hidden">
+                  <AspectRatio ratio={2/3}>
+                    {book.book_cover ? (
+                      <Image
+                        src={book.book_cover}
+                        alt={book.book_title || "Couverture du livre"}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="bg-coffee-lightest w-full h-full flex items-center justify-center">
+                        <span className="text-h1 text-coffee-medium">📖</span>
+                      </div>
+                    )}
+                  </AspectRatio>
+                </div>
+                <div>
+                  <h3 className="font-medium text-coffee-darker truncate">
+                    <Link to={`/books/${bookIdentifier}`}>
+                      {book.book_title || "Titre inconnu"}
+                    </Link>
+                  </h3>
+                  <p className="text-body-sm text-muted-foreground">{book.book_author || "Auteur inconnu"}</p>
+                </div>
+                <div className="space-y-1">
+                  <Progress value={book.progressPercent} className="h-2 bg-coffee-lightest" />
+                  <p className="text-caption text-muted-foreground text-right">
+                    {book.progressPercent}% terminé
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
