@@ -1,4 +1,4 @@
-import { texts } from "@/i18n/texts";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { 
   Home, 
   BookCheck, 
@@ -18,20 +18,32 @@ export type NavItem = {
   ariaLabel?: string;
 };
 
-export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean } = {}): NavItem[] {
-  const { isPremium } = opts;
+export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean; t?: any } = {}): NavItem[] {
+  const { isPremium, t } = opts;
+
+  // Fallback for when t is not provided (should not happen in normal usage)
+  const nav = t?.nav || {
+    home: "Accueil",
+    explore: "Explorer",
+    achievements: "Récompenses",
+    requestBook: "Demander un livre",
+    premium: "Premium",
+    readingList: "Ma liste",
+    discover: "Lecteurs",
+    feedback: "Feedback",
+  };
 
   const items: NavItem[] = [
-    { to: "/home", label: texts.home, icon: Home, ariaLabel: `Aller à ${texts.home}` },
-    { to: "/explore", label: texts.explore, icon: BookCheck, ariaLabel: `Aller à ${texts.explore}` },
-    { to: "/achievements", label: texts.achievements, icon: Trophy, ariaLabel: `Aller à ${texts.achievements}` },
+    { to: "/home", label: nav.home, icon: Home, ariaLabel: `${nav.home}` },
+    { to: "/explore", label: nav.explore, icon: BookCheck, ariaLabel: `${nav.explore}` },
+    { to: "/achievements", label: nav.achievements, icon: Trophy, ariaLabel: `${nav.achievements}` },
     // 4. Premium / Request Book (conditionnel)
     isPremium
-      ? { to: "/request-book", label: "Demander un livre", icon: BookPlus, ariaLabel: "Demander un livre" }
-      : { to: "/premium", label: "Premium", icon: Crown, ariaLabel: "Passer Premium" },
-    { to: "/reading-list", label: texts.readingList, icon: BookCheck, ariaLabel: `Aller à ${texts.readingList}` },
-    { to: "/discover", label: texts.discover, icon: Users, ariaLabel: `Aller à ${texts.discover}` },
-    { to: "/feedback", label: "Feedback", icon: MessageSquare, ariaLabel: "Aller au Feedback" },
+      ? { to: "/request-book", label: nav.requestBook, icon: BookPlus, ariaLabel: nav.requestBook }
+      : { to: "/premium", label: nav.premium, icon: Crown, ariaLabel: nav.premium },
+    { to: "/reading-list", label: nav.readingList, icon: BookCheck, ariaLabel: `${nav.readingList}` },
+    { to: "/discover", label: nav.discover, icon: Users, ariaLabel: `${nav.discover}` },
+    { to: "/feedback", label: nav.feedback, icon: MessageSquare, ariaLabel: nav.feedback },
   ];
 
   return items;

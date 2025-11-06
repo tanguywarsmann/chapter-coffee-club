@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, SquarePen, Save } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -74,8 +74,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   // Generate empty segments for any missing ones
   const generateMissingSegments = async () => {
     if (book.missingSegments.length === 0) {
-      toast({
-        title: "Information : Tous les segments ont déjà été créés pour ce livre.",
+      toast("Tous les segments ont déjà été créés pour ce livre.", {
+        description: "Information"
       });
       return;
     }
@@ -105,8 +105,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         
       if (error) throw error;
       
-      toast({
-        title: `Segments générés : ${book.missingSegments.length} segments vides ont été générés avec succès.`,
+      toast.success(`${book.missingSegments.length} segments vides ont été générés avec succès.`, {
+        description: "Segments générés"
       });
       
       // Fermer le dialogue et actualiser les données
@@ -115,9 +115,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la génération des segments:", error);
-      toast({
-        title: `Erreur : Impossible de générer les segments: ${error.message}`,
-        variant: "destructive",
+      toast.error(`Impossible de générer les segments: ${error.message}`, {
+        description: "Erreur"
       });
     } finally {
       setIsSaving(false);
@@ -165,8 +164,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       
       console.log("Réponse de Supabase:", { data, affectedRows: data?.length });
       
-      toast({
-        title: `Modifications enregistrées : Les informations du livre "${book.title}" ont été mises à jour.`
+      toast.success(`Les informations du livre "${book.title}" ont été mises à jour.`, {
+        description: "Modifications enregistrées"
       });
       
       // Fermer le dialogue et actualiser les données
@@ -175,9 +174,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du livre:", error);
-      toast({
-        title: `Erreur : Impossible de mettre à jour le livre: ${error.message}`,
-        variant: "destructive"
+      toast.error(`Impossible de mettre à jour le livre: ${error.message}`, {
+        description: "Erreur"
       });
     } finally {
       setIsSaving(false);
@@ -187,34 +185,30 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
   // Fonction pour ajouter une question de validation
   const addValidationQuestion = async () => {
     if (!selectedSegment && selectedSegment !== 0) {
-      toast({
-        title: "Segment non sélectionné : Veuillez sélectionner un segment",
-        variant: "destructive"
+      toast.error("Veuillez sélectionner un segment", {
+        description: "Segment non sélectionné"
       });
       return;
     }
     
     if (!question.trim()) {
-      toast({
-        title: "Question invalide : La question ne peut pas être vide",
-        variant: "destructive"
+      toast.error("La question ne peut pas être vide", {
+        description: "Question invalide"
       });
       return;
     }
     
     if (!answer.trim()) {
-      toast({
-        title: "Réponse invalide : La réponse ne peut pas être vide",
-        variant: "destructive"
+      toast.error("La réponse ne peut pas être vide", {
+        description: "Réponse invalide"
       });
       return;
     }
     
     // Vérifier si la réponse contient plus d'un mot
     if (answer.trim().split(/\s+/).length > 1) {
-      toast({
-        title: "Réponse invalide : La réponse doit contenir un seul mot",
-        variant: "destructive"
+      toast.error("La réponse doit contenir un seul mot", {
+        description: "Réponse invalide"
       });
       return;
     }
@@ -244,8 +238,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
         
       if (error) throw error;
       
-      toast({
-        title: `Question ajoutée : La question pour le segment ${selectedSegment} a été ajoutée avec succès.`
+      toast.success(`La question pour le segment ${selectedSegment} a été ajoutée avec succès.`, {
+        description: "Question ajoutée"
       });
       
       // Réinitialiser les champs
@@ -258,9 +252,8 @@ export function BookMetadataEditor({ book, onUpdate }: BookMetadataEditorProps) 
       onUpdate();
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de la question:", error);
-      toast({
-        title: `Erreur : Impossible d'ajouter la question: ${error.message}`,
-        variant: "destructive"
+      toast.error(`Impossible d'ajouter la question: ${error.message}`, {
+        description: "Erreur"
       });
     } finally {
       setIsAddingQuestion(false);

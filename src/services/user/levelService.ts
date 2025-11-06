@@ -118,41 +118,44 @@ export async function addXP(userId: string, amount: number): Promise<boolean> {
       return false;
     }
     
-    // Récupérer les données de niveau actuelles
-    const currentLevel = await getUserLevel(userId);
-    if (!currentLevel) {
-      console.error("addXP: Could not get or create user level");
-      return false;
-    }
-    
-    // Calculer les nouvelles valeurs
-    const newXP = currentLevel.xp + amount;
-    const oldLevel = currentLevel.level;
-    const newLevel = getLevelFromXP(newXP);
-    
-    // Mettre à jour la base de données
-    const { error } = await supabase
-      .from('user_levels')
-      .update({ 
-        xp: newXP, 
-        level: newLevel, 
-        last_updated: new Date().toISOString() 
-      })
-      .eq('user_id', userId);
+    // ✅ Appeler la RPC atomique increment_user_xp
+    const { data, error } = await supabase
+      .rpc('increment_user_xp', {
+        p_user_id: userId,
+        p_amount: amount
+      });
     
     if (error) {
-      console.error("Erreur lors de la mise à jour du niveau:", error);
+      console.error("Erreur lors de l'ajout d'XP:", error);
       return false;
     }
     
-    console.log(`✅ XP ajouté: +${amount} XP pour ${userId} (Total: ${newXP} XP, Niveau: ${newLevel})`);
+    // data contient { old_level, new_level, new_xp, amount }
+    const result = data as { old_level: number; new_level: number; new_xp: number; amount: number };
+    
+    console.log(`✅ XP ajouté: +${result.amount} XP pour ${userId} (Total: ${result.new_xp} XP, Niveau: ${result.new_level})`);
     
     // Notifier si l'utilisateur a gagné un niveau
-    if (newLevel > oldLevel) {
-      toast.success(`Niveau supérieur ! Vous êtes maintenant niveau ${newLevel}`, {
+    if (result.new_level > result.old_level) {
+      toast.success(`Niveau ${result.new_level} atteint !`, {
+        description: "Tu progresses, bravo !",
         duration: 5000,
+        icon: "🎉",
       });
-      console.log(`🎉 Niveau supérieur ! Utilisateur ${userId} est maintenant niveau ${newLevel}`);
+      console.log(`🎉 Niveau supérieur ! Utilisateur ${userId} est maintenant niveau ${result.new_level}`);
+    } else {
+      // ✅ Phase 1.2: Fixed - notification avant le seuil
+      const xpForNext = getXPForNextLevel(result.new_level);
+      const xpRemaining = xpForNext - result.new_xp;
+      
+      // Notification si on est à 30 XP ou moins du prochain niveau
+      if (xpRemaining > 0 && xpRemaining <= 30) {
+        toast(`Plus que ${xpRemaining} XP pour le niveau ${result.new_level + 1} !`, {
+          description: "Continue comme ça !",
+          duration: 3000,
+          icon: "⚡",
+        });
+      }
     }
     
     return true;

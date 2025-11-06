@@ -102,12 +102,11 @@ export function QuizModal({
       return;
     }
 
-    // Anti double-clic
-    if (inFlightRef.current || isSubmitting || isRevealing || showAnswerReveal) {
+    // ✅ Phase 1.3: Simplified anti-double-click
+    if (isSubmitting) {
       console.log("❌ Prevented double submission");
       return;
     }
-    inFlightRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -154,7 +153,11 @@ export function QuizModal({
       console.log("✅ Validation result:", result);
 
       if (result?.ok) {
-        toast.success("Réponse correcte ! Segment validé !");
+        // ✅ Phase 1.2: Afficher les XP dans le toast
+        toast.success("✅ Segment validé !", {
+          description: "+10 XP • Prochain segment dans 30 pages",
+          duration: 4000,
+        });
         if (!hasCalledComplete.current) {
           hasCalledComplete.current = true;
           onComplete({ correct: true, useJoker: false });
@@ -162,7 +165,10 @@ export function QuizModal({
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
-        toast.error("Réponse incorrecte. Essayez encore !");
+        toast.error("Réponse incorrecte", {
+          description: `${maxAttempts - newAttempts} tentative(s) restante(s)`,
+          duration: 4000,
+        });
 
         // Joker proposé dès la 1ère mauvaise réponse si autorisé serveur
         const canUseJokerFlag = canUseJokers(expectedSegments);
@@ -170,13 +176,19 @@ export function QuizModal({
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
         } else if (!canUseJokerFlag) {
-          toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
+          toast.error("Jokers indisponibles", {
+            description: "Livre trop court (< 3 segments)",
+            duration: 4000,
+          });
           if (newAttempts >= maxAttempts && !hasCalledComplete.current) {
             hasCalledComplete.current = true;
             onComplete({ correct: false, useJoker: false });
           }
         } else if (newAttempts >= maxAttempts) {
-          toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+          toast.error("Tentatives épuisées", {
+            description: "Réessayez plus tard",
+            duration: 4000,
+          });
           if (!hasCalledComplete.current) {
             hasCalledComplete.current = true;
             onComplete({ correct: false, useJoker: false });
@@ -220,7 +232,6 @@ export function QuizModal({
         toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
       }
     } finally {
-      inFlightRef.current = false;
       setIsSubmitting(false);
       console.log("=== END SINGLE VALIDATION ===");
     }
@@ -377,6 +388,11 @@ export function QuizModal({
                 setAnswer={setAnswer}
                 data-testid="quiz-answer-input"
               />
+              
+              {/* ✅ Phase 3.1: Aria-live pour les tentatives */}
+              <div className="sr-only" aria-live="polite" aria-atomic="true">
+                {attempts > 0 && `${maxAttempts - attempts} tentative(s) restante(s)`}
+              </div>
 
               {/* Debug expected_segments */}
               {import.meta.env.VITE_DEBUG_JOKER && (

@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 
 type ProfileRecord = Database['public']['Tables']['profiles']['Row'];
@@ -31,7 +31,9 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
       
       if (error) {
         console.error("Error fetching own user profile:", error);
-        toast({ title: "Erreur : Impossible de charger votre profil", variant: "destructive" });
+        toast.error("Impossible de charger votre profil", {
+          description: "Erreur"
+        });
         return null;
       }
       return data;
@@ -44,7 +46,9 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
 
     if (publicError) {
       console.error("Error fetching public profile via RPC:", publicError);
-      toast({ title: "Erreur : Impossible de charger le profil public", variant: "destructive" });
+      toast.error("Impossible de charger le profil public", {
+        description: "Erreur"
+      });
       return null;
     }
 
@@ -64,10 +68,7 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
     return mapped;
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    toast({
-      title: "Erreur inattendue lors du chargement du profil",
-      variant: "destructive",
-    });
+    toast.error("Erreur inattendue lors du chargement du profil");
     return null;
   }
 }
@@ -144,60 +145,54 @@ export async function syncUserProfile(userId: string, email: string | undefined)
       .eq('id', userId)
       .maybeSingle();
       
-    if (profileError) {
-      console.error("Error checking existing profile:", profileError);
-      toast({
-        title: "Erreur de synchronisation : Impossible de vérifier le profil existant",
-        variant: "destructive",
-      });
-      return false;
-    }
+      if (profileError) {
+        console.error("Error checking existing profile:", profileError);
+        toast.error("Impossible de vérifier le profil existant", {
+          description: "Erreur de synchronisation"
+        });
+        return false;
+      }
       
-    if (existingProfile) {
-      // Mise à jour de l'email si le profil existe déjà
-      if (email) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ email })
-          .eq('id', userId);
+      if (existingProfile) {
+        // Mise à jour de l'email si le profil existe déjà
+        if (email) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ email })
+            .eq('id', userId);
           
-        if (updateError) {
-          console.error("Error updating profile:", updateError);
-          toast({
-            title: "Erreur de mise à jour : Impossible de mettre à jour l'email du profil",
-            variant: "destructive",
+          if (updateError) {
+            console.error("Error updating profile:", updateError);
+            toast.error("Impossible de mettre à jour l'email du profil", {
+              description: "Erreur de mise à jour"
+            });
+            return false;
+          }
+        }
+      } else {
+        // Création d'un nouveau profil si aucun n'existe
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email,
+            username: null,
+            is_admin: false
+          });
+        
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+          toast.error("Impossible de créer le profil utilisateur", {
+            description: "Erreur de création"
           });
           return false;
         }
       }
-    } else {
-      // Création d'un nouveau profil si aucun n'existe
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email,
-          username: null,
-          is_admin: false
-        });
-        
-      if (insertError) {
-        console.error("Error creating profile:", insertError);
-        toast({
-          title: "Erreur de création : Impossible de créer le profil utilisateur",
-          variant: "destructive",
-        });
-        return false;
-      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error syncing user profile:", error);
+      toast.error("Erreur inattendue lors de la synchronisation du profil");
+      return false;
     }
-    
-    return true;
-  } catch (error) {
-    console.error("Error syncing user profile:", error);
-    toast({
-      title: "Erreur inattendue lors de la synchronisation du profil",
-      variant: "destructive",
-    });
-    return false;
   }
-}

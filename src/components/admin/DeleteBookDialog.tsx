@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2, Trash, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { deleteBook } from "@/services/books/deleteBook";
 import { Book } from "@/types/book";
 
@@ -66,8 +66,8 @@ export function DeleteBookDialog({
       const success = await deleteBook(bookId);
       
       if (success) {
-        toast({
-          title: `Livre supprimé : "${bookTitle}" et ses données associées ont été supprimés avec succès.`,
+        toast.success(`"${bookTitle}" et ses données associées ont été supprimés avec succès.`, {
+          description: "Livre supprimé"
         });
         console.log("Update triggered from DeleteBookDialog");
         onDeleted();
@@ -75,9 +75,8 @@ export function DeleteBookDialog({
       }
     } catch (error: any) {
       console.error("Erreur lors de la suppression:", error);
-      toast({
-        title: `Erreur de suppression : ${error.message || "Impossible de supprimer ce livre"}`,
-        variant: "destructive",
+      toast.error(error.message || "Impossible de supprimer ce livre", {
+        description: "Erreur de suppression"
       });
     } finally {
       setIsLoading(false);

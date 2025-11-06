@@ -1,13 +1,13 @@
 
 import { Book } from "@/types/book";
-import { useRef, useEffect, useMemo, memo } from "react";
+import { useMemo, memo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
-import { StatsCards } from "@/components/home/StatsCards";
+import { HeroCurrentBook } from "@/components/home/HeroCurrentBook";
 import { HomeContent } from "@/components/home/HomeContent";
+import { ExploreSection } from "@/components/home/ExploreSection";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { texts } from "@/i18n/texts";
-import { useRenderTracker } from "@/utils/performanceTracker";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -20,13 +20,8 @@ interface MainContentProps {
   currentReading: BookWithProgress | null;
   isLoadingCurrentBook: boolean;
   onContinueReading: () => void;
+  onSearch: (query: string) => void;
 }
-
-// Composant mémorisé pour les résultats de recherche
-const MemoizedSearchResults = memo(SearchResults);
-
-// Composant mémorisé pour le contenu principal
-const MemoizedHomeContent = memo(HomeContent);
 
 export const MainContent = memo(function MainContent({
   searchResults,
@@ -38,26 +33,10 @@ export const MainContent = memo(function MainContent({
   onProgressUpdate,
   currentReading,
   isLoadingCurrentBook,
-  onContinueReading
+  onContinueReading,
+  onSearch
 }: MainContentProps) {
-  // Track des re-rendus pour optimisation
-  useRenderTracker('MainContent', {
-    hasSearchResults: !!searchResults,
-    searchResultsLength: searchResults?.length || 0,
-    readingProgressLength: readingProgress?.length || 0,
-    isLoading,
-    isSearching,
-    isRedirecting
-  });
-
-  // Mémoriser les IDs stables pour éviter les re-rendus
-  const stableIds = useMemo(() => ({
-    searchResultsKey: searchResults?.map(book => book.id).join('-') || 'no-search',
-    readingProgressKey: readingProgress?.map(p => `${p.book_id}-${p.chaptersRead}`).join('-') || 'no-progress',
-    inProgressCount: readingProgress?.length || 0
-  }), [searchResults, readingProgress]);
-
-  // Composant de chargement mémorisé
+  // Loading state for search
   const loadingComponent = useMemo(() => (
     <div className="flex items-center justify-center p-8">
       <div className="text-center space-y-2">
@@ -69,31 +48,43 @@ export const MainContent = memo(function MainContent({
     </div>
   ), []);
 
-  // Contenu principal mémorisé
-  const homeContent = useMemo(() => (
-    <MemoizedHomeContent
-      key={`home-content-${stableIds.readingProgressKey}`}
-      readingProgress={readingProgress}
-      isLoading={isLoading}
-      onProgressUpdate={onProgressUpdate}
-    />
-  ), [readingProgress, isLoading, onProgressUpdate, stableIds.readingProgressKey]);
-
   if (isSearching) {
     return loadingComponent;
   }
 
   if (searchResults) {
     return (
-      <MemoizedSearchResults 
-        key={stableIds.searchResultsKey}
+      <SearchResults 
         searchResults={searchResults} 
         onReset={onResetSearch} 
       />
     );
   }
 
-  return homeContent;
+  // Main home layout - simplified and elegant
+  return (
+    <div className="space-y-8 md:space-y-12">
+      {/* Hero Section - Current Reading */}
+      <HeroCurrentBook
+        currentReading={currentReading}
+        isLoading={isLoadingCurrentBook}
+        onContinueReading={onContinueReading}
+      />
+
+      {/* Library Section */}
+      <HomeContent
+        readingProgress={readingProgress}
+        isLoading={isLoading}
+        onProgressUpdate={onProgressUpdate}
+      />
+
+      {/* Explore Section - Collapsible */}
+      <ExploreSection
+        onSearch={onSearch}
+        isSearching={isSearching}
+      />
+    </div>
+  );
 });
 
 export default MainContent;

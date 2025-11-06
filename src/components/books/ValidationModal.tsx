@@ -41,10 +41,18 @@ export function ValidationModal({
     onValidate();
   };
 
+  // ✅ Phase 1.1: Reset hasRead when modal closes
+  const handleModalChange = (open: boolean) => {
+    if (!open) {
+      setHasRead(false);
+      onClose();
+    }
+  };
+
   return (
     <Dialog 
       open={isOpen} 
-      onOpenChange={onClose}
+      onOpenChange={handleModalChange}
       aria-labelledby="validation-modal-title"
       aria-describedby="validation-modal-description"
     >
@@ -106,19 +114,20 @@ export function ValidationModal({
                 checked={hasRead}
                 onCheckedChange={(checked) => setHasRead(checked as boolean)}
                 aria-describedby="checkbox-description"
+                className="transition-all duration-200 data-[state=checked]:scale-110"
               />
               <div className="grid gap-1.5 leading-none">
                 <Label
                   htmlFor="hasRead"
                   className="text-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
                 >
-                  J'ai lu ces pages et je souhaite valider cette étape
+                  J'ai lu ces pages
                 </Label>
                 <p 
                   id="checkbox-description"
                   className="text-caption text-foreground/70"
                 >
-                  Cochez cette case pour confirmer que vous avez terminé la lecture de cette section
+                  Confirmez votre lecture avant de valider
                 </p>
               </div>
             </div>
@@ -138,7 +147,7 @@ export function ValidationModal({
             <Button 
               onClick={handleSubmit} 
               disabled={!hasRead || isValidating}
-              className="bg-coffee-dark hover:bg-coffee-darker text-white"
+              className="bg-coffee-dark hover:bg-coffee-darker text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label={isValidating ? "Validation en cours" : "Valider cette étape de lecture"}
               aria-describedby={!hasRead ? "validation-requirement" : undefined}
             >

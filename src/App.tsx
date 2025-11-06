@@ -6,16 +6,13 @@ import { queryClient } from "@/lib/query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ServiceWorkerUpdater } from "@/components/ServiceWorkerUpdater";
+import { Capacitor } from "@capacitor/core";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 
 console.info("[APP] App component loading");
 
-// Lazy load toast components for better code splitting
-const Toaster = lazy(() => 
-  import("@/components/ui/toaster").then(mod => ({
-    default: mod.Toaster
-  }))
-);
-const Sonner = lazy(() => 
+// Lazy load Sonner toast component for better code splitting
+const Sonner = lazy(() =>
   import("@/components/ui/sonner").then(mod => ({
     default: mod.Sonner
   }))
@@ -30,12 +27,11 @@ const AppContent = () => {
   const location = useLocation();
   const isLanding = location.pathname === '/landing';
   const { user, isInitialized } = useAuth();
+  const isCapacitor = Capacitor.isNativePlatform();
 
   return (
     <>
-      {/* Global JSON-LD in body for visibility */}<Suspense fallback={null}>
-        <Toaster />
-      </Suspense>
+      {/* Global JSON-LD in body for visibility */}
       <Suspense fallback={null}>
         <Sonner
           richColors={false}
@@ -45,7 +41,8 @@ const AppContent = () => {
         />
       </Suspense>
       
-      <ServiceWorkerUpdater />
+      {/* PWA Service Worker - disabled in native Capacitor */}
+      {!isCapacitor && <ServiceWorkerUpdater />}
       
       <CanonicalManager />
       <OGUrlManager />
@@ -63,13 +60,15 @@ const App = () => {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </TooltipProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

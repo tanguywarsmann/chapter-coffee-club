@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { texts } from "@/i18n/texts";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { buildNav } from "./nav.config";
 
 interface MobileMenuProps {
@@ -12,7 +12,8 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
-  const items = buildNav({ isAdmin, isPremium });
+  const { t } = useTranslation();
+  const items = buildNav({ isAdmin, isPremium, t });
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -35,12 +36,12 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
           variant="ghost" 
           size="icon" 
           className="md:hidden focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2"
-          aria-label={texts.menu}
+          aria-label={t.nav.menu}
           aria-expanded={isSheetOpen}
           aria-controls="mobile-menu"
         >
           <Menu className="h-5 w-5" />
-          <span className="sr-only">{texts.menu}</span>
+          <span className="sr-only">{t.nav.menu}</span>
         </Button>
       </SheetTrigger>
       <SheetContent 
@@ -57,7 +58,7 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
         }}
       >
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-h4">{texts.menu || "Menu"}</SheetTitle>
+          <SheetTitle className="text-left text-h4">{t.nav.menu}</SheetTitle>
         </SheetHeader>
         <nav className="mt-4" role="navigation" aria-label="Navigation principale">
           <ul className="space-y-1" role="list">

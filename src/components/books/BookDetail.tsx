@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BookProgressBar } from "./BookProgressBar";
 import { BookValidationModals } from "./BookValidationModals";
 import { BookBadgeDialog } from "./BookBadgeDialog";
+import { BookQuestDialog } from "./BookQuestDialog";
 import { useBookDetailProgress } from "@/hooks/useBookDetailProgress";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { BookMonthlyRewardModal } from "./BookMonthlyRewardHandler";
@@ -62,6 +63,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     showBadgeDialog,
     setShowBadgeDialog,
     unlockedBadges,
+    showQuestDialog,
+    setShowQuestDialog,
+    unlockedQuests,
     monthlyReward,
     showMonthlyReward,
     setShowMonthlyReward,
@@ -265,6 +269,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             jokersAllowed={jokersAllowed}
             jokersRemaining={jokersRemaining}
             isUsingJoker={isUsingJoker}
+            userId={user?.id} // ✅ Passer userId pour SuccessMessage
             onValidationClose={() => setShowValidationModal(false)}
             onValidationConfirm={handleModalValidationConfirm}
             onQuizClose={() => setShowQuiz(false)}
@@ -280,6 +285,15 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             open={showBadgeDialog}
             badges={unlockedBadges}
             setOpen={setShowBadgeDialog}
+          />
+        )}
+
+        {/* Quest Dialog - Only render when needed */}
+        {showQuestDialog && (
+          <BookQuestDialog
+            open={showQuestDialog}
+            quests={unlockedQuests}
+            setOpen={setShowQuestDialog}
           />
         )}
 

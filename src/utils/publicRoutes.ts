@@ -11,7 +11,10 @@ export const PUBLIC_ROUTES = [
   '/landing',
   '/blog',
   '/auth',
-  '/reset-password'
+  '/reset-password',
+  '/premium',
+  '/legal/privacy',
+  '/legal/terms'
 ] as const;
 
 export const PUBLIC_ROUTE_PATTERNS = [

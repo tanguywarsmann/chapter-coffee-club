@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 /**
  * Supprime un livre et toutes ses données associées
@@ -10,9 +10,8 @@ import { toast } from "@/hooks/use-toast";
 export const deleteBook = async (bookId: string): Promise<boolean> => {
   try {
     if (!bookId) {
-      toast({
-        title: "Erreur de suppression : Identifiant du livre non fourni",
-        variant: "destructive",
+      toast.error("Identifiant du livre non fourni", {
+        description: "Erreur de suppression"
       });
       return false;
     }
@@ -50,17 +49,13 @@ export const deleteBook = async (bookId: string): Promise<boolean> => {
       throw bookError;
     }
 
-    toast({
-      title: "Livre supprimé avec succès",
-      variant: "default",
-    });
+    toast.success("Livre supprimé avec succès");
     return true;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Impossible de supprimer ce livre";
     console.error("Erreur lors de la suppression du livre:", error);
-    toast({
-      title: `Erreur de suppression : ${errorMessage}`,
-      variant: "destructive",
+    toast.error(errorMessage, {
+      description: "Erreur de suppression"
     });
     return false;
   }

@@ -194,11 +194,11 @@ export const autoGrantBadges = async (userId: string): Promise<Badge[]> => {
     }
 
     // Show toasts for newly granted badges
-    if (data && data.length > 0) {
-      const newBadges = data.filter((row: any) => row.newly_granted);
+    if (data && Array.isArray(data) && data.length > 0) {
+      const newBadges = (data as any[]).filter((row: any) => row.newly_granted);
 
       for (const row of newBadges) {
-        toast.success(`🏆 Nouveau badge débloqué : ${row.badge_name}`);
+        toast.success(`🏆 Nouveau badge débloqué : ${(row as any).badge_name}`);
       }
 
       // Return the badges in the expected format

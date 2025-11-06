@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Loader2, Upload } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -119,9 +119,8 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     } catch (error) {
       console.error("Erreur lors de la génération des segments vides:", error);
       // We don't want the whole book creation process to fail if segment generation fails
-      toast({
-        title: "Attention : Le livre a été créé, mais la génération automatique des segments a échoué.",
-        variant: "default",
+      toast("Le livre a été créé, mais la génération automatique des segments a échoué.", {
+        description: "Attention"
       });
     }
   };
@@ -163,8 +162,8 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       // Generate empty segments for the book
       await generateEmptySegments(slug, data.total_pages);
       
-      toast({
-        title: `Livre ajouté avec succès : "${data.title}" a été ajouté à la base de données.`,
+      toast.success(`"${data.title}" a été ajouté à la base de données.`, {
+        description: "Livre ajouté avec succès"
       });
       
       form.reset();
@@ -174,9 +173,8 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
       onBookAdded(); // Refresh book list
     } catch (error: any) {
       console.error("Erreur lors de l'ajout du livre:", error);
-      toast({
-        title: `Erreur : Impossible d'ajouter le livre: ${error.message}`,
-        variant: "destructive",
+      toast.error(`Impossible d'ajouter le livre: ${error.message}`, {
+        description: "Erreur"
       });
     } finally {
       setIsLoading(false);

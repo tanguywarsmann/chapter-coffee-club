@@ -45,6 +45,8 @@ export const useBookValidation = ({
   const sessionStartTimeRef = useRef<Date | null>(null);
   const [showBadgeDialog, setShowBadgeDialog] = useState(false);
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([]);
+  const [showQuestDialog, setShowQuestDialog] = useState(false);
+  const [unlockedQuests, setUnlockedQuests] = useState<any[]>([]);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
   
   // FIX P0-1: Store confetti timers for cleanup to prevent memory leaks
@@ -129,6 +131,8 @@ export const useBookValidation = ({
   const {
     newBadges,
     setNewBadges,
+    newQuests,
+    setNewQuests,
     handleQuizComplete
   } = useQuizCompletion({
     book,
@@ -237,15 +241,14 @@ export const useBookValidation = ({
     // SI JOKER UTILISÉ ET CORRECT -> PAS DE VALIDATION SUPPLÉMENTAIRE
     if (useJoker && correct) {
       console.log("🃏 Joker used successfully - skipping RPC validation");
+      // ✅ Phase 2.2: Confetti consolidé - un seul appel
       showConfetti();
-      // Retourner immédiatement sans appeler handleQuizComplete
       return { success: true, newBadges: [] };
     }
 
+    // ✅ Phase 2.2: Un seul appel showConfetti() pour validation normale
     if (correct) {
       console.log("🎉 Showing confetti and success animations");
-      console.log("🎊 showConfetti function:", showConfetti);
-      console.log("🎊 showConfetti type:", typeof showConfetti);
       showConfetti();
     }
     
@@ -261,7 +264,14 @@ export const useBookValidation = ({
           setUnlockedBadges(result.newBadges);
           setShowBadgeDialog(true);
         }
-        
+
+        // Check for new quests
+        if (result?.newQuests && result.newQuests.length > 0) {
+          console.log("🏆 New quests unlocked:", result.newQuests);
+          setUnlockedQuests(result.newQuests);
+          setShowQuestDialog(true);
+        }
+
         // Handle completed books
         if ((currentBook || book)?.isCompleted) {
           const completedBooks = localStorage.getItem(`completed_books_${userId}`)
@@ -271,6 +281,19 @@ export const useBookValidation = ({
             completedBooks.push(currentBook || book);
             localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
           }
+          
+          // ✅ Phase 3.3: Notification après livre terminé avec lien vers le flux
+          setTimeout(() => {
+            toast.success("Livre terminé !", {
+              description: "Ton exploit est visible dans le flux",
+              duration: 5000,
+              icon: "📚",
+              action: {
+                label: "Voir le flux",
+                onClick: () => window.location.href = "/discover"
+              }
+            });
+          }, 2000);
         }
         
         // Record reading session
@@ -349,6 +372,10 @@ export const useBookValidation = ({
     showBadgeDialog,
     setShowBadgeDialog,
     unlockedBadges,
+    showQuestDialog,
+    setShowQuestDialog,
+    unlockedQuests,
+    newQuests,
     monthlyReward,
     showMonthlyReward,
     setShowMonthlyReward,
@@ -379,6 +406,9 @@ export const useBookValidation = ({
     forceRefresh,
     showBadgeDialog,
     unlockedBadges,
+    showQuestDialog,
+    unlockedQuests,
+    newQuests,
     monthlyReward,
     showMonthlyReward,
     handleMainButtonClick,

@@ -1,34 +1,28 @@
 {
-  "name": "VREAD - Lecture Interactive",
+  "name": "VREAD",
   "short_name": "VREAD",
-  "description": "Application de lecture interactive pour valider votre compréhension",
+  "description": "L'appli qui t'accompagne dans ta lecture, page après page",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#8B4513",
+  "theme_color": "#AE6841",
   "orientation": "portrait-primary",
   "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["education", "books", "lifestyle"],
   "icons": [
     {
       "src": "/branding/vread-logo-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/branding/vread-logo-512.png", 
+      "src": "/branding/vread-logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/branding/vread-logo-maskable-512.png",
-      "sizes": "512x512", 
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
-  ],
-  "categories": ["education", "books", "lifestyle"],
-  "lang": "fr",
-  "dir": "ltr"
+  ]
 }

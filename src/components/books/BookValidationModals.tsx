@@ -23,6 +23,7 @@ interface BookValidationModalsProps {
   jokersAllowed?: number;
   jokersRemaining?: number;
   isUsingJoker?: boolean;
+  userId?: string; // ✅ Ajout pour passer à SuccessMessage
   onValidationClose: () => void;
   onValidationConfirm: () => void;
   onQuizClose: () => void;
@@ -46,6 +47,7 @@ export const BookValidationModals = memo(({
   jokersAllowed = 0,
   jokersRemaining = 0,
   isUsingJoker = false,
+  userId, // ✅ Récupérer userId
   onValidationClose,
   onValidationConfirm,
   onQuizClose,
@@ -119,6 +121,7 @@ export const BookValidationModals = memo(({
           isOpen={showSuccessMessage}
           onClose={onSuccessClose}
           segment={currentQuestion?.segment || 0}
+          userId={userId} // ✅ Passer userId à SuccessMessage
         />
       )}
     </>
