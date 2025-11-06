@@ -25,11 +25,11 @@ export default function BookPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const isMounted = useRef(true);
-  
+
   // Debug pour le gating UI des jokers
   const expectedSegments = useExpectedSegments(book);
   const canShowJoker = uiCanSurfaceJoker(expectedSegments);
-  
+
   useEffect(() => {
     if (book) {
       console.info("[BOOK/JOKER UI]", {
@@ -39,7 +39,7 @@ export default function BookPage() {
       });
     }
   }, [book?.title, expectedSegments, canShowJoker]);
-  
+
   // État pour les messages d'alerte
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
 
@@ -54,7 +54,7 @@ export default function BookPage() {
 
   useEffect(() => {
     isMounted.current = true;
-    
+
     const fetchBook = async () => {
       if (!id) {
         setError("Aucun identifiant de livre fourni");
@@ -65,25 +65,25 @@ export default function BookPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Récupérer le livre basique d'abord
         const fetchedBook = await getBookById(id);
-        
+
         if (!isMounted.current) return;
-        
+
         if (!fetchedBook) {
           setError(`Le livre avec l'identifiant "${id}" n'existe pas`);
           setLoading(false);
           return;
         }
-        
+
         // Ensure categories and tags are properly set to avoid undefined errors
         const safeBook = {
           ...fetchedBook,
           categories: fetchedBook.categories || fetchedBook.tags || [],
           tags: fetchedBook.tags || fetchedBook.categories || []
         };
-        
+
         // Convertir en BookWithProgress pour compatibilité
         const bookAsWithProgress: BookWithProgress = {
           ...safeBook,
@@ -93,7 +93,7 @@ export default function BookPage() {
           nextSegmentPage: 1,
           chaptersRead: 0,
           expectedSegments: safeBook.expectedSegments || safeBook.total_chapters || 1,
-          
+
           // Propriétés ProgressRow requises avec des valeurs par défaut
           book_id: safeBook.id,
           current_page: 0,
@@ -105,16 +105,16 @@ export default function BookPage() {
           updated_at: new Date().toISOString(),
           user_id: user?.id || ""
         };
-        
+
         setBook(bookAsWithProgress);
-        
+
         // Essayer de récupérer avec progression si utilisateur connecté
         if (user?.id) {
           try {
             const bookWithProgress = await getBookReadingProgress(user.id, id);
-            
+
             if (!isMounted.current) return;
-            
+
             if (bookWithProgress) {
               // Ensure safe categories
               const safeProgressBook = {
@@ -126,9 +126,9 @@ export default function BookPage() {
             } else {
               // Synchroniser avec l'API
               const syncedBook = await syncBookWithAPI(user.id, id);
-              
+
               if (!isMounted.current) return;
-              
+
               if (syncedBook) {
                 const safeSyncedBook = {
                   ...syncedBook,
@@ -143,7 +143,7 @@ export default function BookPage() {
             // Ne pas afficher d'erreur pour la sync, le livre de base fonctionne
           }
         }
-        
+
       } catch (fetchError) {
         if (isMounted.current) {
           setError("Erreur lors du chargement du livre");
@@ -157,7 +157,7 @@ export default function BookPage() {
     };
 
     fetchBook();
-    
+
     return () => {
       isMounted.current = false;
     };
@@ -212,9 +212,9 @@ export default function BookPage() {
           ) : error ? (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center max-w-none">
-                <h2 className="text-xl font-medium text-coffee-darker mb-2">Erreur</h2>
+                <h2 className="text-h4 font-medium text-coffee-darker mb-2">Erreur</h2>
                 <p className="text-muted-foreground mb-4">{error}</p>
-                <button 
+                <button
                   className="text-coffee-dark hover:text-coffee-darker underline"
                   onClick={() => navigate(-1)}
                 >
@@ -235,21 +235,21 @@ export default function BookPage() {
                   </div>
                 </div>
               )}
-              
+
               <BookDetail book={book} onChapterComplete={handleChapterComplete} />
               {book.progressPercent >= 100 && (
                 <div className="max-w-4xl mx-auto">
                   <div className="bg-coffee-lightest/50 border border-coffee-light rounded-lg p-6 text-center">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                      <span className="text-2xl">🎉</span>
-                      <h3 className="text-xl font-semibold text-coffee-darker">
+                      <span className="text-h3">🎉</span>
+                      <h3 className="text-h4 font-semibold text-coffee-darker">
                         Félicitations ! Vous avez terminé ce livre
                       </h3>
                     </div>
                     <p className="text-muted-foreground mb-4">
                       Rejoignez la discussion avec d'autres lecteurs qui ont également terminé "{book.title}"
                     </p>
-                    <Link 
+                    <Link
                       to={`/finished-chat/${book.slug || id}`}
                       className="inline-flex items-center gap-2 bg-coffee-dark hover:bg-coffee-darker text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
@@ -263,9 +263,9 @@ export default function BookPage() {
           ) : (
             <div className="min-h-[60vh] flex items-center justify-center">
               <div className="text-center max-w-none">
-                <h2 className="text-xl font-medium text-coffee-darker mb-2">{t.common.bookNotAvailable}</h2>
+                <h2 className="text-h4 font-medium text-coffee-darker mb-2">{t.common.bookNotAvailable}</h2>
                 <p className="text-muted-foreground mb-4">{t.common.bookNotAvailableDescription}</p>
-                <button 
+                <button
                   className="text-coffee-dark hover:text-coffee-darker underline"
                   onClick={() => navigate("/explore")}
                 >

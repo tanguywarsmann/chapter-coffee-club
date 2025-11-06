@@ -20,14 +20,14 @@ export function UserProfile() {
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
   const [loading, setLoading] = useState(true);
-  
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [username, setUsername] = useState<string | null>(null);
-  
+
   // Set profileUserId based on URL params or current user
   useEffect(() => {
     // If there's a userId in the URL, use that, otherwise use the current user's ID
@@ -41,15 +41,15 @@ export function UserProfile() {
   // Fetch follower counts and user profile when profileUserId changes
   useEffect(() => {
     if (!profileUserId) return;
-    
+
     async function fetchUserData() {
       try {
         setLoading(true);
-        
+
         // Fetch follower counts
         const counts = await getFollowerCounts(profileUserId);
         setFollowerCounts(counts);
-        
+
         // Fetch user profile
         const profile = await getUserProfile(profileUserId);
         if (profile) {
@@ -64,7 +64,7 @@ export function UserProfile() {
         setLoading(false);
       }
     }
-    
+
     fetchUserData();
   }, [profileUserId]);
 
@@ -77,10 +77,10 @@ export function UserProfile() {
       console.error("Error refreshing follower counts:", error);
     }
   };
-  
+
   const refreshProfile = async () => {
     if (!profileUserId) return;
-    
+
     try {
       const profile = await getUserProfile(profileUserId);
       if (profile) {
@@ -93,7 +93,7 @@ export function UserProfile() {
   };
 
   const isOwnProfile = !params.userId || (user && user.id === profileUserId);
-  
+
   // Determine display name based on available info
   const displayName = getDisplayName(username, profileData?.email, profileData?.id || 'U');
 
@@ -101,14 +101,14 @@ export function UserProfile() {
     <div>
         <Card className="border-coffee-light">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-xl font-serif text-coffee-darker flex items-center gap-2">
+            <CardTitle className="text-h4 font-serif text-coffee-darker flex items-center gap-2">
               <UserRound className="h-5 w-5 text-coffee-dark" />
               {isOwnProfile ? "Mon profil" : "Profil utilisateur"}
             </CardTitle>
             {isOwnProfile && !isEditingProfile && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-coffee-dark hover:text-coffee-darker"
                 onClick={() => setIsEditingProfile(true)}
               >
@@ -123,14 +123,14 @@ export function UserProfile() {
           <CardContent>
             {isEditingProfile && isOwnProfile ? (
               <div className="mb-4">
-                <ProfileNameForm 
-                  currentUsername={username} 
-                  onSave={refreshProfile} 
+                <ProfileNameForm
+                  currentUsername={username}
+                  onSave={refreshProfile}
                 />
                 <div className="mt-3 flex justify-end">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setIsEditingProfile(false)}
                   >
                     Annuler
@@ -139,7 +139,7 @@ export function UserProfile() {
               </div>
             ) : (
               <div className="flex flex-col md:flex-row md:items-start md:gap-4">
-                <EnhancedAvatar 
+                <EnhancedAvatar
                   src={profileData?.avatar}
                   alt={displayName}
                   fallbackText={displayName}
@@ -148,31 +148,31 @@ export function UserProfile() {
                 />
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-lg font-medium text-coffee-darker truncate max-w-[calc(100vw-8rem)]">
+                    <h3 className="text-h4 font-medium text-coffee-darker truncate max-w-[calc(100vw-8rem)]">
                       {displayName}
                     </h3>
                     {isPremium && isOwnProfile && <PremiumBadge size="sm" />}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate max-w-[calc(100vw-2rem)]">
+                  <p className="text-body-sm text-muted-foreground truncate max-w-[calc(100vw-2rem)]">
                     {profileData?.email}
                   </p>
-                  
+
                   <div className="flex items-center mt-4 gap-6">
-                    <Link 
+                    <Link
                       to={profileUserId ? `/followers/followers/${profileUserId}` : '/followers/followers'}
                       className="flex items-center gap-1 group"
                     >
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-body-sm">
                         <Users className="h-4 w-4 text-coffee-dark" />
                         <span className="font-medium text-coffee-dark">{followerCounts.followers}</span>
                         <span className="text-muted-foreground group-hover:underline">Abonnés</span>
                       </div>
                     </Link>
-                    <Link 
+                    <Link
                       to={profileUserId ? `/followers/following/${profileUserId}` : '/followers/following'}
                       className="flex items-center gap-1 group"
                     >
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-body-sm">
                         <Users className="h-4 w-4 text-coffee-dark" />
                         <span className="font-medium text-coffee-dark">{followerCounts.following}</span>
                         <span className="text-muted-foreground group-hover:underline">Abonnements</span>
@@ -183,12 +183,12 @@ export function UserProfile() {
               </div>
             )}
             {isOwnProfile && !username && !isEditingProfile && (
-              <div className="mt-4 py-2 px-3 bg-muted/50 rounded-md text-sm">
+              <div className="mt-4 py-2 px-3 bg-muted/50 rounded-md text-body-sm">
                 <p className="text-coffee-darker">
                   Choisis un nom public pour que les autres puissent te reconnaître.
                 </p>
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   className="text-coffee-dark p-0 h-auto mt-1"
                   onClick={() => setIsEditingProfile(true)}
                 >

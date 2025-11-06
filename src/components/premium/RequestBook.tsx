@@ -59,7 +59,7 @@ export function RequestBook() {
       if (error) throw error;
 
       toast.success(t.requestBook.toast.success);
-      
+
       // Reset form
       setFormData({ title: '', author: '', isbn: '', reason: '' });
     } catch (error) {
@@ -73,12 +73,12 @@ export function RequestBook() {
   // Paywall if not Premium
   if (!isPremium) {
     const isIOS = Capacitor.getPlatform() === 'ios';
-    
+
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="p-8 text-center">
           <Crown className="mx-auto h-16 w-16 text-yellow-500 mb-4" />
-          <h2 className="text-2xl font-bold mb-2">{t.requestBook.paywall.title}</h2>
+          <h2 className="text-h3 font-bold mb-2">{t.requestBook.paywall.title}</h2>
           <p className="text-muted-foreground mb-6">
             {t.requestBook.paywall.description}
           </p>
@@ -94,13 +94,13 @@ export function RequestBook() {
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex items-center gap-2 mb-6">
         <BookPlus className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold">{t.requestBook.title}</h2>
+        <h2 className="text-h3 font-bold">{t.requestBook.title}</h2>
       </div>
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">
+            <label htmlFor="title" className="block text-body-sm font-medium mb-2">
               {t.requestBook.form.title}
             </label>
             <Input
@@ -113,7 +113,7 @@ export function RequestBook() {
           </div>
 
           <div>
-            <label htmlFor="author" className="block text-sm font-medium mb-2">
+            <label htmlFor="author" className="block text-body-sm font-medium mb-2">
               {t.requestBook.form.author}
             </label>
             <Input
@@ -125,7 +125,7 @@ export function RequestBook() {
           </div>
 
           <div>
-            <label htmlFor="isbn" className="block text-sm font-medium mb-2">
+            <label htmlFor="isbn" className="block text-body-sm font-medium mb-2">
               {t.requestBook.form.isbn}
             </label>
             <Input
@@ -137,7 +137,7 @@ export function RequestBook() {
           </div>
 
           <div>
-            <label htmlFor="reason" className="block text-sm font-medium mb-2">
+            <label htmlFor="reason" className="block text-body-sm font-medium mb-2">
               {t.requestBook.form.reason}
             </label>
             <Textarea
@@ -153,7 +153,7 @@ export function RequestBook() {
             {isSubmitting ? t.requestBook.form.submitting : t.requestBook.form.submit}
           </Button>
 
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-body-sm text-muted-foreground text-center">
             {t.requestBook.form.info}<br />
             {t.requestBook.form.infoEmail}
           </p>

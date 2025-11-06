@@ -44,10 +44,10 @@ export function QuickRating() {
     try {
       await submitQuickRating(rating);
       setSelectedRating(rating);
-      
+
       const confetti = document.createElement('div');
       confetti.textContent = '+5 pts ✨';
-      confetti.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold text-green-600 animate-bounce z-50';
+      confetti.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-h1 font-bold text-green-600 animate-bounce z-50';
       document.body.appendChild(confetti);
       setTimeout(() => confetti.remove(), 1500);
 
@@ -68,7 +68,7 @@ export function QuickRating() {
 
   return (
     <Card className="p-6">
-      <h2 className="text-xl font-semibold mb-2">⚡ Feedback Express</h2>
+      <h2 className="text-h4 font-semibold mb-2">⚡ Feedback Express</h2>
       <p className="text-muted-foreground mb-6">
         Comment était ton expérience aujourd'hui ?
       </p>
@@ -84,10 +84,10 @@ export function QuickRating() {
             onClick={() => handleRating(rating)}
             disabled={isLoading || selectedRating !== null}
           >
-            <span className="text-4xl">{emoji}</span>
-            <span className="text-xs">{label}</span>
+            <span className="text-h1">{emoji}</span>
+            <span className="text-caption">{label}</span>
             {stats[rating - 1] > 0 && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-caption text-muted-foreground">
                 {stats[rating - 1]}
               </span>
             )}
@@ -96,7 +96,7 @@ export function QuickRating() {
       </div>
 
       {selectedRating && (
-        <p className="text-center text-sm text-green-600 font-medium animate-in fade-in">
+        <p className="text-center text-body-sm text-green-600 font-medium animate-in fade-in">
           ✨ +5 pts • Ton vote compte !
         </p>
       )}

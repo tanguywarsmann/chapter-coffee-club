@@ -2,16 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  getNotifications, 
-  subscribeToNotifications, 
-  type VreadNotification 
+import {
+  getNotifications,
+  subscribeToNotifications,
+  type VreadNotification
 } from "@/services/social/notificationsService";
 import { NotificationsInbox } from "./NotificationsInbox";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 
@@ -65,8 +65,8 @@ export function NotificationsBell() {
   }, []);
 
   const handleMarkAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => 
+    setNotifications(prev =>
+      prev.map(n =>
         n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
       )
     );
@@ -84,22 +84,22 @@ export function NotificationsBell() {
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center"
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 text-caption flex items-center justify-center"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      
-      <PopoverContent 
-        className="w-96 p-0" 
+
+      <PopoverContent
+        className="w-96 p-0"
         align="end"
         sideOffset={8}
       >
-        <NotificationsInbox 
+        <NotificationsInbox
           notifications={notifications}
           loading={loading}
           onMarkAsRead={handleMarkAsRead}

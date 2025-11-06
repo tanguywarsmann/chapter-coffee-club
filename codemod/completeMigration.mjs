@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -126,12 +126,17 @@ function processFile(filePath) {
 
 // Traiter tous les fichiers dans src/ et autres dossiers
 const srcPath = join(__dirname, '../src');
-const allFiles = [
-  ...getAllFiles(srcPath),
-  ...getAllFiles(join(__dirname, '../pages')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
-  ...getAllFiles(join(__dirname, '../tests')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
-  ...getAllFiles(join(__dirname, '../stories')).filter(f => f.match(/\.(ts|tsx|js|jsx)$/)),
-].filter(file => file.match(/\.(ts|tsx|js|jsx)$/));
+const dirsToScan = [
+  srcPath,
+  join(__dirname, '../pages'),
+  join(__dirname, '../tests'),
+  join(__dirname, '../stories')
+];
+
+const allFiles = dirsToScan
+  .filter(dir => existsSync(dir))
+  .flatMap(dir => getAllFiles(dir))
+  .filter(file => file.match(/\.(ts|tsx|js|jsx)$/));
 
 console.log('🚀 Migration automatique complète...\n');
 
