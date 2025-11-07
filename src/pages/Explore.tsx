@@ -27,6 +27,7 @@ export default function Explore() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [hasMoreResults, setHasMoreResults] = useState(true) // P1-4: Track if more results available
   const pageSize = 24
 
   // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
@@ -66,6 +67,8 @@ export default function Explore() {
       console.debug('[Explore] cat=', category, 'page=', page, 'q=', debouncedQ, 'rows=', data?.length, 'error=', error)
       if (error) throw error
       setBooks(data || [])
+      // P1-4: Disable Next button if we got fewer results than pageSize
+      setHasMoreResults(data ? data.length === pageSize : false)
     } catch (e: any) {
       console.error('[Explore] fetchBooks failed:', e)
       setError(e.message ?? 'Erreur inconnue')
@@ -154,7 +157,8 @@ export default function Explore() {
           </button>
           <span className="text-body-sm text-muted-foreground">Page {page}</span>
           <button
-            className="px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors"
+            className="px-3 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+            disabled={!hasMoreResults || loading}
             onClick={() => setPage(p => p + 1)}
           >
             Suivant
