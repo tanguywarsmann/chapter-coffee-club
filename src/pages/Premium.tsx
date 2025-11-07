@@ -173,7 +173,7 @@ export default function Premium() {
               </ul>
               
               <Button 
-                onClick={() => handleUpgrade('https://buy.stripe.com/cNi28q73k0oE7u3bBu')}
+                onClick={() => handleUpgrade('https://buy.stripe.com/cNi28q73k0oE7u3bBuejK00')}
                 disabled={isPurchasing}
                 className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold min-h-[56px] text-lg"
                 size="lg"
