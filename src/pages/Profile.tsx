@@ -37,7 +37,6 @@ import { FollowButton } from "@/components/profile/FollowButton";
 import { ProfileNameForm } from "@/components/profile/ProfileNameForm";
 import { UserSettings } from "@/components/profile/UserSettings";
 import { Link } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
@@ -141,37 +140,15 @@ export default function Profile() {
   if (loading) {
     return (
       <AuthGuard>
-        <div className="min-h-screen bg-gradient-to-br from-coffee-light/20 via-background to-coffee-light/10">
+        <div className="min-h-screen bg-background">
           <AppHeader />
-          <main className="mx-auto w-full px-4 max-w-none py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-            {/* P1-12: Skeleton loaders for perceived 85% faster loading */}
-            <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm shadow-xl">
-              <CardContent className="p-4 sm:p-6 lg:p-8">
-                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-                  <div className="flex flex-col items-center lg:items-start flex-shrink-0">
-                    <Skeleton className="w-24 h-24 rounded-full mb-4" shimmer />
-                  </div>
-                  <div className="flex-1 space-y-4">
-                    <Skeleton className="h-10 w-48" shimmer />
-                    <Skeleton className="h-6 w-64" shimmer />
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} className="h-24 rounded-lg" shimmer />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {Array.from({ length: 2 }).map((_, i) => (
-                    <Skeleton key={i} className="h-32 rounded-lg" shimmer />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <main className="mx-auto w-full px-4 max-w-none py-8">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-coffee-dark mx-auto"></div>
+                <p className="text-coffee-dark font-medium">Chargement du profil...</p>
+              </div>
+            </div>
           </main>
         </div>
       </AuthGuard>
