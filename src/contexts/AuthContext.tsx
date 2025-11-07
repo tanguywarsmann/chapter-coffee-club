@@ -222,7 +222,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.info("[AUTH CONTEXT] Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, [syncUserData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function signUp(email: string, password: string) {
     setError(null);
