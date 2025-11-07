@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 
-const APP_VERSION = "v.021";
+const APP_VERSION = "v.022";
 
 export const AppFooter = () => {
   return (
