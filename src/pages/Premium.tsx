@@ -230,7 +230,7 @@ export default function Premium() {
               </ul>
               
               <Button 
-                onClick={() => handleUpgrade('https://buy.stripe.com/7sYbJ0fzQ5IY5lV0WQ')}
+                onClick={() => handleUpgrade('https://buy.stripe.com/7sYbJ0fzQ5IY5lV0WQejK01')}
                 disabled={isPurchasing}
                 className="w-full min-h-[56px] text-lg"
                 size="lg"
