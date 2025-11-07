@@ -10,10 +10,10 @@ interface SearchBarProps {
   isSearching?: boolean;
 }
 
-export function SearchBar({
-  onSearch,
-  placeholder = "Rechercher un livre par titre, auteur...",
-  isSearching = false
+export function SearchBar({ 
+  onSearch, 
+  placeholder = "Rechercher un livre par titre, auteur...", 
+  isSearching = false 
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
@@ -22,19 +22,13 @@ export function SearchBar({
     onSearch(query);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    onSearch(value); // P1-7: Auto-search as user types (will be debounced in parent)
-  };
-
   return (
     <form onSubmit={handleSubmit} className="relative w-full">
       <Input
         type="search"
         placeholder={placeholder}
         value={query}
-        onChange={handleChange}
+        onChange={(e) => setQuery(e.target.value)}
         className="pr-12 border-coffee-light focus-visible:ring-coffee-dark bg-white h-12 text-md"
       />
       <Button 
