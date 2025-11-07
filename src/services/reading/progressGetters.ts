@@ -96,13 +96,20 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       console.log("No data found, returning empty array");
       return [];
     }
-    
+
     console.log("Processing data items...");
+
+    // FIX N+1: Fetch ALL validated segment counts in ONE query
+    const bookIds = data.map(item => item.book_id);
+    const { getAllValidatedSegmentCounts } = await import('./validatedSegmentCount');
+    const validatedCounts = await getAllValidatedSegmentCounts(userId, bookIds);
+    console.log(`✅ Fetched validation counts for ${bookIds.length} books in ONE query (N+1 fixed)`);
+
     const enriched = await Promise.all(data.map(async (item: any, index: number) => {
       console.log(`Processing item ${index}:`, item);
       const book = item.books;
       console.log(`Book data for item ${index}:`, book);
-      
+
       const baseProgress = {
         ...item,
         ...(book as any),
@@ -113,9 +120,12 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         book_cover: (book as any)?.cover_url ?? "",
         validations: [],
       };
-      
+
       console.log(`Base progress for item ${index}:`, baseProgress);
-      const enrichedItem = await addDerivedFields(baseProgress);
+
+      // FIX N+1: Pass precomputed count instead of fetching per-book
+      const validatedCount = validatedCounts[item.book_id] || 0;
+      const enrichedItem = await addDerivedFields(baseProgress, undefined, validatedCount);
       console.log(`Enriched item ${index}:`, enrichedItem);
       return enrichedItem;
     }));
