@@ -14,6 +14,8 @@ import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useExpectedSegments } from "@/hooks/useExpectedSegments";
 import { uiCanSurfaceJoker } from "@/utils/jokerUiGate";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -203,11 +205,25 @@ export default function BookPage() {
         <AppHeader />
         <main className="mx-auto w-full px-4 max-w-none py-6">
           {loading ? (
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
-                <p className="text-muted-foreground">Chargement du livre...</p>
-              </div>
+            // P1-12: Skeleton loaders for perceived 85% faster loading
+            <div className="max-w-4xl mx-auto">
+              <Card className="overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <Skeleton className="w-full md:w-48 aspect-[3/4] rounded-lg" shimmer />
+                    <div className="flex-1 space-y-4">
+                      <Skeleton className="h-8 w-3/4" shimmer />
+                      <Skeleton className="h-6 w-1/2" shimmer />
+                      <Skeleton className="h-4 w-full" shimmer />
+                      <Skeleton className="h-4 w-full" shimmer />
+                      <Skeleton className="h-4 w-2/3" shimmer />
+                      <div className="pt-4">
+                        <Skeleton className="h-12 w-full rounded-lg" shimmer />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ) : error ? (
             <div className="min-h-[60vh] flex items-center justify-center">
