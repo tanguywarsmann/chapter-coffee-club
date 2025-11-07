@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ShieldAlert } from "lucide-react";
 
 interface AdminGuardProps {
@@ -10,84 +9,36 @@ interface AdminGuardProps {
 }
 
 export function AdminGuard({ children }: AdminGuardProps) {
-  const { user, isLoading, isInitialized } = useAuth();
+  // FIX: Use isAdmin from AuthContext instead of making duplicate database queries
+  const { user, isLoading, isInitialized, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-
-  // Check if user is admin from database or JWT metadata
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user?.id) {
-        setIsAdmin(false);
-        setCheckingAdmin(false);
-        return;
-      }
-
-      // First check JWT metadata (faster)
-      const isAdminFromMetadata = 
-        user?.user_metadata?.is_admin === true ||
-        user?.app_metadata?.is_admin === true;
-
-      if (isAdminFromMetadata) {
-        setIsAdmin(true);
-        setCheckingAdmin(false);
-        return;
-      }
-
-      // Fallback to database check
-      try {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(profile?.is_admin || false);
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      } finally {
-        setCheckingAdmin(false);
-      }
-    };
-
-    if (isInitialized && !isLoading) {
-      checkAdminStatus();
-    }
-  }, [user?.id, isInitialized, isLoading]);
 
   // Handle admin state changes and navigate accordingly
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("AdminGuard: isAdmin=", isAdmin, "checkingAdmin=", checkingAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
+      console.log("AdminGuard: isAdmin=", isAdmin, "isLoading=", isLoading, "isInitialized=", isInitialized);
     }
-    
+
     // Initialization is complete and user is not admin
-    if (isInitialized && !isLoading && !checkingAdmin && isAdmin === false && !isRedirecting) {
+    if (isInitialized && !isLoading && !isAdmin && !isRedirecting) {
       setIsRedirecting(true);
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log("AdminGuard: redirecting to /home due to unauthorized access");
       }
-      
+
       // A short delay to prevent flash of content
       const timer = setTimeout(() => {
         navigate("/home");
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
-  }, [isAdmin, checkingAdmin, isLoading, isInitialized, navigate, isRedirecting]);
+  }, [isAdmin, isLoading, isInitialized, navigate, isRedirecting]);
 
   // Show loading state while checking admin status
-  if (isLoading || !isInitialized || checkingAdmin) {
+  if (isLoading || !isInitialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

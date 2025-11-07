@@ -79,18 +79,6 @@ const getSupabaseClient = () => {
 // Configuration du client Supabase avec auth correctement configuré
 export const supabase = getSupabaseClient();
 
-// Sanity check à chaud, désactive après debug
-(async () => {
-  try {
-    const { error } = await supabase.from("books").select("id").limit(1);
-    if (error) {
-      console.error("[Supabase] Sanity check KO:", {
-        message: error.message, code: (error as any).code, details: (error as any).details
-      });
-    } else {
-      console.info("[Supabase] Sanity check OK. URL:", url.replace(/\/\/([^/]+)/, "//***"));
-    }
-  } catch (e) {
-    console.error("[Supabase] Sanity check exception:", e);
-  }
-})();
+// FIX: Removed immediate sanity check IIFE that was running on every module import
+// This was causing database queries to fire on every page refresh, contributing to freeze
+// If you need to test connectivity, call supabase.from("books").select("id").limit(1) manually

@@ -122,105 +122,128 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // FIX: Prevent double initialization in React StrictMode and race conditions
+    let mounted = true;
+    let subscription: any = null;
+
     console.info("[AUTH CONTEXT] Initializing");
-    
-    // First set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
-      
-      // If user exists, sync their profile BEFORE updating state
-      if (currentSession?.user) {
-        const status = await syncUserData(currentSession.user.id, currentSession.user.email);
-        
-        // Enrichir l'user avec les données du profil
-        const enrichedUser = {
-          ...currentSession.user,
-          is_admin: status?.isAdmin || false,
-          is_premium: status?.isPremium || false
-        } as any;
-        
-        setUser(enrichedUser);
-        setSession(currentSession);
-      } else {
-        setUser(null);
-        setSession(null);
-      }
-      
-      // Always set initialized to true and loading to false
-      setIsInitialized(true);
-      setIsLoading(false);
-      
-      console.info("[AUTH CONTEXT]", { 
-        isInitialized: true, 
-        isLoading: false, 
-        user: currentSession?.user?.id || null 
-      });
-    });
-    
-    // Then check for existing session (only on mount)
+
+    // Initialize auth session FIRST, THEN set up listener
     const initializeAuth = async () => {
       try {
         console.info("[AUTH CONTEXT] Fetching initial session");
-        
+
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
+
+        if (!mounted) {
+          console.info("[AUTH CONTEXT] Component unmounted during init, aborting");
+          return;
+        }
+
         if (error) {
           console.error("[AUTH CONTEXT] Error fetching session:", error);
           toast.error("Error connecting to Supabase");
           setError("Error connecting to Supabase");
         }
-        
+
         // If user exists, sync their profile BEFORE updating state
         if (currentSession?.user) {
           const status = await syncUserData(currentSession.user.id, currentSession.user.email);
-          
+
+          if (!mounted) {
+            console.info("[AUTH CONTEXT] Component unmounted during sync, aborting");
+            return;
+          }
+
           // Enrichir l'user avec les données du profil
           const enrichedUser = {
             ...currentSession.user,
             is_admin: status?.isAdmin || false,
             is_premium: status?.isPremium || false
           } as any;
-          
+
           setUser(enrichedUser);
           setSession(currentSession);
         } else {
           setUser(null);
           setSession(null);
         }
-        
+
         // Always set initialized to true and loading to false, regardless of session status
         setIsInitialized(true);
         setIsLoading(false);
-        
-        console.info("[AUTH CONTEXT]", { 
-          isInitialized: true, 
-          isLoading: false, 
-          user: currentSession?.user?.id || null 
+
+        console.info("[AUTH CONTEXT] Initial state set", {
+          isInitialized: true,
+          isLoading: false,
+          user: currentSession?.user?.id || null
         });
-        
+
+        // NOW set up the auth state change listener for future changes
+        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+          if (!mounted) {
+            console.info("[AUTH CONTEXT] Listener fired but component unmounted, ignoring");
+            return;
+          }
+
+          console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
+
+          // If user exists, sync their profile BEFORE updating state
+          if (newSession?.user) {
+            const status = await syncUserData(newSession.user.id, newSession.user.email);
+
+            if (!mounted) return;
+
+            // Enrichir l'user avec les données du profil
+            const enrichedUser = {
+              ...newSession.user,
+              is_admin: status?.isAdmin || false,
+              is_premium: status?.isPremium || false
+            } as any;
+
+            setUser(enrichedUser);
+            setSession(newSession);
+          } else {
+            setUser(null);
+            setSession(null);
+          }
+
+          console.info("[AUTH CONTEXT] State updated from listener", {
+            event,
+            user: newSession?.user?.id || null
+          });
+        });
+
+        subscription = authSubscription;
+
       } catch (error) {
         console.error("[AUTH CONTEXT] Error in initializeAuth:", error);
-        
+
+        if (!mounted) return;
+
         // Even on error, we need to mark initialization as complete
         setIsInitialized(true);
         setIsLoading(false);
-        
-        console.info("[AUTH CONTEXT]", { 
-          isInitialized: true, 
-          isLoading: false, 
+
+        console.info("[AUTH CONTEXT] Error state set", {
+          isInitialized: true,
+          isLoading: false,
           user: null,
           error: "Initialization error"
         });
       }
     };
-    
+
     // Initialize auth
     initializeAuth();
-    
+
     // Clean up subscription
     return () => {
       console.info("[AUTH CONTEXT] Cleaning up auth subscription");
-      subscription.unsubscribe();
+      mounted = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

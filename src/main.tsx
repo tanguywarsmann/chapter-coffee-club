@@ -22,6 +22,20 @@ if (import.meta.env.DEV) {
   exposeAuditHelpers();
   import("@/debug/consoleTap");
   import("@/debug/finalValidation");
+
+  // FIX: Freeze detection - monitor main thread blocking
+  let lastCheck = Date.now();
+  setInterval(() => {
+    const now = Date.now();
+    const delta = now - lastCheck;
+    if (delta > 2000) {
+      console.error(`[FREEZE DETECTED] Main thread blocked for ${delta}ms`);
+      console.trace('[FREEZE] Stack trace:');
+    }
+    lastCheck = now;
+  }, 1000);
+
+  console.info('[FREEZE DETECTION] Monitoring enabled - will alert if main thread blocks >2s');
 }
 
 /** iOS : ne pas superposer la status bar à la WebView + style lisible */
