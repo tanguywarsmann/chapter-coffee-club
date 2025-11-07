@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useDebounce } from 'use-debounce'
 import { supabase } from '@/integrations/supabase/client'
 import { BookCard } from '@/components/books/BookCard'
 import { useSearchParams, useNavigate } from 'react-router-dom'
@@ -20,6 +21,7 @@ export default function Explore() {
 
   const [category, setCategory] = useState<Category>(initialCat)
   const [q, setQ] = useState(initialQ)
+  const [debouncedQ] = useDebounce(q, 500) // Debounce search query by 500ms
   const [books, setBooks] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,16 +32,16 @@ export default function Explore() {
   useEffect(() => {
     const params = new URLSearchParams(searchParams)
     params.set('cat', category)
-    if (q) params.set('q', q)
+    if (debouncedQ) params.set('q', debouncedQ)
     else params.delete('q')
     navigate({ search: params.toString() }, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, q])
+  }, [category, debouncedQ])
 
   useEffect(() => {
     fetchBooks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, page, q])
+  }, [category, page, debouncedQ])
 
   async function fetchBooks() {
     setLoading(true)
@@ -55,12 +57,12 @@ export default function Explore() {
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      if (q && q.length >= 2) {
-        query = query.or(`title.ilike.%${q}%,author.ilike.%${q}%`)
+      if (debouncedQ && debouncedQ.length >= 2) {
+        query = query.or(`title.ilike.%${debouncedQ}%,author.ilike.%${debouncedQ}%`)
       }
 
       const { data, error } = await query
-      console.debug('[Explore] cat=', category, 'page=', page, 'q=', q, 'rows=', data?.length, 'error=', error)
+      console.debug('[Explore] cat=', category, 'page=', page, 'q=', debouncedQ, 'rows=', data?.length, 'error=', error)
       if (error) throw error
       setBooks(data || [])
     } catch (e: any) {

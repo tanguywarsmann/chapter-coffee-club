@@ -161,7 +161,7 @@ export default function BookPage() {
     return () => {
       isMounted.current = false;
     };
-  }, [id, navigate, user?.id]);
+  }, [id, user?.id]); // P1-3: Removed navigate from deps - it's stable and causes unnecessary refetches
 
   const handleChapterComplete = async (bookId: string) => {
     if (!book || !user?.id) {

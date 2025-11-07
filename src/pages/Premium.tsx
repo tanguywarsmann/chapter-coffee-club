@@ -8,6 +8,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { Capacitor } from '@capacitor/core';
 import { IOSPurchaseCard } from '@/components/premium/IOSPurchaseCard';
 import { AndroidPurchaseCard } from '@/components/premium/AndroidPurchaseCard';
+import { toast } from 'sonner';
 
 export default function Premium() {
   const { user } = useAuth();
@@ -36,6 +37,14 @@ export default function Premium() {
     console.log('[Premium Page] Starting purchase flow for user:', user.id);
     setIsPurchasing(true);
     setIsLoading(true);
+
+    // P1-2: Add loading state with toast notification for better UX
+    toast.loading('Redirection vers le paiement sécurisé...', {
+      duration: 1000,
+    });
+
+    // P1-2: 500ms delay to show loading state before redirect
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     const fullUrl = `${stripeUrl}?prefilled_email=${encodeURIComponent(user.email || '')}&client_reference_id=${user.id}`;
     console.log('[Premium Page] Redirecting to Stripe...');
