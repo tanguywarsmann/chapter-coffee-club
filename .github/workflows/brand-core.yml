@@ -1,9 +1,7 @@
 name: Brand Core (local)
+# Workflow désactivé - déclenchement manuel uniquement
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 jobs:
   brand_core:
     runs-on: ubuntu-latest
