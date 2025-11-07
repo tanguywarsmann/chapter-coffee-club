@@ -5,19 +5,30 @@ import { BookWithProgress } from "@/types/reading";
 
 /**
  * Compute derived fields for a progress+book row
+ * @param b Book data
+ * @param p Progress data (optional)
+ * @param precomputedValidatedCount Pre-computed validated count (optional, avoids N+1)
  */
-export async function addDerivedFields(b: any, p?: any): Promise<BookWithProgress> {
+export async function addDerivedFields(
+  b: any,
+  p?: any,
+  precomputedValidatedCount?: number
+): Promise<BookWithProgress> {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
-  
+
   // Debug pour comprendre la structure des données
   console.log("🔍 addDerivedFields debug:", {
     bookId: b.id || b.book_id,
     userId: p?.user_id || b.user_id,
     title: b.title,
-    cover_url: b.cover_url
+    cover_url: b.cover_url,
+    precomputed: precomputedValidatedCount !== undefined
   });
-  
-  const validatedSegments = await getValidatedSegmentCount(p?.user_id || b.user_id, b.book_id || b.id);
+
+  // FIX N+1: Use precomputed count if provided, otherwise fetch (for backwards compatibility)
+  const validatedSegments = precomputedValidatedCount !== undefined
+    ? precomputedValidatedCount
+    : await getValidatedSegmentCount(p?.user_id || b.user_id, b.book_id || b.id);
   const isWordMode = current_page > total_pages * 2;
   const segmentsFromCurrentPage = isWordMode
     ? Math.floor(current_page / WORDS_PER_SEGMENT)

@@ -8,7 +8,7 @@ import {
   InvalidBookError,
 } from '@/utils/readingListErrors';
 import { assertValidBook } from '@/utils/bookValidation';
-import { getValidatedSegmentCount } from './validatedSegmentCount';
+import { getValidatedSegmentCount, getAllValidatedSegmentCounts } from './validatedSegmentCount';
 
 type ProgressRow = {
   id: string;
@@ -169,7 +169,12 @@ export const fetchBooksForStatus = async (readingListData: any, status: string, 
     };
     
     const items = statusMap[status as keyof typeof statusMap] || [];
-    
+
+    // FIX N+1: Fetch ALL validated segment counts in ONE query
+    const bookIds = items.map(item => item.book_id);
+    const validatedCounts = await getAllValidatedSegmentCounts(userId, bookIds);
+    console.log(`✅ Fetched validation counts for ${bookIds.length} books in ONE query (N+1 fixed)`);
+
     return Promise.all(items.map(async (item: any) => {
       // Debug détaillé pour identifier le problème
       console.log("🔍 ReadingList item debug:", {
@@ -178,9 +183,9 @@ export const fetchBooksForStatus = async (readingListData: any, status: string, 
         book_id: item.book_id,
         books: item.books
       });
-      
-      // Calculer correctement les segments validés comme sur la page d'accueil
-      const validatedSegments = await getValidatedSegmentCount(userId, item.book_id);
+
+      // FIX N+1: Use precomputed count instead of fetching per-book
+      const validatedSegments = validatedCounts[item.book_id] || 0;
       const expectedSegments = item.books?.expected_segments || item.books?.total_chapters || 10;
       const progressPercent = Math.round((validatedSegments / (expectedSegments || 1)) * 100);
       
