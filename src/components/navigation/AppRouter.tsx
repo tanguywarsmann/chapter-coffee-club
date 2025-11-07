@@ -14,6 +14,7 @@ import Strava from '@/pages/Strava';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AdminGuard } from '@/components/admin/AdminGuard';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
 
 // Legal pages
 import { PrivacyPolicy } from '@/pages/legal/PrivacyPolicy';
@@ -25,9 +26,10 @@ import SitemapXML from '@/pages/SitemapXML';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
-  
+
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/home" element={<Home />} />
@@ -62,7 +64,8 @@ const AppRouter = () => {
 
       {/* Catch-all 404 - Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </ErrorBoundary>
   );
 };
 
