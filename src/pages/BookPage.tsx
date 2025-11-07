@@ -161,7 +161,7 @@ export default function BookPage() {
     return () => {
       isMounted.current = false;
     };
-  }, [id, navigate, user?.id]);
+  }, [id, user?.id]); // FIX P1-3: Retirer navigate des deps
 
   const handleChapterComplete = async (bookId: string) => {
     if (!book || !user?.id) {

@@ -53,21 +53,31 @@ const safeStorage = {
   }
 };
 
+// FIX P0-1: Singleton pattern pour éviter Multiple GoTrueClient instances
+let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
+
+const getSupabaseClient = () => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient<Database>(url, key, {
+      auth: {
+        storage: safeStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+      global: {
+        headers: {
+          apikey: key,
+          // NE PAS forcer Authorization ici - Supabase gère automatiquement le JWT
+        },
+      },
+    });
+  }
+  return supabaseInstance;
+};
+
 // Configuration du client Supabase avec auth correctement configuré
-export const supabase = createClient<Database>(url, key, {
-  auth: {
-    storage: safeStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-  global: {
-    headers: {
-      apikey: key,
-      // NE PAS forcer Authorization ici - Supabase gère automatiquement le JWT
-    },
-  },
-});
+export const supabase = getSupabaseClient();
 
 // Sanity check à chaud, désactive après debug
 (async () => {

@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -97,6 +97,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // FIX P0-2 & P0-3: Éviter double sync et race conditions
+  const syncInProgressRef = useRef(false);
+  
+  const syncUserData = useCallback(async (userId: string, email?: string) => {
+    if (syncInProgressRef.current) {
+      console.info("[AUTH CONTEXT] Sync already in progress, skipping");
+      return;
+    }
+    
+    syncInProgressRef.current = true;
+    
+    try {
+      console.info("[AUTH CONTEXT] Starting user data sync for:", userId);
+      await syncUserProfile(userId, email);
+      const status = await fetchUserStatus(userId);
+      return status;
+    } catch (err) {
+      console.error("[AUTH CONTEXT] Error during profile sync:", err);
+      return { isAdmin: false, isPremium: false };
+    } finally {
+      syncInProgressRef.current = false;
+    }
+  }, []);
+
   useEffect(() => {
     console.info("[AUTH CONTEXT] Initializing");
     
@@ -104,21 +128,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
       
-      // Update state with current session data
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      // If user exists, sync their profile
+      // If user exists, sync their profile BEFORE updating state
       if (currentSession?.user) {
-        // Use setTimeout to avoid potential deadlock with Supabase auth
-        setTimeout(async () => {
-          try {
-            await syncUserProfile(currentSession.user.id, currentSession.user.email);
-            await fetchUserStatus(currentSession.user.id);
-          } catch (err) {
-            console.error("[AUTH CONTEXT] Error during profile sync:", err);
-          }
-        }, 0);
+        const status = await syncUserData(currentSession.user.id, currentSession.user.email);
+        
+        // Enrichir l'user avec les données du profil
+        const enrichedUser = {
+          ...currentSession.user,
+          is_admin: status?.isAdmin || false,
+          is_premium: status?.isPremium || false
+        } as any;
+        
+        setUser(enrichedUser);
+        setSession(currentSession);
+      } else {
+        setUser(null);
+        setSession(null);
       }
       
       // Always set initialized to true and loading to false
@@ -132,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     });
     
-    // Then check for existing session
+    // Then check for existing session (only on mount)
     const initializeAuth = async () => {
       try {
         console.info("[AUTH CONTEXT] Fetching initial session");
@@ -145,21 +170,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError("Error connecting to Supabase");
         }
         
-        // Update state with session data
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // If user exists, sync their profile
+        // If user exists, sync their profile BEFORE updating state
         if (currentSession?.user) {
-          // Use setTimeout to avoid potential deadlock with Supabase auth
-          setTimeout(async () => {
-            try {
-              await syncUserProfile(currentSession.user.id, currentSession.user.email);
-              await fetchUserStatus(currentSession.user.id);
-            } catch (err) {
-              console.error("[AUTH CONTEXT] Error during profile sync:", err);
-            }
-          }, 0);
+          const status = await syncUserData(currentSession.user.id, currentSession.user.email);
+          
+          // Enrichir l'user avec les données du profil
+          const enrichedUser = {
+            ...currentSession.user,
+            is_admin: status?.isAdmin || false,
+            is_premium: status?.isPremium || false
+          } as any;
+          
+          setUser(enrichedUser);
+          setSession(currentSession);
+        } else {
+          setUser(null);
+          setSession(null);
         }
         
         // Always set initialized to true and loading to false, regardless of session status
@@ -196,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.info("[AUTH CONTEXT] Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, []);
+  }, [syncUserData]);
 
   async function signUp(email: string, password: string) {
     setError(null);
