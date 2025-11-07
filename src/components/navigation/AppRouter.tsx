@@ -27,6 +27,7 @@ import NotFound from '@/pages/NotFound';
 import Search from '@/pages/Search';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AdminGuard } from '@/components/admin/AdminGuard';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
 
 // Legal pages
 import { PrivacyPolicy } from '@/pages/legal/PrivacyPolicy';
@@ -41,9 +42,10 @@ import Feedback from '@/pages/Feedback';
 
 const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
-  
+
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/home" element={<Home />} />
@@ -107,20 +109,21 @@ const AppRouter = () => {
           <AdminAutoCovers />
         </AdminGuard>
       } />
-          <Route path="/admin/audit" element={
-            <AdminGuard>
-              <AdminAudit />
-            </AdminGuard>
-          } />
-          <Route path="/admin/book-requests" element={
-            <AdminGuard>
-              <AdminBookRequests />
-            </AdminGuard>
-          } />
-      
-      {/* Catch-all 404 */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+      <Route path="/admin/audit" element={
+        <AdminGuard>
+          <AdminAudit />
+        </AdminGuard>
+      } />
+      <Route path="/admin/book-requests" element={
+        <AdminGuard>
+          <AdminBookRequests />
+        </AdminGuard>
+      } />
+
+      {/* Catch-all 404 - Redirect to home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ErrorBoundary>
   );
 };
 
