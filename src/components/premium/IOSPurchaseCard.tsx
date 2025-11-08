@@ -75,6 +75,8 @@ export function IOSPurchaseCard() {
         console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
         console.log('[iOS Purchase Card] ✅ Purchase successful!');
+        console.log('[iOS Purchase Card] ⏳ Waiting 2s for Supabase to sync...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
         console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
         await refreshUserStatus();
         console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');
@@ -96,6 +98,8 @@ export function IOSPurchaseCard() {
       console.log('[iOS Purchase Card] Restore complete');
 
       if (success) {
+        console.log('[iOS Purchase Card] ⏳ Waiting 2s for Supabase to sync...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
         console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
         await refreshUserStatus();
         console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');

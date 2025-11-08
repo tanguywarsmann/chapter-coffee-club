@@ -22,6 +22,10 @@ export default function Premium() {
     console.log('[Premium Page] Component mounted');
     console.log('[Premium Page] Platform:', platform);
     console.log('[Premium Page] User authenticated:', !!user);
+
+    // Réinitialiser les états au cas où l'utilisateur revient de Stripe
+    setIsLoading(false);
+    setIsPurchasing(false);
   }, [user, platform]);
 
   const handleUpgrade = async (stripeUrl: string) => {

@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -213,50 +213,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function signUp(email: string, password: string) {
+  const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw new Error(error.message);
-  }
+  }, []);
 
-  async function signIn(email: string, password: string) {
+  const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     setError(null);
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
-  }
+  }, []);
 
-  async function refreshUserStatus() {
+  const refreshUserStatus = useCallback(async () => {
     if (!user?.id) {
       console.warn('[AUTH] Cannot refresh user status: no user logged in');
       return;
     }
 
-    console.log('[AUTH] Manually refreshing user status for:', user.id);
-    await fetchUserStatus(user.id);
-  }
+    console.log('[AUTH] Forcing full session refresh to update premium status...');
+
+    // Forcer un rechargement complet de la session depuis Supabase
+    try {
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error('[AUTH] Error refreshing session:', error);
+        return;
+      }
+
+      if (currentSession?.user) {
+        console.log('[AUTH] Session refreshed, syncing user data...');
+        const status = await syncUserData(currentSession.user.id, currentSession.user.email);
+
+        // Mettre à jour l'état avec les nouvelles données
+        const enrichedUser = {
+          ...currentSession.user,
+          is_admin: status?.isAdmin || false,
+          is_premium: status?.isPremium || false
+        } as any;
+
+        setUser(enrichedUser);
+        setSession(currentSession);
+
+        console.log('[AUTH] ✅ Full refresh complete - isPremium:', status?.isPremium);
+      }
+    } catch (error) {
+      console.error('[AUTH] Error during full refresh:', error);
+    }
+  }, [user?.id, syncUserData]);
+
+  const contextValue = useMemo(() => ({
+    supabase,
+    session,
+    user,
+    isLoading,
+    isInitialized,
+    isAdmin,
+    isPremium,
+    error,
+    setError,
+    signUp,
+    signIn,
+    signOut,
+    refreshUserStatus
+  }), [
+    session,
+    user,
+    isLoading,
+    isInitialized,
+    isAdmin,
+    isPremium,
+    error,
+    signUp,
+    signIn,
+    signOut,
+    refreshUserStatus
+  ]);
 
   return (
-    <AuthContext.Provider value={{
-      supabase,
-      session,
-      user,
-      isLoading,
-      isInitialized,
-      isAdmin,
-      isPremium,
-      error,
-      setError,
-      signUp,
-      signIn,
-      signOut,
-      refreshUserStatus
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
