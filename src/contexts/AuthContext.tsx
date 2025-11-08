@@ -19,6 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUserStatus: () => Promise<void>;
+  pollForPremiumStatus: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,7 +35,8 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => {},
   signIn: async () => {},
   signOut: async () => {},
-  refreshUserStatus: async () => {}
+  refreshUserStatus: async () => {},
+  pollForPremiumStatus: async () => false
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -213,6 +215,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // REALTIME: Écoute en temps réel des changements de statut premium dans Supabase
+  const prevPremiumRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Initialiser avec l'état actuel pour éviter un toast au démarrage
+    prevPremiumRef.current = isPremium;
+
+    console.log('[AUTH REALTIME] Setting up real-time listener for premium status...');
+    console.log('[AUTH REALTIME] Initial premium state:', isPremium);
+
+    const channel = supabase
+      .channel(`premium-status-${user.id}`)
+      .on('postgres_changes', {
+        event: '*', // Écoute INSERT et UPDATE
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${user.id}`
+      }, (payload) => {
+        console.log('[AUTH REALTIME] 📡 Received profile change:', payload.eventType, payload);
+
+        const newData = payload.new as { is_premium?: boolean; is_admin?: boolean; premium_since?: string | null };
+
+        const nowPremium = !!(newData.is_premium);
+        const wasPremium = prevPremiumRef.current;
+
+        console.log(`[AUTH REALTIME] Premium transition: ${wasPremium} → ${nowPremium}`);
+
+        // Mettre à jour les états
+        setIsPremium(nowPremium);
+        if (newData.is_admin !== undefined) {
+          setIsAdmin(newData.is_admin);
+        }
+
+        // Enrichir l'user
+        setUser(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            is_premium: nowPremium,
+            is_admin: newData.is_admin ?? (prev as any).is_admin,
+            premium_since: newData.premium_since ?? (prev as any).premium_since
+          } as any;
+        });
+
+        // Toast UNIQUEMENT si transition de non-premium à premium
+        if (!wasPremium && nowPremium) {
+          console.log('[AUTH REALTIME] 🎉 User just became premium!');
+          toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+            duration: 5000,
+            style: {
+              background: 'linear-gradient(to right, #f97316, #eab308)',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '16px'
+            }
+          });
+        }
+
+        // Mettre à jour la référence
+        prevPremiumRef.current = nowPremium;
+      })
+      .subscribe((status) => {
+        console.log('[AUTH REALTIME] Subscription status:', status);
+      });
+
+    return () => {
+      console.log('[AUTH REALTIME] Cleaning up real-time listener');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]); // Retirer isPremium des deps pour éviter re-création
+
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     const { error } = await supabase.auth.signUp({ email, password });
@@ -269,6 +344,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id, syncUserData]);
 
+  // NOUVELLE FONCTION: Polling robuste pour détecter le statut premium après achat iOS
+  const pollForPremiumStatus = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) {
+      console.warn('[AUTH POLL] Cannot poll: no user logged in');
+      return false;
+    }
+
+    console.log('[AUTH POLL] 🔄 Starting aggressive polling for premium status...');
+
+    const maxAttempts = 6; // 6 tentatives = 12 secondes max
+    const delayMs = 2000; // 2 secondes entre chaque tentative
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`[AUTH POLL] Attempt ${attempt}/${maxAttempts} - Checking Supabase...`);
+
+      try {
+        // Lecture DIRECTE de la table profiles (pas de cache, pas de verrou)
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_premium, is_admin, premium_since')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error(`[AUTH POLL] Error on attempt ${attempt}:`, error);
+        } else if (data?.is_premium) {
+          // 🎉 PREMIUM DÉTECTÉ !
+          console.log('[AUTH POLL] 🎉 PREMIUM DETECTED IN SUPABASE!');
+
+          // Force update immédiat de tous les états
+          setIsAdmin(data.is_admin || false);
+          setIsPremium(true);
+
+          setUser(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              is_admin: data.is_admin || false,
+              is_premium: true,
+              premium_since: data.premium_since
+            } as any;
+          });
+
+          console.log('[AUTH POLL] ✅ All states updated - User is now PREMIUM!');
+
+          // Afficher message de félicitations
+          toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+            duration: 5000,
+            style: {
+              background: 'linear-gradient(to right, #f97316, #eab308)',
+              color: 'white',
+              fontWeight: 'bold'
+            }
+          });
+
+          return true;
+        } else {
+          console.log(`[AUTH POLL] Attempt ${attempt}: Not premium yet (is_premium=${data?.is_premium})`);
+        }
+      } catch (err) {
+        console.error(`[AUTH POLL] Exception on attempt ${attempt}:`, err);
+      }
+
+      // Attendre avant la prochaine tentative (sauf si c'est la dernière)
+      if (attempt < maxAttempts) {
+        console.log(`[AUTH POLL] Waiting ${delayMs}ms before next attempt...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+
+    console.log('[AUTH POLL] ❌ Max attempts reached - Premium not detected');
+    toast.error('Le statut premium n\'a pas été détecté. Essayez de vous déconnecter puis reconnecter.', {
+      duration: 6000
+    });
+    return false;
+  }, [user?.id]);
+
   const contextValue = useMemo(() => ({
     supabase,
     session,
@@ -282,7 +434,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
-    refreshUserStatus
+    refreshUserStatus,
+    pollForPremiumStatus
   }), [
     session,
     user,
@@ -294,7 +447,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
-    refreshUserStatus
+    refreshUserStatus,
+    pollForPremiumStatus
   ]);
 
   return (
