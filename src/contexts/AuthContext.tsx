@@ -216,60 +216,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // REALTIME: Écoute en temps réel des changements de statut premium dans Supabase
+  const prevPremiumRef = useRef<boolean>(false);
+
   useEffect(() => {
     if (!user?.id) return;
 
+    // Initialiser avec l'état actuel pour éviter un toast au démarrage
+    prevPremiumRef.current = isPremium;
+
     console.log('[AUTH REALTIME] Setting up real-time listener for premium status...');
+    console.log('[AUTH REALTIME] Initial premium state:', isPremium);
 
     const channel = supabase
       .channel(`premium-status-${user.id}`)
       .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*', // Écoute INSERT et UPDATE
         schema: 'public',
         table: 'profiles',
         filter: `id=eq.${user.id}`
       }, (payload) => {
-        console.log('[AUTH REALTIME] 📡 Received profile update:', payload);
+        console.log('[AUTH REALTIME] 📡 Received profile change:', payload.eventType, payload);
 
         const newData = payload.new as { is_premium?: boolean; is_admin?: boolean; premium_since?: string | null };
 
-        if (newData.is_premium !== undefined) {
-          const wasPremium = isPremium;
-          const nowPremium = newData.is_premium;
+        const nowPremium = !!(newData.is_premium);
+        const wasPremium = prevPremiumRef.current;
 
-          console.log(`[AUTH REALTIME] Premium status change: ${wasPremium} → ${nowPremium}`);
+        console.log(`[AUTH REALTIME] Premium transition: ${wasPremium} → ${nowPremium}`);
 
-          // Mettre à jour les états
-          setIsPremium(nowPremium);
-          if (newData.is_admin !== undefined) {
-            setIsAdmin(newData.is_admin);
-          }
-
-          // Enrichir l'user
-          setUser(prev => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              is_premium: nowPremium,
-              is_admin: newData.is_admin ?? (prev as any).is_admin,
-              premium_since: newData.premium_since ?? (prev as any).premium_since
-            } as any;
-          });
-
-          // Toast de félicitations si passage à premium
-          if (!wasPremium && nowPremium) {
-            console.log('[AUTH REALTIME] 🎉 User just became premium!');
-            toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
-              duration: 5000,
-              style: {
-                background: 'linear-gradient(to right, #f97316, #eab308)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px'
-              }
-            });
-          }
+        // Mettre à jour les états
+        setIsPremium(nowPremium);
+        if (newData.is_admin !== undefined) {
+          setIsAdmin(newData.is_admin);
         }
+
+        // Enrichir l'user
+        setUser(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            is_premium: nowPremium,
+            is_admin: newData.is_admin ?? (prev as any).is_admin,
+            premium_since: newData.premium_since ?? (prev as any).premium_since
+          } as any;
+        });
+
+        // Toast UNIQUEMENT si transition de non-premium à premium
+        if (!wasPremium && nowPremium) {
+          console.log('[AUTH REALTIME] 🎉 User just became premium!');
+          toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+            duration: 5000,
+            style: {
+              background: 'linear-gradient(to right, #f97316, #eab308)',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '16px'
+            }
+          });
+        }
+
+        // Mettre à jour la référence
+        prevPremiumRef.current = nowPremium;
       })
       .subscribe((status) => {
         console.log('[AUTH REALTIME] Subscription status:', status);
@@ -279,7 +286,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('[AUTH REALTIME] Cleaning up real-time listener');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, isPremium]);
+  }, [user?.id]); // Retirer isPremium des deps pour éviter re-création
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);

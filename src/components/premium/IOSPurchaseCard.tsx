@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function IOSPurchaseCard() {
   const { t } = useTranslation();
-  const { pollForPremiumStatus } = useAuth();
+  const { pollForPremiumStatus, supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -26,16 +26,16 @@ export function IOSPurchaseCard() {
     try {
       console.log('[iOS Purchase Card] 🎬 Starting IAP initialization...');
       setIsLoading(true);
-      
+
       // L'initialisation devrait déjà être faite dans main.tsx
       console.log('[iOS Purchase Card] 🔧 Ensuring IAP service is initialized...');
       await appleIAPService.initialize();
       console.log('[iOS Purchase Card] ✅ IAP service ready');
-      
+
       console.log('[iOS Purchase Card] 📦 Fetching products...');
       const products = await appleIAPService.getProducts();
       console.log('[iOS Purchase Card] ✓ Products fetched, count:', products?.length || 0);
-      
+
       if (products && products.length > 0) {
         setProduct(products[0]);
         console.log('[iOS Purchase Card] ✅ Product loaded successfully:');
@@ -53,6 +53,38 @@ export function IOSPurchaseCard() {
     } finally {
       setIsLoading(false);
       console.log('[iOS Purchase Card] 🏁 Initialization complete');
+    }
+  };
+
+  const activatePremiumViaRPC = async (): Promise<boolean> => {
+    try {
+      console.log('[iOS Purchase Card] 🔧 Calling activate_premium RPC...');
+
+      const { data, error } = await supabase.rpc('activate_premium');
+
+      if (error) {
+        console.error('[iOS Purchase Card] ❌ RPC error:', error);
+        // Fallback au polling si RPC échoue
+        console.log('[iOS Purchase Card] 💡 Falling back to polling...');
+        return await pollForPremiumStatus();
+      }
+
+      console.log('[iOS Purchase Card] ✅ RPC response:', data);
+
+      if (data?.success) {
+        console.log('[iOS Purchase Card] 🎉 Premium activated via RPC!');
+        // Le toast sera affiché par le listener Realtime
+        // Attendre 500ms pour laisser Realtime propager
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      console.error('[iOS Purchase Card] ❌ Exception calling RPC:', err);
+      // Fallback au polling
+      console.log('[iOS Purchase Card] 💡 Falling back to polling...');
+      return await pollForPremiumStatus();
     }
   };
 
@@ -75,13 +107,13 @@ export function IOSPurchaseCard() {
         console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
         console.log('[iOS Purchase Card] ✅ Purchase successful!');
-        console.log('[iOS Purchase Card] 🔄 Starting aggressive polling to detect premium status...');
-        const premiumDetected = await pollForPremiumStatus();
+        console.log('[iOS Purchase Card] 🚀 Activating premium via RPC (with polling fallback)...');
+        const activated = await activatePremiumViaRPC();
 
-        if (premiumDetected) {
+        if (activated) {
           console.log('[iOS Purchase Card] 🎉 Premium successfully activated!');
         } else {
-          console.log('[iOS Purchase Card] ⚠️ Premium not detected after polling');
+          console.log('[iOS Purchase Card] ⚠️ Premium activation may have failed');
         }
       }
     } catch (error) {
@@ -101,13 +133,13 @@ export function IOSPurchaseCard() {
       console.log('[iOS Purchase Card] Restore complete');
 
       if (success) {
-        console.log('[iOS Purchase Card] 🔄 Starting aggressive polling to detect restored premium...');
-        const premiumDetected = await pollForPremiumStatus();
+        console.log('[iOS Purchase Card] 🚀 Activating restored premium via RPC (with polling fallback)...');
+        const activated = await activatePremiumViaRPC();
 
-        if (premiumDetected) {
+        if (activated) {
           console.log('[iOS Purchase Card] 🎉 Premium successfully restored!');
         } else {
-          console.log('[iOS Purchase Card] ⚠️ Premium not detected after polling');
+          console.log('[iOS Purchase Card] ⚠️ Premium restoration may have failed');
         }
       }
     } catch (error) {
