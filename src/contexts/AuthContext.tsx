@@ -46,20 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isPremium, setIsPremium] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserStatus = async (userId: string) => {
+  const fetchUserStatus = useCallback(async (userId: string) => {
     try {
       if (!userId) return { isAdmin: false, isPremium: false };
-      
-      console.log('[AUTH] Fetching profile for user:', userId);
-      
+
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin, is_premium, premium_since')
         .eq('id', userId)
         .single();
-
-      console.log('[AUTH] Profile data fetched:', data);
-      console.log('[AUTH] Profile error:', error);
 
       if (error) {
         console.error('Error fetching user status:', error);
@@ -70,13 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const adminStatus = data?.is_admin || false;
       const premiumStatus = data?.is_premium || false;
-      
-      console.log('[AUTH] Setting isPremium to:', premiumStatus);
-      console.log('[AUTH] Setting isAdmin to:', adminStatus);
-      
+
       setIsAdmin(adminStatus);
       setIsPremium(premiumStatus);
-      
+
       // Enrichir l'objet user avec les données du profil
       setUser(prev => {
         if (!prev) return prev;
@@ -86,10 +78,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           is_premium: premiumStatus,
           premium_since: data?.premium_since
         } as any;
-        console.log('[AUTH] Enriched user object:', enrichedUser);
         return enrichedUser;
       });
-      
+
       return { isAdmin: adminStatus, isPremium: premiumStatus };
     } catch (error) {
       console.error('Exception when fetching user status:', error);
@@ -97,21 +88,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsPremium(false);
       return { isAdmin: false, isPremium: false };
     }
-  };
+  }, []);
 
   // FIX P0-2 & P0-3: Éviter double sync et race conditions
   const syncInProgressRef = useRef(false);
-  
+
   const syncUserData = useCallback(async (userId: string, email?: string) => {
     if (syncInProgressRef.current) {
-      console.info("[AUTH CONTEXT] Sync already in progress, skipping");
       return;
     }
-    
+
     syncInProgressRef.current = true;
-    
+
     try {
-      console.info("[AUTH CONTEXT] Starting user data sync for:", userId);
       await syncUserProfile(userId, email);
       const status = await fetchUserStatus(userId);
       return status;
@@ -121,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       syncInProgressRef.current = false;
     }
-  }, []);
+  }, [fetchUserStatus]);
 
   useEffect(() => {
     // FIX: Prevent double initialization in React StrictMode and race conditions
@@ -133,12 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Initialize auth session FIRST, THEN set up listener
     const initializeAuth = async () => {
       try {
-        console.info("[AUTH CONTEXT] Fetching initial session");
-
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (!mounted) {
-          console.info("[AUTH CONTEXT] Component unmounted during init, aborting");
           return;
         }
 
@@ -153,7 +139,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const status = await syncUserData(currentSession.user.id, currentSession.user.email);
 
           if (!mounted) {
-            console.info("[AUTH CONTEXT] Component unmounted during sync, aborting");
             return;
           }
 
@@ -175,20 +160,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
         setIsLoading(false);
 
-        console.info("[AUTH CONTEXT] Initial state set", {
-          isInitialized: true,
-          isLoading: false,
-          user: currentSession?.user?.id || null
-        });
-
         // NOW set up the auth state change listener for future changes
         const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
           if (!mounted) {
-            console.info("[AUTH CONTEXT] Listener fired but component unmounted, ignoring");
             return;
           }
-
-          console.info(`[AUTH CONTEXT] Auth state change event: ${event}`);
 
           // If user exists, sync their profile BEFORE updating state
           if (newSession?.user) {
@@ -209,11 +185,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             setSession(null);
           }
-
-          console.info("[AUTH CONTEXT] State updated from listener", {
-            event,
-            user: newSession?.user?.id || null
-          });
         });
 
         subscription = authSubscription;
@@ -226,13 +197,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Even on error, we need to mark initialization as complete
         setIsInitialized(true);
         setIsLoading(false);
-
-        console.info("[AUTH CONTEXT] Error state set", {
-          isInitialized: true,
-          isLoading: false,
-          user: null,
-          error: "Initialization error"
-        });
       }
     };
 
@@ -241,7 +205,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Clean up subscription
     return () => {
-      console.info("[AUTH CONTEXT] Cleaning up auth subscription");
       mounted = false;
       if (subscription) {
         subscription.unsubscribe();

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@4.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,15 +41,17 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const resend = new Resend(resendApiKey);
     
     console.log("Starting weekly digest job...");
     
-    // Get all user settings with digest enabled
+    // Get all user settings with digest enabled + user email
     const { data: settings, error: settingsError } = await supabase
       .from("user_settings")
-      .select("user_id, tz, enable_digest, daily_push_cap");
+      .select("user_id, tz, enable_digest, daily_push_cap, profiles!inner(email)");
 
     if (settingsError) {
       console.error("Error fetching settings:", settingsError);
@@ -162,6 +165,43 @@ serve(async (req) => {
             type: "weekly_digest",
             meta: digestMeta
           });
+
+          // Send email
+          const userEmail = (userSetting as any).profiles?.email;
+          if (userEmail) {
+            try {
+              await resend.emails.send({
+                from: "V-READ <notifications@vread.fr>",
+                to: [userEmail],
+                subject: "📊 Ton bilan hebdomadaire V-READ",
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #333;">📊 Ta semaine V-READ</h2>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                      <div style="margin: 10px 0;">
+                        <strong style="font-size: 24px; color: #000;">${bookysReceived || 0}</strong>
+                        <span style="color: #666; margin-left: 8px;">Bookys reçus</span>
+                      </div>
+                      <div style="margin: 10px 0;">
+                        <strong style="font-size: 24px; color: #000;">${validations || 0}</strong>
+                        <span style="color: #666; margin-left: 8px;">Validations</span>
+                      </div>
+                      <div style="margin: 10px 0;">
+                        <strong style="font-size: 24px; color: #000;">${activeFriends}</strong>
+                        <span style="color: #666; margin-left: 8px;">Amis actifs</span>
+                      </div>
+                    </div>
+                    <a href="https://v-read.fr/profile" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 8px;">
+                      Voir mes stats complètes
+                    </a>
+                  </div>
+                `
+              });
+              console.log(`Sent weekly digest email to ${userEmail}`);
+            } catch (emailError) {
+              console.error(`Email error for ${userEmail}:`, emailError);
+            }
+          }
 
           digestsSent++;
           console.log(`Sent weekly digest to user ${userSetting.user_id}: ${digestMeta.msg}`);
