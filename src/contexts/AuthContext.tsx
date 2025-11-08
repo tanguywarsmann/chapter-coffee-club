@@ -18,6 +18,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUserStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -32,7 +33,8 @@ const AuthContext = createContext<AuthContextType>({
   setError: () => {},
   signUp: async () => {},
   signIn: async () => {},
-  signOut: async () => {}
+  signOut: async () => {},
+  refreshUserStatus: async () => {}
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -47,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserStatus = useCallback(async (userId: string) => {
     try {
       if (!userId) return { isAdmin: false, isPremium: false };
-      
+
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin, is_premium, premium_since')
@@ -63,10 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const adminStatus = data?.is_admin || false;
       const premiumStatus = data?.is_premium || false;
-      
+
       setIsAdmin(adminStatus);
       setIsPremium(premiumStatus);
-      
+
       // Enrichir l'objet user avec les données du profil
       setUser(prev => {
         if (!prev) return prev;
@@ -78,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } as any;
         return enrichedUser;
       });
-      
+
       return { isAdmin: adminStatus, isPremium: premiumStatus };
     } catch (error) {
       console.error('Exception when fetching user status:', error);
@@ -90,14 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // FIX P0-2 & P0-3: Éviter double sync et race conditions
   const syncInProgressRef = useRef(false);
-  
+
   const syncUserData = useCallback(async (userId: string, email?: string) => {
     if (syncInProgressRef.current) {
       return;
     }
-    
+
     syncInProgressRef.current = true;
-    
+
     try {
       await syncUserProfile(userId, email);
       const status = await fetchUserStatus(userId);
@@ -229,20 +231,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw new Error(error.message);
   }
 
+  async function refreshUserStatus() {
+    if (!user?.id) {
+      console.warn('[AUTH] Cannot refresh user status: no user logged in');
+      return;
+    }
+
+    console.log('[AUTH] Manually refreshing user status for:', user.id);
+    await fetchUserStatus(user.id);
+  }
+
   return (
-    <AuthContext.Provider value={{ 
-      supabase, 
-      session, 
-      user, 
-      isLoading, 
-      isInitialized, 
-      isAdmin, 
-      isPremium, 
-      error, 
+    <AuthContext.Provider value={{
+      supabase,
+      session,
+      user,
+      isLoading,
+      isInitialized,
+      isAdmin,
+      isPremium,
+      error,
       setError,
       signUp,
       signIn,
-      signOut
+      signOut,
+      refreshUserStatus
     }}>
       {children}
     </AuthContext.Provider>
