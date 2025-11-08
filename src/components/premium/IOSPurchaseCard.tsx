@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function IOSPurchaseCard() {
   const { t } = useTranslation();
-  const { refreshUserStatus } = useAuth();
+  const { pollForPremiumStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -75,11 +75,14 @@ export function IOSPurchaseCard() {
         console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
         console.log('[iOS Purchase Card] ✅ Purchase successful!');
-        console.log('[iOS Purchase Card] ⏳ Waiting 2s for Supabase to sync...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
-        await refreshUserStatus();
-        console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');
+        console.log('[iOS Purchase Card] 🔄 Starting aggressive polling to detect premium status...');
+        const premiumDetected = await pollForPremiumStatus();
+
+        if (premiumDetected) {
+          console.log('[iOS Purchase Card] 🎉 Premium successfully activated!');
+        } else {
+          console.log('[iOS Purchase Card] ⚠️ Premium not detected after polling');
+        }
       }
     } catch (error) {
       console.error('[iOS Purchase Card] ❌ Purchase error:', error);
@@ -98,11 +101,14 @@ export function IOSPurchaseCard() {
       console.log('[iOS Purchase Card] Restore complete');
 
       if (success) {
-        console.log('[iOS Purchase Card] ⏳ Waiting 2s for Supabase to sync...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
-        await refreshUserStatus();
-        console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');
+        console.log('[iOS Purchase Card] 🔄 Starting aggressive polling to detect restored premium...');
+        const premiumDetected = await pollForPremiumStatus();
+
+        if (premiumDetected) {
+          console.log('[iOS Purchase Card] 🎉 Premium successfully restored!');
+        } else {
+          console.log('[iOS Purchase Card] ⚠️ Premium not detected after polling');
+        }
       }
     } catch (error) {
       console.error('[iOS Purchase Card] Restore error:', error);

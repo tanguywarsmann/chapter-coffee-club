@@ -19,6 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUserStatus: () => Promise<void>;
+  pollForPremiumStatus: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,7 +35,8 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => {},
   signIn: async () => {},
   signOut: async () => {},
-  refreshUserStatus: async () => {}
+  refreshUserStatus: async () => {},
+  pollForPremiumStatus: async () => false
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -269,6 +271,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id, syncUserData]);
 
+  // NOUVELLE FONCTION: Polling robuste pour détecter le statut premium après achat iOS
+  const pollForPremiumStatus = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) {
+      console.warn('[AUTH POLL] Cannot poll: no user logged in');
+      return false;
+    }
+
+    console.log('[AUTH POLL] 🔄 Starting aggressive polling for premium status...');
+
+    const maxAttempts = 6; // 6 tentatives = 12 secondes max
+    const delayMs = 2000; // 2 secondes entre chaque tentative
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`[AUTH POLL] Attempt ${attempt}/${maxAttempts} - Checking Supabase...`);
+
+      try {
+        // Lecture DIRECTE de la table profiles (pas de cache, pas de verrou)
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_premium, is_admin, premium_since')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error(`[AUTH POLL] Error on attempt ${attempt}:`, error);
+        } else if (data?.is_premium) {
+          // 🎉 PREMIUM DÉTECTÉ !
+          console.log('[AUTH POLL] 🎉 PREMIUM DETECTED IN SUPABASE!');
+
+          // Force update immédiat de tous les états
+          setIsAdmin(data.is_admin || false);
+          setIsPremium(true);
+
+          setUser(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              is_admin: data.is_admin || false,
+              is_premium: true,
+              premium_since: data.premium_since
+            } as any;
+          });
+
+          console.log('[AUTH POLL] ✅ All states updated - User is now PREMIUM!');
+
+          // Afficher message de félicitations
+          toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+            duration: 5000,
+            style: {
+              background: 'linear-gradient(to right, #f97316, #eab308)',
+              color: 'white',
+              fontWeight: 'bold'
+            }
+          });
+
+          return true;
+        } else {
+          console.log(`[AUTH POLL] Attempt ${attempt}: Not premium yet (is_premium=${data?.is_premium})`);
+        }
+      } catch (err) {
+        console.error(`[AUTH POLL] Exception on attempt ${attempt}:`, err);
+      }
+
+      // Attendre avant la prochaine tentative (sauf si c'est la dernière)
+      if (attempt < maxAttempts) {
+        console.log(`[AUTH POLL] Waiting ${delayMs}ms before next attempt...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+
+    console.log('[AUTH POLL] ❌ Max attempts reached - Premium not detected');
+    toast.error('Le statut premium n\'a pas été détecté. Essayez de vous déconnecter puis reconnecter.', {
+      duration: 6000
+    });
+    return false;
+  }, [user?.id]);
+
   const contextValue = useMemo(() => ({
     supabase,
     session,
@@ -282,7 +361,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
-    refreshUserStatus
+    refreshUserStatus,
+    pollForPremiumStatus
   }), [
     session,
     user,
@@ -294,7 +374,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
-    refreshUserStatus
+    refreshUserStatus,
+    pollForPremiumStatus
   ]);
 
   return (
