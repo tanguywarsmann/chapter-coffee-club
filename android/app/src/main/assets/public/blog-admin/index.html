@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow">
+  <title>VREAD — Administration Blog</title>
+  <link rel="icon" href="/favicon.ico" />
+</head>
+<body>
+  <!-- Conteneur pour l'interface Decap CMS -->
+  <div id="nc-root"></div>
+
+  <!-- Configuration manuelle pour contrôler l'initialisation -->
+  <script>
+    window.CMS_MANUAL_INIT = true;
+    console.log('[DECAP] Manual init flag set');
+  </script>
+
+  <!-- Chargement de Decap CMS -->
+  <script src="https://unpkg.com/decap-cms@^3.6.4/dist/decap-cms.js"></script>
+
+  <!-- Configuration et initialisation -->
+  <script>
+    console.log('[DECAP] Starting setup');
+    
+    // Écouter les messages d'authentification
+    function setupAuthListener() {
+      console.log('[DECAP] Setting up auth message listener');
+      
+      window.addEventListener('message', function(event) {
+        console.log('[DECAP] Message received:', event.data);
+        
+        if (typeof event.data === 'string' && event.data.startsWith('authorization:github:')) {
+          try {
+            const payload = JSON.parse(event.data.replace('authorization:github:', ''));
+            console.log('[DECAP] Processing auth payload');
+            
+            // Stocker le token
+            localStorage.setItem('decap-cms-user', JSON.stringify(payload));
+            localStorage.setItem('netlify-cms-user', JSON.stringify(payload));
+            console.log('[DECAP] Token stored, reloading page');
+            
+            // Recharger pour appliquer l'authentification
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+            
+          } catch (err) {
+            console.error('[DECAP] Error processing auth message:', err);
+          }
+        }
+      });
+    }
+
+    // Initialiser Decap CMS
+    function initializeCMS() {
+      console.log('[DECAP] Initializing CMS');
+      
+      fetch('/blog-admin/config.yml')
+        .then(r => r.text())
+        .then(cfg => {
+          console.log('[DECAP] Config loaded, calling CMS.init()');
+          
+          try {
+            CMS.init({ config: cfg, configType: 'yaml' });
+            console.log('[DECAP] CMS initialized successfully');
+            
+            // Diagnostic post-init
+            setTimeout(() => {
+              const authStatus = localStorage.getItem('decap-cms-user');
+              console.log('[DECAP] Auth status:', !!authStatus);
+              
+              const ncRoot = document.getElementById('nc-root');
+              console.log('[DECAP] #nc-root content:', ncRoot ? ncRoot.innerHTML.length + ' chars' : 'not found');
+            }, 2000);
+            
+          } catch (initErr) {
+            console.error('[DECAP] CMS.init() error:', initErr);
+          }
+        })
+        .catch(err => {
+          console.error('[DECAP] Config.yml fetch error:', err);
+        });
+    }
+
+    // Démarrage
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('[DECAP] DOM loaded, starting setup');
+      
+      // Configurer l'écoute des messages AVANT l'init
+      setupAuthListener();
+      
+      // Initialiser le CMS
+      setTimeout(initializeCMS, 300);
+    });
+  </script>
+
+</body>
+</html>
