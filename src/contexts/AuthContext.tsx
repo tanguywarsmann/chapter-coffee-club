@@ -215,6 +215,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // REALTIME: Écoute en temps réel des changements de statut premium dans Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('[AUTH REALTIME] Setting up real-time listener for premium status...');
+
+    const channel = supabase
+      .channel(`premium-status-${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${user.id}`
+      }, (payload) => {
+        console.log('[AUTH REALTIME] 📡 Received profile update:', payload);
+
+        const newData = payload.new as { is_premium?: boolean; is_admin?: boolean; premium_since?: string | null };
+
+        if (newData.is_premium !== undefined) {
+          const wasPremium = isPremium;
+          const nowPremium = newData.is_premium;
+
+          console.log(`[AUTH REALTIME] Premium status change: ${wasPremium} → ${nowPremium}`);
+
+          // Mettre à jour les états
+          setIsPremium(nowPremium);
+          if (newData.is_admin !== undefined) {
+            setIsAdmin(newData.is_admin);
+          }
+
+          // Enrichir l'user
+          setUser(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              is_premium: nowPremium,
+              is_admin: newData.is_admin ?? (prev as any).is_admin,
+              premium_since: newData.premium_since ?? (prev as any).premium_since
+            } as any;
+          });
+
+          // Toast de félicitations si passage à premium
+          if (!wasPremium && nowPremium) {
+            console.log('[AUTH REALTIME] 🎉 User just became premium!');
+            toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+              duration: 5000,
+              style: {
+                background: 'linear-gradient(to right, #f97316, #eab308)',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }
+            });
+          }
+        }
+      })
+      .subscribe((status) => {
+        console.log('[AUTH REALTIME] Subscription status:', status);
+      });
+
+    return () => {
+      console.log('[AUTH REALTIME] Cleaning up real-time listener');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, isPremium]);
+
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
     const { error } = await supabase.auth.signUp({ email, password });
