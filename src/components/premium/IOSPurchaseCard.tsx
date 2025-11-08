@@ -7,9 +7,11 @@ import { appleIAPService } from '@/services/iap/appleIAPService';
 import { RevenueCatProduct } from '@/services/iap/types';
 import { PremiumBadge } from './PremiumBadge';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function IOSPurchaseCard() {
   const { t } = useTranslation();
+  const { refreshUserStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -58,21 +60,24 @@ export function IOSPurchaseCard() {
     console.log('[iOS Purchase Card] 🛒 Purchase button clicked by user');
     console.log('[iOS Purchase Card] Product available:', !!product);
     console.log('[iOS Purchase Card] Already purchasing:', isPurchasing);
-    
+
     if (isPurchasing) {
       console.warn('[iOS Purchase Card] ⚠️ Purchase already in progress, ignoring click');
       return;
     }
-    
+
     setIsPurchasing(true);
     try {
       console.log('[iOS Purchase Card] 🚀 Calling appleIAPService.purchaseLifetime()...');
       const success = await appleIAPService.purchaseLifetime();
-      
+
       if (!success) {
         console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
         console.log('[iOS Purchase Card] ✅ Purchase successful!');
+        console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
+        await refreshUserStatus();
+        console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');
       }
     } catch (error) {
       console.error('[iOS Purchase Card] ❌ Purchase error:', error);
@@ -87,8 +92,14 @@ export function IOSPurchaseCard() {
     setIsRestoring(true);
     try {
       console.log('[iOS Purchase Card] Starting restore flow...');
-      await appleIAPService.restorePurchases();
+      const success = await appleIAPService.restorePurchases();
       console.log('[iOS Purchase Card] Restore complete');
+
+      if (success) {
+        console.log('[iOS Purchase Card] 🔄 Refreshing user status to update UI...');
+        await refreshUserStatus();
+        console.log('[iOS Purchase Card] ✅ User status refreshed - premium should now be visible');
+      }
     } catch (error) {
       console.error('[iOS Purchase Card] Restore error:', error);
     } finally {
