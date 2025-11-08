@@ -27,28 +27,56 @@ if (!url || !key) {
   );
 }
 
+// Detect localStorage availability once at startup
+let storageAvailable = false;
+try {
+  const test = '__storage_test__';
+  localStorage.setItem(test, test);
+  localStorage.removeItem(test);
+  storageAvailable = true;
+} catch {
+  storageAvailable = false;
+  console.warn('[Supabase] localStorage unavailable (private browsing?), using memory fallback');
+}
+
+// Memory fallback for when localStorage is unavailable
+const memoryStorage = new Map<string, string>();
+
 // Create a safe storage fallback to handle PWA storage errors
 const safeStorage = {
   getItem: (key: string): string | null => {
+    if (!storageAvailable) {
+      return memoryStorage.get(key) || null;
+    }
     try {
       return localStorage.getItem(key);
     } catch (error) {
       console.warn(`Failed to retrieve ${key} from localStorage:`, error);
-      return null;
+      return memoryStorage.get(key) || null;
     }
   },
   setItem: (key: string, value: string): void => {
+    if (!storageAvailable) {
+      memoryStorage.set(key, value);
+      return;
+    }
     try {
       localStorage.setItem(key, value);
     } catch (error) {
       console.warn(`Failed to set ${key} in localStorage:`, error);
+      memoryStorage.set(key, value);
     }
   },
   removeItem: (key: string): void => {
+    if (!storageAvailable) {
+      memoryStorage.delete(key);
+      return;
+    }
     try {
       localStorage.removeItem(key);
     } catch (error) {
       console.warn(`Failed to remove ${key} from localStorage:`, error);
+      memoryStorage.delete(key);
     }
   }
 };
