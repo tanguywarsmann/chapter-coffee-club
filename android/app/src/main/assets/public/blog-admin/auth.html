@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authentification en cours...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .loader {
+      text-align: center;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Authentification en cours...</p>
+  </div>
+
+  <script>
+    (function() {
+      // Récupération du token depuis l'URL fragment
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+
+      if (accessToken) {
+        // Données d'authentification pour Decap CMS
+        const authData = {
+          backendName: 'github',
+          token: accessToken,
+          tokenType: 'bearer'
+        };
+
+        try {
+          // Stockage dans localStorage avec la clé attendue par Decap CMS
+          localStorage.setItem('netlify-cms-user', JSON.stringify(authData));
+          console.log('Token stocké avec succès');
+          
+          // Redirection vers l'interface Decap CMS
+          window.location.href = '/blog-admin/index.html';
+        } catch (error) {
+          console.error('Erreur lors du stockage du token:', error);
+          alert('Erreur lors de l\'authentification. Veuillez réessayer.');
+        }
+      } else {
+        console.error('Aucun token trouvé dans l\'URL');
+        alert('Erreur: Token d\'authentification manquant');
+        // Redirection vers la page d'accueil en cas d'erreur
+        window.location.href = '/';
+      }
+    })();
+  </script>
+</body>
+</html>
