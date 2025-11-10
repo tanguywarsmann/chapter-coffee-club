@@ -1,5 +1,5 @@
 export const BUILD_INFO = {
-  commit: 'dev',
-  branch: 'dev',
-  date: '1970-01-01T00:00:00Z'
+  commit: '1c84392',
+  branch: 'claude/fix-site-freeze-critical-011CUtmZnuvGmhXPvW4y1esL',
+  date: '2025-11-08T23:47:36Z'
 } as const;
