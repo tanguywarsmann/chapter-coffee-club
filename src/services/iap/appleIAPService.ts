@@ -11,6 +11,24 @@ class AppleIAPService {
   private apiKey = 'appl_LqGBafbkvvzjeVyWijyguTTO0yB';
 
   /**
+   * Vérifie si l'utilisateur a un entitlement premium actif
+   * Supporte plusieurs noms d'entitlement pour éviter les problèmes de config
+   */
+  private hasAnyLifetimeEntitlement(entitlements: Record<string, any> = {}): boolean {
+    const possibleKeys = ['premium', 'Premium', 'Single Purchase', 'lifetime', 'Lifetime'];
+
+    for (const key of possibleKeys) {
+      if (entitlements[key] !== undefined) {
+        console.log(`[IAP] ✅ Found active entitlement: "${key}"`);
+        return true;
+      }
+    }
+
+    console.log('[IAP] ⚠️ No active entitlement found. Available:', Object.keys(entitlements));
+    return false;
+  }
+
+  /**
    * Initialise RevenueCat SDK
    * Doit être appelé au démarrage de l'app sur iOS
    */
@@ -138,6 +156,14 @@ class AppleIAPService {
       });
 
       console.log('[IAP] ✅ Purchase successful!', purchaseResult);
+      console.log('[IAP] Active entitlements after purchase:', Object.keys(purchaseResult.customerInfo.entitlements.active || {}));
+
+      // Vérifier que l'entitlement est bien actif
+      const hasLifetime = this.hasAnyLifetimeEntitlement(purchaseResult.customerInfo.entitlements.active);
+
+      if (!hasLifetime) {
+        console.error('[IAP] ⚠️ Purchase succeeded but no entitlement found!');
+      }
 
       // RevenueCat gère automatiquement la validation du receipt
       // Activer Premium dans le profil
@@ -179,9 +205,10 @@ class AppleIAPService {
       // RevenueCat gère automatiquement la restauration
       const customerInfo = await Purchases.restorePurchases();
       console.log('[IAP] Restore result:', customerInfo);
+      console.log('[IAP] Active entitlements:', Object.keys(customerInfo.customerInfo.entitlements.active || {}));
 
-      // Vérifier si l'utilisateur a un entitlement actif
-      const hasLifetime = customerInfo.customerInfo.entitlements.active['premium'] !== undefined;
+      // Vérifier si l'utilisateur a un entitlement actif (supporte plusieurs noms)
+      const hasLifetime = this.hasAnyLifetimeEntitlement(customerInfo.customerInfo.entitlements.active);
 
       if (hasLifetime) {
         toast.success('Ton accès Premium a été restauré');
