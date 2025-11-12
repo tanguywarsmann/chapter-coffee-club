@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  User, 
-  BookOpen, 
-  Award, 
-  Clock, 
+import {
+  User,
+  BookOpen,
+  Award,
+  Clock,
   Calendar,
   Target,
   TrendingUp,
@@ -27,11 +27,11 @@ import { getFollowerCounts } from "@/services/user/profileService";
 import { getUserBadges } from "@/services/badgeService";
 import { getUserReadingProgress } from "@/services/reading/progressService";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { 
+import {
   getTotalPagesRead,
-  getBooksReadCount, 
-  getValidatedSegmentsCount, 
-  getEstimatedReadingTime 
+  getBooksReadCount,
+  getValidatedSegmentsCount,
+  getEstimatedReadingTime
 } from "@/services/reading/statsService";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { ProfileNameForm } from "@/components/profile/ProfileNameForm";
@@ -55,7 +55,9 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [booksLoaded, setBooksLoaded] = useState(false);
+
   const profileUserId = params.userId || user?.id;
   const isOwnProfile = !params.userId || (user && user.id === params.userId);
 
@@ -67,32 +69,24 @@ export default function Profile() {
     let mounted = true;
 
     async function fetchProfileData() {
+      // Performance monitoring
+      const startTime = performance.now();
+
       try {
         setLoading(true);
 
-        // CRITICAL FIX: Reduce parallel queries to avoid connection pool exhaustion
-        // Phase 1: Fetch essential data (max 3 parallel queries)
-        const [profile, counts, readingProgress] = await Promise.all([
+        // CRITICAL OPTIMIZATION: Only fetch essential data on initial load
+        // Phase 1: Fetch ONLY profile + counts (2 queries) - Books loaded on-demand
+        const [profile, counts] = await Promise.all([
           getUserProfile(profileUserId),
-          getFollowerCounts(profileUserId),
-          getUserReadingProgress(profileUserId)
+          getFollowerCounts(profileUserId)
+          // ❌ REMOVED getUserReadingProgress - will lazy load when "books" tab is active
         ]);
 
         if (!mounted || abortController.signal.aborted) return;
 
         setProfileData(profile);
         setFollowerCounts(counts);
-
-        if (readingProgress) {
-          const current = readingProgress.filter(p => p.status === "in_progress");
-          const completed = readingProgress.filter(p =>
-            p.status === "completed" ||
-            p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
-          ).slice(0, 8); // Show only first 8 completed books
-
-          setCurrentBooks(current);
-          setCompletedBooks(completed);
-        }
 
         // Phase 2: Fetch secondary data (badges and stats) AFTER essential data
         // This avoids saturating the connection pool
@@ -130,6 +124,14 @@ export default function Profile() {
       } finally {
         if (mounted) {
           setLoading(false);
+
+          // Performance metrics
+          const duration = performance.now() - startTime;
+          if (duration > 3000) {
+            console.warn(`[PROFILE PERF] Slow load detected: ${duration.toFixed(0)}ms`);
+          } else {
+            console.log(`[PROFILE PERF] Load time: ${duration.toFixed(0)}ms`);
+          }
         }
       }
     }
@@ -144,9 +146,38 @@ export default function Profile() {
     };
   }, [profileUserId, isOwnProfile]);
 
+  // LAZY LOADING: Fetch books only when "books" or "overview" tab is active
+  useEffect(() => {
+    if (!profileUserId || booksLoaded) return;
+    if (activeTab !== "books" && activeTab !== "overview") return;
+
+    async function fetchBooks() {
+      try {
+        // Only fetch first 10 books for performance
+        const readingProgress = await getUserReadingProgress(profileUserId, { limit: 10 });
+
+        if (readingProgress) {
+          const current = readingProgress.filter(p => p.status === "in_progress");
+          const completed = readingProgress.filter(p =>
+            p.status === "completed" ||
+            p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
+          ).slice(0, 8); // Show only first 8 completed books
+
+          setCurrentBooks(current);
+          setCompletedBooks(completed);
+          setBooksLoaded(true);
+        }
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    }
+
+    fetchBooks();
+  }, [activeTab, profileUserId, booksLoaded]);
+
   const displayName = getDisplayName(
-    profileData?.username, 
-    profileData?.email || user?.email, 
+    profileData?.username,
+    profileData?.email || user?.email,
     profileUserId || 'U'
   );
 
@@ -183,7 +214,7 @@ export default function Profile() {
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-coffee-light/20 via-background to-coffee-light/10">
         <AppHeader />
-        
+
         <main className="mx-auto w-full px-4 max-w-none py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
           {/* Profile Header */}
           <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
@@ -191,18 +222,18 @@ export default function Profile() {
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Avatar and Basic Info */}
                 <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-shrink-0">
-                  <EnhancedAvatar 
+                  <EnhancedAvatar
                     src={profileData?.avatar}
                     alt={displayName}
                     fallbackText={displayName}
                     size="xl"
                     className="border-4 border-coffee-light shadow-lg mb-4"
                   />
-                  
+
                   {isOwnProfile && !isEditingProfile && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="mb-4 border-coffee-light hover:bg-coffee-light/20 text-xs sm:text-sm"
                       onClick={() => setIsEditingProfile(true)}
                     >
@@ -221,12 +252,12 @@ export default function Profile() {
                 <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
                   {isEditingProfile && isOwnProfile ? (
                     <div className="space-y-4">
-                      <ProfileNameForm 
-                        currentUsername={profileData?.username} 
-                        onSave={refreshProfile} 
+                      <ProfileNameForm
+                        currentUsername={profileData?.username}
+                        onSave={refreshProfile}
                       />
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         onClick={() => setIsEditingProfile(false)}
                         className="text-sm"
                       >
@@ -246,7 +277,7 @@ export default function Profile() {
 
                       {/* Follow Stats and Button */}
                       <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                        <Link 
+                        <Link
                           to={`/followers/followers/${profileUserId}`}
                           className="flex items-center gap-2 group min-w-0"
                         >
@@ -255,7 +286,7 @@ export default function Profile() {
                           <span className="text-coffee-medium group-hover:underline text-sm sm:text-base hidden sm:inline">Abonnés</span>
                           <span className="text-coffee-medium group-hover:underline text-xs sm:hidden">Abonnés</span>
                         </Link>
-                        <Link 
+                        <Link
                           to={`/followers/following/${profileUserId}`}
                           className="flex items-center gap-2 group min-w-0"
                         >
@@ -264,18 +295,18 @@ export default function Profile() {
                           <span className="text-coffee-medium group-hover:underline text-sm sm:text-base hidden sm:inline">Abonnements</span>
                           <span className="text-coffee-medium group-hover:underline text-xs sm:hidden">Suivis</span>
                         </Link>
-                        
+
                         {!isOwnProfile && profileUserId && (
                           <div className="flex-shrink-0">
                             <FollowButton targetUserId={profileUserId} />
                           </div>
                         )}
-                        
+
                         {/* Account management link for own profile */}
                         {isOwnProfile && (
                           <div className="flex-shrink-0">
-                            <Link 
-                              to="/settings/delete-account" 
+                            <Link
+                              to="/settings/delete-account"
                               className="text-xs text-muted-foreground hover:text-destructive transition-colors underline-offset-4 hover:underline"
                             >
                               Supprimer mon compte
@@ -317,32 +348,37 @@ export default function Profile() {
           </Card>
 
           {/* Content Tabs */}
-          <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6 w-full">
+          <Tabs
+            defaultValue="overview"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-4 sm:space-y-6 w-full"
+          >
             {/* Scrollable Tabs Container */}
             <div className="w-full overflow-x-auto scrollbar-hide">
               <TabsList className="bg-white/80 backdrop-blur-sm border border-coffee-light/50 p-1 inline-flex min-w-full sm:min-w-0 justify-start sm:justify-center">
-                <TabsTrigger 
-                  value="overview" 
+                <TabsTrigger
+                  value="overview"
                   className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap"
                 >
                   <span className="hidden sm:inline">Vue d'ensemble</span>
                   <span className="sm:hidden">Aperçu</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="books" 
+                <TabsTrigger
+                  value="books"
                   className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap"
                 >
                   Livres
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="badges" 
+                <TabsTrigger
+                  value="badges"
                   className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap"
                 >
                   Badges
                 </TabsTrigger>
                 {isOwnProfile && (
-                  <TabsTrigger 
-                    value="settings" 
+                  <TabsTrigger
+                    value="settings"
                     className="data-[state=active]:bg-coffee-light data-[state=active]:text-coffee-darker text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap"
                   >
                     <span className="hidden sm:inline">Paramètres</span>
@@ -428,8 +464,8 @@ export default function Profile() {
                   {completedBooks.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
                       {completedBooks.map((book) => (
-                        <Link 
-                          key={book.id} 
+                        <Link
+                          key={book.id}
                           to={`/books/${book.book_id}`}
                           className="group"
                         >

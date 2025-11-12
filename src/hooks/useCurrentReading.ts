@@ -16,8 +16,8 @@ export const useCurrentReading = () => {
   const lastFetchedId = useRef<string | null>(null);
   const lastFetchTime = useRef<number>(0);
   
-  // Ne refetch que toutes les 30 secondes maximum
-  const FETCH_COOLDOWN = 30000; // 30 secondes
+  // Ne refetch que toutes les 60 secondes maximum (augmenté pour réduire la charge)
+  const FETCH_COOLDOWN = 60000; // 60 secondes
   
   // Memo pour éviter des calculs inutiles si inProgress n'a pas changé
   const memoizedCurrentReading = useMemo(() => {
@@ -50,31 +50,32 @@ export const useCurrentReading = () => {
   // Fonction pour fetch les données, optimisée avec cooldown
   const fetchCurrentReadingData = useCallback(async () => {
     if (!user?.id || fetchingCurrentReading.current) return;
-    
+
     // Vérifier le cooldown pour éviter les fetch trop fréquents
     const now = Date.now();
     if (now - lastFetchTime.current < FETCH_COOLDOWN) {
       return;
     }
-    
+
     if (inProgress && inProgress.length > 0 && !fetchingCurrentReading.current) {
       return;
     }
-    
-    if (user.id === lastFetchedId.current && currentReading) {
+
+    // Utiliser lastFetchedId au lieu de currentReading pour éviter la boucle infinie
+    if (user.id === lastFetchedId.current && lastFetchedId.current) {
       setIsLoadingCurrentBook(false);
       return;
     }
-    
+
     try {
       fetchingCurrentReading.current = true;
       setIsLoadingCurrentBook(true);
       lastFetchTime.current = now;
-      
+
       const inProgressBooks = await getBooksByStatus(user.id, "in_progress");
-      
+
       if (!isMounted.current) return;
-      
+
       if (inProgressBooks && inProgressBooks.length > 0) {
         const availableBooks = inProgressBooks.filter(book => !book.isUnavailable);
         if (availableBooks.length > 0) {
@@ -91,7 +92,7 @@ export const useCurrentReading = () => {
       } else {
         setCurrentReading(null);
       }
-      
+
       lastFetchedId.current = user.id;
     } catch (error) {
       // Éviter de montrer des toasts d'erreur répétés
@@ -107,7 +108,7 @@ export const useCurrentReading = () => {
         fetchingCurrentReading.current = false;
       }
     }
-  }, [user?.id, inProgress, currentReading]);
+  }, [user?.id, inProgress]); // 🔥 CRITIQUE: Supprimé currentReading pour casser la boucle infinie
 
   useEffect(() => {
     if (user?.id && isMounted.current) {
