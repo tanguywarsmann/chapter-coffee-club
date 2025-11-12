@@ -1821,6 +1821,7 @@ export type Database = {
       }
     }
     Functions: {
+      activate_premium: { Args: never; Returns: Json }
       auto_grant_badges: {
         Args: { p_user_id?: string }
         Returns: {
@@ -1830,10 +1831,7 @@ export type Database = {
           newly_granted: boolean
         }[]
       }
-      cleanup_user_data: {
-        Args: { target_user_id: string }
-        Returns: undefined
-      }
+      cleanup_user_data: { Args: { target_user_id: string }; Returns: Json }
       discover_feed: { Args: { lim?: number; uid: string }; Returns: Json }
       feed_get_v1: {
         Args: { p_limit?: number; p_offset?: number; p_viewer?: string }
