@@ -36,34 +36,29 @@ async function fetchWithRetry<T>(
   }
 }
 
+// DEBUG flag - set to true ONLY when actively debugging
+const DEBUG_PROGRESS = false;
+
 /**
  * Get user reading progress (with public API)
  */
 export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
-  console.log("=== getUserReadingProgress DEBUG START ===");
-  console.log("Input userId:", userId);
-  
   if (!userId) {
-    console.log("No userId provided, returning empty array");
     return [];
   }
-  
+
   const validUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!validUuidPattern.test(userId)) {
-    console.log("Invalid UUID format, returning empty array");
     return [];
   }
 
   // Check cache first
   const cached = progressCache.get(userId);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    console.log("Returning cached data:", cached.data);
     return cached.data;
   }
 
   try {
-    console.log("Making Supabase query to reading_progress...");
-    
     // FIX P0-2: Wrap Supabase call with retry logic
     const { data, error } = await fetchWithRetry(async () => {
       const result = await supabase
@@ -75,40 +70,34 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
           )
         `)
         .eq("user_id", userId);
-      
+
       if (result.error) {
         throw result.error; // Throw to trigger retry
       }
-      
+
       return result;
     });
-      
-    console.log("Supabase query result:", { data, error });
-    console.log("Data length:", data?.length);
-    
+
     if (error) {
       console.error("Erreur dans getUserReadingProgress (jointure):", error);
-      console.log("Falling back to legacy method...");
       return getUserReadingProgressLegacy(userId);
     }
-    
+
     if (!data || data.length === 0) {
-      console.log("No data found, returning empty array");
       return [];
     }
-
-    console.log("Processing data items...");
 
     // FIX N+1: Fetch ALL validated segment counts in ONE query
     const bookIds = data.map(item => item.book_id);
     const { getAllValidatedSegmentCounts } = await import('./validatedSegmentCount');
     const validatedCounts = await getAllValidatedSegmentCounts(userId, bookIds);
-    console.log(`✅ Fetched validation counts for ${bookIds.length} books in ONE query (N+1 fixed)`);
 
-    const enriched = await Promise.all(data.map(async (item: any, index: number) => {
-      console.log(`Processing item ${index}:`, item);
+    if (DEBUG_PROGRESS) {
+      console.log(`✅ Fetched validation counts for ${bookIds.length} books in ONE query`);
+    }
+
+    const enriched = await Promise.all(data.map(async (item: any) => {
       const book = item.books;
-      console.log(`Book data for item ${index}:`, book);
 
       const baseProgress = {
         ...item,
@@ -121,26 +110,17 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
         validations: [],
       };
 
-      console.log(`Base progress for item ${index}:`, baseProgress);
-
       // FIX N+1: Pass precomputed count instead of fetching per-book
       const validatedCount = validatedCounts[item.book_id] || 0;
       const enrichedItem = await addDerivedFields(baseProgress, undefined, validatedCount);
-      console.log(`Enriched item ${index}:`, enrichedItem);
       return enrichedItem;
     }));
-    
-    console.log("All items processed, final enriched data:", enriched);
-    
+
     // Cache result
     progressCache.set(userId, { data: enriched, timestamp: Date.now() });
-    console.log("Data cached successfully");
-    console.log("=== getUserReadingProgress DEBUG END (SUCCESS) ===");
     return enriched;
   } catch (error) {
-    console.error("=== getUserReadingProgress ERROR ===", error);
-    console.log("Returning empty array due to error");
-    console.log("=== getUserReadingProgress DEBUG END (ERROR) ===");
+    console.error("Erreur dans getUserReadingProgress:", error);
     return [];
   }
 };

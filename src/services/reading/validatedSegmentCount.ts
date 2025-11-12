@@ -37,8 +37,6 @@ export async function getAllValidatedSegmentCounts(
   }
 
   try {
-    console.log(`[getAllValidatedSegmentCounts] Fetching counts for ${bookIds.length} books in ONE query`);
-
     const { data, error } = await supabase
       .from('reading_validations')
       .select('book_id, segment')
@@ -59,8 +57,6 @@ export async function getAllValidatedSegmentCounts(
         counts[bookId] = (counts[bookId] || 0) + 1;
       });
     }
-
-    console.log(`[getAllValidatedSegmentCounts] Fetched counts for ${Object.keys(counts).length} books with validations`);
 
     return counts;
   } catch (error) {
