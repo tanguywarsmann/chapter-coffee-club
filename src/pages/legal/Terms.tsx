@@ -61,7 +61,36 @@ export function Terms() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-coffee-dark">5. Modification des conditions</h2>
+              <h2 className="text-xl font-semibold text-coffee-dark">5. Achats In-App</h2>
+              <div className="space-y-3 text-coffee-darker/80">
+                <p>
+                  VREAD propose un abonnement Premium à <strong>29€</strong> en achat unique (<strong>Lifetime</strong>).
+                </p>
+                <p>
+                  <strong>Politique de remboursement :</strong> Les achats effectués via Apple App Store 
+                  sont soumis à la politique de remboursement d'Apple. Pour demander un remboursement, 
+                  veuillez contacter directement le support Apple via{" "}
+                  <a 
+                    href="https://reportaproblem.apple.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-coffee-dark underline"
+                  >
+                    reportaproblem.apple.com
+                  </a>
+                </p>
+                <p>
+                  <strong>Support :</strong> Pour toute question concernant votre abonnement, 
+                  contactez-nous à{" "}
+                  <a href="mailto:contact@vread.fr" className="text-coffee-dark underline">
+                    contact@vread.fr
+                  </a>
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-coffee-dark">6. Modification des conditions</h2>
               <p className="text-coffee-darker/80">
                 Ces conditions peuvent être modifiées. Les utilisateurs seront notifiés 
                 des changements importants.
@@ -69,7 +98,7 @@ export function Terms() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-coffee-dark">6. Contact</h2>
+              <h2 className="text-xl font-semibold text-coffee-dark">7. Contact</h2>
               <p className="text-coffee-darker/80">
                 Pour toute question : <a href="mailto:contact@vread.fr" className="text-coffee-dark underline">contact@vread.fr</a>
               </p>
