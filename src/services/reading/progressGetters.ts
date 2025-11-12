@@ -215,14 +215,14 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
         .eq("user_id", userId)
         .eq("book_id", bookId)
         .maybeSingle();
-      
+
       if (result.error) {
         throw result.error; // Throw to trigger retry
       }
-      
+
       return result;
     });
-    
+
     if (error) {
       console.error("Erreur dans getBookReadingProgress (jointure):", error);
       return getBookReadingProgressLegacy(userId, bookId);
@@ -296,7 +296,7 @@ const getBookReadingProgressLegacy = async (userId: string, bookId: string): Pro
  */
 export const getBookCompletionDate = async (userId: string, bookId: string): Promise<string | null> => {
   if (!userId || !bookId) return null;
-  
+
   try {
     const { data, error } = await supabase
       .from("reading_validations")
@@ -306,7 +306,7 @@ export const getBookCompletionDate = async (userId: string, bookId: string): Pro
       .order("validated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    
+
     if (error || !data) return null;
     return data.validated_at;
   } catch (error) {
@@ -336,12 +336,12 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
     const enriched = await Promise.all(data.map(async (item: any) => {
       const book = item.books;
       let completionDate = null;
-      
+
       // For completed books, get the real completion date
       if (status === "completed") {
         completionDate = await getBookCompletionDate(userId, item.book_id);
       }
-      
+
       const baseProgress = {
         ...item,
         ...(book as any),
