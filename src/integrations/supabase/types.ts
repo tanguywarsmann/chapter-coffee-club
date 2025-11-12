@@ -1613,7 +1613,6 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
-          email: string | null
           id: string | null
           is_admin: boolean | null
           updated_at: string | null
@@ -1622,7 +1621,6 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
-          email?: never
           id?: string | null
           is_admin?: never
           updated_at?: string | null
@@ -1631,7 +1629,6 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string | null
-          email?: never
           id?: string | null
           is_admin?: never
           updated_at?: string | null
