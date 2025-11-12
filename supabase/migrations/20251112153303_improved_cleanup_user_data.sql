@@ -1,8 +1,10 @@
--- Edge Function for secure account deletion
--- This will be handled in the edge function code, not in the database migration
--- Creating any necessary cleanup functions if needed
+-- Migration: Improved cleanup_user_data function with better error handling
+-- This replaces the previous version with:
+-- 1. JSON return type for better error reporting
+-- 2. Robust exception handling for missing tables
+-- 3. Detailed logging of each deletion step
+-- 4. Support for additional tables (posts, comments, likes)
 
--- Function to help with data cleanup (can be called from edge function)
 CREATE OR REPLACE FUNCTION public.cleanup_user_data(target_user_id uuid)
 RETURNS json
 LANGUAGE plpgsql

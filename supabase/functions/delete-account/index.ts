@@ -92,10 +92,18 @@ serve(async (req) => {
     const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     // 1) Purge data applicative (fonction SQL transactionnelle)
-    const { error: cleanupError } = await service.rpc("cleanup_user_data", { target_user_id: userId });
+    console.log(`Calling cleanup_user_data RPC for user: ${userId}`);
+    const { data: cleanupData, error: cleanupError } = await service.rpc("cleanup_user_data", { target_user_id: userId });
+
+    console.log("Cleanup RPC response:", { data: cleanupData, error: cleanupError });
+
     if (cleanupError) {
-      console.error("Data cleanup failed:", cleanupError);
-      return new Response(JSON.stringify({ error: "Data cleanup failed" }), {
+      console.error("Data cleanup RPC error:", cleanupError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Data cleanup failed",
+        details: cleanupError.message || String(cleanupError)
+      }), {
         status: 500,
         headers: {
           ...corsHeaders,
@@ -105,11 +113,35 @@ serve(async (req) => {
       });
     }
 
+    // Check if cleanup returned an error in the data
+    if (cleanupData && typeof cleanupData === 'object' && !cleanupData.success) {
+      console.error("Data cleanup returned failure:", cleanupData);
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Data cleanup failed",
+        details: cleanupData.error || "Unknown error during cleanup"
+      }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "content-type": "application/json",
+          "Cache-Control": "no-store"
+        }
+      });
+    }
+
+    console.log(`Data cleanup successful for user: ${userId}`);
+
     // 2) Suppression du compte Auth
+    console.log(`Deleting auth user: ${userId}`);
     const { error: delErr } = await service.auth.admin.deleteUser(userId);
     if (delErr) {
       console.error("Auth user deletion failed:", delErr);
-      return new Response(JSON.stringify({ error: "Account deletion failed" }), {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Account deletion failed",
+        details: delErr.message || String(delErr)
+      }), {
         status: 500,
         headers: {
           ...corsHeaders,
@@ -120,7 +152,12 @@ serve(async (req) => {
     }
 
     console.log(`Successfully deleted account for user: ${userId}`);
-    return new Response(JSON.stringify({ success: true, message: "Account successfully deleted" }), {
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Account successfully deleted",
+      user_id: userId
+    }), {
+      status: 200,
       headers: {
         ...corsHeaders,
         "content-type": "application/json",
