@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { requestAccountDeletion } from "@/services/accountDeletion";
 import { toast } from "sonner";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 export function DeleteAccount() {
   const navigate = useNavigate();
@@ -13,38 +14,61 @@ export function DeleteAccount() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleDelete = useCallback(async () => {
+    logger.info("🗑️ handleDelete: Starting account deletion flow");
+
     try {
       setIsDeleting(true);
 
       // 1) Supprime côté serveur (données + compte Auth via Edge Function)
+      logger.info("Step 1: Calling requestAccountDeletion");
       await requestAccountDeletion();
+      logger.info("Step 1: ✅ Account deleted on server");
 
-      // 2) Purge immédiate de la session locale (évite un état “fantôme” en WebView)
+      // 2) Purge immédiate de la session locale (évite un état "fantôme" en WebView)
+      logger.info("Step 2: Signing out locally");
       try {
         await supabase.auth.signOut({ scope: "local" });
-      } catch {
+        logger.info("Step 2: ✅ Local signout successful");
+      } catch (signOutError) {
         // L'utilisateur est déjà supprimé côté serveur, on ignore
+        logger.info("Step 2: ⚠️ Signout error (expected if user already deleted):", signOutError);
       }
 
       // 3) Nettoyage du stockage local éventuel
+      logger.info("Step 3: Clearing local storage");
       try {
         localStorage.clear();
         sessionStorage.clear();
-      } catch {}
+        logger.info("Step 3: ✅ Local storage cleared");
+      } catch (storageError) {
+        logger.warn("Step 3: ⚠️ Storage clearing error:", storageError);
+      }
 
       // 4) Feedback + redirection
-      toast.success("Compte supprimé avec succès");
-      navigate("/", { replace: true }); // ou window.location.replace("/")
+      logger.info("Step 4: ✅ Account deletion complete, redirecting");
+      toast.success("Compte supprimé avec succès", {
+        duration: 3000
+      });
+
+      // Use setTimeout to ensure toast is visible before redirect
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 500);
+
     } catch (e: any) {
-      const msg =
-        typeof e?.message === "string" && e.message.toLowerCase().includes("unauthorized")
-          ? "Session expirée. Reconnecte-toi pour confirmer la suppression."
-          : "Erreur lors de la suppression du compte";
-      toast.error(msg);
-      console.error("Account deletion error:", e);
+      logger.error("❌ Account deletion failed:", e);
+
+      // Use the error message from the service (already localized)
+      const msg = e?.message || "Erreur lors de la suppression du compte";
+
+      toast.error(msg, {
+        duration: 5000,
+        description: "Si le problème persiste, contactez le support"
+      });
     } finally {
       setIsDeleting(false);
       setConfirmOpen(false);
+      logger.info("🗑️ handleDelete: Flow completed");
     }
   }, [navigate]);
 

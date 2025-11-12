@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useReadingList } from "@/hooks/useReadingList";
 import { toast } from "sonner";
 import { getBooksByStatus } from "@/services/reading/progressService";
+import { logger } from "@/utils/logger";
 
 export const useCurrentReading = () => {
   const { user } = useAuth();
@@ -15,9 +16,15 @@ export const useCurrentReading = () => {
   const fetchingCurrentReading = useRef(false);
   const lastFetchedId = useRef<string | null>(null);
   const lastFetchTime = useRef<number>(0);
-  
+  const inProgressRef = useRef(inProgress); // ✅ Store inProgress in ref to avoid re-creating callback
+
   // Ne refetch que toutes les 60 secondes maximum (augmenté pour réduire la charge)
   const FETCH_COOLDOWN = 60000; // 60 secondes
+
+  // ✅ Sync ref with inProgress
+  useEffect(() => {
+    inProgressRef.current = inProgress;
+  }, [inProgress]);
   
   // Memo pour éviter des calculs inutiles si inProgress n'a pas changé
   const memoizedCurrentReading = useMemo(() => {
@@ -47,17 +54,20 @@ export const useCurrentReading = () => {
     }
   }, [memoizedCurrentReading, currentReading]);
 
-  // Fonction pour fetch les données, optimisée avec cooldown
+  // ✅ Fonction pour fetch les données, optimisée avec cooldown et deps stables
   const fetchCurrentReadingData = useCallback(async () => {
     if (!user?.id || fetchingCurrentReading.current) return;
 
     // Vérifier le cooldown pour éviter les fetch trop fréquents
     const now = Date.now();
     if (now - lastFetchTime.current < FETCH_COOLDOWN) {
+      logger.debug("fetchCurrentReadingData: cooldown active");
       return;
     }
 
-    if (inProgress && inProgress.length > 0 && !fetchingCurrentReading.current) {
+    // ✅ Utiliser le ref pour éviter que le callback change
+    if (inProgressRef.current && inProgressRef.current.length > 0 && !fetchingCurrentReading.current) {
+      logger.debug("fetchCurrentReadingData: already have inProgress data");
       return;
     }
 
@@ -72,6 +82,7 @@ export const useCurrentReading = () => {
       setIsLoadingCurrentBook(true);
       lastFetchTime.current = now;
 
+      logger.debug("fetchCurrentReadingData: fetching inProgress books");
       const inProgressBooks = await getBooksByStatus(user.id, "in_progress");
 
       if (!isMounted.current) return;
@@ -97,7 +108,7 @@ export const useCurrentReading = () => {
     } catch (error) {
       // Éviter de montrer des toasts d'erreur répétés
       if (isMounted.current) {
-        console.error("Erreur lors du chargement de la lecture en cours:", error);
+        logger.error("Erreur lors du chargement de la lecture en cours:", error);
         toast.error("Impossible de charger votre lecture en cours", {
           id: "current-reading-error", // Permet d'éviter des toasts dupliqués
         });
@@ -108,7 +119,7 @@ export const useCurrentReading = () => {
         fetchingCurrentReading.current = false;
       }
     }
-  }, [user?.id, inProgress]); // 🔥 CRITIQUE: Supprimé currentReading pour casser la boucle infinie
+  }, [user?.id]); // ✅ CRITIQUE: Seulement user?.id, pas inProgress!
 
   useEffect(() => {
     if (user?.id && isMounted.current) {

@@ -3,19 +3,21 @@ import { BookWithProgress } from "@/types/reading";
 import { getUserReadingProgress, clearProgressCache } from "@/services/reading/progressService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 export const useReadingProgress = () => {
   const { user } = useAuth();
   const [readingProgress, setReadingProgress] = useState<BookWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+
   const isMounted = useRef(true);
   const hasFetched = useRef(false);
   const isFetching = useRef(false);
   const lastFetchTimestamp = useRef(0);
+  const retryCountRef = useRef(0); // ✅ Use ref instead of state to avoid re-renders
+  const timeoutRefs = useRef<number[]>([]); // ✅ Track timeouts for cleanup
   const MIN_FETCH_INTERVAL = 500; // Interval minimal entre deux fetchs (en ms)
 
   useEffect(() => {
@@ -23,31 +25,31 @@ export const useReadingProgress = () => {
 
     if (user?.id) {
       hasFetched.current = false;
+      retryCountRef.current = 0; // ✅ Reset retry count on user change
     }
 
     return () => {
       isMounted.current = false;
+      // ✅ Cleanup all pending timeouts
+      timeoutRefs.current.forEach(clearTimeout);
+      timeoutRefs.current = [];
     };
   }, [user]);
 
   const fetchProgress = useCallback(async (forceRefresh = false) => {
-    console.log("=== FETCH PROGRESS DEBUG START ===");
-    console.log("User ID:", user?.id);
-    console.log("Force refresh:", forceRefresh);
-    console.log("Is mounted:", isMounted.current);
-    console.log("Is fetching:", isFetching.current);
-    
+    logger.debug("=== FETCH PROGRESS START ===", { userId: user?.id, forceRefresh });
+
     if (!user?.id || !isMounted.current || isFetching.current) {
-      console.log("Early return - conditions not met");
+      logger.debug("Early return - conditions not met");
       return;
     }
 
     const now = Date.now();
     if (!forceRefresh && now - lastFetchTimestamp.current < MIN_FETCH_INTERVAL) {
-      console.log("Early return - too soon since last fetch");
+      logger.debug("Early return - too soon since last fetch");
       return;
     }
-    
+
     lastFetchTimestamp.current = now;
 
     try {
@@ -56,84 +58,79 @@ export const useReadingProgress = () => {
       setError(null);
 
       if (forceRefresh) {
-        console.log("Clearing progress cache...");
+        logger.debug("Clearing progress cache...");
         await clearProgressCache(user.id);
       }
 
-      console.log("Fetching user reading progress...");
+      logger.debug("Fetching user reading progress...");
       const progress = await getUserReadingProgress(user.id);
-      console.log("Raw progress data:", progress);
-      console.log("Progress length:", progress?.length);
 
       if (!isMounted.current) return;
 
       const inProgress = progress.filter(p => p.status === "in_progress");
-      console.log("Filtered in-progress items:", inProgress);
-      console.log("In-progress count:", inProgress.length);
-      
+      logger.debug("Filtered in-progress items:", inProgress.length);
+
       setReadingProgress(inProgress);
       hasFetched.current = true;
-      
-      // Reset retry count on success
-      if (retryCount > 0) {
-        setRetryCount(0);
-      }
-      
-      console.log("=== FETCH PROGRESS SUCCESS ===");
+
+      // ✅ Reset retry count on success using ref
+      retryCountRef.current = 0;
+
+      logger.debug("=== FETCH PROGRESS SUCCESS ===");
     } catch (err) {
-      console.error("=== FETCH PROGRESS ERROR ===", err);
-      
+      logger.error("FETCH PROGRESS ERROR:", err);
+
       if (isMounted.current) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         setError(errorMessage);
-        
+
         // Only show toast for first few retry attempts
-        if (retryCount < 3) {
+        if (retryCountRef.current < 3) {
           toast.error("Erreur lors du chargement de vos lectures en cours", {
             description: "Nous réessayerons automatiquement",
             duration: 3000
           });
         }
-        
-        // Auto-retry logic with exponential backoff
-        if (retryCount < 5 && isMounted.current) {
-          const timeout = Math.min(1000 * Math.pow(2, retryCount), 30000);
-          setTimeout(() => {
+
+        // ✅ Auto-retry logic with exponential backoff using ref
+        if (retryCountRef.current < 5 && isMounted.current) {
+          const timeout = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+          retryCountRef.current++;
+
+          // ✅ Store timeout ID for cleanup
+          const timeoutId = window.setTimeout(() => {
             if (isMounted.current) {
-              setRetryCount(prev => prev + 1);
               fetchProgress();
             }
           }, timeout);
+
+          timeoutRefs.current.push(timeoutId);
         }
       }
     } finally {
-      console.log("=== FETCH PROGRESS DEBUG END ===");
+      logger.debug("=== FETCH PROGRESS END ===");
       if (isMounted.current) {
         setIsLoading(false);
         isFetching.current = false;
       }
     }
-  }, [user, retryCount]);
+  }, [user]); // ✅ ONLY user as dependency, no retryCount!
 
-  // Effect pour charger les données au montage ou changement d'utilisateur
+  // ✅ Effect pour charger les données au montage ou changement d'utilisateur
   useEffect(() => {
-    try {
-      if (user?.id && !hasFetched.current && !isFetching.current) {
-        fetchProgress();
-      } else if (!user?.id) {
-        setIsLoading(false);
-      }
-    } catch (e) {
-      console.error("Erreur dans useEffect [useReadingProgress]", e);
+    if (user?.id && !hasFetched.current && !isFetching.current) {
+      fetchProgress();
+    } else if (!user?.id) {
+      setIsLoading(false);
     }
-  }, [user, fetchProgress]);
+  }, [user, fetchProgress]); // ✅ fetchProgress is stable now (only user dependency)
 
-  // Effect additionnel pour réagir au déclencheur de rafraîchissement
+  // ✅ Effect pour réagir au déclencheur de rafraîchissement
   useEffect(() => {
     if (refreshTrigger > 0 && user?.id) {
       fetchProgress(true); // Force refresh
     }
-  }, [refreshTrigger, fetchProgress, user?.id]);
+  }, [refreshTrigger, user?.id, fetchProgress]); // ✅ fetchProgress is stable
 
   // Fonction pour forcer un rafraîchissement depuis l'extérieur
   const forceRefresh = useCallback(() => {
