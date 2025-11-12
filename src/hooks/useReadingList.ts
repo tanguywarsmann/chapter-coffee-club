@@ -89,7 +89,7 @@ export const useReadingList = () => {
     }
   }, [isSuccess]);
 
-  // Effet optimisé pour le changement d'utilisateur
+  // ✅ Effet optimisé pour le changement d'utilisateur
   useEffect(() => {
     if (debouncedUserId) {
       clearBooksByStatusCache();
@@ -99,7 +99,19 @@ export const useReadingList = () => {
       errorCount.current = 0;
       hasFetchedOnMount.current = false;
       clearBooksByStatusCache();
-      persistentCache.clear();
+      // ✅ CRITIQUE: Ne vide QUE les caches de reading list, pas TOUT le cache de l'app
+      const keysToRemove = [
+        `reading_list_${debouncedUserId}`,
+        'reading_progress',
+        'books_by_status'
+      ];
+      keysToRemove.forEach(key => {
+        try {
+          persistentCache.remove(key);
+        } catch (error) {
+          // Silent fallback
+        }
+      });
     }
   }, [debouncedUserId, queryClient]);
 
@@ -172,27 +184,26 @@ export const useReadingList = () => {
     }, 'useReadingList.addToReadingList')
   );
 
-  // Effet principal optimisé pour charger les catégories de livres
+  // ✅ Effet principal SIMPLIFIÉ pour charger les catégories de livres
   useEffect(() => {
+    // Early returns pour éviter fetches inutiles
     if (!debouncedUserId || !readingList || isFetchingRef.current || isFetching) return;
     if (books.inProgress.length > 0 && hasFetchedOnMount.current && isSuccess) {
       return;
     }
-    
+
     const fetchBooks = async () => {
       try {
         isFetchingRef.current = true;
-        setIsFetching(true);
-        setIsLoading(true);
-        setError(null);
-        
+        // ✅ Ne pas appeler setIsFetching/setIsLoading ici pour éviter re-renders
+
         // Fetch en parallèle avec limitation
         const [toRead, inProgress, completed] = await Promise.all([
           getBooksByStatus("to_read"),
           getBooksByStatus("in_progress"),
           getBooksByStatus("completed"),
         ]);
-        
+
         if (isMounted.current) {
           updateBooks(toRead, inProgress, completed);
           // Cache batch update
@@ -210,27 +221,18 @@ export const useReadingList = () => {
         }
       } finally {
         if (isMounted.current) {
-          setIsLoading(false);
-          setIsFetching(false);
+          isFetchingRef.current = false;
         }
-        isFetchingRef.current = false;
       }
     };
-    
+
     fetchBooks();
   }, [
-    debouncedUserId, 
-    readingList, 
-    isSuccess, 
-    getBooksByStatus, 
-    books.inProgress.length, 
-    isFetching, 
-    setIsFetching, 
-    setIsLoading, 
-    setError, 
-    updateBooks, 
-    isMounted
-  ]);
+    // ✅ RÉDUIRE à l'essentiel: seulement 3 dépendances critiques
+    debouncedUserId,
+    readingList,
+    isSuccess
+  ]); // ✅ Pas de callbacks dans les deps!
 
   // Gestion d'erreur optimisée
   if (readingListError && errorCount.current === 0) {
