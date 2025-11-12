@@ -8,6 +8,21 @@ import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/r
 // FIX P0-2: Network retry logic with exponential backoff
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000;
+const REQUEST_TIMEOUT = 10000; // 10 seconds timeout
+
+/**
+ * Wrapper to add timeout to any promise
+ */
+async function fetchWithTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = REQUEST_TIMEOUT
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+}
 
 async function fetchWithRetry<T>(
   fn: () => Promise<T>,
@@ -15,10 +30,11 @@ async function fetchWithRetry<T>(
   delay = INITIAL_RETRY_DELAY
 ): Promise<T> {
   try {
-    return await fn();
+    // Add timeout wrapper around the function
+    return await fetchWithTimeout(fn());
   } catch (error: any) {
     // Identifier les erreurs réseau retryables
-    const isRetryable = 
+    const isRetryable =
       error?.message?.includes('fetch') ||
       error?.message?.includes('timeout') ||
       error?.code === 'PGRST301' || // Supabase timeout
@@ -40,9 +56,22 @@ async function fetchWithRetry<T>(
 const DEBUG_PROGRESS = false;
 
 /**
- * Get user reading progress (with public API)
+ * Options for pagination in getUserReadingProgress
  */
-export const getUserReadingProgress = async (userId: string): Promise<ReadingProgress[]> => {
+export interface ProgressQueryOptions {
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Get user reading progress (with public API and pagination support)
+ * @param userId User ID to fetch progress for
+ * @param options Optional pagination parameters (limit, offset)
+ */
+export const getUserReadingProgress = async (
+  userId: string,
+  options?: ProgressQueryOptions
+): Promise<ReadingProgress[]> => {
   if (!userId) {
     return [];
   }
@@ -52,8 +81,9 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
     return [];
   }
 
-  // Check cache first
-  const cached = progressCache.get(userId);
+  // Check cache first (only for non-paginated requests)
+  const cacheKey = options?.limit || options?.offset ? `${userId}-${options.limit}-${options.offset}` : userId;
+  const cached = progressCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     return cached.data;
   }
@@ -61,7 +91,7 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
   try {
     // FIX P0-2: Wrap Supabase call with retry logic
     const { data, error } = await fetchWithRetry(async () => {
-      const result = await supabase
+      let query = supabase
         .from("reading_progress")
         .select(`
           *,
@@ -70,6 +100,17 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
           )
         `)
         .eq("user_id", userId);
+
+      // Apply pagination if specified
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+      if (options?.offset) {
+        const endRange = options.offset + (options.limit || 10) - 1;
+        query = query.range(options.offset, endRange);
+      }
+
+      const result = await query;
 
       if (result.error) {
         throw result.error; // Throw to trigger retry
@@ -116,8 +157,8 @@ export const getUserReadingProgress = async (userId: string): Promise<ReadingPro
       return enrichedItem;
     }));
 
-    // Cache result
-    progressCache.set(userId, { data: enriched, timestamp: Date.now() });
+    // Cache result (using the same cache key as lookup)
+    progressCache.set(cacheKey, { data: enriched, timestamp: Date.now() });
     return enriched;
   } catch (error) {
     console.error("Erreur dans getUserReadingProgress:", error);

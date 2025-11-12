@@ -55,6 +55,8 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [booksLoaded, setBooksLoaded] = useState(false);
   
   const profileUserId = params.userId || user?.id;
   const isOwnProfile = !params.userId || (user && user.id === params.userId);
@@ -67,32 +69,24 @@ export default function Profile() {
     let mounted = true;
 
     async function fetchProfileData() {
+      // Performance monitoring
+      const startTime = performance.now();
+
       try {
         setLoading(true);
 
-        // CRITICAL FIX: Reduce parallel queries to avoid connection pool exhaustion
-        // Phase 1: Fetch essential data (max 3 parallel queries)
-        const [profile, counts, readingProgress] = await Promise.all([
+        // CRITICAL OPTIMIZATION: Only fetch essential data on initial load
+        // Phase 1: Fetch ONLY profile + counts (2 queries) - Books loaded on-demand
+        const [profile, counts] = await Promise.all([
           getUserProfile(profileUserId),
-          getFollowerCounts(profileUserId),
-          getUserReadingProgress(profileUserId)
+          getFollowerCounts(profileUserId)
+          // ❌ REMOVED getUserReadingProgress - will lazy load when "books" tab is active
         ]);
 
         if (!mounted || abortController.signal.aborted) return;
 
         setProfileData(profile);
         setFollowerCounts(counts);
-
-        if (readingProgress) {
-          const current = readingProgress.filter(p => p.status === "in_progress");
-          const completed = readingProgress.filter(p =>
-            p.status === "completed" ||
-            p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
-          ).slice(0, 8); // Show only first 8 completed books
-
-          setCurrentBooks(current);
-          setCompletedBooks(completed);
-        }
 
         // Phase 2: Fetch secondary data (badges and stats) AFTER essential data
         // This avoids saturating the connection pool
@@ -130,6 +124,14 @@ export default function Profile() {
       } finally {
         if (mounted) {
           setLoading(false);
+
+          // Performance metrics
+          const duration = performance.now() - startTime;
+          if (duration > 3000) {
+            console.warn(`[PROFILE PERF] Slow load detected: ${duration.toFixed(0)}ms`);
+          } else {
+            console.log(`[PROFILE PERF] Load time: ${duration.toFixed(0)}ms`);
+          }
         }
       }
     }
@@ -143,6 +145,35 @@ export default function Profile() {
       console.log("[PROFILE CLEANUP] Aborting pending requests to prevent connection pool exhaustion");
     };
   }, [profileUserId, isOwnProfile]);
+
+  // LAZY LOADING: Fetch books only when "books" or "overview" tab is active
+  useEffect(() => {
+    if (!profileUserId || booksLoaded) return;
+    if (activeTab !== "books" && activeTab !== "overview") return;
+
+    async function fetchBooks() {
+      try {
+        // Only fetch first 10 books for performance
+        const readingProgress = await getUserReadingProgress(profileUserId, { limit: 10 });
+
+        if (readingProgress) {
+          const current = readingProgress.filter(p => p.status === "in_progress");
+          const completed = readingProgress.filter(p =>
+            p.status === "completed" ||
+            p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
+          ).slice(0, 8); // Show only first 8 completed books
+
+          setCurrentBooks(current);
+          setCompletedBooks(completed);
+          setBooksLoaded(true);
+        }
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    }
+
+    fetchBooks();
+  }, [activeTab, profileUserId, booksLoaded]);
 
   const displayName = getDisplayName(
     profileData?.username, 
@@ -317,7 +348,12 @@ export default function Profile() {
           </Card>
 
           {/* Content Tabs */}
-          <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6 w-full">
+          <Tabs
+            defaultValue="overview"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-4 sm:space-y-6 w-full"
+          >
             {/* Scrollable Tabs Container */}
             <div className="w-full overflow-x-auto scrollbar-hide">
               <TabsList className="bg-white/80 backdrop-blur-sm border border-coffee-light/50 p-1 inline-flex min-w-full sm:min-w-0 justify-start sm:justify-center">
