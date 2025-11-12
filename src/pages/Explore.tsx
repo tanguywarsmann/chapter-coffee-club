@@ -37,11 +37,28 @@ export default function Explore() {
   }, [category, q])
 
   useEffect(() => {
-    fetchBooks()
+    let mounted = true;
+    const abortController = new AbortController();
+
+    const runFetch = async () => {
+      if (mounted) {
+        await fetchBooks();
+      }
+    };
+
+    runFetch();
+
+    return () => {
+      mounted = false;
+      abortController.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, page, q])
 
-  async function fetchBooks() {
+  async function fetchBooks(retryCount = 0) {
+    const MAX_RETRIES = 2;
+    const RETRY_DELAY = 1000; // 1 second
+
     setLoading(true)
     setError(null)
     const from = (page - 1) * pageSize
@@ -61,10 +78,26 @@ export default function Explore() {
 
       const { data, error } = await query
       console.debug('[Explore] cat=', category, 'page=', page, 'q=', q, 'rows=', data?.length, 'error=', error)
+
       if (error) throw error
+
       setBooks(data || [])
+      setError(null) // Clear any previous errors on success
     } catch (e: any) {
       console.error('[Explore] fetchBooks failed:', e)
+
+      // RESILIENCE FIX: Retry on connection errors (likely from Profile page exhausting pool)
+      if (retryCount < MAX_RETRIES && (
+        e.message?.includes('connection') ||
+        e.message?.includes('timeout') ||
+        e.message?.includes('network') ||
+        e.code === 'PGRST301' // PostgREST connection error
+      )) {
+        console.warn(`[Explore] Retrying (${retryCount + 1}/${MAX_RETRIES}) after ${RETRY_DELAY}ms...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)));
+        return fetchBooks(retryCount + 1);
+      }
+
       setError(e.message ?? 'Erreur inconnue')
       setBooks([])
     } finally {
