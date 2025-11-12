@@ -50,7 +50,7 @@ class AppleIAPService {
       // Configuration du SDK RevenueCat avec la clé publique
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
       console.log('[IAP] ✓ Log level set to DEBUG');
-      
+
       await Purchases.configure({
         apiKey: this.apiKey,
       });
@@ -75,17 +75,28 @@ class AppleIAPService {
     }
 
     if (!this.isInitialized) {
+      console.log('[IAP] ⚠️ Not initialized in getProducts, initializing...');
       await this.initialize();
     }
 
     try {
-      // Récupérer les offerings depuis RevenueCat
+      console.log('[IAP] 📦 Fetching offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
-      
+      console.log('[IAP] ✓ Offerings received:', JSON.stringify(offerings, null, 2));
+
       if (!offerings.current) {
-        console.warn('[IAP] No current offering found in RevenueCat');
+        console.error('[IAP] ❌ CRITICAL: No current offering found in RevenueCat Dashboard');
+        console.error('[IAP] 🔍 Available offerings:', Object.keys(offerings.all || {}).join(', '));
+        console.error('[IAP] 💡 ACTION REQUIRED: Configure an offering as "current" in RevenueCat dashboard');
+        toast.error('Configuration RevenueCat manquante. Contacte le support.');
         return [];
       }
+
+      console.log('[IAP] ✓ Current offering ID:', offerings.current.identifier);
+      console.log('[IAP] ✓ Available packages:', offerings.current.availablePackages.map((p: any) => ({
+        id: p.identifier,
+        productId: p.product.identifier
+      })));
 
       // Trouver le package lifetime
       const lifetimePackage = offerings.current.availablePackages.find(
@@ -93,14 +104,28 @@ class AppleIAPService {
       );
 
       if (!lifetimePackage) {
-        console.warn('[IAP] Lifetime package not found');
+        console.error('[IAP] ❌ CRITICAL: Lifetime package not found');
+        console.error('[IAP] 🔍 Looking for: identifier="lifetime" OR productId="' + this.productId + '"');
+        console.error('[IAP] 📋 Available:', offerings.current.availablePackages.map((p: any) =>
+          `${p.identifier} (${p.product.identifier})`
+        ).join(', '));
+        console.error('[IAP] 💡 ACTION REQUIRED: Create a package with identifier "lifetime" in RevenueCat');
+        toast.error('Produit Premium non configuré. Contacte le support.');
         return [];
       }
 
-      console.log('[IAP] Product retrieved:', lifetimePackage.product);
+      console.log('[IAP] ✅ Product retrieved successfully:', {
+        id: lifetimePackage.product.identifier,
+        price: lifetimePackage.product.priceString,
+        title: lifetimePackage.product.title
+      });
       return [lifetimePackage.product];
-    } catch (error) {
-      console.error('[IAP] Error fetching products:', error);
+    } catch (error: any) {
+      console.error('[IAP] ❌ CRITICAL Error fetching products:', error);
+      console.error('[IAP] Error name:', error.name);
+      console.error('[IAP] Error message:', error.message);
+      console.error('[IAP] Error stack:', error.stack);
+      toast.error('Impossible de charger les produits. Vérifie ta connexion.');
       return [];
     }
   }
@@ -117,24 +142,42 @@ class AppleIAPService {
 
     if (!this.isInitialized) {
       console.log('[IAP] ⚠️ Not initialized, initializing now...');
-      await this.initialize();
+      try {
+        await this.initialize();
+        console.log('[IAP] ✓ Initialization complete');
+      } catch (initError) {
+        console.error('[IAP] ❌ CRITICAL: Initialization failed in purchase:', initError);
+        toast.error('Impossible d\'initialiser les achats. Redémarre l\'app.');
+        return false;
+      }
     }
 
     try {
       console.log('[IAP] 🛒 Starting purchase flow for product:', this.productId);
+      console.log('[IAP] 📱 Device:', Capacitor.getPlatform());
+      console.log('[IAP] 🔐 API Key configured:', this.apiKey.substring(0, 15) + '...');
 
       // Récupérer l'offering
       console.log('[IAP] 📦 Fetching offerings from RevenueCat...');
       const offerings = await Purchases.getOfferings();
-      console.log('[IAP] ✓ Offerings received:', offerings);
-      
+      console.log('[IAP] ✓ Offerings received:', JSON.stringify({
+        current: offerings.current?.identifier,
+        all: Object.keys(offerings.all || {})
+      }));
+
       if (!offerings.current) {
-        console.error('[IAP] ❌ No current offering available');
+        console.error('[IAP] ❌ CRITICAL: No current offering available');
+        console.error('[IAP] 💡 ACTION: Go to RevenueCat Dashboard → Offerings → Set one as current');
+        toast.error('Configuration manquante. Contacte le support.');
         throw new Error('No current offering available');
       }
 
       console.log('[IAP] ✓ Current offering found:', offerings.current.identifier);
-      console.log('[IAP] Available packages:', offerings.current.availablePackages.map((p: any) => p.identifier));
+      console.log('[IAP] 📋 Available packages:', offerings.current.availablePackages.map((p: any) => ({
+        id: p.identifier,
+        productId: p.product.identifier,
+        price: p.product.priceString
+      })));
 
       // Trouver le package lifetime
       const lifetimePackage = offerings.current.availablePackages.find(
@@ -142,12 +185,24 @@ class AppleIAPService {
       );
 
       if (!lifetimePackage) {
-        console.error('[IAP] ❌ Lifetime package not found in offerings');
+        console.error('[IAP] ❌ CRITICAL: Lifetime package not found in offerings');
+        console.error('[IAP] 🔍 Searched for: identifier="lifetime" OR productId="' + this.productId + '"');
+        console.error('[IAP] 📋 Available packages:', offerings.current.availablePackages.map((p: any) =>
+          `${p.identifier} (${p.product.identifier})`
+        ));
+        console.error('[IAP] 💡 ACTION: Create package "lifetime" with product "' + this.productId + '" in RevenueCat');
+        toast.error('Produit introuvable. Contacte le support.');
         throw new Error('Lifetime package not found');
       }
 
-      console.log('[IAP] ✓ Lifetime package found:', lifetimePackage.identifier);
+      console.log('[IAP] ✅ Lifetime package found:', lifetimePackage.identifier);
       console.log('[IAP] 💰 Price:', lifetimePackage.product.priceString);
+      console.log('[IAP] 📝 Product details:', {
+        id: lifetimePackage.product.identifier,
+        title: lifetimePackage.product.title,
+        description: lifetimePackage.product.description,
+        currencyCode: lifetimePackage.product.currencyCode
+      });
       console.log('[IAP] 🚀 Launching Apple purchase dialog...');
 
       // Effectuer l'achat via RevenueCat
@@ -167,24 +222,30 @@ class AppleIAPService {
 
       // RevenueCat gère automatiquement la validation du receipt
       // Activer Premium dans le profil
+      console.log('[IAP] 💾 Activating premium in Supabase...');
       await this.activatePremium('apple');
+      console.log('[IAP] ✅ Premium activated in database');
 
       toast.success('Tu as maintenant accès à Premium à vie 🎉');
 
       return true;
     } catch (error: any) {
       console.error('[IAP] ❌ Purchase error:', error);
+      console.error('[IAP] Error type:', typeof error);
       console.error('[IAP] Error code:', error.code);
       console.error('[IAP] Error message:', error.message);
-      
+      console.error('[IAP] Error userInfo:', error.userInfo);
+      console.error('[IAP] Full error object:', JSON.stringify(error, null, 2));
+
       if (error.code === '1' || error.message?.includes('cancelled')) {
-        console.log('[IAP] User cancelled purchase');
+        console.log('[IAP] ℹ️ User cancelled purchase (this is normal)');
         toast('Tu as annulé l\'achat');
       } else {
-        console.error('[IAP] Purchase failed with error:', error);
+        console.error('[IAP] ❌ CRITICAL: Purchase failed with unexpected error');
+        console.error('[IAP] 💡 Check: 1) Product exists in App Store Connect 2) RevenueCat configured 3) Network connection');
         toast.error('Impossible de finaliser l\'achat. Réessaye plus tard.');
       }
-      
+
       return false;
     }
   }
@@ -201,7 +262,7 @@ class AppleIAPService {
 
     try {
       console.log('[IAP] Restoring purchases...');
-      
+
       // RevenueCat gère automatiquement la restauration
       const customerInfo = await Purchases.restorePurchases();
       console.log('[IAP] Restore result:', customerInfo);
@@ -212,7 +273,7 @@ class AppleIAPService {
 
       if (hasLifetime) {
         toast.success('Ton accès Premium a été restauré');
-        
+
         // Activer Premium dans le profil
         await this.activatePremium('apple');
         return true;
