@@ -58,28 +58,9 @@ export function IOSPurchaseCard() {
 
   const activatePremiumViaRPC = async (): Promise<boolean> => {
     try {
-      console.log('[iOS Purchase Card] 🔧 Calling activate_premium RPC...');
-
-      const { data, error } = await supabase.rpc('activate_premium');
-
-      if (error) {
-        console.error('[iOS Purchase Card] ❌ RPC error:', error);
-        // Fallback au polling si RPC échoue
-        console.log('[iOS Purchase Card] 💡 Falling back to polling...');
-        return await pollForPremiumStatus();
-      }
-
-      console.log('[iOS Purchase Card] ✅ RPC response:', data);
-
-      if (data?.success) {
-        console.log('[iOS Purchase Card] 🎉 Premium activated via RPC!');
-        // Le toast sera affiché par le listener Realtime
-        // Attendre 500ms pour laisser Realtime propager
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return true;
-      }
-
-      return false;
+      console.log('[iOS Purchase Card] 🔧 RPC not available, using polling fallback...');
+      // RPC function not yet implemented in Supabase
+      return await pollForPremiumStatus();
     } catch (err) {
       console.error('[iOS Purchase Card] ❌ Exception calling RPC:', err);
       // Fallback au polling

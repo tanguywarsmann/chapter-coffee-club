@@ -25,7 +25,7 @@ export const useCurrentReading = () => {
   useEffect(() => {
     inProgressRef.current = inProgress;
   }, [inProgress]);
-  
+
   // Memo pour éviter des calculs inutiles si inProgress n'a pas changé
   const memoizedCurrentReading = useMemo(() => {
     if (inProgress && inProgress.length > 0) {
@@ -41,13 +41,13 @@ export const useCurrentReading = () => {
     }
     return null;
   }, [inProgress]);
-  
+
   // Optimisation: n'update le state que si nécessaire
   useEffect(() => {
     if (isMounted.current && memoizedCurrentReading) {
       const currentId = currentReading?.id;
       const newId = memoizedCurrentReading.id;
-      
+
       if (currentId !== newId || !currentReading) {
         setCurrentReading(memoizedCurrentReading as BookWithProgress);
       }
