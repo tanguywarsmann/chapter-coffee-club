@@ -85,6 +85,13 @@ export default function Premium() {
               <p className="text-center text-sm text-muted-foreground mt-6">
                 {t.premium.iosPurchaseNote}
               </p>
+              <div className="text-center space-y-2 mt-8 text-sm text-muted-foreground">
+                <p>By purchasing, you agree to our</p>
+                <div className="flex gap-4 justify-center">
+                  <a href="/legal/terms" className="underline hover:text-foreground transition-colors">Terms of Service</a>
+                  <a href="/legal/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
+                </div>
+              </div>
             </div>
           ) : isAndroid ? (
             <div className="max-w-md mx-auto mb-12">

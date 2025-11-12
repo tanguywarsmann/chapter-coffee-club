@@ -107,7 +107,7 @@ export const useReadingList = () => {
       ];
       keysToRemove.forEach(key => {
         try {
-          persistentCache.remove(key);
+          persistentCache.delete(key);
         } catch (error) {
           // Silent fallback
         }
