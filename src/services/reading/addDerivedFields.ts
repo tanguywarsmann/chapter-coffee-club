@@ -16,15 +16,6 @@ export async function addDerivedFields(
 ): Promise<BookWithProgress> {
   const { total_pages, current_page, expected_segments, total_chapters } = b;
 
-  // Debug pour comprendre la structure des données
-  console.log("🔍 addDerivedFields debug:", {
-    bookId: b.id || b.book_id,
-    userId: p?.user_id || b.user_id,
-    title: b.title,
-    cover_url: b.cover_url,
-    precomputed: precomputedValidatedCount !== undefined
-  });
-
   // FIX N+1: Use precomputed count if provided, otherwise fetch (for backwards compatibility)
   const validatedSegments = precomputedValidatedCount !== undefined
     ? precomputedValidatedCount
@@ -38,15 +29,7 @@ export async function addDerivedFields(
   const totalSegments = expectedSegments;
   const clampedSegments = Math.min(validatedSegments, totalSegments);
   const isCompleted = p?.status === "completed" || clampedSegments >= totalSegments;
-  
-  console.log("📊 Progress calculation:", {
-    title: b.title,
-    validatedSegments,
-    expectedSegments,
-    clampedSegments,
-    progressPercent: Math.round((clampedSegments / (totalSegments || 1)) * 100)
-  });
-  
+
   return {
     ...b,
     ...p,

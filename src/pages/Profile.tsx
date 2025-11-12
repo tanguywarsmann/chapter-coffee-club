@@ -61,48 +61,60 @@ export default function Profile() {
 
   useEffect(() => {
     if (!profileUserId) return;
-    
+
+    // AbortController to cancel requests on unmount
+    const abortController = new AbortController();
+    let mounted = true;
+
     async function fetchProfileData() {
       try {
         setLoading(true);
-        
-        // Fetch all data in parallel
-        const [
-          profile,
-          counts,
-          userBadges,
-          readingProgress,
-          booksRead,
-          totalPages,
-          segmentsValidated,
-          readingTime
-        ] = await Promise.all([
+
+        // CRITICAL FIX: Reduce parallel queries to avoid connection pool exhaustion
+        // Phase 1: Fetch essential data (max 3 parallel queries)
+        const [profile, counts, readingProgress] = await Promise.all([
           getUserProfile(profileUserId),
           getFollowerCounts(profileUserId),
-          getUserBadges(profileUserId),
-          getUserReadingProgress(profileUserId),
-          isOwnProfile ? getBooksReadCount(profileUserId) : Promise.resolve(0),
-          isOwnProfile ? getTotalPagesRead(profileUserId) : Promise.resolve(0),
-          isOwnProfile ? getValidatedSegmentsCount(profileUserId) : Promise.resolve(0),
-          isOwnProfile ? getEstimatedReadingTime(profileUserId) : Promise.resolve(0)
+          getUserReadingProgress(profileUserId)
         ]);
+
+        if (!mounted || abortController.signal.aborted) return;
 
         setProfileData(profile);
         setFollowerCounts(counts);
-        setBadges(userBadges.slice(0, 6)); // Show only first 6 badges
-        
+
         if (readingProgress) {
           const current = readingProgress.filter(p => p.status === "in_progress");
-          const completed = readingProgress.filter(p => 
-            p.status === "completed" || 
+          const completed = readingProgress.filter(p =>
+            p.status === "completed" ||
             p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
           ).slice(0, 8); // Show only first 8 completed books
-          
+
           setCurrentBooks(current);
           setCompletedBooks(completed);
         }
-        
+
+        // Phase 2: Fetch secondary data (badges and stats) AFTER essential data
+        // This avoids saturating the connection pool
+        const [userBadges] = await Promise.all([
+          getUserBadges(profileUserId)
+        ]);
+
+        if (!mounted || abortController.signal.aborted) return;
+
+        setBadges(userBadges.slice(0, 6)); // Show only first 6 badges
+
+        // Phase 3: Fetch stats (only for own profile, sequentially to reduce load)
         if (isOwnProfile) {
+          const [booksRead, totalPages, segmentsValidated, readingTime] = await Promise.all([
+            getBooksReadCount(profileUserId),
+            getTotalPagesRead(profileUserId),
+            getValidatedSegmentsCount(profileUserId),
+            getEstimatedReadingTime(profileUserId)
+          ]);
+
+          if (!mounted || abortController.signal.aborted) return;
+
           setStats({
             booksRead,
             totalPages,
@@ -111,13 +123,25 @@ export default function Profile() {
           });
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        // Only log error if request wasn't aborted
+        if (!abortController.signal.aborted) {
+          console.error("Error fetching profile data:", error);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchProfileData();
+
+    // CRITICAL FIX: Cleanup function to cancel requests when navigating away
+    return () => {
+      mounted = false;
+      abortController.abort();
+      console.log("[PROFILE CLEANUP] Aborting pending requests to prevent connection pool exhaustion");
+    };
   }, [profileUserId, isOwnProfile]);
 
   const displayName = getDisplayName(

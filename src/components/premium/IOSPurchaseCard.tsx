@@ -56,18 +56,35 @@ export function IOSPurchaseCard() {
     }
   };
 
-  const waitForPremiumActivation = async (): Promise<boolean> => {
+  const activatePremiumViaRPC = async (): Promise<boolean> => {
     try {
-      console.log('[iOS Purchase Card] 🔧 Waiting for premium activation...');
-      // Attendre 1 seconde pour que l'activation se propage
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Polling pour vérifier si premium est activé
-      console.log('[iOS Purchase Card] 💡 Polling for premium status...');
-      return await pollForPremiumStatus();
-    } catch (err) {
-      console.error('[iOS Purchase Card] ❌ Exception waiting for activation:', err);
+      console.log('[iOS Purchase Card] 🔧 Calling activate_premium RPC...');
+
+      const { data, error } = await supabase.rpc('activate_premium');
+
+      if (error) {
+        console.error('[iOS Purchase Card] ❌ RPC error:', error);
+        // Fallback au polling si RPC échoue
+        console.log('[iOS Purchase Card] 💡 Falling back to polling...');
+        return await pollForPremiumStatus();
+      }
+
+      console.log('[iOS Purchase Card] ✅ RPC response:', data);
+
+      if (data?.success) {
+        console.log('[iOS Purchase Card] 🎉 Premium activated via RPC!');
+        // Le toast sera affiché par le listener Realtime
+        // Attendre 500ms pour laisser Realtime propager
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return true;
+      }
+
       return false;
+    } catch (err) {
+      console.error('[iOS Purchase Card] ❌ Exception calling RPC:', err);
+      // Fallback au polling
+      console.log('[iOS Purchase Card] 💡 Falling back to polling...');
+      return await pollForPremiumStatus();
     }
   };
 
@@ -90,8 +107,8 @@ export function IOSPurchaseCard() {
         console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
       } else {
         console.log('[iOS Purchase Card] ✅ Purchase successful!');
-        console.log('[iOS Purchase Card] 🚀 Waiting for premium activation...');
-        const activated = await waitForPremiumActivation();
+        console.log('[iOS Purchase Card] 🚀 Activating premium via RPC (with polling fallback)...');
+        const activated = await activatePremiumViaRPC();
 
         if (activated) {
           console.log('[iOS Purchase Card] 🎉 Premium successfully activated!');
@@ -116,8 +133,8 @@ export function IOSPurchaseCard() {
       console.log('[iOS Purchase Card] Restore complete');
 
       if (success) {
-        console.log('[iOS Purchase Card] 🚀 Waiting for restored premium activation...');
-        const activated = await waitForPremiumActivation();
+        console.log('[iOS Purchase Card] 🚀 Activating restored premium via RPC (with polling fallback)...');
+        const activated = await activatePremiumViaRPC();
 
         if (activated) {
           console.log('[iOS Purchase Card] 🎉 Premium successfully restored!');
@@ -151,12 +168,12 @@ export function IOSPurchaseCard() {
       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
         {t.premium.earlyBirdBadge}
       </div>
-      
+
       <div className="flex items-center gap-2 mb-2 mt-2">
         <h3 className="text-2xl font-bold">{t.premium.cards.lifetime.titleAlt}</h3>
         <PremiumBadge size="md" variant="compact" />
       </div>
-      
+
       <div className="mb-2">
         <span className="text-sm text-muted-foreground line-through">{t.premium.cards.lifetime.originalPrice}</span>
         <div className="flex items-baseline gap-2">
@@ -165,11 +182,11 @@ export function IOSPurchaseCard() {
         </div>
         <span className="text-lg font-semibold text-orange-700">{t.premium.cards.lifetime.period}</span>
       </div>
-      
+
       <p className="text-sm font-semibold text-orange-600 mb-6">
         {t.premium.cards.lifetime.iosNote}
       </p>
-      
+
       <ul className="space-y-4 mb-8">
         <li className="flex items-start gap-3">
           <Check className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
@@ -196,8 +213,8 @@ export function IOSPurchaseCard() {
           <span>{t.premium.cards.lifetime.features.earlyAccess}</span>
         </li>
       </ul>
-      
-      <Button 
+
+      <Button
         onClick={handlePurchase}
         disabled={isPurchasing || !product}
         className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg"
@@ -213,7 +230,7 @@ export function IOSPurchaseCard() {
         )}
       </Button>
 
-      <Button 
+      <Button
         onClick={handleRestore}
         disabled={isRestoring}
         variant="outline"
