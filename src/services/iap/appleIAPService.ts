@@ -100,16 +100,16 @@ class AppleIAPService {
 
       // Trouver le package lifetime
       const lifetimePackage = offerings.current.availablePackages.find(
-        (pkg: RevenueCatPackage) => pkg.identifier === 'lifetime' || pkg.product.identifier === this.productId
+        (pkg: RevenueCatPackage) => pkg.identifier === '$rc_lifetime' || pkg.product.identifier === this.productId
       );
 
       if (!lifetimePackage) {
         console.error('[IAP] ❌ CRITICAL: Lifetime package not found');
-        console.error('[IAP] 🔍 Looking for: identifier="lifetime" OR productId="' + this.productId + '"');
+        console.error('[IAP] 🔍 Looking for: identifier="$rc_lifetime" OR productId="' + this.productId + '"');
         console.error('[IAP] 📋 Available:', offerings.current.availablePackages.map((p: any) =>
           `${p.identifier} (${p.product.identifier})`
         ).join(', '));
-        console.error('[IAP] 💡 ACTION REQUIRED: Create a package with identifier "lifetime" in RevenueCat');
+        console.error('[IAP] 💡 ACTION REQUIRED: Create a package with identifier "$rc_lifetime" in RevenueCat');
         toast.error('Produit Premium non configuré. Contacte le support.');
         return [];
       }
@@ -181,16 +181,16 @@ class AppleIAPService {
 
       // Trouver le package lifetime
       const lifetimePackage = offerings.current.availablePackages.find(
-        (pkg: RevenueCatPackage) => pkg.identifier === 'lifetime' || pkg.product.identifier === this.productId
+        (pkg: RevenueCatPackage) => pkg.identifier === '$rc_lifetime' || pkg.product.identifier === this.productId
       );
 
       if (!lifetimePackage) {
         console.error('[IAP] ❌ CRITICAL: Lifetime package not found in offerings');
-        console.error('[IAP] 🔍 Searched for: identifier="lifetime" OR productId="' + this.productId + '"');
+        console.error('[IAP] 🔍 Searched for: identifier="$rc_lifetime" OR productId="' + this.productId + '"');
         console.error('[IAP] 📋 Available packages:', offerings.current.availablePackages.map((p: any) =>
           `${p.identifier} (${p.product.identifier})`
         ));
-        console.error('[IAP] 💡 ACTION: Create package "lifetime" with product "' + this.productId + '" in RevenueCat');
+        console.error('[IAP] 💡 ACTION: Create package "$rc_lifetime" with product "' + this.productId + '" in RevenueCat');
         toast.error('Produit introuvable. Contacte le support.');
         throw new Error('Lifetime package not found');
       }
