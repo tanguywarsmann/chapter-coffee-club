@@ -7,7 +7,7 @@
 DO $$
 DECLARE
   v_user_id UUID := '6d0037db-bcb5-41bf-9c1b-67f6f7d2ae57';
-  v_book_id TEXT := '42828542-4265-4055-8beb-2780a0ca4656';
+  v_book_id UUID := '42828542-4265-4055-8beb-2780a0ca4656';
   v_target_page INT := 900;
   v_total_pages INT;
   v_pages_per_segment INT := 50; -- Ajuster selon votre configuration
