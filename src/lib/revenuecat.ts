@@ -9,18 +9,22 @@ const ANDROID_KEY = import.meta.env.VITE_RC_ANDROID_KEY;
  * À appeler dans main.tsx
  */
 export async function initRevenueCat(): Promise<void> {
-  if (!ANDROID_KEY) {
-    console.warn('[RevenueCat] VITE_RC_ANDROID_KEY manquante');
-    return;
+  if (!ANDROID_KEY || !ANDROID_KEY.startsWith('goog_')) {
+    const error = '[RevenueCat] Invalid or missing VITE_RC_ANDROID_KEY (must start with goog_)';
+    console.error(error);
+    throw new Error(error);
   }
   
   try {
     console.log('[RevenueCat] Initialisation...');
-    await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+    await Purchases.setLogLevel({ 
+      level: import.meta.env.DEV ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN 
+    });
     await Purchases.configure({ apiKey: ANDROID_KEY });
     console.log('[RevenueCat] Initialisé avec succès');
   } catch (e) {
     console.error('[RevenueCat] Erreur lors de la configuration:', e);
+    throw e;
   }
 }
 

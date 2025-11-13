@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Sparkles, Loader2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n/LanguageContext';
 import { appleIAPService } from '@/services/iap/appleIAPService';
 import { RevenueCatProduct } from '@/services/iap/types';
-import { PremiumBadge } from './PremiumBadge';
+import { Check, Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { PremiumBadge } from './PremiumBadge';
 
 export function IOSPurchaseCard() {
   const { t } = useTranslation();
@@ -16,115 +16,116 @@ export function IOSPurchaseCard() {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [product, setProduct] = useState<RevenueCatProduct | null>(null);
-
-  useEffect(() => {
-    console.log('[iOS Purchase Card] Component mounted');
-    initializeIAP();
-  }, []);
+  const [productError, setProductError] = useState<string | null>(null);
 
   const initializeIAP = async () => {
     try {
-      console.log('[iOS Purchase Card] 🎬 Starting IAP initialization...');
       setIsLoading(true);
 
       // L'initialisation devrait déjà être faite dans main.tsx
-      console.log('[iOS Purchase Card] 🔧 Ensuring IAP service is initialized...');
       await appleIAPService.initialize();
-      console.log('[iOS Purchase Card] ✅ IAP service ready');
 
-      console.log('[iOS Purchase Card] 📦 Fetching products...');
       const products = await appleIAPService.getProducts();
-      console.log('[iOS Purchase Card] ✓ Products fetched, count:', products?.length || 0);
 
       if (products && products.length > 0) {
         setProduct(products[0]);
-        console.log('[iOS Purchase Card] ✅ Product loaded successfully:');
-        console.log('  - ID:', products[0].identifier);
-        console.log('  - Title:', products[0].title);
-        console.log('  - Price:', products[0].priceString);
-        console.log('  - Currency:', products[0].currencyCode);
+        setProductError(null);
+
+        if (import.meta.env.DEV) {
+          console.log('[iOS Purchase Card] Product loaded', {
+            id: products[0].identifier,
+            title: products[0].title,
+            price: products[0].priceString,
+            currency: products[0].currencyCode,
+          });
+        }
       } else {
-        console.error('[iOS Purchase Card] ❌ No products found from RevenueCat');
+        setProduct(null);
+        setProductError('Impossible de charger le produit. Réessaie plus tard.');
         toast.error(t.premium.toast.error);
       }
     } catch (error) {
-      console.error('[iOS Purchase Card] ❌ Initialization error:', error);
+      console.error('[iOS Purchase Card] Initialization error:', error);
+      setProduct(null);
+      setProductError('Impossible de charger le produit. Réessaie plus tard.');
       toast.error(t.premium.toast.error);
     } finally {
       setIsLoading(false);
-      console.log('[iOS Purchase Card] 🏁 Initialization complete');
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: we initialize once.
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('[iOS Purchase Card] Component mounted');
+    }
+    initializeIAP();
+  }, []);
+
+
   const activatePremiumViaRPC = async (): Promise<boolean> => {
     try {
-      console.log('[iOS Purchase Card] 🔧 RPC not available, using polling fallback...');
       // RPC function not yet implemented in Supabase
       return await pollForPremiumStatus();
     } catch (err) {
-      console.error('[iOS Purchase Card] ❌ Exception calling RPC:', err);
+      console.error('[iOS Purchase Card] Exception calling RPC:', err);
       // Fallback au polling
-      console.log('[iOS Purchase Card] 💡 Falling back to polling...');
       return await pollForPremiumStatus();
     }
   };
 
   const handlePurchase = async () => {
-    console.log('[iOS Purchase Card] 🛒 Purchase button clicked by user');
-    console.log('[iOS Purchase Card] Product available:', !!product);
-    console.log('[iOS Purchase Card] Already purchasing:', isPurchasing);
+    if (!product) {
+      const message = 'Le produit n\'est pas disponible pour le moment. Réessaie plus tard.';
+      setProductError(message);
+      toast.error(message);
+      return;
+    }
 
     if (isPurchasing) {
-      console.warn('[iOS Purchase Card] ⚠️ Purchase already in progress, ignoring click');
       return;
     }
 
     setIsPurchasing(true);
     try {
-      console.log('[iOS Purchase Card] 🚀 Calling appleIAPService.purchaseLifetime()...');
       const success = await appleIAPService.purchaseLifetime();
 
-      if (!success) {
-        console.log('[iOS Purchase Card] ❌ Purchase cancelled or failed');
-      } else {
-        console.log('[iOS Purchase Card] ✅ Purchase successful!');
-        console.log('[iOS Purchase Card] 🚀 Activating premium via RPC (with polling fallback)...');
+      if (success) {
         const activated = await activatePremiumViaRPC();
 
         if (activated) {
-          console.log('[iOS Purchase Card] 🎉 Premium successfully activated!');
+          setProductError(null);
         } else {
-          console.log('[iOS Purchase Card] ⚠️ Premium activation may have failed');
+          setProductError('Premium a bien été acheté mais l’activation a pris du retard. Réessaie plus tard ou contacte le support.');
         }
+      } else {
+        setProductError('L’achat a été annulé ou n’a pas pu être confirmé.');
       }
     } catch (error) {
-      console.error('[iOS Purchase Card] ❌ Purchase error:', error);
+      console.error('[iOS Purchase Card] Purchase error:', error);
+      setProductError('Une erreur est survenue pendant l’achat. Réessaie plus tard.');
     } finally {
       setIsPurchasing(false);
-      console.log('[iOS Purchase Card] 🏁 Purchase flow complete');
     }
   };
 
   const handleRestore = async () => {
-    console.log('[iOS Purchase Card] Restore button clicked');
     setIsRestoring(true);
     try {
-      console.log('[iOS Purchase Card] Starting restore flow...');
       const success = await appleIAPService.restorePurchases();
-      console.log('[iOS Purchase Card] Restore complete');
 
       if (success) {
-        console.log('[iOS Purchase Card] 🚀 Activating restored premium via RPC (with polling fallback)...');
         const activated = await activatePremiumViaRPC();
 
         if (activated) {
-          console.log('[iOS Purchase Card] 🎉 Premium successfully restored!');
+          setProductError(null);
         } else {
-          console.log('[iOS Purchase Card] ⚠️ Premium restoration may have failed');
+          setProductError('Premium a été restauré mais l’activation complète a pris du retard.');
         }
       }
     } catch (error) {
       console.error('[iOS Purchase Card] Restore error:', error);
+      setProductError('Une erreur est survenue pendant la restauration. Réessaie plus tard.');
     } finally {
       setIsRestoring(false);
     }
@@ -197,7 +198,7 @@ export function IOSPurchaseCard() {
 
       <Button
         onClick={handlePurchase}
-        disabled={isPurchasing || !product}
+        disabled={isPurchasing}
         className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg"
         size="lg"
       >
@@ -227,6 +228,12 @@ export function IOSPurchaseCard() {
           t.premium.buttons.restore
         )}
       </Button>
+
+      {productError && (
+        <p className="mt-4 text-sm text-red-600">
+          {productError}
+        </p>
+      )}
 
       <p className="text-xs text-muted-foreground text-center mt-4">
         {t.premium.trust.appleNote}

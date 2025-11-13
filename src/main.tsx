@@ -38,47 +38,42 @@ if (import.meta.env.DEV) {
   console.info('[FREEZE DETECTION] Monitoring enabled - will alert if main thread blocks >2s');
 }
 
-/** iOS : ne pas superposer la status bar à la WebView + style lisible */
+/** Bootstrap: init platform services, then render */
 (async () => {
   try {
-    if (Capacitor.getPlatform() === 'ios') {
+    const platform = Capacitor.getPlatform();
+    
+    if (platform === 'ios') {
       await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setStyle({ style: Style.Dark }); // Style.Light si ton header est sombre
-      // Optionnel : couleur de fond si tu as un header coloré
-      // await StatusBar.setBackgroundColor({ color: '#FFFFFF' });
+      await StatusBar.setStyle({ style: Style.Dark });
       
-      // CRITICAL: Initialiser RevenueCat pour iOS
       console.log('[BOOTSTRAP] Initializing RevenueCat for iOS...');
       const { appleIAPService } = await import('@/services/iap/appleIAPService');
       await appleIAPService.initialize();
       console.log('[BOOTSTRAP] RevenueCat iOS initialized successfully');
     }
-  } catch (e) {
-    console.error('[iOS Setup]', e);
-  }
-})();
-
-/** Android : Initialiser RevenueCat au démarrage */
-(async () => {
-  try {
-    if (Capacitor.getPlatform() === 'android') {
+    
+    if (platform === 'android') {
       console.log('[BOOTSTRAP] Initializing RevenueCat for Android...');
       await initRevenueCat();
+      console.log('[BOOTSTRAP] RevenueCat Android initialized successfully');
     }
   } catch (e) {
-    console.warn('[RevenueCat]', e);
+    console.error('[BOOTSTRAP] Fatal initialization error:', e);
+    throw e;
   }
+  
+  // Only render after platform init completes
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <HelmetProvider>
+        <ConfettiProvider>
+          <App />
+        </ConfettiProvider>
+      </HelmetProvider>
+    </React.StrictMode>,
+  );
 })();
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <ConfettiProvider>
-        <App />
-      </ConfettiProvider>
-    </HelmetProvider>
-  </React.StrictMode>,
-)
 
 // Register PWA after React is mounted
 import('./pwa').then(({ registerPWA }) => registerPWA());

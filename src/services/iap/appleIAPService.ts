@@ -8,7 +8,7 @@ class AppleIAPService {
   private productId = 'com.vread.app.lifetime';
   private isInitialized = false;
   // Clé publique SDK RevenueCat (safe pour le client)
-  private apiKey = 'appl_LqGBafbkvvzjeVyWijyguTTO0yB';
+  private apiKey = import.meta.env.VITE_RC_IOS_KEY ?? '';
 
   /**
    * Vérifie si l'utilisateur a un entitlement premium actif
@@ -43,13 +43,21 @@ class AppleIAPService {
       return;
     }
 
+    // Validate key exists and has correct prefix
+    if (!this.apiKey || !this.apiKey.startsWith('appl_')) {
+      const error = '[IAP] Invalid or missing VITE_RC_IOS_KEY (must start with appl_)';
+      console.error(error);
+      throw new Error(error);
+    }
+
     try {
       console.log('[IAP] 🚀 Starting RevenueCat SDK initialization...');
-      console.log('[IAP] API Key:', this.apiKey.substring(0, 10) + '...');
 
       // Configuration du SDK RevenueCat avec la clé publique
-      await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
-      console.log('[IAP] ✓ Log level set to DEBUG');
+      await Purchases.setLogLevel({ 
+        level: import.meta.env.DEV ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN 
+      });
+      console.log('[IAP] ✓ Log level set');
 
       await Purchases.configure({
         apiKey: this.apiKey,
