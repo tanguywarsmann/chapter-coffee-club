@@ -53,7 +53,7 @@ export const HeroCurrentBook = memo(function HeroCurrentBook({
             </p>
           </div>
           <Button
-            onClick={() => navigate("/discover")}
+            onClick={() => navigate("/explore?cat=litterature")}
             variant="premium"
             size="lg"
             className="px-10 py-6 text-lg"
