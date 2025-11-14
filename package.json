@@ -21,7 +21,7 @@
 		"preview:e2e": "npx -y serve -s dist -l 4173",
 		"sync:ios": "npx cap sync ios",
 		"open:ios": "npx cap open ios",
-		"build:ios": "npm run sync:ios && npm run open:ios"
+		"build:ios": "npm run build && npm run sync:ios && npm run open:ios"
 	},
 	"dependencies": {
 		"@capacitor/android": "^7.4.4",

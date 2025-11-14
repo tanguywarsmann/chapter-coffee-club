@@ -1,42 +1,38 @@
 
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EnhancedAvatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  User,
-  BookOpen,
-  Award,
-  Clock,
-  Calendar,
-  Target,
-  TrendingUp,
-  Users,
-  Settings,
-  Edit3
-} from "lucide-react";
-import { getUserProfile, getDisplayName } from "@/services/user/userProfileService";
-import { getFollowerCounts } from "@/services/user/profileService";
-import { getUserBadges } from "@/services/badgeService";
-import { getUserReadingProgress } from "@/services/reading/progressService";
-import { useTranslation } from "@/i18n/LanguageContext";
-import {
-  getTotalPagesRead,
-  getBooksReadCount,
-  getValidatedSegmentsCount,
-  getEstimatedReadingTime
-} from "@/services/reading/statsService";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { ProfileNameForm } from "@/components/profile/ProfileNameForm";
 import { UserSettings } from "@/components/profile/UserSettings";
-import { Link } from "react-router-dom";
+import { EnhancedAvatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
+import { getUserBadges } from "@/services/badgeService";
+import { getUserReadingProgress } from "@/services/reading/progressService";
+import {
+  getBooksReadCount,
+  getEstimatedReadingTime,
+  getTotalPagesRead,
+  getValidatedSegmentsCount
+} from "@/services/reading/statsService";
+import { getFollowerCounts } from "@/services/user/profileService";
+import { getDisplayName, getUserProfile } from "@/services/user/userProfileService";
+import {
+  Award,
+  BookOpen,
+  Clock,
+  Edit3,
+  Target,
+  TrendingUp,
+  Users
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
@@ -77,38 +73,65 @@ export default function Profile() {
 
         // CRITICAL OPTIMIZATION: Only fetch essential data on initial load
         // Phase 1: Fetch ONLY profile + counts (2 queries) - Books loaded on-demand
+        console.log('[PROFILE] Phase 1: Fetching profile + counts for userId:', profileUserId);
         const [profile, counts] = await Promise.all([
-          getUserProfile(profileUserId),
-          getFollowerCounts(profileUserId)
-          // ❌ REMOVED getUserReadingProgress - will lazy load when "books" tab is active
+          getUserProfile(profileUserId).catch(err => {
+            console.error('[PROFILE] getUserProfile failed:', err);
+            toast.error('Impossible de charger le profil');
+            return null;
+          }),
+          getFollowerCounts(profileUserId).catch(err => {
+            console.error('[PROFILE] getFollowerCounts failed:', err);
+            return { followers: 0, following: 0 };
+          })
         ]);
 
         if (!mounted || abortController.signal.aborted) return;
 
+        console.log('[PROFILE] Phase 1 complete:', { hasProfile: !!profile, counts });
         setProfileData(profile);
         setFollowerCounts(counts);
 
         // Phase 2: Fetch secondary data (badges and stats) AFTER essential data
         // This avoids saturating the connection pool
+        console.log('[PROFILE] Phase 2: Fetching badges...');
         const [userBadges] = await Promise.all([
-          getUserBadges(profileUserId)
+          getUserBadges(profileUserId).catch(err => {
+            console.error('[PROFILE] getUserBadges failed:', err);
+            return [];
+          })
         ]);
 
         if (!mounted || abortController.signal.aborted) return;
 
+        console.log('[PROFILE] Phase 2 complete:', { badgeCount: userBadges.length });
         setBadges(userBadges.slice(0, 6)); // Show only first 6 badges
 
         // Phase 3: Fetch stats (only for own profile, sequentially to reduce load)
         if (isOwnProfile) {
+          console.log('[PROFILE] Phase 3: Fetching stats...');
           const [booksRead, totalPages, segmentsValidated, readingTime] = await Promise.all([
-            getBooksReadCount(profileUserId),
-            getTotalPagesRead(profileUserId),
-            getValidatedSegmentsCount(profileUserId),
-            getEstimatedReadingTime(profileUserId)
+            getBooksReadCount(profileUserId).catch(err => {
+              console.error('[PROFILE] getBooksReadCount failed:', err);
+              return 0;
+            }),
+            getTotalPagesRead(profileUserId).catch(err => {
+              console.error('[PROFILE] getTotalPagesRead failed:', err);
+              return 0;
+            }),
+            getValidatedSegmentsCount(profileUserId).catch(err => {
+              console.error('[PROFILE] getValidatedSegmentsCount failed:', err);
+              return 0;
+            }),
+            getEstimatedReadingTime(profileUserId).catch(err => {
+              console.error('[PROFILE] getEstimatedReadingTime failed:', err);
+              return 0;
+            })
           ]);
 
           if (!mounted || abortController.signal.aborted) return;
 
+          console.log('[PROFILE] Phase 3 complete:', { booksRead, totalPages, segmentsValidated, readingTime });
           setStats({
             booksRead,
             totalPages,
@@ -116,10 +139,13 @@ export default function Profile() {
             readingTime
           });
         }
+
+        console.log('[PROFILE] All phases complete');
       } catch (error) {
         // Only log error if request wasn't aborted
         if (!abortController.signal.aborted) {
-          console.error("Error fetching profile data:", error);
+          console.error("[PROFILE] Error fetching profile data:", error);
+          toast.error('Erreur lors du chargement du profil');
         }
       } finally {
         if (mounted) {

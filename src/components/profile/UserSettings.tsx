@@ -17,8 +17,7 @@ export function UserSettings() {
         toast.error("Erreur lors de la déconnexion");
         return;
       }
-      // Clear localStorage only after successful server logout
-      localStorage.clear();
+      
       toast.success("Déconnexion réussie");
       navigate("/");
     } catch (error) {

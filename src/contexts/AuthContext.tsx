@@ -19,7 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUserStatus: () => Promise<void>;
-  pollForPremiumStatus: () => Promise<boolean>;
+  pollForPremiumStatus: (showToastOnUpgrade?: boolean) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -345,12 +345,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id, syncUserData]);
 
   // NOUVELLE FONCTION: Polling robuste pour détecter le statut premium après achat iOS
-  const pollForPremiumStatus = useCallback(async (): Promise<boolean> => {
+  const pollForPremiumStatus = useCallback(async (showToastOnUpgrade: boolean = true): Promise<boolean> => {
     if (!user?.id) {
       console.warn('[AUTH POLL] Cannot poll: no user logged in');
       return false;
     }
 
+    const wasPremium = isPremium; // capture current state before polling
     console.log('[AUTH POLL] 🔄 Starting aggressive polling for premium status...');
 
     const maxAttempts = 6; // 6 tentatives = 12 secondes max
@@ -389,15 +390,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           console.log('[AUTH POLL] ✅ All states updated - User is now PREMIUM!');
 
-          // Afficher message de félicitations
-          toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
-            duration: 5000,
-            style: {
-              background: 'linear-gradient(to right, #f97316, #eab308)',
-              color: 'white',
-              fontWeight: 'bold'
-            }
-          });
+          // Afficher message de félicitations UNIQUEMENT si transition non-premium → premium ET si demandé
+          if (showToastOnUpgrade && !wasPremium) {
+            toast.success('🎉 Félicitations ! Vous êtes maintenant Premium !', {
+              duration: 5000,
+              style: {
+                background: 'linear-gradient(to right, #f97316, #eab308)',
+                color: 'white',
+                fontWeight: 'bold'
+              }
+            });
+          }
 
           return true;
         } else {
@@ -419,7 +422,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       duration: 6000
     });
     return false;
-  }, [user?.id]);
+  }, [user?.id, isPremium]);
 
   const contextValue = useMemo(() => ({
     supabase,

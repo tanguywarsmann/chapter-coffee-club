@@ -11,7 +11,8 @@ import { PremiumBadge } from './PremiumBadge';
 
 export function IOSPurchaseCard() {
   const { t } = useTranslation();
-  const { pollForPremiumStatus, supabase } = useAuth();
+  const { pollForPremiumStatus, supabase, isPremium } = useAuth();
+  const isAlreadyPremium = isPremium;
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -63,14 +64,14 @@ export function IOSPurchaseCard() {
   }, []);
 
 
-  const activatePremiumViaRPC = async (): Promise<boolean> => {
+  const activatePremiumViaRPC = async (showToastOnUpgrade: boolean = true): Promise<boolean> => {
     try {
       // RPC function not yet implemented in Supabase
-      return await pollForPremiumStatus();
+      return await pollForPremiumStatus(showToastOnUpgrade);
     } catch (err) {
       console.error('[iOS Purchase Card] Exception calling RPC:', err);
       // Fallback au polling
-      return await pollForPremiumStatus();
+      return await pollForPremiumStatus(showToastOnUpgrade);
     }
   };
 
@@ -115,12 +116,12 @@ export function IOSPurchaseCard() {
       const success = await appleIAPService.restorePurchases();
 
       if (success) {
-        const activated = await activatePremiumViaRPC();
+        const activated = await activatePremiumViaRPC(false); // don't show "you're premium" toast on restore
 
         if (activated) {
           setProductError(null);
         } else {
-          setProductError('Premium a été restauré mais l’activation complète a pris du retard.');
+          setProductError("Premium a été restauré mais l'activation complète a pris du retard.'");
         }
       }
     } catch (error) {
@@ -198,11 +199,13 @@ export function IOSPurchaseCard() {
 
       <Button
         onClick={handlePurchase}
-        disabled={isPurchasing}
+        disabled={isPurchasing || isAlreadyPremium}
         className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg"
         size="lg"
       >
-        {isPurchasing ? (
+        {isAlreadyPremium ? (
+          "Vous êtes déjà Premium"
+        ) : isPurchasing ? (
           <span className="flex items-center gap-3">
             <Loader2 className="h-6 w-6 animate-spin" />
             {t.premium.loading.purchase}
@@ -232,6 +235,12 @@ export function IOSPurchaseCard() {
       {productError && (
         <p className="mt-4 text-sm text-red-600">
           {productError}
+        </p>
+      )}
+
+      {isAlreadyPremium && (
+        <p className="mt-3 text-sm text-muted-foreground text-center">
+          Vous avez déjà acheté l'accès Premium à vie avec ce compte.
         </p>
       )}
 
