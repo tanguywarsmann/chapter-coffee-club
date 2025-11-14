@@ -13,29 +13,29 @@ export function ValueSection() {
         </h2>
 
         {/* Deux colonnes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mb-12 md:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           
           {/* Colonne gauche - Sans VREAD */}
-          <div className="space-y-6 bg-white/5 backdrop-blur-sm rounded-2xl p-8 md:p-10 border border-white/10">
-            <h3 className="text-h3 font-medium text-white/70 mb-8 text-center md:text-left">
+          <div className="space-y-6 bg-neutral-50 rounded-2xl p-8 md:p-10 border border-neutral-200">
+            <h3 className="text-h3 font-medium text-neutral-700 mb-8 text-left">
               {t.landing.valueSection.withoutTitle}
             </h3>
             <div className="space-y-5">
               <div className="flex items-start gap-4">
-                <X className="w-5 h-5 text-white/40 flex-shrink-0 mt-1" />
-                <p className="text-body text-white/60 leading-relaxed">
+                <X className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-600 leading-relaxed text-left">
                   {t.landing.valueSection.without1}
                 </p>
               </div>
               <div className="flex items-start gap-4">
-                <X className="w-5 h-5 text-white/40 flex-shrink-0 mt-1" />
-                <p className="text-body text-white/60 leading-relaxed">
+                <X className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-600 leading-relaxed text-left">
                   {t.landing.valueSection.without2}
                 </p>
               </div>
               <div className="flex items-start gap-4">
-                <X className="w-5 h-5 text-white/40 flex-shrink-0 mt-1" />
-                <p className="text-body text-white/60 leading-relaxed">
+                <X className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-600 leading-relaxed text-left">
                   {t.landing.valueSection.without3}
                 </p>
               </div>
@@ -43,26 +43,26 @@ export function ValueSection() {
           </div>
 
           {/* Colonne droite - Avec VREAD */}
-          <div className="space-y-6 bg-white/10 backdrop-blur-sm rounded-2xl p-8 md:p-10 border border-white/20 shadow-xl">
-            <h3 className="text-h3 font-medium text-white mb-8 text-center md:text-left">
+          <div className="space-y-6 bg-white rounded-2xl p-8 md:p-10 border-2 border-primary shadow-lg">
+            <h3 className="text-h3 font-medium text-neutral-800 mb-8 text-left">
               {t.landing.valueSection.withTitle}
             </h3>
             <div className="space-y-5">
               <div className="flex items-start gap-4">
-                <Check className="w-5 h-5 text-reed-accent flex-shrink-0 mt-1" />
-                <p className="text-body text-white leading-relaxed">
+                <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-800 leading-relaxed text-left">
                   {t.landing.valueSection.with1}
                 </p>
               </div>
               <div className="flex items-start gap-4">
-                <Check className="w-5 h-5 text-reed-accent flex-shrink-0 mt-1" />
-                <p className="text-body text-white leading-relaxed">
+                <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-800 leading-relaxed text-left">
                   {t.landing.valueSection.with2}
                 </p>
               </div>
               <div className="flex items-start gap-4">
-                <Check className="w-5 h-5 text-reed-accent flex-shrink-0 mt-1" />
-                <p className="text-body text-white leading-relaxed">
+                <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <p className="text-body text-neutral-800 leading-relaxed text-left">
                   {t.landing.valueSection.with3}
                 </p>
               </div>
@@ -72,8 +72,8 @@ export function ValueSection() {
 
         {/* Ligne de synthèse */}
         <div className="flex justify-center">
-          <div className="bg-white/5 backdrop-blur-sm rounded-full px-8 py-4 border border-white/20 max-w-4xl">
-            <p className="text-body-sm md:text-body font-medium text-reed-accent text-center leading-relaxed">
+          <div className="bg-white rounded-2xl px-8 py-8 border-2 border-primary max-w-4xl">
+            <p className="text-lg font-medium text-neutral-800 text-center leading-relaxed">
               {t.landing.valueSection.mechanism}
             </p>
           </div>
