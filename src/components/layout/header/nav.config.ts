@@ -40,7 +40,7 @@ export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean; t?: any
     // 4. Premium / Request Book (conditionnel)
     isPremium
       ? { to: "/request-book", label: nav.requestBook, icon: BookPlus, ariaLabel: nav.requestBook }
-      : { to: "/premium", label: nav.premium, icon: Crown, ariaLabel: nav.premium },
+      : { to: "/premium", label: nav.requestBook, icon: BookPlus, ariaLabel: nav.requestBook },
     { to: "/reading-list", label: nav.readingList, icon: BookCheck, ariaLabel: `${nav.readingList}` },
     { to: "/discover", label: nav.discover, icon: Users, ariaLabel: `${nav.discover}` },
     { to: "/feedback", label: nav.feedback, icon: MessageSquare, ariaLabel: nav.feedback },
