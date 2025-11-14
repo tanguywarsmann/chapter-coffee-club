@@ -119,7 +119,7 @@ export const en: Translations = {
       next: "Next",
       page: "Page",
     },
-    discoverAll: "Discover all books",
+    requestBook: "Request a book",
   },
 
   // Reading & Validation
