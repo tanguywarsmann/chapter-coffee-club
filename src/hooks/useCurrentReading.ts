@@ -8,7 +8,7 @@ import { getBooksByStatus } from "@/services/reading/progressService";
 import { logger } from "@/utils/logger";
 
 export const useCurrentReading = () => {
-  const { user } = useAuth();
+  const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
   const { inProgress } = useReadingList();
   const [currentReading, setCurrentReading] = useState<BookWithProgress | null>(null);
   const [isLoadingCurrentBook, setIsLoadingCurrentBook] = useState(true);
@@ -56,7 +56,7 @@ export const useCurrentReading = () => {
 
   // ✅ Fonction pour fetch les données, optimisée avec cooldown et deps stables
   const fetchCurrentReadingData = useCallback(async () => {
-    if (!user?.id || fetchingCurrentReading.current) return;
+    if (!user?.id || !isInitialized || isAuthLoading || fetchingCurrentReading.current) return;
 
     // Vérifier le cooldown pour éviter les fetch trop fréquents
     const now = Date.now();
@@ -119,7 +119,7 @@ export const useCurrentReading = () => {
         fetchingCurrentReading.current = false;
       }
     }
-  }, [user?.id]); // ✅ CRITIQUE: Seulement user?.id, pas inProgress!
+  }, [user?.id, isInitialized, isAuthLoading]); // ✅ CRITIQUE: user?.id + auth checks
 
   useEffect(() => {
     if (user?.id && isMounted.current) {
@@ -131,7 +131,7 @@ export const useCurrentReading = () => {
     } else {
       setIsLoadingCurrentBook(false);
     }
-  }, [user?.id, fetchCurrentReadingData, memoizedCurrentReading]);
+  }, [user?.id, fetchCurrentReadingData, memoizedCurrentReading, isInitialized, isAuthLoading]);
 
   useEffect(() => {
     isMounted.current = true;

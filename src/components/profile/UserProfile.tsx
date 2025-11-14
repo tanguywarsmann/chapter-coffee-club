@@ -15,7 +15,7 @@ import { ProfileNameForm } from "./ProfileNameForm";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
 
 export function UserProfile() {
-  const { user, isPremium } = useAuth();
+  const { user, isPremium, isInitialized, isLoading: isAuthLoading } = useAuth();
   const params = useParams();
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
@@ -40,6 +40,11 @@ export function UserProfile() {
 
   // Fetch follower counts and user profile when profileUserId changes
   useEffect(() => {
+    if (!isInitialized || isAuthLoading) {
+      console.log('[PROFILE] Waiting for auth to initialize...');
+      return;
+    }
+    
     if (!profileUserId) return;
     
     async function fetchUserData() {
@@ -66,7 +71,7 @@ export function UserProfile() {
     }
     
     fetchUserData();
-  }, [profileUserId]);
+  }, [profileUserId, isInitialized, isAuthLoading]);
 
   const refreshCounts = async () => {
     if (!profileUserId) return;

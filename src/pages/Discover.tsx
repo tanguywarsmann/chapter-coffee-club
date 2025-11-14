@@ -9,9 +9,9 @@ import { RealCommunityStats } from "@/components/discover/RealCommunityStats";
 import { RealReadersSection } from "@/components/discover/RealReadersSection";
 
 export default function Discover() {
-  const { user } = useAuth();
+  const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
   const { t } = useTranslation();
-  const { data, isLoading, error } = useDiscover(user?.id);
+  const { data, isLoading, error } = useDiscover(user?.id, isInitialized);
 
   return (
     <AuthGuard>
