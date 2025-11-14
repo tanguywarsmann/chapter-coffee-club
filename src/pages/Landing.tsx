@@ -2,16 +2,20 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import confetti from 'canvas-confetti';
 import { useTranslation } from "@/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { ValueSection } from "@/components/landing/ValueSection";
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 export default function Landing() {
   const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const ctaRef = useRef<HTMLAnchorElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const checkMobile = () => {
@@ -20,6 +24,27 @@ export default function Landing() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Magnetic CTA effect
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!ctaRef.current) return;
+      const rect = ctaRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      const distance = Math.sqrt(x * x + y * y);
+      
+      if (distance < 150) {
+        const strength = (150 - distance) / 150;
+        setMousePos({ x: x * strength * 0.15, y: y * strength * 0.15 });
+      } else {
+        setMousePos({ x: 0, y: 0 });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const letters = ['D', 'E', 'U', 'X', 'L', 'I', 'V', 'R', 'E', 'S'];
@@ -51,6 +76,17 @@ export default function Landing() {
 
   return (
     <>
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+      `}</style>
+      
       <Helmet>
         <title>{t.landing.title}</title>
         <meta name="description" content={t.landing.description} />
@@ -193,39 +229,131 @@ export default function Landing() {
               {t.landing.finalTitle2}
             </h2>
             
-            {/* CTA - ÉLARGI SUR MOBILE */}
-            <div className="pt-16 w-full flex flex-col items-center gap-6">
-         <Button
-  size="lg"
-  className="group relative bg-gradient-to-br from-[#A67B5B] to-[#8B6F47] hover:from-[#A67B5B] hover:to-[#8B6F47] text-white px-12 sm:px-20 md:px-28 lg:px-36 py-7 sm:py-8 md:py-10 lg:py-11 text-xl sm:text-3xl md:text-5xl lg:text-5xl font-serif font-bold rounded-full shadow-[0_25px_80px_rgba(166,123,91,0.5)] hover:shadow-[0_30px_100px_rgba(166,123,91,0.7)] hover:scale-105 hover:ring-4 hover:ring-[#A67B5B]/30 transition-all duration-300 border-2 border-white/30 whitespace-nowrap w-[90%] sm:w-auto max-w-full animate-glow"
-  asChild
->
-  <Link to="/auth" className="flex items-center justify-center">
-    <span className="relative z-10">{t.landing.cta}</span>
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-  </Link>
-</Button>
-            </div>
+            {/* CTA Magnétique */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="pt-16 w-full flex flex-col items-center gap-6"
+            >
+              <Link 
+                ref={ctaRef}
+                to="/auth" 
+                className="relative inline-flex items-center gap-3 px-16 py-6 text-2xl font-serif font-bold text-white rounded-full overflow-hidden group transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#A67B5B]/20 focus:ring-offset-4"
+                style={{
+                  background: 'linear-gradient(135deg, #A67B5B, #8B6F47, #A67B5B)',
+                  backgroundSize: '200% 200%',
+                  animation: 'gradient-shift 3s ease infinite',
+                  boxShadow: `
+                    0 20px 60px rgba(166,123,91,0.4),
+                    0 10px 30px rgba(166,123,91,0.3)
+                  `,
+                  transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
+                  textShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                }}
+              >
+                <span className="relative z-10">{t.landing.cta}</span>
+                <motion.div
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <ArrowRight className="w-6 h-6 relative z-10" />
+                </motion.div>
+                
+                {/* Overlay hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Particles effect on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-white rounded-full"
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{
+                        opacity: [0, 1, 0],
+                        scale: [0, 1, 0],
+                        x: [0, Math.cos(i * 45 * Math.PI / 180) * 40],
+                        y: [0, Math.sin(i * 45 * Math.PI / 180) * 40],
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                      }}
+                      style={{
+                        left: '50%',
+                        top: '50%',
+                      }}
+                    />
+                  ))}
+                </div>
+              </Link>
+            </motion.div>
             
             {/* Section Valeur VREAD */}
             <ValueSection />
             
-            {/* Slogan */}
-            <div className="pt-20 pb-12 w-full flex justify-center px-4">
-              <div className="relative w-full max-w-4xl mx-auto">
-                <div className="absolute inset-0 bg-reed-primary/30 blur-3xl scale-150" />
-                
-                <div className="relative bg-gradient-to-br from-[#A67B5B]/80 to-[#8B6F47]/80 backdrop-blur-xl rounded-2xl md:rounded-[2rem] px-8 md:px-16 py-10 md:py-14 border-2 border-white/30 shadow-[0_25px_80px_rgba(166,123,91,0.4)] hover:-translate-y-1 transition-all duration-300">
-                  <p className="text-h2 font-serif text-center">
-                    <span className="text-white/95">{t.landing.sloganPart1}</span>{' '}
-                    <span className="text-white font-bold">{t.landing.sloganPart2}</span>
-                    <span className="text-white/95">{t.landing.sloganPart3}</span>
-                    <br />
-                    <span className="text-white/95">{t.landing.sloganPart4}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Slogan 3D avec blob organique */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="pt-32 pb-20 w-full flex justify-center px-4 relative"
+            >
+              {/* Blob organique animé en arrière-plan */}
+              <motion.div 
+                animate={{
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, 0],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{
+                  filter: 'blur(60px)',
+                }}
+              >
+                <div 
+                  className="w-[600px] h-[400px]"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(166,123,91,0.15), transparent)',
+                    borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+                  }}
+                />
+              </motion.div>
+
+              {/* Texte 3D */}
+              <motion.h2 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative text-6xl md:text-7xl font-extrabold text-center leading-tight max-w-5xl"
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF, #E8DCC8)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: `
+                    0 1px 0 #C4A287,
+                    0 2px 0 #B5977D,
+                    0 3px 0 #A67B5B,
+                    0 6px 12px rgba(0,0,0,0.15),
+                    0 12px 24px rgba(0,0,0,0.1)
+                  `,
+                }}
+              >
+                <span className="block">{t.landing.sloganPart1} <span className="font-black">{t.landing.sloganPart2}</span></span>
+                <span className="block">{t.landing.sloganPart3}</span>
+                <span className="block">{t.landing.sloganPart4}</span>
+              </motion.h2>
+            </motion.div>
             
           </div>
         </div>
