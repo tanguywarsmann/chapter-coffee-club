@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import confetti from 'canvas-confetti';
 import { useTranslation } from "@/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { ValueSection } from "@/components/landing/ValueSection";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -205,6 +206,9 @@ export default function Landing() {
   </Link>
 </Button>
             </div>
+            
+            {/* Section Valeur VREAD */}
+            <ValueSection />
             
             {/* Slogan */}
             <div className="pt-20 pb-12 w-full flex justify-center px-4">

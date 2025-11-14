@@ -37,6 +37,18 @@ export const fr = {
     sloganPart2: "Vread",
     sloganPart3: ",",
     sloganPart4: "tu ne l'as pas lu.",
+    valueSection: {
+      title: "Pourquoi on abandonne nos livres ?",
+      withoutTitle: "Sans VREAD",
+      without1: "On lit sans objectif clair",
+      without2: "On perd le fil de l'histoire",
+      without3: "On manque de motivation dans la durée",
+      withTitle: "Avec VREAD",
+      with1: "Un checkpoint tous les 30 pages",
+      with2: "Des questions pour valider la compréhension",
+      with3: "Une communauté qui nous challenge",
+      mechanism: "Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
+    },
   },
 
   // Public Home Page

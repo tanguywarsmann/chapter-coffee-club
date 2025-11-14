@@ -39,6 +39,18 @@ export const en: Translations = {
     sloganPart2: "Vread",
     sloganPart3: ",",
     sloganPart4: "you haven't read it.",
+    valueSection: {
+      title: "Why we abandon our books?",
+      withoutTitle: "Without VREAD",
+      without1: "We read without clear goals",
+      without2: "We lose track of the story",
+      without3: "We lack long-term motivation",
+      withTitle: "With VREAD",
+      with1: "A checkpoint every 30 pages",
+      with2: "Questions to validate comprehension",
+      with3: "A community that challenges us",
+      mechanism: "The principle: Read 30 pages → Answer questions → Validate your segment → Continue the adventure",
+    },
   },
 
   // Public Home Page
