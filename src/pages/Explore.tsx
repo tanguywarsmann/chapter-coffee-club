@@ -5,11 +5,15 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { BookPlus } from "lucide-react";
 
 type Category = 'litterature' | 'religion' | 'essai' | 'bio'
 
 export default function Explore() {
   const { t } = useTranslation();
+  const { isPremium } = useAuth();
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
@@ -157,7 +161,25 @@ export default function Explore() {
         {loading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
         {!loading && !error && books.length === 0 && (
-          <p className="text-sm text-muted-foreground">Aucun livre dans cette catégorie.</p>
+          <div className="text-center py-12 space-y-4">
+            <p className="text-lg text-muted-foreground">
+              {q.length > 0 
+                ? "Ce livre n'est pas disponible." 
+                : "Aucun livre dans cette catégorie."}
+            </p>
+            {q.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Voulez-vous l'ajouter ?</p>
+                <Button 
+                  onClick={() => navigate(isPremium ? '/request-book' : '/premium')}
+                  className="bg-coffee-dark hover:bg-coffee-darker"
+                >
+                  <BookPlus className="h-4 w-4 mr-2" />
+                  Demander ce livre
+                </Button>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
