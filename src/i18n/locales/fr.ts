@@ -117,7 +117,7 @@ export const fr = {
       next: "Suivant",
       page: "Page",
     },
-    discoverAll: "Découvrir tous les livres",
+    requestBook: "Demander un livre",
   },
 
   // Reading & Validation

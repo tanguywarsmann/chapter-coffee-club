@@ -1,9 +1,10 @@
 import { memo, useState } from "react";
 import { SearchBar } from "@/components/books/SearchBar";
-import { ChevronDown, ChevronUp, Search, Compass } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, BookPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ExploreSectionProps {
   onSearch: (query: string) => void;
@@ -15,8 +16,13 @@ export const ExploreSection = memo(function ExploreSection({
   isSearching,
 }: ExploreSectionProps) {
   const { t } = useTranslation();
+  const { isPremium } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
+
+  const handleRequestBook = () => {
+    navigate(isPremium ? "/request-book" : "/premium");
+  };
 
   return (
     <div className="animate-fade-in">
@@ -53,15 +59,15 @@ export const ExploreSection = memo(function ExploreSection({
               placeholder={t.common.searchPlaceholder}
             />
 
-            {/* Discover Link */}
+            {/* Request Book Link */}
             <div className="flex items-center justify-center pt-2">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/discover")}
+                onClick={handleRequestBook}
                 className="text-coffee-dark hover:text-coffee-darker hover:bg-accent/10 transition-colors"
               >
-                <Compass className="h-4 w-4 mr-2" />
-                {t.explore.discoverAll}
+                <BookPlus className="h-4 w-4 mr-2" />
+                {t.explore.requestBook}
               </Button>
             </div>
           </div>
