@@ -121,18 +121,7 @@ export default function Landing() {
             </h1>
             
             {/* Pile */}
-            <div 
-              className="py-8 cursor-pointer flex flex-col items-center w-full"
-              onClick={() => {
-                setRevealed(true);
-                triggerConfetti();
-              }}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                setRevealed(true);
-                triggerConfetti();
-              }}
-            >
+            <div className="py-8 flex flex-col items-center w-full">
               <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
                 
                 {/* 10 livres */}
@@ -200,6 +189,24 @@ export default function Landing() {
                     </div>
                   );
                 })}
+                
+                {/* Zone cliquable - Seulement le tiers inférieur */}
+                <div
+                  className="absolute left-0 right-0 cursor-pointer z-50 hover:bg-white/5 transition-colors rounded-xl"
+                  style={{
+                    bottom: '0px',
+                    height: '100px',
+                  }}
+                  onClick={() => {
+                    setRevealed(true);
+                    triggerConfetti();
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setRevealed(true);
+                    triggerConfetti();
+                  }}
+                />
                 
               </div>
               
@@ -301,7 +308,7 @@ export default function Landing() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1 }}
-              className="pt-32 pb-20 w-full flex justify-center px-4 relative"
+              className="pt-8 pb-20 w-full flex justify-center px-4 relative"
             >
               {/* Blob organique animé en arrière-plan */}
               <motion.div 
