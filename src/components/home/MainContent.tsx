@@ -71,13 +71,6 @@ export const MainContent = memo(function MainContent({
         onContinueReading={onContinueReading}
       />
 
-      {/* Library Section */}
-      <HomeContent
-        readingProgress={readingProgress}
-        isLoading={isLoading}
-        onProgressUpdate={onProgressUpdate}
-      />
-
       {/* Explore Section - Collapsible */}
       <ExploreSection
         onSearch={onSearch}
