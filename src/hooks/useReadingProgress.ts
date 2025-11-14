@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { logger } from "@/utils/logger";
 
 export const useReadingProgress = () => {
-  const { user } = useAuth();
+  const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
   const [readingProgress, setReadingProgress] = useState<BookWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export const useReadingProgress = () => {
   const fetchProgress = useCallback(async (forceRefresh = false) => {
     logger.debug("=== FETCH PROGRESS START ===", { userId: user?.id, forceRefresh });
 
-    if (!user?.id || !isMounted.current || isFetching.current) {
+    if (!user?.id || !isInitialized || isAuthLoading || !isMounted.current || isFetching.current) {
       logger.debug("Early return - conditions not met");
       return;
     }
@@ -114,23 +114,23 @@ export const useReadingProgress = () => {
         isFetching.current = false;
       }
     }
-  }, [user]); // ✅ ONLY user as dependency, no retryCount!
+  }, [user, isInitialized, isAuthLoading]); // ✅ user + auth checks as dependencies
 
   // ✅ Effect pour charger les données au montage ou changement d'utilisateur
   useEffect(() => {
-    if (user?.id && !hasFetched.current && !isFetching.current) {
+    if (user?.id && !hasFetched.current && !isFetching.current && isInitialized && !isAuthLoading) {
       fetchProgress();
     } else if (!user?.id) {
       setIsLoading(false);
     }
-  }, [user, fetchProgress]); // ✅ fetchProgress is stable now (only user dependency)
+  }, [user, fetchProgress, isInitialized, isAuthLoading]); // ✅ fetchProgress is stable now
 
   // ✅ Effect pour réagir au déclencheur de rafraîchissement
   useEffect(() => {
-    if (refreshTrigger > 0 && user?.id) {
+    if (refreshTrigger > 0 && user?.id && isInitialized && !isAuthLoading) {
       fetchProgress(true); // Force refresh
     }
-  }, [refreshTrigger, user?.id, fetchProgress]); // ✅ fetchProgress is stable
+  }, [refreshTrigger, user?.id, fetchProgress, isInitialized, isAuthLoading]); // ✅ fetchProgress is stable
 
   // Fonction pour forcer un rafraîchissement depuis l'extérieur
   const forceRefresh = useCallback(() => {

@@ -19,7 +19,7 @@ type RLState = {
 
 export const useReadingListPage = () => {
   const navigate = useNavigate();
-  const { user, session } = useAuth();
+  const { user, session, isInitialized, isLoading: isAuthLoading } = useAuth();
   const [state, setState] = useState<RLState>({
     toReadCount: 0,
     inProgressCount: 0,
@@ -38,6 +38,12 @@ export const useReadingListPage = () => {
   }, [navigate]);
 
   useEffect(() => {
+    if (!isInitialized || isAuthLoading) {
+      console.log('[ReadingList] Waiting for auth to initialize...');
+      setState(s => ({ ...s, isLoading: true, isLoadingReadingList: true }));
+      return;
+    }
+    
     if (!user?.id) {
       console.log("⚪ [ReadingList] no user, finishing empty");
       setState(s => ({ ...s, isLoading: false, isLoadingReadingList: false, hasInitialFetch: true, isDataReady: true }));
@@ -88,7 +94,7 @@ export const useReadingListPage = () => {
 
     run();
     return () => { cancelled = true; };
-  }, [user?.id]);
+  }, [user?.id, isInitialized, isAuthLoading]);
 
   return {
     books: {
