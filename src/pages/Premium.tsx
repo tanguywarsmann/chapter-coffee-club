@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Check, Crown, Sparkles, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -10,13 +11,22 @@ import { IOSPurchaseCard } from '@/components/premium/IOSPurchaseCard';
 import { AndroidPurchaseCard } from '@/components/premium/AndroidPurchaseCard';
 
 export default function Premium() {
-  const { user } = useAuth();
+  const { user, isPremium } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const platform = Capacitor.getPlatform();
   const isIOS = platform === 'ios';
   const isAndroid = platform === 'android';
+
+  // Rediriger les utilisateurs premium vers /home
+  useEffect(() => {
+    if (isPremium) {
+      console.log('[Premium Page] User is already premium, redirecting to /home');
+      navigate('/home', { replace: true });
+    }
+  }, [isPremium, navigate]);
 
   useEffect(() => {
     console.log('[Premium Page] Component mounted');
