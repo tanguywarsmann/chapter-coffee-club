@@ -75,6 +75,11 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
                 >
                   {Icon && <Icon className="h-5 w-5 mr-3" aria-hidden="true" />}
                   {label}
+                  {to === "/request-book" && !isPremium && (
+                    <span className="ml-auto text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      Premium
+                    </span>
+                  )}
                 </Button>
               </li>
             ))}
