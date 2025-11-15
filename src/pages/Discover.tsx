@@ -15,31 +15,35 @@ export default function Discover() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-coffee-lightest via-white to-coffee-light/30">
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background to-primary/5">
         <AppHeader />
-        <main className="mx-auto w-full px-4 max-w-7xl py-6">
-          {/* Hero Section */}
-          <div className="mb-12 text-center relative overflow-hidden rounded-3xl bg-gradient-to-br from-coffee-medium/10 via-coffee-light/20 to-amber-50/30 p-8 md:p-12 border border-coffee-light/30 shadow-lg">
+        <main className="mx-auto w-full px-4 max-w-7xl py-8">
+          {/* Hero Section Premium */}
+          <div className="mb-10 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary/5 via-background to-primary/8 p-10 md:p-14 border border-primary/10 shadow-[0_8px_32px_-12px_rgba(166,123,91,0.18)] backdrop-blur-xl">
+            {/* Effet de profondeur en arrière-plan */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(166,123,91,0.08),transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(166,123,91,0.06),transparent_50%)]" />
+            
             <div className="relative z-10">
-              <h1 className="text-4xl md:text-5xl font-bold font-serif text-coffee-darker mb-4 animate-fade-in">
+              <h1 className="text-4xl md:text-6xl font-bold font-serif bg-gradient-to-br from-foreground via-foreground to-primary/90 bg-clip-text text-transparent mb-4 animate-fade-in tracking-tight">
                 {t.discover.title}
               </h1>
-              <p className="text-lg md:text-xl text-coffee-dark font-light max-w-2xl mx-auto">
+              <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
                 {t.discover.subtitle}
               </p>
             </div>
           </div>
           
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="mb-6 p-5 bg-destructive/10 border border-destructive/30 rounded-2xl text-destructive backdrop-blur-sm">
               {t.discover.error}
             </div>
           )}
           
           {/* Grille principale avec optimisation ordre mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Sidebar droite - Statistiques (première sur mobile) */}
-            <div className="space-y-6 lg:order-2">
+            <div className="space-y-8 lg:order-2">
               <RealCommunityStats 
                 stats={data?.stats || { readers: 0, followers: 0, following: 0 }} 
                 loading={isLoading} 
@@ -47,7 +51,7 @@ export default function Discover() {
             </div>
             
             {/* Colonne principale - Fil d'actualité (deuxième sur mobile) */}
-            <div className="lg:col-span-2 lg:order-1 space-y-6">
+            <div className="lg:col-span-2 lg:order-1 space-y-8">
               <RealActivityFeed 
                 activities={data?.feed || []} 
                 loading={isLoading} 
