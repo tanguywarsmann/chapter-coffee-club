@@ -53,6 +53,9 @@ verify_jwt = false
 [functions.populate-completed-readings]
 verify_jwt = false
 
+[functions.populate-batch-2]
+verify_jwt = false
+
 [auth]
 enabled = true
 port = 54326
