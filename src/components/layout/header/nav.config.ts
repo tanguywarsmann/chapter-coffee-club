@@ -37,9 +37,7 @@ export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean; t?: any
     { to: "/home", label: nav.home, icon: Home, ariaLabel: `${nav.home}` },
     { to: "/explore", label: nav.explore, icon: BookCheck, ariaLabel: `${nav.explore}` },
     { to: "/achievements", label: nav.achievements, icon: Trophy, ariaLabel: `${nav.achievements}` },
-    // 4. Premium link (always shown, even for premium users so they can restore purchases)
-    { to: "/premium", label: isPremium ? nav.premium : nav.requestBook, icon: isPremium ? Crown : BookPlus, ariaLabel: isPremium ? nav.premium : nav.requestBook },
-    // 5. Request Book (only for premium users)
+    // Request Book (only for premium users)
     ...(isPremium ? [{ to: "/request-book", label: nav.requestBook, icon: BookPlus, ariaLabel: nav.requestBook }] : []),
     { to: "/reading-list", label: nav.readingList, icon: BookCheck, ariaLabel: `${nav.readingList}` },
     { to: "/discover", label: nav.discover, icon: Users, ariaLabel: `${nav.discover}` },
