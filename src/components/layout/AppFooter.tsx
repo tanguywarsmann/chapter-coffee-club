@@ -1,10 +1,15 @@
 
 import React from 'react';
 import { Link } from "react-router-dom";
+import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/i18n/LanguageContext';
 
 const APP_VERSION = "v1.21";
 
 export const AppFooter = () => {
+  const { isPremium } = useAuth();
+  const { t } = useTranslation();
+
   return (
     <footer className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-6">
@@ -24,6 +29,14 @@ export const AppFooter = () => {
             </Link>
             <Link to="/strava" className="hover:text-foreground transition-colors">
               Le Strava de la lecture
+            </Link>
+            <Link to="/request-book" className="hover:text-foreground transition-colors inline-flex items-center gap-2">
+              {t.nav.requestBook}
+              {!isPremium && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  Premium
+                </span>
+              )}
             </Link>
             <Link to="/legal/privacy" className="hover:text-foreground transition-colors">
               Confidentialité
