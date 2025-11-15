@@ -164,7 +164,7 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
 
   return (
     <div 
-      className="relative rounded-xl bg-gradient-to-r from-emerald-50/50 to-green-50/30 border border-emerald-200/40 hover:border-emerald-300/60 hover:shadow-md transition-all overflow-hidden animate-fade-in" 
+      className="relative rounded-xl bg-gradient-to-r from-brand-100/50 to-brand-50/30 border border-brand-200/40 hover:border-brand-300/60 hover:shadow-md transition-all overflow-hidden animate-fade-in" 
       {...dtHandlers}
       style={{ animationDelay: `${index * 50}ms` }}
     >
@@ -178,7 +178,7 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
             alt={activity.actor_name}
             fallbackText={activity.actor_name}
             size="md"
-            className="border-2 border-emerald-200/60"
+            className="border-2 border-brand-200/60"
           />
         </div>
         
@@ -190,7 +190,7 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
           </div>
           
           <p className="text-coffee-dark mb-3">
-            a terminé la lecture de <span className="font-semibold text-emerald-700">{activity.payload_title}</span>
+            a terminé la lecture de <span className="font-semibold text-brand-600">{activity.payload_title}</span>
           </p>
           
           <div className="flex items-center justify-between">
@@ -212,8 +212,8 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
 
         {/* Icône livre à droite - plus grande */}
         <div className="flex-shrink-0">
-          <div className="p-2 rounded-xl bg-emerald-100/60">
-            <BookOpen className="h-6 w-6 text-emerald-600" />
+          <div className="p-2 rounded-xl bg-brand-100/60">
+            <BookOpen className="h-6 w-6 text-brand-600" />
           </div>
         </div>
       </div>
