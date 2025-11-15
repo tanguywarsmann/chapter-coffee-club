@@ -73,6 +73,15 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 /* Smooth page transitions */
 @keyframes pageEnter {
   from {
@@ -127,6 +136,10 @@
 
 .animate-page-exit {
   animation: pageExit 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }
 
 .animate-shimmer {

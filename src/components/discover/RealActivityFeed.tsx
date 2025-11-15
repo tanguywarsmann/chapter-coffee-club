@@ -164,7 +164,7 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
 
   return (
     <div 
-      className="relative rounded-xl bg-gradient-to-r from-brand-100/50 to-brand-50/30 border border-brand-200/40 hover:border-brand-300/60 hover:shadow-md transition-all overflow-hidden animate-fade-in" 
+      className="activity-card relative rounded-xl bg-gradient-to-r from-brand-100/50 to-brand-50/30 border border-brand-200/40 hover:border-brand-300/60 hover:shadow-md transition-all overflow-hidden animate-fade-in" 
       {...dtHandlers}
       style={{ animationDelay: `${index * 50}ms` }}
     >

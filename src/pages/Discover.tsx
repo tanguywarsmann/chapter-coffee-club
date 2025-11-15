@@ -7,6 +7,9 @@ import { useDiscover } from "@/hooks/useDiscover";
 import { RealActivityFeed } from "@/components/discover/RealActivityFeed";
 import { RealCommunityStats } from "@/components/discover/RealCommunityStats";
 import { RealReadersSection } from "@/components/discover/RealReadersSection";
+import { FloatingBookStacks } from "@/components/discover/FloatingBookStacks";
+import { CursorTrail } from "@/components/discover/CursorTrail";
+import { ExplorationOrb } from "@/components/discover/ExplorationOrb";
 
 export default function Discover() {
   const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
@@ -16,6 +19,9 @@ export default function Discover() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background to-primary/5">
+        <FloatingBookStacks />
+        <CursorTrail />
+        <ExplorationOrb />
         <AppHeader />
         <main className="mx-auto w-full px-4 max-w-7xl py-8">
           {/* Hero Section Premium */}
