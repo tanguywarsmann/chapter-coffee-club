@@ -16,6 +16,8 @@ export const BookyWidget = memo(function BookyWidget() {
     enabled: !!user?.id,
   });
 
+  console.log("🦊 [Booky][Widget] companion data from react-query:", companion);
+
   if (isLoading) return null;
 
   // État "mystère" : l'œuf est visible même sans companion en DB

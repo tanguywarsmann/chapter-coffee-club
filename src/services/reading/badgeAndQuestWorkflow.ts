@@ -22,8 +22,9 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
   let bookyResult: UpdateProgressResult | null = null;
   try {
     bookyResult = await updateCompanionProgress(user_id, new Date());
+    console.log("🦊 [Booky][Workflow] bookyResult:", bookyResult);
   } catch (error) {
-    console.error("Error updating companion progress:", error);
+    console.error("🦊 [Booky][Workflow] Error updating companion:", error);
   }
 
   const newBadges = await checkBadgesForUser(user_id, true);
