@@ -72,6 +72,27 @@ export async function createCompanion(userId: string): Promise<CompanionData> {
 }
 
 /**
+ * Ensure a companion exists for the user, creating one if needed
+ */
+export async function ensureCompanionExists(userId: string): Promise<CompanionData> {
+  // 1) Tenter de récupérer un companion existant
+  let companion = await getCompanion(userId);
+
+  if (companion) {
+    return companion;
+  }
+
+  // 2) Sinon, en créer un (œuf, 0 jours, 0 streak)
+  try {
+    const created = await createCompanion(userId);
+    return created;
+  } catch (error) {
+    console.error('[ensureCompanionExists] Error:', error);
+    throw error;
+  }
+}
+
+/**
  * Update companion progress after a reading validation
  * 
  * Rules:

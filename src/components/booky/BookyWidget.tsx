@@ -1,7 +1,7 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getCompanion } from "@/lib/booky";
+import { getCompanion, ensureCompanionExists } from "@/lib/booky";
 import { BookyStatsModal } from "./BookyStatsModal";
 import { motion } from "framer-motion";
 import { Flame, BookOpen } from "lucide-react";
@@ -18,6 +18,26 @@ export const BookyWidget = memo(function BookyWidget() {
   });
 
   console.log("🦊 [Booky][Widget] companion data from react-query:", companion);
+
+  // Auto-création du companion si besoin
+  useEffect(() => {
+    if (!user?.id) return;
+    if (isLoading) return;
+
+    // Si un companion existe déjà, ne rien faire
+    if (companion) return;
+
+    // Auto-création du companion au premier chargement
+    (async () => {
+      try {
+        const created = await ensureCompanionExists(user.id);
+        // Mettre immédiatement à jour le cache pour le widget
+        queryClient.setQueryData(["companion", user.id], created);
+      } catch (error) {
+        console.error("[BookyWidget] Failed to ensure companion:", error);
+      }
+    })();
+  }, [user?.id, isLoading, companion, queryClient]);
 
   if (isLoading) return null;
 
