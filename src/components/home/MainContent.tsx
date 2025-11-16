@@ -5,6 +5,7 @@ import { SearchResults } from "@/components/home/SearchResults";
 import { HeroCurrentBook } from "@/components/home/HeroCurrentBook";
 import { HomeContent } from "@/components/home/HomeContent";
 import { ExploreSection } from "@/components/home/ExploreSection";
+import { BookyWidget } from "@/components/booky/BookyWidget";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { texts } from "@/i18n/texts";
@@ -70,6 +71,9 @@ export const MainContent = memo(function MainContent({
         isLoading={isLoadingCurrentBook}
         onContinueReading={onContinueReading}
       />
+
+      {/* Booky Widget - Companion Progress */}
+      <BookyWidget />
 
       {/* Explore Section - Collapsible */}
       <ExploreSection

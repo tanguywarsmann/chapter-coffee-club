@@ -102,6 +102,7 @@ export async function updateCompanionProgress(
 
   // Prepare updates
   const updates: Partial<CompanionData> = {};
+  let daysDifference: number | null = null;
 
   // Always increment segments_this_week (even if same day)
   updates.segments_this_week = companion.segments_this_week + 1;
@@ -122,13 +123,12 @@ export async function updateCompanionProgress(
   const isSameDay = lastReadingDate && 
     validationDate.getTime() === lastReadingDate.getTime();
 
-  // Calculate days difference (needed for streak and rituals)
-  const daysDifference = lastReadingDate
-    ? Math.floor((validationDate.getTime() - lastReadingDate.getTime()) / (1000 * 60 * 60 * 24))
-    : null;
-
   // Only update streak and total_reading_days if NOT the same day
   if (!isSameDay) {
+    // Calculate days difference
+    daysDifference = lastReadingDate
+      ? Math.floor((validationDate.getTime() - lastReadingDate.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
 
     // Update streak logic
     if (daysDifference === null) {
@@ -154,8 +154,9 @@ export async function updateCompanionProgress(
     updates.last_reading_date = validationDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
   }
 
-  // Calculate stage evolution (egg → fox cub transition at 7 days)
-  if (updates.total_reading_days !== undefined && updates.total_reading_days >= 7) {
+  // Calculate stage evolution (egg → fox cub transition at 1+ days)
+  const newTotalReadingDays = updates.total_reading_days ?? previousTotalReadingDays;
+  if (newTotalReadingDays >= 1) {
     updates.current_stage = 2;
   }
 
@@ -172,15 +173,16 @@ export async function updateCompanionProgress(
   // RITUAL DETECTION (based on PREVIOUS values)
   const isFirstDay = previousTotalReadingDays === 0 && !companion.has_seen_birth_ritual;
   
+  const newCurrentStreak = updates.current_streak ?? previousCurrentStreak;
   const isFirstWeek = !companion.has_seen_week_ritual && 
-    previousTotalReadingDays < 7 && 
-    (updates.total_reading_days !== undefined && updates.total_reading_days >= 7);
+    previousCurrentStreak < 7 && 
+    newCurrentStreak >= 7;
 
   const isReturnAfterBreak = !companion.has_seen_return_ritual &&
     previousLastReadingDate !== null &&
     !isSameDay &&
     daysDifference !== null &&
-    daysDifference >= 2;
+    daysDifference >= 4;
 
   // Update ritual flags if rituals should be shown
   if (isFirstDay) {
