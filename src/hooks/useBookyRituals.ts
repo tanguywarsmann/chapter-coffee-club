@@ -20,11 +20,24 @@ export function useBookyRituals(
   const [showReturn, setShowReturn] = useState(false);
 
   useEffect(() => {
-    if (!bookyResult) return;
+    console.log("🦊 [Booky][Rituals] bookyResult changed:", bookyResult);
+
+    if (!bookyResult) {
+      console.log("🦊 [Booky][Rituals] bookyResult is null/undefined");
+      return;
+    }
+
+    console.log("🦊 [Booky][Rituals] Flags:", {
+      isFirstDay: bookyResult.isFirstDay,
+      isFirstWeek: bookyResult.isFirstWeek,
+      isReturnAfterBreak: bookyResult.isReturnAfterBreak,
+      stage: bookyResult.companion?.current_stage,
+      total_reading_days: bookyResult.companion?.total_reading_days
+    });
 
     // 1) Mettre à jour le cache du companion pour le widget
     if (bookyResult.companion) {
-      console.log("🦊 Mise à jour du cache companion:", bookyResult.companion);
+      console.log("🦊 [Booky][Rituals] Mise à jour du cache companion:", bookyResult.companion);
       queryClient.setQueryData(
         ["companion", bookyResult.companion.user_id],
         bookyResult.companion

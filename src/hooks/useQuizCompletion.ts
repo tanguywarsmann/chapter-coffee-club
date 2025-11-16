@@ -114,7 +114,12 @@ export const useQuizCompletion = ({
 
       // Check for Booky rituals (indépendant des quêtes/badges)
       if (result?.bookyResult) {
-        console.log("🦊 Booky result reçu:", result.bookyResult);
+        console.log("🦊 [Booky][QuizCompletion] bookyResult reçu:", result.bookyResult);
+        console.log("🦊 [Booky][QuizCompletion] flags:", {
+          isFirstDay: result.bookyResult.isFirstDay,
+          isFirstWeek: result.bookyResult.isFirstWeek,
+          isReturnAfterBreak: result.bookyResult.isReturnAfterBreak
+        });
         setBookyResult(result.bookyResult);
       }
 
