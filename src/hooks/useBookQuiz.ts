@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { Book } from "@/types/book";
@@ -15,6 +15,9 @@ export const useBookQuiz = (
   isValidating: boolean = false,
   setIsValidating?: (value: boolean) => void
 ) => {
+  // FIX P0-3: Ajouter isMounted guard pour éviter setState après unmount
+  const isMounted = useRef(true);
+  
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizChapter, setQuizChapter] = useState<number>(0);
   const [currentQuestion, setCurrentQuestion] = useState<PublicReadingQuestion | null>(null);
@@ -23,6 +26,14 @@ export const useBookQuiz = (
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
   const [isUsingJoker, setIsUsingJoker] = useState(false);
   const [jokersRemaining, setJokersRemaining] = useState<number>(0);
+
+  // FIX P0-3: Cleanup pour éviter setState après unmount
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const handleLockExpire = () => {
     setIsLocked(false);
@@ -40,6 +51,9 @@ export const useBookQuiz = (
       // Check if user is locked from validating this segment
       const lockCheck = await checkValidationLock(userId, book.id, segment);
       
+      // FIX P0-3: Check isMounted avant setState
+      if (!isMounted.current) return;
+      
       if (lockCheck.isLocked && lockCheck.remainingTime !== null) {
         setIsLocked(true);
         setRemainingLockTime(lockCheck.remainingTime);
@@ -53,6 +67,8 @@ export const useBookQuiz = (
         segment
       );
 
+      if (!isMounted.current) return;
+
       if (alreadyValidated) {
         toast.info("Ce segment a déjà été validé");
         return;
@@ -60,10 +76,14 @@ export const useBookQuiz = (
 
       // Récupérer le nombre de jokers restants
       const remainingJokersCount = await getRemainingJokers(book.id, userId);
+      
+      if (!isMounted.current) return;
       setJokersRemaining(remainingJokersCount);
 
       // Get question for this segment using book slug
       const question = await getQuestionForBookSegment(book.slug || book.id, segment);
+
+      if (!isMounted.current) return;
 
       if (question) {
         setCurrentQuestion(question);
@@ -77,9 +97,11 @@ export const useBookQuiz = (
       setShowQuiz(true);
     } catch (error) {
       console.error("Error preparing question:", error);
-      toast.error("Erreur lors de la préparation du quiz");
+      // FIX P0-4: Toast d'erreur plus explicite
+      toast.error("Erreur lors de la préparation du quiz. Veuillez réessayer.");
       throw error;
     } finally {
+      // FIX P0-4: TOUJOURS reset isValidating, même après unmount ou erreur
       if (setIsValidating) setIsValidating(false);
     }
   };
@@ -102,10 +124,12 @@ export const useBookQuiz = (
         setShowQuiz(false);
         setShowSuccessMessage(true);
         
-        // Force cache refresh for all relevant data (no duplicate validation calls)
+        // FIX P0-2: Mutation ciblée au lieu de mutation globale pour éviter cascade
+        // ❌ AVANT: mutate((key) => typeof key === 'string' && key.includes('reading-progress'), ...)
+        // ✅ APRÈS: Mutations spécifiques uniquement
         mutate(['jokers-info', book.id]);
         mutate(['book-progress', book.id]);
-        mutate((key) => typeof key === 'string' && key.includes('reading-progress'), undefined, { revalidate: true });
+        mutate(['reading-progress', userId]); // Spécifique à cet utilisateur
         
         // Trigger parent updates
         if (onProgressUpdate) {
