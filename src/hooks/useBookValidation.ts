@@ -133,7 +133,13 @@ export const useBookValidation = ({
     setNewBadges,
     newQuests,
     setNewQuests,
-    handleQuizComplete
+    handleQuizComplete,
+    showBirthRitual,
+    showWeekRitual,
+    showReturnRitual,
+    closeBirthRitual,
+    closeWeekRitual,
+    closeReturnRitual,
   } = useQuizCompletion({
     book,
     userId,
@@ -383,6 +389,12 @@ export const useBookValidation = ({
     sessionStartTimeRef,
     isUsingJoker,
     jokersRemaining,
+    showBirthRitual,
+    showWeekRitual,
+    showReturnRitual,
+    closeBirthRitual,
+    closeWeekRitual,
+    closeReturnRitual,
   }), [
     isValidating,
     showQuiz,
@@ -414,6 +426,12 @@ export const useBookValidation = ({
     handleMainButtonClick,
     isUsingJoker,
     jokersRemaining,
+    showBirthRitual,
+    showWeekRitual,
+    showReturnRitual,
+    closeBirthRitual,
+    closeWeekRitual,
+    closeReturnRitual,
   ]);
   
   return returnValue;
