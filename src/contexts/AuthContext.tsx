@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { syncUserProfile } from '@/services/user/userProfileService';
+import { handleSupabaseError } from '@/services/supabaseErrorHandler';
 
 interface AuthContextType {
   supabase: typeof supabase;
@@ -165,6 +166,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // NOW set up the auth state change listener for future changes
         const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
           if (!mounted) {
+            return;
+          }
+
+          console.log("[AUTH CONTEXT] Auth state change:", event);
+
+          // Détecter token expiré / session invalide
+          if (event === "TOKEN_REFRESHED") {
+            console.log("[AUTH CONTEXT] Token refreshed successfully");
+          }
+
+          // Si pas de session et que ce n'est pas l'état initial, forcer clear
+          if (!newSession && event !== "INITIAL_SESSION") {
+            console.warn("[AUTH CONTEXT] Session lost, clearing auth state");
+            setUser(null);
+            setSession(null);
+            setIsAdmin(false);
+            setIsPremium(false);
             return;
           }
 

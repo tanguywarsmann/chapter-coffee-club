@@ -9,14 +9,23 @@ import { texts } from "@/i18n/texts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "@/components/ui/image";
 import { PAGES_PER_SEGMENT } from "@/utils/constants";
+import { ErrorFallback } from "@/components/ui/ErrorFallback";
 
 interface CurrentReadingCardProps {
   book: BookType;
   currentPage: number;
   onContinueReading: () => void;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-export function CurrentReadingCard({ book, currentPage, onContinueReading }: CurrentReadingCardProps) {
+export function CurrentReadingCard({ 
+  book, 
+  currentPage, 
+  onContinueReading,
+  error,
+  onRetry 
+}: CurrentReadingCardProps) {
   const isMobile = useIsMobile();
   
   const imageSrc = (book as any)?.coverImage || (book as any)?.cover_url || (book as any)?.book_cover;
@@ -35,6 +44,17 @@ export function CurrentReadingCard({ book, currentPage, onContinueReading }: Cur
   if (!book) {
     console.warn("Le livre est undefined dans CurrentReadingCard");
     return null;
+  }
+
+  // Si erreur, afficher fallback
+  if (error && onRetry) {
+    return (
+      <ErrorFallback
+        variant="compact"
+        message={error}
+        onRetry={onRetry}
+      />
+    );
   }
 
   // Check if the book slug or current page is undefined or invalid
