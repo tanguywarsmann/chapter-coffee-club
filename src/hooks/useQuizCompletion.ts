@@ -80,8 +80,9 @@ export const useQuizCompletion = ({
         setNewQuests([]);
       }
 
-      // Check for Booky rituals
+      // Check for Booky rituals (indépendant des quêtes/badges)
       if (result?.bookyResult) {
+        console.log("🦊 Booky result reçu:", result.bookyResult);
         setBookyResult(result.bookyResult);
       }
 
