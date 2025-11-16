@@ -7,6 +7,8 @@ import { addXP } from "@/services/user/levelService";
 import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useReadingProgress } from "./useReadingProgress";
 import { toast } from "sonner";
+import { useBookyRituals } from "./useBookyRituals";
+import { UpdateProgressResult } from "@/lib/booky";
 
 interface UseQuizCompletionProps {
   book: Book | null;
@@ -23,7 +25,10 @@ export const useQuizCompletion = ({
 }: UseQuizCompletionProps) => {
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const [newQuests, setNewQuests] = useState<UserQuest[]>([]);
+  const [bookyResult, setBookyResult] = useState<UpdateProgressResult | null>(null);
   const { forceRefresh } = useReadingProgress();
+
+  const rituals = useBookyRituals(bookyResult);
 
   const handleQuizComplete = async (correct: boolean, useJoker?: boolean) => {
     console.log("🎲 useQuizCompletion.handleQuizComplete called with:", { correct, useJoker });
@@ -75,6 +80,11 @@ export const useQuizCompletion = ({
         setNewQuests([]);
       }
 
+      // Check for Booky rituals
+      if (result?.bookyResult) {
+        setBookyResult(result.bookyResult);
+      }
+
       return result;
     } catch (error) {
       console.error("Error in quiz completion:", error);
@@ -95,6 +105,7 @@ export const useQuizCompletion = ({
     setNewBadges,
     newQuests,
     setNewQuests,
-    handleQuizComplete
+    handleQuizComplete,
+    ...rituals,
   };
 };

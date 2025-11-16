@@ -12,6 +12,9 @@ import { BookQuestDialog } from "./BookQuestDialog";
 import { useBookDetailProgress } from "@/hooks/useBookDetailProgress";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { BookMonthlyRewardModal } from "./BookMonthlyRewardHandler";
+import { BirthRitual } from "@/components/booky/BirthRitual";
+import { WeekRitual } from "@/components/booky/WeekRitual";
+import { ReturnRitual } from "@/components/booky/ReturnRitual";
 import { toast } from "sonner";
 import { usePerformanceTracker } from "@/utils/performanceAudit";
 import { withErrorHandling } from "@/utils/errorBoundaryUtils";
@@ -72,7 +75,13 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     handleMainButtonClick,
     sessionStartTimeRef,
     isUsingJoker,
-    jokersRemaining
+    jokersRemaining,
+    showBirthRitual,
+    showWeekRitual,
+    showReturnRitual,
+    closeBirthRitual,
+    closeWeekRitual,
+    closeReturnRitual,
   } = useBookValidation({
     book: currentBook,
     userId: user?.id || null,
@@ -303,6 +312,28 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
             monthlyReward={monthlyReward}
             showMonthlyReward={showMonthlyReward}
             onClose={() => setShowMonthlyReward(false)}
+          />
+        )}
+
+        {/* Booky Rituals - Only render when needed */}
+        {showBirthRitual && (
+          <BirthRitual
+            isOpen={showBirthRitual}
+            onClose={closeBirthRitual}
+          />
+        )}
+
+        {showWeekRitual && (
+          <WeekRitual
+            isOpen={showWeekRitual}
+            onClose={closeWeekRitual}
+          />
+        )}
+
+        {showReturnRitual && (
+          <ReturnRitual
+            isOpen={showReturnRitual}
+            onClose={closeReturnRitual}
           />
         )}
 

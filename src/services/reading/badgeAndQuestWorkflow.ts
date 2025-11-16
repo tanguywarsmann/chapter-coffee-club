@@ -5,6 +5,7 @@ import { addXP } from "@/services/user/levelService";
 import { checkBadgesForUser } from "@/services/user/streakBadgeService";
 import { checkUserQuests } from "@/services/questService";
 import { checkAndGrantMonthlyReward } from "@/services/monthlyRewardService";
+import { updateCompanionProgress, UpdateProgressResult } from "@/lib/booky";
 
 export async function handleBadgeAndQuestWorkflow(request: any, progressId: string, clampedPage: number, nextSegment: number, book_id: string, user_id: string, question: any) {
   // Invalidation aggressive des caches
@@ -16,6 +17,14 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
 
   // NOTE: recordReadingActivity() removed - streaks now calculated from reading_validations table via get_user_streaks() SQL function
   await addXP(user_id, 10);
+
+  // Update companion progress
+  let bookyResult: UpdateProgressResult | null = null;
+  try {
+    bookyResult = await updateCompanionProgress(user_id, new Date());
+  } catch (error) {
+    console.error("Error updating companion progress:", error);
+  }
 
   const newBadges = await checkBadgesForUser(user_id, true);
 
@@ -33,9 +42,10 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
     } catch (_) { }
   }, 0);
 
-  // Return new badges and quests
+  // Return new badges, quests, and booky result
   return {
     newBadges: newBadges && newBadges.length > 0 ? newBadges : undefined,
-    newQuests: newQuests && newQuests.length > 0 ? newQuests : undefined
+    newQuests: newQuests && newQuests.length > 0 ? newQuests : undefined,
+    bookyResult
   };
 }
