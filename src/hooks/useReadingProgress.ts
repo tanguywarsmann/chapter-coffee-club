@@ -4,6 +4,7 @@ import { getUserReadingProgress, clearProgressCache } from "@/services/reading/p
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { logger } from "@/utils/logger";
+import { handleSupabaseError } from "@/services/supabaseErrorHandler";
 
 export const useReadingProgress = () => {
   const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
@@ -81,19 +82,23 @@ export const useReadingProgress = () => {
       logger.error("FETCH PROGRESS ERROR:", err);
 
       if (isMounted.current) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        setError(errorMessage);
+        // Utiliser le gestionnaire d'erreur centralisé
+        const errorInfo = handleSupabaseError('useReadingProgress', err);
+        setError(errorInfo.userMessage);
 
-        // Only show toast for first few retry attempts
-        if (retryCountRef.current < 3) {
-          toast.error("Erreur lors du chargement de vos lectures en cours", {
-            description: "Nous réessayerons automatiquement",
-            duration: 3000
-          });
+        // Si auth expirée, ne pas toast (géré par AuthContext)
+        if (!errorInfo.isAuthExpired) {
+          // Only show toast for first few retry attempts
+          if (retryCountRef.current < 3) {
+            toast.error("Erreur lors du chargement de vos lectures en cours", {
+              description: errorInfo.shouldRetry ? "Nous réessayerons automatiquement" : errorInfo.userMessage,
+              duration: 3000
+            });
+          }
         }
 
         // ✅ Auto-retry logic with exponential backoff using ref
-        if (retryCountRef.current < 5 && isMounted.current) {
+        if (retryCountRef.current < 5 && isMounted.current && errorInfo.shouldRetry) {
           const timeout = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
           retryCountRef.current++;
 
