@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useBookyRituals } from "./useBookyRituals";
 import { UpdateProgressResult } from "@/lib/booky";
 import { debounce } from "lodash";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UseQuizCompletionProps {
   book: Book | null;
@@ -26,6 +27,7 @@ export const useQuizCompletion = ({
 }: UseQuizCompletionProps) => {
   // FIX P0-3: Ajouter isMounted guard
   const isMounted = useRef(true);
+  const { user } = useAuth();
   
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const [newQuests, setNewQuests] = useState<UserQuest[]>([]);
@@ -121,6 +123,18 @@ export const useQuizCompletion = ({
           isReturnAfterBreak: result.bookyResult.isReturnAfterBreak
         });
         setBookyResult(result.bookyResult);
+
+        // Debug Booky – toast visible uniquement pour Tanguy
+        if (
+          user?.email === "tanguy.warsmann@gmail.com" &&
+          result.bookyResult.companion
+        ) {
+          const c = result.bookyResult.companion;
+          toast.success(
+            `🦊 [Booky debug] stage=${c.current_stage}, days=${c.total_reading_days}, streak=${c.current_streak}`,
+            { duration: 4000 }
+          );
+        }
       }
 
       return result;
