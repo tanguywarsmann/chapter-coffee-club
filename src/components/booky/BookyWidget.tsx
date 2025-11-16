@@ -16,7 +16,64 @@ export const BookyWidget = memo(function BookyWidget() {
     enabled: !!user?.id,
   });
 
-  if (isLoading || !companion) return null;
+  if (isLoading) return null;
+
+  // État "mystère" : l'œuf est visible même sans companion en DB
+  if (!companion) {
+    return (
+      <motion.div
+        className="relative cursor-pointer group"
+        onClick={() => setIsModalOpen(true)}
+        whileHover={{ scale: 1.02 }}
+        animate={{
+          y: [0, -4, 0],
+        }}
+        transition={{
+          y: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        }}
+      >
+        <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 backdrop-blur-sm rounded-2xl p-6 border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-6">
+            {/* Œuf mystère */}
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-5xl">
+                🥚
+              </div>
+              <div className="absolute inset-0 rounded-full bg-primary/5 blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+
+            {/* Message mystère */}
+            <div className="flex-1">
+              <p className="text-sm text-foreground/70 italic">
+                Il se passe quelque chose quand tu lis…
+              </p>
+            </div>
+
+            {/* Hover indicator */}
+            <div className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   const isEgg = companion.current_stage === 1;
   const hasGlasses = companion.current_streak >= 7;
