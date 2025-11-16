@@ -5,8 +5,8 @@ import { addDerivedFields } from "./addDerivedFields";
 import { progressCache, CACHE_DURATION } from "./progressCache";
 import { BookWithProgress, ReadingProgressRow, ReadingProgress } from "@/types/reading";
 
-// FIX P0-2: Network retry logic with exponential backoff
-const MAX_RETRIES = 3;
+// FIX P0-4: Réduire retries pour éviter blocage trop long
+const MAX_RETRIES = 2; // Réduit de 3 à 2 (max ~7s au lieu de ~15s)
 const INITIAL_RETRY_DELAY = 1000;
 const REQUEST_TIMEOUT = 10000; // 10 seconds timeout
 

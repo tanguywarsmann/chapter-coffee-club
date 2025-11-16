@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { UserQuest } from "@/types/quest";
@@ -9,6 +9,7 @@ import { useReadingProgress } from "./useReadingProgress";
 import { toast } from "sonner";
 import { useBookyRituals } from "./useBookyRituals";
 import { UpdateProgressResult } from "@/lib/booky";
+import { debounce } from "lodash";
 
 interface UseQuizCompletionProps {
   book: Book | null;
@@ -23,10 +24,31 @@ export const useQuizCompletion = ({
   originalHandleQuizComplete,
   onProgressUpdate
 }: UseQuizCompletionProps) => {
+  // FIX P0-3: Ajouter isMounted guard
+  const isMounted = useRef(true);
+  
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const [newQuests, setNewQuests] = useState<UserQuest[]>([]);
   const [bookyResult, setBookyResult] = useState<UpdateProgressResult | null>(null);
   const { forceRefresh } = useReadingProgress();
+
+  // FIX P0-3: Cleanup
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // FIX P0-1: Debounce forceRefresh pour éviter cascade de re-renders
+  const debouncedForceRefresh = useMemo(
+    () => debounce(() => {
+      if (isMounted.current) {
+        forceRefresh();
+      }
+    }, 500), // 500ms debounce pour éviter les appels multiples rapides
+    [forceRefresh]
+  );
 
   const rituals = useBookyRituals(bookyResult);
 
@@ -35,18 +57,24 @@ export const useQuizCompletion = ({
     try {
       const result = await originalHandleQuizComplete(correct, useJoker);
       
+      // FIX P0-3: Check isMounted avant setState
+      if (!isMounted.current) return result;
+      
       if (correct && userId && book?.id) {
-        // ✅ Phase 2.1: Optimisation - Un seul refresh au lieu de 3
-        console.log("🔄 Rafraîchissement immédiat après validation réussie");
+        // FIX P0-1: Utiliser le debounced refresh au lieu du direct
+        console.log("🔄 Rafraîchissement debounced après validation réussie");
         
-        // Force refresh of reading progress hook
-        forceRefresh();
+        // Force refresh of reading progress hook (debounced)
+        debouncedForceRefresh();
         
         // Trigger parent component update
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
         }
       }
+      
+      // FIX P0-3: Check isMounted avant chaque setState
+      if (!isMounted.current) return result;
       
       // Check if there are any newly unlocked badges
       if (result?.newBadges && result.newBadges.length > 0) {
@@ -59,6 +87,8 @@ export const useQuizCompletion = ({
       } else {
         setNewBadges([]);
       }
+
+      if (!isMounted.current) return result;
 
       // Check if there are any newly unlocked quests
       if (result?.newQuests && result.newQuests.length > 0) {
@@ -80,6 +110,8 @@ export const useQuizCompletion = ({
         setNewQuests([]);
       }
 
+      if (!isMounted.current) return result;
+
       // Check for Booky rituals (indépendant des quêtes/badges)
       if (result?.bookyResult) {
         console.log("🦊 Booky result reçu:", result.bookyResult);
@@ -90,9 +122,14 @@ export const useQuizCompletion = ({
     } catch (error) {
       console.error("Error in quiz completion:", error);
       
-      // Même en cas d'erreur, essayer de rafraîchir les données
+      // FIX P0-4: Toast d'erreur plus explicite
+      toast.error("Erreur lors de la validation. Vos données seront rafraîchies.");
+      
+      // Même en cas d'erreur, essayer de rafraîchir les données (debounced)
       try {
-        forceRefresh();
+        if (isMounted.current) {
+          debouncedForceRefresh();
+        }
       } catch (refreshError) {
         console.error("Erreur lors du rafraîchissement des données:", refreshError);
       }
