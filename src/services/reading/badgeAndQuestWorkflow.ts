@@ -18,14 +18,9 @@ export async function handleBadgeAndQuestWorkflow(request: any, progressId: stri
   // NOTE: recordReadingActivity() removed - streaks now calculated from reading_validations table via get_user_streaks() SQL function
   await addXP(user_id, 10);
 
-  // Update companion progress
+  // Booky progress is now updated directly in useQuizCompletion after validation.
+  // Do not call updateCompanionProgress here to avoid double updates.
   let bookyResult: UpdateProgressResult | null = null;
-  try {
-    bookyResult = await updateCompanionProgress(user_id, new Date());
-    console.log("🦊 [Booky][Workflow] bookyResult:", bookyResult);
-  } catch (error) {
-    console.error("🦊 [Booky][Workflow] Error updating companion:", error);
-  }
 
   const newBadges = await checkBadgesForUser(user_id, true);
 
