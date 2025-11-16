@@ -308,7 +308,7 @@ export const fr = {
     paywall: {
       title: "Fonctionnalité Premium",
       description: "Passe Premium pour demander l'ajout de n'importe quel livre dans VREAD. Nous créons les questions de compréhension et ajoutons le livre sous 48-72h.",
-      cta: "Découvrir Premium - 50€/an",
+      cta: "Découvrir Premium",
       ctaIOS: "Découvrir Premium (In-App Purchase)",
     },
     form: {
