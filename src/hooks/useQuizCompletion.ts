@@ -8,9 +8,10 @@ import { getBookReadingProgress } from "@/services/reading/progressService";
 import { useReadingProgress } from "./useReadingProgress";
 import { toast } from "sonner";
 import { useBookyRituals } from "./useBookyRituals";
-import { UpdateProgressResult } from "@/lib/booky";
+import { UpdateProgressResult, updateCompanionProgress } from "@/lib/booky";
 import { debounce } from "lodash";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UseQuizCompletionProps {
   book: Book | null;
@@ -28,6 +29,7 @@ export const useQuizCompletion = ({
   // FIX P0-3: Ajouter isMounted guard
   const isMounted = useRef(true);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const [newQuests, setNewQuests] = useState<UserQuest[]>([]);
@@ -72,6 +74,22 @@ export const useQuizCompletion = ({
         // Trigger parent component update
         if (onProgressUpdate) {
           onProgressUpdate(book.id);
+        }
+
+        // Update Booky companion progress
+        try {
+          const booky = await updateCompanionProgress(userId, new Date());
+          console.log("[Booky][useQuizCompletion] updateCompanionProgress done:", booky);
+
+          if (!isMounted.current) return result;
+
+          // Mettre à jour l'état local des rituels
+          setBookyResult(booky);
+
+          // Mettre à jour le cache React Query pour le widget
+          queryClient.setQueryData(["companion", userId], booky.companion);
+        } catch (error) {
+          console.error("[Booky] Error in updateCompanionProgress:", error);
         }
       }
       

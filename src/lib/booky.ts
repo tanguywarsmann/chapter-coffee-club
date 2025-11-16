@@ -229,7 +229,8 @@ export async function updateCompanionProgress(
     throw new Error('Failed to update companion: ' + error.message);
   }
 
-  console.log("🦊 [Booky][Update] Returning result:", {
+  console.log("[Booky][updateCompanionProgress] Result:", {
+    userId,
     isFirstDay,
     isFirstWeek,
     isReturnAfterBreak,
