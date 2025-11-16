@@ -1205,6 +1205,54 @@ export type Database = {
           },
         ]
       }
+      user_companion: {
+        Row: {
+          created_at: string
+          current_stage: number
+          current_streak: number
+          has_seen_birth_ritual: boolean
+          has_seen_return_ritual: boolean
+          has_seen_week_ritual: boolean
+          id: string
+          last_reading_date: string | null
+          longest_streak: number
+          segments_this_week: number
+          total_reading_days: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_stage?: number
+          current_streak?: number
+          has_seen_birth_ritual?: boolean
+          has_seen_return_ritual?: boolean
+          has_seen_week_ritual?: boolean
+          id?: string
+          last_reading_date?: string | null
+          longest_streak?: number
+          segments_this_week?: number
+          total_reading_days?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_stage?: number
+          current_streak?: number
+          has_seen_birth_ritual?: boolean
+          has_seen_return_ritual?: boolean
+          has_seen_week_ritual?: boolean
+          id?: string
+          last_reading_date?: string | null
+          longest_streak?: number
+          segments_this_week?: number
+          total_reading_days?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorite_badges: {
         Row: {
           badge_id: string
