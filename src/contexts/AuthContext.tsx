@@ -60,7 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error fetching user status:', error);
+        const errorInfo = handleSupabaseError('fetchUserStatus', error);
+        console.error('Error fetching user status:', errorInfo);
+        
+        // If auth expired, trigger signout
+        if (errorInfo.isAuthExpired) {
+          console.log("[AUTH] Auth expired in fetchUserStatus, triggering signout");
+          setTimeout(() => signOut(), 0);
+        }
+        
         setIsAdmin(false);
         setIsPremium(false);
         return { isAdmin: false, isPremium: false };
@@ -387,7 +395,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (error) {
-          console.error(`[AUTH POLL] Error on attempt ${attempt}:`, error);
+          const errorInfo = handleSupabaseError('pollForPremiumStatus', error);
+          console.error(`[AUTH POLL] Error on attempt ${attempt}:`, errorInfo);
+          
+          // If auth expired, stop polling and trigger signout
+          if (errorInfo.isAuthExpired) {
+            console.log("[AUTH POLL] Auth expired, stopping poll and triggering signout");
+            setTimeout(() => signOut(), 0);
+            return false;
+          }
         } else if (data?.is_premium) {
           // 🎉 PREMIUM DÉTECTÉ !
           console.log('[AUTH POLL] 🎉 PREMIUM DETECTED IN SUPABASE!');

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { handleSupabaseError } from "@/services/supabaseErrorHandler";
 
 // Types
 export interface CompanionData {
@@ -28,18 +29,30 @@ export interface UpdateProgressResult {
  * Get user's companion data
  */
 export async function getCompanion(userId: string): Promise<CompanionData | null> {
-  const { data, error } = await supabase
-    .from('user_companion')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('user_companion')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-  if (error) {
-    console.error('[getCompanion] Error:', error);
+    if (error) {
+      const errorInfo = handleSupabaseError('getCompanion', error);
+      console.error('[getCompanion] Error:', errorInfo);
+      
+      // If auth expired, propagate to trigger global logout
+      if (errorInfo.isAuthExpired) {
+        throw error;
+      }
+      
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('[getCompanion] Unexpected error:', error);
     return null;
   }
-
-  return data;
 }
 
 /**
@@ -64,8 +77,9 @@ export async function createCompanion(userId: string): Promise<CompanionData> {
     .single();
 
   if (error) {
-    console.error('[createCompanion] Error:', error);
-    throw new Error('Failed to create companion: ' + error.message);
+    const errorInfo = handleSupabaseError('createCompanion', error);
+    console.error('[createCompanion] Error:', errorInfo);
+    throw new Error(errorInfo.userMessage);
   }
 
   return data;
@@ -225,8 +239,9 @@ export async function updateCompanionProgress(
     .single();
 
   if (error) {
-    console.error('[updateCompanionProgress] Error:', error);
-    throw new Error('Failed to update companion: ' + error.message);
+    const errorInfo = handleSupabaseError('updateCompanionProgress', error);
+    console.error('[updateCompanionProgress] Error:', errorInfo);
+    throw new Error(errorInfo.userMessage);
   }
 
   console.log("[Booky][updateCompanionProgress] Result:", {

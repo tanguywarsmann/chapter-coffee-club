@@ -26,16 +26,26 @@ function isAuthExpiredError(error: any): boolean {
 
   const errorMessage = error.message?.toLowerCase() || "";
   const errorCode = error.code?.toLowerCase() || "";
+  const status = error.status || error.statusCode;
 
-  // Patterns courants pour JWT expiré
+  // Patterns courants pour JWT expiré ou session invalide
   return (
+    // Status codes indicating auth issues
+    status === 401 ||
+    status === 403 ||
+    status === 406 ||
+    // Message patterns
     errorMessage.includes("jwt expired") ||
     errorMessage.includes("invalid token") ||
     errorMessage.includes("invalid jwt") ||
     errorMessage.includes("jwt malformed") ||
+    errorMessage.includes("not authenticated") ||
+    errorMessage.includes("invalid signature") ||
+    errorMessage.includes("token has expired") ||
+    // Error codes
     errorCode === "pgrst301" || // JWT expired (PostgREST)
-    errorCode === "invalid_grant" ||
-    error.status === 401
+    errorCode === "pgrst116" || // JWT invalid
+    errorCode === "invalid_grant"
   );
 }
 
