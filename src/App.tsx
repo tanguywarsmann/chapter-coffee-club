@@ -23,6 +23,7 @@ import { CanonicalManager } from "@/components/seo/CanonicalManager";
 import { OGUrlManager } from "@/components/seo/OGUrlManager";
 import { ConfettiTester } from "@/components/debug/ConfettiTester";
 import { ConnectionLostBanner } from "@/components/ConnectionLostBanner";
+import { GlobalLoadingWatchdog } from "@/components/GlobalLoadingWatchdog";
 
 const AppContent = () => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const AppContent = () => {
     <>
       {/* Connection lost banner */}
       <ConnectionLostBanner />
+      <GlobalLoadingWatchdog />
       
       {/* Global JSON-LD in body for visibility */}
       <Suspense fallback={null}>
