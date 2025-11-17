@@ -63,9 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorInfo = handleSupabaseError('fetchUserStatus', error);
         console.error('Error fetching user status:', errorInfo);
         
-        // If auth expired, trigger signout
+        // If auth expired, dispatch event and trigger signout
         if (errorInfo.isAuthExpired) {
-          console.log("[AUTH] Auth expired in fetchUserStatus, triggering signout");
+          console.log("[AUTH] Auth expired in fetchUserStatus, dispatching event");
+          window.dispatchEvent(new Event('auth-expired'));
           setTimeout(() => signOut(), 0);
         }
         
@@ -398,9 +399,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const errorInfo = handleSupabaseError('pollForPremiumStatus', error);
           console.error(`[AUTH POLL] Error on attempt ${attempt}:`, errorInfo);
           
-          // If auth expired, stop polling and trigger signout
+          // If auth expired, dispatch event, stop polling and trigger signout
           if (errorInfo.isAuthExpired) {
-            console.log("[AUTH POLL] Auth expired, stopping poll and triggering signout");
+            console.log("[AUTH POLL] Auth expired, dispatching event and stopping poll");
+            window.dispatchEvent(new Event('auth-expired'));
             setTimeout(() => signOut(), 0);
             return false;
           }
@@ -472,7 +474,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const errorInfo = handleSupabaseError("authWatchdog", error);
 
           if (errorInfo.isAuthExpired) {
-            console.warn("[AUTH WATCHDOG] Session expired via getSession, forcing signOut");
+            console.warn("[AUTH WATCHDOG] Session expired via getSession, dispatching event");
+            window.dispatchEvent(new Event('auth-expired'));
             setTimeout(() => signOut(), 0);
           }
 
@@ -483,7 +486,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Cas 1: pas de session Supabase mais un user dans le contexte → état zombie
         if (!currentSession && user) {
-          console.warn("[AUTH WATCHDOG] No Supabase session but user in context, forcing signOut");
+          console.warn("[AUTH WATCHDOG] No Supabase session but user in context, dispatching event");
+          window.dispatchEvent(new Event('auth-expired'));
           setTimeout(() => signOut(), 0);
           return;
         }

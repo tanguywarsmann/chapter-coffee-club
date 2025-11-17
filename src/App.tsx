@@ -22,6 +22,7 @@ import AppRouter from "./components/navigation/AppRouter";
 import { CanonicalManager } from "@/components/seo/CanonicalManager";
 import { OGUrlManager } from "@/components/seo/OGUrlManager";
 import { ConfettiTester } from "@/components/debug/ConfettiTester";
+import { ConnectionLostBanner } from "@/components/ConnectionLostBanner";
 
 const AppContent = () => {
   const location = useLocation();
@@ -31,6 +32,9 @@ const AppContent = () => {
 
   return (
     <>
+      {/* Connection lost banner */}
+      <ConnectionLostBanner />
+      
       {/* Global JSON-LD in body for visibility */}
       <Suspense fallback={null}>
         <Sonner
