@@ -38,6 +38,16 @@ export function AppHeader() {
           <div role="navigation" aria-label="Menu utilisateur" className="flex items-center gap-2">
             <LanguageToggle />
             <NotificationsBell />
+            {user.email === "tanguy.warsmann@gmail.com" && (
+              <button
+                onClick={() => window.location.reload()}
+                className="px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
+                title="Force reload de l'app"
+                aria-label="Recharger l'application"
+              >
+                🔄
+              </button>
+            )}
             <AvatarDropdown />
           </div>
         ) : (
