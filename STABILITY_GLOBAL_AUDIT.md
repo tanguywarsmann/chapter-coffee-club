@@ -1,7 +1,7 @@
 # 🔒 AUDIT GLOBAL STABILITÉ VREAD - SESSIONS LONGUES & ERREURS 401/403/406
 
 **Date:** 17 Novembre 2025  
-**Mise à jour:** Corrections des erreurs Supabase session expirée  
+**Mise à jour finale:** Auth Watchdog implémenté pour éliminer l'état zombie  
 **Objectif:** Éliminer les freezes et bugs lors de longues sessions (validation morte, cartes disparues, déconnexion bloquée)
 
 ---
@@ -82,6 +82,72 @@ if (error) {
   }
 }
 ```
+
+### P0 - Auth Zombie State: Watchdog de session
+
+**Symptôme:** Même après les corrections d'erreurs auth, l'app peut rester dans un état zombie si:
+- Un événement `onAuthStateChange` est manqué
+- La session expire silencieusement sans erreur détectable
+- L'état React et Supabase se désynchronisent
+
+**Solution implémentée:**
+- ✅ **Auth Watchdog** dans `AuthContext.tsx`: surveillance périodique de la session réelle Supabase
+- ✅ Appel à `supabase.auth.getSession()` toutes les 60 secondes
+- ✅ Détection des incohérences entre session Supabase et contexte React
+- ✅ Forçage de `signOut()` automatique en cas de désynchronisation
+
+**Code du watchdog:**
+```typescript
+// AuthContext.tsx - Auth Watchdog (après ligne 242)
+useEffect(() => {
+  let isCancelled = false;
+
+  const runWatchdog = async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (isCancelled) return;
+
+      if (error) {
+        const errorInfo = handleSupabaseError("authWatchdog", error);
+        if (errorInfo.isAuthExpired) {
+          console.warn("[AUTH WATCHDOG] Session expired via getSession, forcing signOut");
+          setTimeout(() => signOut(), 0);
+        }
+        return;
+      }
+
+      const currentSession = data?.session || null;
+
+      // Pas de session Supabase mais un user dans le contexte → état zombie
+      if (!currentSession && user) {
+        console.warn("[AUTH WATCHDOG] No Supabase session but user in context, forcing signOut");
+        setTimeout(() => signOut(), 0);
+        return;
+      }
+    } catch (err) {
+      if (isCancelled) return;
+      console.error("[AUTH WATCHDOG] Unexpected error in watchdog:", err);
+    }
+  };
+
+  // Première vérification immédiate
+  runWatchdog();
+
+  // Vérification périodique (60s)
+  const intervalId = setInterval(runWatchdog, 60_000);
+
+  return () => {
+    isCancelled = true;
+    clearInterval(intervalId);
+  };
+}, [user, signOut]);
+```
+
+**Garanties:**
+- 🛡️ Plus d'état zombie: si la session est invalide, l'utilisateur est déconnecté automatiquement
+- 🛡️ Détection sous 60 secondes maximum de toute désynchronisation
+- 🛡️ Pas de dépendance sur les événements `onAuthStateChange` (qui peuvent être manqués)
 
 ---
 

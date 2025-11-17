@@ -456,7 +456,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       duration: 6000
     });
     return false;
-  }, [user?.id, isPremium]);
+  }, [user?.id, isPremium, signOut]);
+
+  // AUTH WATCHDOG: Surveille régulièrement la session Supabase pour éviter l'état zombie
+  useEffect(() => {
+    let isCancelled = false;
+
+    const runWatchdog = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (isCancelled) return;
+
+        if (error) {
+          const errorInfo = handleSupabaseError("authWatchdog", error);
+
+          if (errorInfo.isAuthExpired) {
+            console.warn("[AUTH WATCHDOG] Session expired via getSession, forcing signOut");
+            setTimeout(() => signOut(), 0);
+          }
+
+          return;
+        }
+
+        const currentSession = data?.session || null;
+
+        // Cas 1: pas de session Supabase mais un user dans le contexte → état zombie
+        if (!currentSession && user) {
+          console.warn("[AUTH WATCHDOG] No Supabase session but user in context, forcing signOut");
+          setTimeout(() => signOut(), 0);
+          return;
+        }
+
+        // Cas 2: session Supabase existe mais le contexte croit que l'utilisateur est déconnecté
+        if (currentSession && !user) {
+          console.log("[AUTH WATCHDOG] Supabase has a session but context has no user. No action, only logging for now.");
+        }
+      } catch (err) {
+        if (isCancelled) return;
+        console.error("[AUTH WATCHDOG] Unexpected error in watchdog:", err);
+      }
+    };
+
+    // Première vérification rapide
+    runWatchdog();
+
+    // Vérification périodique toutes les 60 secondes
+    const intervalId = setInterval(runWatchdog, 60_000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [user, signOut]);
 
   const contextValue = useMemo(() => ({
     supabase,
