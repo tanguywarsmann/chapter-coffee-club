@@ -2,6 +2,7 @@
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { GlobalLoadingWatchdog } from '@/components/GlobalLoadingWatchdog';
+import { AppSuspenseFallback } from '@/components/navigation/AppSuspenseFallback';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
@@ -63,7 +64,7 @@ const AppRouter = () => {
   console.log("[ROUTER] AppRouter component mounted");
 
   return (
-    <Suspense fallback={<GlobalLoadingWatchdog />}>
+    <Suspense fallback={<AppSuspenseFallback />}>
       <SplashHider />
       <Routes>
         <Route path="/" element={<Landing />} />

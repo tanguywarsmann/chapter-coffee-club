@@ -1,15 +1,28 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { BookWithProgress } from "@/types/reading";
 import { getUserReadingProgress, clearProgressCache } from "@/services/reading/progressService";
+import { progressCache, CACHE_DURATION } from "@/services/reading/progressCache";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { logger } from "@/utils/logger";
 import { handleSupabaseError } from "@/services/supabaseErrorHandler";
 
+const getCachedProgressForUser = (userId?: string | null): BookWithProgress[] | null => {
+  if (!userId) return null;
+  const cached = progressCache.get(userId);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > CACHE_DURATION) {
+    progressCache.delete(userId);
+    return null;
+  }
+  return cached.data as BookWithProgress[];
+};
+
 export const useReadingProgress = () => {
   const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
-  const [readingProgress, setReadingProgress] = useState<BookWithProgress[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const initialCachedProgress = getCachedProgressForUser(user?.id);
+  const [readingProgress, setReadingProgress] = useState<BookWithProgress[]>(initialCachedProgress ?? []);
+  const [isLoading, setIsLoading] = useState(() => !initialCachedProgress);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -19,6 +32,7 @@ export const useReadingProgress = () => {
   const lastFetchTimestamp = useRef(0);
   const retryCountRef = useRef(0); // ✅ Use ref instead of state to avoid re-renders
   const timeoutRefs = useRef<number[]>([]); // ✅ Track timeouts for cleanup
+  const hasWarmDataRef = useRef<boolean>(!!(initialCachedProgress && initialCachedProgress.length > 0));
   const MIN_FETCH_INTERVAL = 500; // Interval minimal entre deux fetchs (en ms)
 
   useEffect(() => {
@@ -27,6 +41,20 @@ export const useReadingProgress = () => {
     if (user?.id) {
       hasFetched.current = false;
       retryCountRef.current = 0; // ✅ Reset retry count on user change
+
+      const cached = getCachedProgressForUser(user.id);
+      if (cached) {
+        setReadingProgress(cached);
+        setIsLoading(false);
+        hasWarmDataRef.current = cached.length > 0;
+      } else if (!isFetching.current) {
+        setIsLoading(true);
+        hasWarmDataRef.current = false;
+      }
+    } else {
+      setReadingProgress([]);
+      setIsLoading(false);
+      hasWarmDataRef.current = false;
     }
 
     return () => {
@@ -55,7 +83,10 @@ export const useReadingProgress = () => {
 
     try {
       isFetching.current = true;
-      setIsLoading(true);
+      const shouldShowLoader = forceRefresh || !hasWarmDataRef.current;
+      if (shouldShowLoader) {
+        setIsLoading(true);
+      }
       setError(null);
 
       if (forceRefresh) {
@@ -72,6 +103,7 @@ export const useReadingProgress = () => {
       logger.debug("Filtered in-progress items:", inProgress.length);
 
       setReadingProgress(inProgress);
+      hasWarmDataRef.current = inProgress.length > 0;
       hasFetched.current = true;
 
       // ✅ Reset retry count on success using ref

@@ -1,6 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, BookOpen, Award, Heart } from "lucide-react";
+import { Sparkles, BookOpen, Heart, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -10,6 +9,7 @@ import { useState, useCallback } from "react";
 import { useDoubleTap } from "@/hooks/useDoubleTap";
 import { BookyOverlay } from "./BookyOverlay";
 import { giveBooky, removeBooky } from "@/services/social/bookysService";
+import { cn } from "@/lib/utils";
 
 interface RealActivityFeedProps {
   activities: DiscoverFeedItem[];
@@ -19,66 +19,44 @@ interface RealActivityFeedProps {
 export function RealActivityFeed({ activities, loading }: RealActivityFeedProps) {
   if (loading) {
     return (
-      <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
-        <CardHeader className="bg-gradient-to-r from-coffee-light/20 to-coffee-medium/10 border-b border-coffee-light/30">
-          <CardTitle className="font-serif text-coffee-darker flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-coffee-medium/20 to-coffee-light/20 rounded-xl">
-              <Sparkles className="h-5 w-5 text-coffee-dark" />
-            </div>
-            <span>Fil d'actualité</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 bg-coffee-light/20 rounded-lg animate-pulse" />
-            ))}
+      <div className="space-y-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="flex gap-4 p-4 animate-pulse">
+             <div className="h-12 w-12 rounded-full bg-muted/50" />
+             <div className="space-y-2 flex-1">
+                <div className="h-4 w-1/3 bg-muted/50 rounded" />
+                <div className="h-16 w-full bg-muted/30 rounded" />
+             </div>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center border rounded-2xl border-dashed border-muted-foreground/20">
+        <div className="p-3 bg-muted/30 rounded-full mb-4">
+            <Sparkles className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-lg font-serif font-medium text-foreground mb-1">Aucune activité récente</p>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Les activités de la communauté apparaîtront ici dès qu'il y aura du mouvement.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
-      <CardHeader className="bg-gradient-to-r from-coffee-light/20 to-coffee-medium/10 border-b border-coffee-light/30">
-        <CardTitle className="font-serif text-coffee-darker flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-coffee-medium/20 to-coffee-light/20 rounded-xl">
-            <Sparkles className="h-5 w-5 text-coffee-dark" />
-          </div>
-          <span>Fil d'actualité</span>
-        </CardTitle>
-        <p className="text-coffee-dark font-light text-body-sm">
-          Découvrez les dernières activités de la communauté
-        </p>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {activities.length === 0 ? (
-            <div className="text-center py-12 text-coffee-dark">
-              <div className="mx-auto w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-coffee-light/30 to-coffee-medium/20 flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-coffee-medium" />
-              </div>
-              <p className="text-lg font-medium text-coffee-darker mb-2">Aucune activité récente</p>
-              <p className="text-body-sm text-coffee-dark/70 mb-6">
-                Les activités de la communauté apparaîtront ici
-              </p>
-              <button className="px-6 py-2 rounded-full bg-gradient-to-r from-coffee-medium to-coffee-dark text-white hover:shadow-lg transition-all hover:scale-105">
-                Découvrir des lecteurs
-              </button>
-            </div>
-          ) : (
-            activities.map((activity, index) => (
-              <ActivityItem 
-                key={`${activity.actor_id}-${activity.ts}-${index}`} 
-                activity={activity}
-                index={index}
-              />
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-0 divide-y divide-border/40">
+      {activities.map((activity, index) => (
+        <ActivityItem 
+          key={`${activity.actor_id}-${activity.ts}-${index}`} 
+          activity={activity}
+          index={index}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -94,40 +72,41 @@ function ActivityItem({ activity, index }: { activity: DiscoverFeedItem; index: 
 
   return (
     <div 
-      className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-50/50 to-yellow-50/30 border border-amber-200/40 hover:border-amber-300/60 hover:shadow-md transition-all animate-fade-in"
+      className="group flex gap-4 py-6 px-2 sm:px-4 transition-all duration-300 hover:bg-muted/20 rounded-xl"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      {/* Avatar */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 pt-1">
         <EnhancedAvatar
           src={activity.avatar_url ?? undefined}
           alt={activity.actor_name}
           fallbackText={activity.actor_name}
           size="md"
-          className="border-2 border-amber-200/60"
+          className="border border-border/50 shadow-sm"
         />
       </div>
       
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-coffee-darker">
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-foreground text-base">
             {activity.actor_name}
+          </span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
+            {timeAgo}
           </span>
         </div>
         
-        <p className="text-coffee-dark">
+        <div className="text-muted-foreground text-sm leading-relaxed">
           {activity.kind === 'badge' && (
-            <>a débloqué le badge <Badge variant="secondary" className="inline-flex items-center font-medium bg-amber-100/80 text-amber-900 border-amber-300/60">{activity.payload_title}</Badge></>
+            <span className="inline-flex items-baseline gap-1.5">
+               a débloqué le badge 
+               <Badge variant="outline" className="font-medium text-xs py-0.5 bg-amber-50/50 text-amber-800 border-amber-200/60">
+                 {activity.payload_title}
+               </Badge>
+            </span>
           )}
-        </p>
-        
-        <p className="text-coffee-dark/60 text-caption mt-2">{timeAgo}</p>
-      </div>
-
-      {/* Icône badge à droite - plus grande */}
-      <div className="flex-shrink-0">
-        <div className="p-2 rounded-xl bg-amber-100/60">
-          <Award className="h-6 w-6 text-amber-600" />
+          {activity.kind === 'joined' && (
+             <span>a rejoint le club !</span>
+          )}
         </div>
       </div>
     </div>
@@ -164,57 +143,57 @@ function FinishedActivityItem({ activity, timeAgo, index }: { activity: Discover
 
   return (
     <div 
-      className="activity-card relative rounded-xl bg-gradient-to-r from-brand-100/50 to-brand-50/30 border border-brand-200/40 hover:border-brand-300/60 hover:shadow-md transition-all overflow-hidden animate-fade-in" 
+      className="group relative flex gap-4 py-6 px-2 sm:px-4 transition-all duration-300 hover:bg-muted/20 rounded-xl"
       {...dtHandlers}
-      style={{ animationDelay: `${index * 50}ms` }}
     >
       <BookyOverlay show={showOverlay} />
       
-      <div className="flex items-start gap-4 p-4">
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          <EnhancedAvatar
-            src={activity.avatar_url ?? undefined}
-            alt={activity.actor_name}
-            fallbackText={activity.actor_name}
-            size="md"
-            className="border-2 border-brand-200/60"
-          />
+      <div className="flex-shrink-0 pt-1">
+        <EnhancedAvatar
+          src={activity.avatar_url ?? undefined}
+          alt={activity.actor_name}
+          fallbackText={activity.actor_name}
+          size="md"
+          className="border border-border/50 shadow-sm"
+        />
+      </div>
+      
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-foreground text-base">
+            {activity.actor_name}
+          </span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {timeAgo}
+          </span>
         </div>
         
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-coffee-darker">
-              {activity.actor_name}
-            </span>
-          </div>
-          
-          <p className="text-coffee-dark mb-3">
-            a terminé la lecture de <span className="font-semibold text-brand-600">{activity.payload_title}</span>
-          </p>
-          
-          <div className="flex items-center justify-between">
-            <p className="text-coffee-dark/60 text-caption">{timeAgo}</p>
-            
+        <div className="text-foreground/80 text-sm">
+          a terminé <span className="font-serif font-medium text-foreground italic">{activity.payload_title}</span>
+        </div>
+        
+        <div className="pt-1 flex items-center">
             <button
               aria-label={liked ? "Retirer le Booky" : "Donner un Booky"}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-coffee-medium/30 bg-white/80 hover:bg-coffee-light/20 hover:border-coffee-medium/50 hover:scale-105 transition-all shadow-sm"
+              className={cn(
+                "group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                liked 
+                  ? "bg-rose-50 text-rose-600" 
+                  : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleBooky();
               }}
             >
-              <Heart className={`h-5 w-5 transition-transform ${liked ? 'fill-current scale-110' : ''}`} style={{ color: '#AE6841' }} />
-              <span className="font-medium">{count} Booky{count > 1 ? "s" : ""}</span>
+              <Heart 
+                className={cn(
+                  "h-4 w-4 transition-all", 
+                  liked ? "fill-current scale-110" : "group-hover/btn:scale-110"
+                )} 
+              />
+              <span>{count > 0 ? count : "J'aime"}</span>
             </button>
-          </div>
-        </div>
-
-        {/* Icône livre à droite - plus grande */}
-        <div className="flex-shrink-0">
-          <div className="p-2 rounded-xl bg-brand-100/60">
-            <BookOpen className="h-6 w-6 text-brand-600" />
-          </div>
         </div>
       </div>
     </div>

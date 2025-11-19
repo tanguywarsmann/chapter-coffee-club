@@ -192,6 +192,9 @@ export const en: Translations = {
     bookNotAvailableDescription: "The requested book is not available at the moment.",
     discoverOtherBooks: "Discover other books",
     recentBadges: "Recent badges",
+    follow: "Follow",
+    following: "Following",
+    unfollow: "Unfollow",
   },
 
   // Language
@@ -403,6 +406,14 @@ export const en: Translations = {
     title: "Discover the Community",
     subtitle: "Explore readers' activity, follow their progress and join a passionate community",
     error: "An error occurred while loading data.",
+    feedTitle: "Activity feed",
+    readersTitle: "Readers to discover",
+    suggestionsTitle: "Suggestions",
+    search: {
+      placeholder: "Search a reader…",
+      searching: "Searching…",
+      noResults: "No readers found.",
+    },
   },
 
   // Feedback

@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { useEffect, useState } from 'react'
 import { BookCard } from '@/components/books/BookCard'
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -9,8 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { BookPlus } from "lucide-react";
 import { BookGridSkeleton } from "@/components/ui/book-grid-skeleton";
-
-type Category = 'litterature' | 'religion' | 'essai' | 'bio'
+import { ExploreCategory, useExploreBooks } from "@/hooks/useExploreBooks";
 
 export default function Explore() {
   const { t } = useTranslation();
@@ -19,18 +17,24 @@ export default function Explore() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const allowed: Category[] = ['litterature','religion','essai','bio']
-  const paramCat = searchParams.get('cat') as Category
-  const initialCat: Category = allowed.includes(paramCat) ? paramCat : 'litterature'
+  const allowed: ExploreCategory[] = ['litterature','religion','essai','bio']
+  const paramCat = searchParams.get('cat') as ExploreCategory
+  const initialCat: ExploreCategory = allowed.includes(paramCat) ? paramCat : 'litterature'
   const initialQ = (searchParams.get('q') ?? '').trim()
 
-  const [category, setCategory] = useState<Category>(initialCat)
+  const [category, setCategory] = useState<ExploreCategory>(initialCat)
   const [q, setQ] = useState(initialQ)
-  const [books, setBooks] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const pageSize = 24
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useExploreBooks({ category, query: q, page });
+  const books = data ?? [];
 
   // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
   useEffect(() => {
@@ -44,8 +48,8 @@ export default function Explore() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const paramCat = params.get('cat') as Category
-    const nextCat: Category = allowed.includes(paramCat) ? paramCat : 'litterature'
+    const paramCat = params.get('cat') as ExploreCategory
+    const nextCat: ExploreCategory = allowed.includes(paramCat) ? paramCat : 'litterature'
     const nextQuery = (params.get('q') ?? '').trim()
 
     let shouldResetPage = false
@@ -88,61 +92,11 @@ export default function Explore() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, page, q])
 
-  async function fetchBooks(retryCount = 0) {
-    const MAX_RETRIES = 2;
-    const RETRY_DELAY = 1000; // 1 second
-
-    setLoading(true)
-    setError(null)
-    const from = (page - 1) * pageSize
-    const to = from + pageSize - 1
-
-    try {
-      let query = supabase
-        .from('books_explore')
-        .select('*')
-        .eq('category', category)
-        .order('created_at', { ascending: false })
-        .range(from, to)
-
-      if (q && q.length >= 2) {
-        query = query.or(`title.ilike.%${q}%,author.ilike.%${q}%`)
-      }
-
-      const { data, error } = await query
-      console.debug('[Explore] cat=', category, 'page=', page, 'q=', q, 'rows=', data?.length, 'error=', error)
-
-      if (error) throw error
-
-      setBooks(data || [])
-      setError(null) // Clear any previous errors on success
-    } catch (e: any) {
-      console.error('[Explore] fetchBooks failed:', e)
-
-      // RESILIENCE FIX: Retry on connection errors (likely from Profile page exhausting pool)
-      if (retryCount < MAX_RETRIES && (
-        e.message?.includes('connection') ||
-        e.message?.includes('timeout') ||
-        e.message?.includes('network') ||
-        e.code === 'PGRST301' // PostgREST connection error
-      )) {
-        console.warn(`[Explore] Retrying (${retryCount + 1}/${MAX_RETRIES}) after ${RETRY_DELAY}ms...`);
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)));
-        return fetchBooks(retryCount + 1);
-      }
-
-      setError(e.message ?? 'Erreur inconnue')
-      setBooks([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getCategoryLabel = (cat: Category) => {
+  const getCategoryLabel = (cat: ExploreCategory) => {
     return t.explore.categories[cat] || t.explore.categories.litterature;
   };
 
-  const Tab = ({ value, label }: { value: Category; label: string }) => {
+  const Tab = ({ value, label }: { value: ExploreCategory; label: string }) => {
     const active = category === value
     return (
       <button
@@ -159,8 +113,9 @@ export default function Explore() {
     )
   }
 
-  const showInitialSkeleton = useMemo(() => loading && books.length === 0 && !error, [loading, books.length, error]);
-  const showInlineLoading = loading && books.length > 0;
+  const showInitialSkeleton = isLoading && !data;
+  const showInlineLoading = isFetching && !!books.length;
+  const errorMessage = error instanceof Error ? error.message : (typeof error === "string" ? error : null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -184,15 +139,27 @@ export default function Explore() {
               <SearchBar
                 onSearch={(value) => { setQ(value.trim()); setPage(1); }}
                 placeholder="Titre ou auteur…"
-                isSearching={loading}
+                isSearching={isFetching}
               />
             </div>
           </div>
         </div>
 
         {showInlineLoading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        {!showInitialSkeleton && !loading && !error && books.length === 0 && (
+        {isError && !books.length && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-destructive">
+              {errorMessage || "Impossible de charger les livres pour le moment."}
+            </p>
+            <button
+              className="text-sm text-coffee-dark underline"
+              onClick={() => refetch()}
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+        {!showInitialSkeleton && !isLoading && !isError && books.length === 0 && (
           <div className="text-center py-12 space-y-4">
             <p className="text-lg text-muted-foreground">
               {q.length > 0 

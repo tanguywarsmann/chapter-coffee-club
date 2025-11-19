@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { AppSuspenseFallback } from "@/components/navigation/AppSuspenseFallback";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -25,14 +26,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   // Block all rendering until fully initialized AND user is confirmed
   if (!isInitialized || isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-coffee-dark mx-auto mb-4" />
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
+    return <AppSuspenseFallback />;
   }
 
   // If initialized but no user, show nothing while redirecting

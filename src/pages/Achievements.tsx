@@ -12,7 +12,10 @@ import { Loader2 } from "lucide-react";
 export default function Achievements() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { data: stats, isLoading } = useUserStats(user?.id || "");
+  const { data: stats, isLoading } = useUserStats(user?.id || "", {
+    enabled: !!user?.id,
+    placeholderData: (previous) => previous,
+  });
 
   const safeStats: UserStats = stats || {
     booksRead: 0,

@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
 		iosScheme: "capacitor",
 	},
 	ios: {
-		allowsBackForwardNavigationGestures: true,
+		// allowsBackForwardNavigationGestures: true,
 	},
 	plugins: {
 		LocalNotifications: {
@@ -26,7 +26,7 @@ const config: CapacitorConfig = {
 		SplashScreen: {
 			launchShowDuration: 2000,
 			launchAutoHide: false,
-			backgroundColor: "#EEDCC8",
+			backgroundColor: "#984A1E",
 			showSpinner: false,
 			androidScaleType: "FIT_CENTER",
 			splashFullScreen: true,

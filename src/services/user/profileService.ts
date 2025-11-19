@@ -242,29 +242,58 @@ export async function getUserInfo(userId: string): Promise<ProfileRecord | null>
  */
 export async function searchUsers(query: string, limit: number = 5): Promise<ProfileRecord[]> {
   try {
-    // Use secure function to get public profiles only - no sensitive data exposed
+    const trimmed = query.trim();
+    if (!trimmed) return [];
+
+    // On passe par la RPC publique pour respecter les règles RLS
     const { data, error } = await supabase
-      .rpc('get_all_public_profiles', { profile_limit: limit });
-      
+      .rpc('get_all_public_profiles', { profile_limit: limit * 10 });
+
     if (error) throw error;
-    
-    // Convert the secure function result to ProfileRecord format
-    const profiles = (data || []).map((profile: any) => ({
+
+    const normalize = (value: string | null): string => {
+      if (!value) return "";
+      return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    };
+
+    const tokens: string[] = normalize(trimmed)
+      .split(/\s+/)
+      .filter((token) => token.length > 0);
+
+    const profiles = (data || []) as any[];
+
+    const filtered = profiles.filter((profile) => {
+      const haystack = normalize(profile.username ?? "");
+      if (!haystack) return false;
+
+      for (const token of tokens) {
+        if (!haystack.includes(token)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    const sliced = filtered.slice(0, limit);
+
+    return sliced.map((profile) => ({
       id: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
       created_at: profile.created_at,
       updated_at: null,
-      email: null, // Never expose email in search results
-      is_admin: null, // Never expose admin status in search results
-      is_premium: false, // Not relevant for search results
-      premium_since: null, // Not relevant for search results
-      premium_type: '', // Not relevant for search results
-      onboarding_seen_at: null, // Not relevant for search results
-      onboarding_version: null // Not relevant for search results
-    }));
-    
-    return profiles;
+      email: null,
+      is_admin: null,
+      is_premium: null,
+      onboarding_seen_at: null,
+      onboarding_version: null,
+      premium_since: null,
+      premium_type: null,
+    })) as ProfileRecord[];
   } catch (error) {
     console.error("Error searching users:", error);
     return [];

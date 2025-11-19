@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import { useQueryClient } from "@tanstack/react-query";
 import { Book } from "@/types/book";
 import { PublicReadingQuestion } from "@/types/reading";
 import { getQuestionForBookSegment, isSegmentAlreadyValidated } from "@/services/questionService";
 // forceValidateSegment désactivée - suppression import
 import { checkValidationLock } from "@/services/validation/lockService";
 import { getRemainingJokers, useJokerAtomically } from "@/services/jokerService";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useBookQuiz = (
   book: Book | null,
@@ -26,6 +27,7 @@ export const useBookQuiz = (
   const [remainingLockTime, setRemainingLockTime] = useState<number | null>(null);
   const [isUsingJoker, setIsUsingJoker] = useState(false);
   const [jokersRemaining, setJokersRemaining] = useState<number>(0);
+  const queryClient = useQueryClient();
 
   // FIX P0-3: Cleanup pour éviter setState après unmount
   useEffect(() => {
@@ -127,9 +129,11 @@ export const useBookQuiz = (
         // FIX P0-2: Mutation ciblée au lieu de mutation globale pour éviter cascade
         // ❌ AVANT: mutate((key) => typeof key === 'string' && key.includes('reading-progress'), ...)
         // ✅ APRÈS: Mutations spécifiques uniquement
-        mutate(['jokers-info', book.id]);
-        mutate(['book-progress', book.id]);
-        mutate(['reading-progress', userId]); // Spécifique à cet utilisateur
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.jokersInfo(book.id, userId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.bookProgress(book.id) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.readingProgress(userId) }),
+        ]);
         
         // Trigger parent updates
         if (onProgressUpdate) {

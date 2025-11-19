@@ -19,11 +19,8 @@ export default function Feedback() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="max-w-6xl mx-auto px-4 py-10 md:py-16 space-y-12">
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-coffee-darker via-coffee-dark to-coffee-light text-white px-6 py-10 md:px-10 shadow-2xl">
-          <div className="absolute inset-y-0 right-0 w-1/2 pointer-events-none opacity-40">
-            <div className="h-full w-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.45),_transparent_65%)]" />
-          </div>
-          <div className="relative z-10 space-y-6">
+        <section className="rounded-3xl bg-gradient-to-br from-coffee-darker via-coffee-dark to-coffee-secondary text-white px-6 py-10 md:px-10 shadow-2xl">
+          <div className="space-y-6">
             <p className="text-sm uppercase tracking-[0.3em] text-white/70">Bêta Communautaire</p>
             <h1 className="text-3xl md:text-5xl font-serif font-bold leading-tight max-w-3xl">
               {t.feedback.title}
@@ -40,7 +37,7 @@ export default function Feedback() {
                     return;
                   }
                   setShowForm(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  document.getElementById('feedback-form')?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="text-lg shadow-lg shadow-black/10"
               >
@@ -62,7 +59,7 @@ export default function Feedback() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
-          <div className="space-y-6">
+          <div className="space-y-6" id="feedback-form">
             <QuickRating />
 
             <Card className="p-6 border-dashed border-coffee-light bg-coffee-lightest/40">

@@ -1,31 +1,19 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { BookListSection } from "@/components/reading/BookListSection";
 import { LoadingBookList } from "@/components/reading/LoadingBookList";
 import { BookEmptyState } from "@/components/reading/BookEmptyState";
-import { ReadingListHeader } from "@/components/reading/ReadingListHeader";
 import { FetchingStatus } from "@/components/reading/FetchingStatus";
 import { useReadingListPage } from "@/hooks/useReadingListPage";
 import { useLogger } from "@/utils/logger";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export default function ReadingList() {
   const logger = useLogger('ReadingList');
-  const { user, session } = useAuth();
-  const navigate = useNavigate();
-  
-  // Rediriger si pas authentifié
-  useEffect(() => {
-    if (!user || !session) {
-      console.log('[ReadingList] User not authenticated, redirecting to auth');
-      navigate('/auth');
-      return;
-    }
-    logger.info("ReadingList component mounted for user:", user.id);
-  }, [user, session, navigate, logger]);
+  const { user } = useAuth();
+  logger.info("ReadingList component mounted", { userId: user?.id });
   
   const {
     books,

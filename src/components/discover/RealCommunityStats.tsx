@@ -1,79 +1,60 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserCheck, UserPlus } from "lucide-react";
 import { DiscoverStats } from "@/services/user/realDiscoverService";
+import { cn } from "@/lib/utils";
 
 interface RealCommunityStatsProps {
   stats: DiscoverStats;
   loading?: boolean;
+  className?: string;
 }
 
-export function RealCommunityStats({ stats, loading }: RealCommunityStatsProps) {
+export function RealCommunityStats({ stats, loading, className }: RealCommunityStatsProps) {
   if (loading) {
     return (
-      <Card className="border-coffee-light bg-white/70 backdrop-blur-md">
-        <CardHeader className="pb-3">
-          <CardTitle className="font-serif text-coffee-darker text-h4">
-            Statistiques de la communauté
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 bg-coffee-light/10 rounded-lg animate-pulse" />
-          ))}
-        </CardContent>
-      </Card>
+      <div className={cn("p-6 rounded-2xl bg-muted/10 border border-border/40 space-y-4", className)}>
+         <div className="h-5 w-32 bg-muted/30 rounded animate-pulse" />
+         <div className="space-y-3">
+            {[1,2,3].map(i => <div key={i} className="h-8 w-full bg-muted/20 rounded animate-pulse" />)}
+         </div>
+      </div>
     );
   }
 
   const statItems = [
     {
-      icon: Users,
       label: "Lecteurs",
-      value: stats.readers.toString(),
-      color: "text-coffee-dark",
-      bgColor: "bg-coffee-light/20"
+      value: stats.readers,
+      icon: Users,
     },
     {
-      icon: UserCheck,
       label: "Abonné·e·s",
-      value: stats.followers.toString(),
-      color: "text-coffee-darker", 
-      bgColor: "bg-coffee-medium/20"
+      value: stats.followers,
+      icon: UserCheck,
     },
     {
-      icon: UserPlus,
       label: "Abonnements",
-      value: stats.following.toString(),
-      color: "text-coffee-dark",
-      bgColor: "bg-coffee-light/30"
+      value: stats.following,
+      icon: UserPlus,
     }
   ];
 
   return (
-    <Card className="border-coffee-light bg-white/80 backdrop-blur-md shadow-lg">
-      <CardHeader className="pb-4 bg-gradient-to-r from-coffee-light/10 to-transparent">
-        <CardTitle className="font-serif text-coffee-darker text-h3 flex items-center gap-2">
-          <Users className="h-6 w-6 text-coffee-medium" />
-          Communauté
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {statItems.map((stat, index) => (
-          <div 
-            key={index} 
-            className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-coffee-light/10 to-coffee-medium/5 hover:from-coffee-light/20 hover:to-coffee-medium/10 transition-all hover:shadow-md hover:scale-[1.02] cursor-default"
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-              <span className="text-coffee-dark font-medium">{stat.label}</span>
+    <div className={cn("p-6 rounded-2xl bg-muted/10 border border-border/40", className)}>
+      <h3 className="font-serif font-medium text-lg mb-4 text-foreground">Communauté</h3>
+      <div className="space-y-4">
+        {statItems.map((item, index) => (
+            <div key={index} className="flex items-center justify-between group">
+                <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground transition-colors">
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                <span className="font-semibold text-foreground tabular-nums">
+                    {item.value}
+                </span>
             </div>
-            <span className="font-bold text-coffee-darker text-4xl tabular-nums">{stat.value}</span>
-          </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
