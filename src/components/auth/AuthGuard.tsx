@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -10,14 +10,18 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isLoading, isInitialized } = useAuth();
 
   // Redirect immediately if not authenticated
   useEffect(() => {
     if (isInitialized && !isLoading && !user) {
-      navigate('/auth', { replace: true });
+      navigate('/auth', { 
+        replace: true,
+        state: { from: location }
+      });
     }
-  }, [isInitialized, isLoading, user, navigate]);
+  }, [isInitialized, isLoading, user, navigate, location]);
 
   // Block all rendering until fully initialized AND user is confirmed
   if (!isInitialized || isLoading) {

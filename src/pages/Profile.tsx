@@ -238,10 +238,10 @@ export default function Profile() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-coffee-light/20 via-background to-coffee-light/10">
+      <div className="min-h-screen bg-background">
         <AppHeader />
 
-        <main className="mx-auto w-full px-4 max-w-none py-4 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+        <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
           {/* Profile Header */}
           <Card className="border-coffee-light/50 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
             <CardContent className="p-4 sm:p-6 lg:p-8">

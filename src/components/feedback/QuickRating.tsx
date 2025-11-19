@@ -73,19 +73,19 @@ export function QuickRating() {
         Comment était ton expérience aujourd'hui ?
       </p>
 
-      <div className="flex justify-between gap-2 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         {emojis.map(({ rating, emoji, label }) => (
           <Button
             key={rating}
             variant="outline"
-            className={`flex-1 flex flex-col gap-2 h-auto py-4 transition-all ${
-              selectedRating === rating ? 'border-primary border-2 scale-105' : ''
+            className={`w-full h-full flex flex-col gap-2 py-4 transition-all ${
+              selectedRating === rating ? 'border-primary border-2 shadow-lg shadow-primary/20' : ''
             }`}
             onClick={() => handleRating(rating)}
             disabled={isLoading || selectedRating !== null}
           >
-            <span className="text-4xl">{emoji}</span>
-            <span className="text-xs">{label}</span>
+            <span className="text-3xl sm:text-4xl">{emoji}</span>
+            <span className="text-xs font-medium text-center">{label}</span>
             {stats[rating - 1] > 0 && (
               <span className="text-xs text-muted-foreground">
                 {stats[rating - 1]}

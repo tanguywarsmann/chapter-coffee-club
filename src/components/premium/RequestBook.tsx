@@ -75,7 +75,7 @@ export function RequestBook() {
     const isIOS = Capacitor.getPlatform() === 'ios';
     
     return (
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-2xl mx-auto">
         <Card className="p-8 text-center">
           <Crown className="mx-auto h-16 w-16 text-yellow-500 mb-4" />
           <h2 className="text-2xl font-bold mb-2">{t.requestBook.paywall.title}</h2>
@@ -91,10 +91,9 @@ export function RequestBook() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <BookPlus className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold">{t.requestBook.title}</h2>
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker">{t.requestBook.title}</h1>
       </div>
 
       <Card className="p-6">

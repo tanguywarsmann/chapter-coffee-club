@@ -28,12 +28,12 @@ export default function Achievements() {
   if (isLoading) {
     return (
       <AuthGuard>
-        <div className="min-h-screen bg-gradient-to-br from-reed-light/30 to-white">
+        <div className="min-h-screen bg-background">
           <AppHeader />
 
-          <main className="container max-w-6xl mx-auto px-4 py-8 sm:py-12">
-            <div className="text-center mb-8 px-4">
-              <h1 className="text-h1 font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
+          <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
+            <div className="mb-8">
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
                 {t.achievements.title}
               </h1>
               <p className="text-body text-reed-dark">
@@ -52,12 +52,12 @@ export default function Achievements() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-reed-light/30 to-white">
+      <div className="min-h-screen bg-background">
         <AppHeader />
 
-        <main className="container max-w-6xl mx-auto px-4 py-8 sm:py-12">
-          <div className="text-center mb-10 sm:mb-12 px-4">
-            <h1 className="text-h1 sm:text-hero font-serif text-reed-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
+        <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
+          <div className="mb-10 sm:mb-12">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker mb-2" style={{ hyphens: 'none', wordBreak: 'normal', whiteSpace: 'nowrap' }}>
               {t.achievements.title}
             </h1>
             <p className="text-body sm:text-lg text-reed-dark">

@@ -1,21 +1,24 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
-import { useState, useEffect, useRef } from "react";
-import confetti from 'canvas-confetti';
-import { useTranslation } from "@/i18n/LanguageContext";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { ValueSection } from "@/components/landing/ValueSection";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
+import { getDisplayName } from "@/services/user/userProfileService";
+import confetti from 'canvas-confetti';
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 export default function Landing() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [revealed, setRevealed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const ctaRef = useRef<HTMLAnchorElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
     const checkMobile = () => {
@@ -26,6 +29,18 @@ export default function Landing() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Calculate display name
+  useEffect(() => {
+    if (user) {
+      const name = getDisplayName(
+        (user as any).user_metadata?.username || (user as any).username,
+        user.email,
+        user.id
+      );
+      setDisplayName(name);
+    }
+  }, [user]);
+
   // Magnetic CTA effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -34,7 +49,7 @@ export default function Landing() {
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
       const distance = Math.sqrt(x * x + y * y);
-      
+
       if (distance < 150) {
         const strength = (150 - distance) / 150;
         setMousePos({ x: x * strength * 0.15, y: y * strength * 0.15 });
@@ -48,7 +63,7 @@ export default function Landing() {
   }, []);
 
   const letters = ['D', 'E', 'U', 'X', 'L', 'I', 'V', 'R', 'E', 'S'];
-  
+
   const bookColors = [
     '#8B4513', '#A0522D', '#8B7355', '#996633', '#8B6F47',
     '#704214', '#9C6644', '#A67B5B', '#8B6F47', '#B85C38'
@@ -61,7 +76,7 @@ export default function Landing() {
       origin: { y: 0.6 },
       colors: ['#10b981', '#3b82f6', '#f59e0b']
     });
-    
+
     if (window.confetti) {
       setTimeout(() => {
         window.confetti({
@@ -86,7 +101,7 @@ export default function Landing() {
           }
         }
       `}</style>
-      
+
       <Helmet>
         <title>{t.landing.title}</title>
         <meta name="description" content={t.landing.description} />
@@ -94,15 +109,27 @@ export default function Landing() {
 
       {/* Container principal - overflow différent mobile/desktop */}
       <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden md:overflow-x-visible">
-        
+
         {/* Language toggle in top right */}
-        <div className="absolute top-4 right-4 z-50">
+        <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-50">
           <LanguageToggle />
         </div>
-        
+
+        {/* Logged in badge in top left */}
+        {user && (
+          <Link to="/home" className="absolute top-[calc(1rem+env(safe-area-inset-top))] left-4 z-50">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg hover:bg-white/20 transition-colors">
+              <User className="w-4 h-4 text-white" />
+              <span className="text-sm font-bold text-white tracking-wide truncate max-w-[150px]">
+                {displayName}
+              </span>
+            </div>
+          </Link>
+        )}
+
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full">
           <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
-            
+
             {/* Logo */}
             <div className="relative inline-block mb-6">
               <div className="absolute inset-0 bg-white/20 blur-3xl animate-pulse" />
@@ -110,7 +137,7 @@ export default function Landing() {
                 <LogoVreadPng size={120} className="md:w-[140px]" />
               </div>
             </div>
-            
+
             {/* Titre */}
             <h1 className="text-hero text-white font-serif text-center w-full">
               {t.landing.heroTitle1}
@@ -119,35 +146,35 @@ export default function Landing() {
               <br />
               {t.landing.heroTitle3}
             </h1>
-            
+
             {/* Pile */}
             <div className="py-8 flex flex-col items-center w-full">
               <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
-                
+
                 {/* 10 livres */}
-                {[0,1,2,3,4,5,6,7,8,9].map((i) => {
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => {
                   const isBottom = i === 8;
                   const isTop = i === 9;
                   const shouldStay = isBottom || isTop;
-                  
+
                   return (
                     <div
                       key={i}
                       className="absolute left-0 right-0 transition-all duration-700"
                       style={{
-                        bottom: revealed 
+                        bottom: revealed
                           ? (shouldStay ? (isBottom ? '0px' : '60px') : '-120px')
-                          : `${(9-i) * 26}px`,
+                          : `${(9 - i) * 26}px`,
                         opacity: revealed && !shouldStay ? 0 : 1,
                       }}
                     >
-                      <div 
+                      <div
                         className="w-full h-14 rounded-xl flex items-center justify-center relative border-2 transition-all duration-700"
                         style={{
                           backgroundColor: shouldStay && revealed ? '#FFFFFF' : bookColors[i],
                           borderColor: shouldStay && revealed ? '#EEDCC8' : 'rgba(255,255,255,0.2)',
-                          boxShadow: shouldStay && revealed 
-                            ? '0 15px 60px rgba(166,123,91,0.6), 0 0 100px rgba(166,123,91,0.4)' 
+                          boxShadow: shouldStay && revealed
+                            ? '0 15px 60px rgba(166,123,91,0.6), 0 0 100px rgba(166,123,91,0.4)'
                             : '0 5px 20px rgba(0,0,0,0.4)',
                         }}
                       >
@@ -157,7 +184,7 @@ export default function Landing() {
                             <div className="absolute bottom-3 left-4 right-4 h-px bg-white/20" />
                           </>
                         )}
-                        
+
                         <span
                           className="font-bold transition-all duration-700"
                           style={{
@@ -167,18 +194,18 @@ export default function Landing() {
                             letterSpacing: revealed && shouldStay ? '-1px' : '0px',
                           }}
                         >
-                          {revealed && shouldStay 
+                          {revealed && shouldStay
                             ? (isBottom ? t.landing.twoBooks.split(' ')[1] : t.landing.twoBooks.split(' ')[0])
                             : letters[i]
                           }
                         </span>
-                        
+
                         {shouldStay && revealed && (
                           <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent rounded-xl pointer-events-none" />
                         )}
                       </div>
-                      
-                      <div 
+
+                      <div
                         className="absolute -right-2.5 top-0 w-2.5 h-14 rounded-r-xl transition-all duration-700"
                         style={{
                           backgroundColor: shouldStay && revealed ? '#F5E6D3' : bookColors[i],
@@ -189,7 +216,7 @@ export default function Landing() {
                     </div>
                   );
                 })}
-                
+
                 {/* Zone cliquable - Seulement le tiers inférieur */}
                 <div
                   className="absolute left-0 right-0 cursor-pointer z-50 hover:bg-white/5 transition-colors rounded-xl"
@@ -207,9 +234,9 @@ export default function Landing() {
                     triggerConfetti();
                   }}
                 />
-                
+
               </div>
-              
+
               {!revealed && (
                 <p className="text-white/60 text-body-sm mt-10 animate-bounce text-center w-full">
                   {isMobile ? t.landing.touchToReveal : t.landing.clickToReveal}
@@ -228,25 +255,26 @@ export default function Landing() {
                 </button>
               )}
             </div>
-            
+
             {/* Texte final */}
             <h2 className="text-hero text-white font-serif text-center w-full">
               {t.landing.finalTitle1}
               <br />
               {t.landing.finalTitle2}
             </h2>
-            
+
             {/* CTA Magnétique */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="pt-16 w-full flex flex-col items-center gap-6"
             >
-              <Link 
+              <Link
                 ref={ctaRef}
-                to="/auth" 
+                to={user ? "/home" : "/auth"}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
                 className="relative inline-flex items-center gap-3 px-16 py-6 text-2xl font-serif font-bold text-white rounded-full overflow-hidden group transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#A67B5B]/20 focus:ring-offset-4"
                 style={{
                   background: 'linear-gradient(135deg, #A67B5B, #8B6F47, #A67B5B)',
@@ -260,17 +288,17 @@ export default function Landing() {
                   textShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}
               >
-                <span className="relative z-10">{t.landing.cta}</span>
+                <span className="relative z-10">{user ? "CONTINUER MA LECTURE" : t.landing.cta}</span>
                 <motion.div
                   animate={{ x: [0, 4, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <ArrowRight className="w-6 h-6 relative z-10" />
                 </motion.div>
-                
+
                 {/* Overlay hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
+
                 {/* Particles effect on hover */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   {[...Array(8)].map((_, i) => (
@@ -298,12 +326,12 @@ export default function Landing() {
                 </div>
               </Link>
             </motion.div>
-            
+
             {/* Section Valeur VREAD */}
             <ValueSection />
-            
+
             {/* Slogan 3D avec blob organique */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -311,7 +339,7 @@ export default function Landing() {
               className="pt-8 pb-20 w-full flex justify-center px-4 relative"
             >
               {/* Blob organique animé en arrière-plan */}
-              <motion.div 
+              <motion.div
                 animate={{
                   scale: [1, 1.1, 1],
                   rotate: [0, 5, 0],
@@ -326,7 +354,7 @@ export default function Landing() {
                   filter: 'blur(60px)',
                 }}
               >
-                <div 
+                <div
                   className="w-[600px] h-[400px]"
                   style={{
                     background: 'radial-gradient(circle, rgba(166,123,91,0.15), transparent)',
@@ -336,7 +364,7 @@ export default function Landing() {
               </motion.div>
 
               {/* Texte 3D */}
-              <motion.h2 
+              <motion.h2
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -361,10 +389,10 @@ export default function Landing() {
                 <span className="block">{t.landing.sloganPart4}</span>
               </motion.h2>
             </motion.div>
-            
+
           </div>
         </div>
-        
+
         {/* Footer */}
         <footer className="py-12 border-t border-white/10 w-full">
           <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-body-sm px-4">
@@ -381,7 +409,7 @@ export default function Landing() {
             </Link>
           </nav>
         </footer>
-        
+
       </div>
     </>
   );

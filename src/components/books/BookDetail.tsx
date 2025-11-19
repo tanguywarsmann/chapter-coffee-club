@@ -62,7 +62,6 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
     isLocked,
     remainingLockTime,
     handleLockExpire,
-    forceRefresh,
     showBadgeDialog,
     setShowBadgeDialog,
     unlockedBadges,
@@ -138,19 +137,32 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   // Load validation history when book changes
   useEffect(() => {
+    const userId = user?.id;
+    const bookId = currentBook?.id;
+
+    if (!userId || !bookId) {
+      setValidationHistory([]);
+      return;
+    }
+
+    let cancelled = false;
+
     const loadValidationHistory = async () => {
-      if (!user?.id || !currentBook?.id) return;
-      
       try {
-        const history = await getValidationHistory(user.id, currentBook.id);
-        setValidationHistory(history);
+        const history = await getValidationHistory(userId, bookId);
+        if (!cancelled) {
+          setValidationHistory(history);
+        }
       } catch (error) {
         console.error('Error loading validation history:', error);
-        setValidationHistory([]);
       }
     };
 
     loadValidationHistory();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentBook?.id, user?.id]);
 
   // Gestionnaire d'ouverture de modal stabilisé
@@ -176,7 +188,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
 
   // Gestionnaire de confirmation de modal amélioré
   const handleModalValidationConfirm = useStableCallback(
-    withErrorHandling(() => {
+    withErrorHandling(async () => {
       console.log(`[BookDetail] Modal validation confirm with segment:`, validationSegment);
       
       // Validation renforcée du segment
@@ -193,26 +205,23 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         setValidationSegment(recalculatedSegment);
       }
       
+      const chaptersRead = readingProgress?.chaptersRead || 0;
+      if (validationSegment <= chaptersRead) {
+        console.log(`[BookDetail] Segment ${validationSegment} already validated, closing modal immediately`);
+        setShowValidationModal(false);
+        try {
+          await refreshProgressData();
+        } catch (error) {
+          trackError(error as Error);
+        }
+        return;
+      }
+
       setShowValidationModal(false);
       handleValidationConfirm();
     }, 'BookDetail.handleModalValidationConfirm')
   );
 
-  // Effect optimisé pour fermer la modal si segment déjà validé
-  useEffect(() => {
-    if (showValidationModal && validationSegment) {
-      const isAlreadyValidated = readingProgress && validationSegment <= (readingProgress.chaptersRead || 0);
-
-      if (isAlreadyValidated) {
-        console.log(`[BookDetail] Segment ${validationSegment} already validated, closing modal`);
-        setShowValidationModal(false);
-        // Batch les refreshs pour éviter les appels redondants
-        Promise.all([refreshProgressData(), forceRefresh()]).catch(error => {
-          trackError(error);
-        });
-      }
-    }
-  }, [showValidationModal, validationSegment, readingProgress?.chaptersRead, refreshProgressData, forceRefresh, trackError]);
 
   trackRender();
 

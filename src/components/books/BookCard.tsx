@@ -54,6 +54,15 @@ export function BookCard({
   }
   
   const bookIdentifier = book.id || book.slug || '';
+  const hasActions = showAddButton || showDeleteButton || Boolean(actionLabel);
+  const infoItems = [
+    book.pages ? `${book.pages} pages` : null,
+    (book.totalChapters || book.total_chapters || book.expectedSegments) ? `${book.totalChapters || book.total_chapters || book.expectedSegments} segments` : null,
+    book.language ? (book.language.length <= 3 ? book.language.toUpperCase() : book.language) : null
+  ].filter(Boolean) as string[];
+  const cardMinHeight = hasActions
+    ? "min-h-[520px] sm:min-h-[540px]"
+    : "min-h-[480px] sm:min-h-[500px]";
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -135,31 +144,33 @@ export function BookCard({
     }
   };
 
-  const getStatusLabel = () => {
+  function getStatusLabel() {
     if (book.isCompleted) {
       return "Terminé";
-    } else if (book.chaptersRead && book.chaptersRead > 0) {
-      return "En cours de lecture";
-    } else {
-      return "À lire";
     }
-  };
+    if (book.chaptersRead && book.chaptersRead > 0) {
+      return "En cours de lecture";
+    }
+    return "À lire";
+  }
+
+  const statusLabel = getStatusLabel();
 
   return (
     <Link 
       data-testid="book-card"
       to={`/books/${bookIdentifier}`} 
       className="block h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
-      aria-label={`${book.title} par ${book.author}. Statut: ${getStatusLabel()}. Appuyez sur Entrée pour ouvrir.`}
+      aria-label={`${book.title} par ${book.author}. Statut: ${statusLabel}. Appuyez sur Entrée pour ouvrir.`}
       onKeyDown={handleKeyPress}
       tabIndex={0}
       role="link"
     >
-      <article className="book-card flex flex-col h-full min-h-[520px] sm:min-h-[540px] bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-offset-2">
+      <article className={`book-card flex flex-col h-full ${cardMinHeight} bg-white border border-coffee-light rounded-md overflow-hidden transition-all duration-300 hover:shadow-md relative transform hover:scale-[1.02] hover:border-coffee-medium focus-within:ring-2 focus-within:ring-coffee-dark focus-within:ring-offset-2`}>
         <div className="relative">
           <BookCover book={book} showProgress={showProgress} fluid className="w-full" />
           {getBookStatusIcon()}
-          <span className="sr-only">{getStatusLabel()}</span>
+          <span className="sr-only">{statusLabel}</span>
         </div>
         <div className="p-3 flex-grow flex flex-col">
           <h3 className="font-medium text-coffee-darker mb-1 line-clamp-2 min-h-[3.25rem] focus:outline-none">
@@ -182,18 +193,33 @@ export function BookCard({
             ))}
           </div>
 
-          <div className="mt-auto pt-2">
-            <BookCardActions
-              book={book}
-              isAdding={isAdding}
-              showAddButton={showAddButton}
-              showDeleteButton={showDeleteButton}
-              actionLabel={actionLabel}
-              onAdd={handleAddToReadingList}
-              onDelete={handleDelete}
-              onAction={handleAction}
-            />
-          </div>
+          {hasActions ? (
+            <div className="mt-auto pt-2">
+              <BookCardActions
+                book={book}
+                isAdding={isAdding}
+                showAddButton={showAddButton}
+                showDeleteButton={showDeleteButton}
+                actionLabel={actionLabel}
+                onAdd={handleAddToReadingList}
+                onDelete={handleDelete}
+                onAction={handleAction}
+              />
+            </div>
+          ) : infoItems.length > 0 ? (
+            <div className="mt-auto pt-3">
+              <div className="flex flex-wrap gap-2 text-caption text-muted-foreground">
+                {infoItems.map((item, idx) => (
+                  <span
+                    key={`${bookIdentifier}-meta-${idx}`}
+                    className="px-2 py-1 rounded-full border border-coffee-light/70 bg-coffee-lightest/40"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </article>
     </Link>

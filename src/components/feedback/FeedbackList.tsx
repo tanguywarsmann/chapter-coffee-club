@@ -37,10 +37,10 @@ export function FeedbackList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h2 className="text-2xl font-bold">👥 Suggestions de la communauté</h2>
         
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={filters.sortBy === 'votes' ? 'default' : 'outline'}
             size="sm"

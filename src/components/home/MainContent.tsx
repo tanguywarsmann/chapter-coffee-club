@@ -3,12 +3,12 @@ import { Book } from "@/types/book";
 import { useMemo, memo } from "react";
 import { SearchResults } from "@/components/home/SearchResults";
 import { HeroCurrentBook } from "@/components/home/HeroCurrentBook";
-import { HomeContent } from "@/components/home/HomeContent";
 import { ExploreSection } from "@/components/home/ExploreSection";
 import { BookyWidget } from "@/components/booky/BookyWidget";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { texts } from "@/i18n/texts";
+import { HomePageSkeleton } from "@/components/home/HomePageSkeleton";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -60,6 +60,15 @@ export const MainContent = memo(function MainContent({
         onReset={onResetSearch} 
       />
     );
+  }
+
+  const showInitialSkeleton = !searchResults && !isSearching && !isRedirecting &&
+    (isLoading || isLoadingCurrentBook) &&
+    !currentReading &&
+    (!readingProgress || readingProgress.length === 0);
+
+  if (showInitialSkeleton) {
+    return <HomePageSkeleton />;
   }
 
   // Main home layout - simplified and elegant

@@ -125,7 +125,10 @@ export default function ReadingList() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         
-        <main className="mx-auto w-full px-4 max-w-none px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker">Ma liste de lecture</h1>
+          </div>
           <FetchingStatus isFetching={loading.isFetching} />
 
           {renderContent()}

@@ -4,7 +4,6 @@ import { Book } from "@/types/book";
 import { Badge } from "@/types/badge";
 import { useBookQuiz } from "./useBookQuiz";
 import confetti from 'canvas-confetti';
-import { useReadingProgress } from "./useReadingProgress";
 import { useValidationState } from "./useValidationState";
 import { useQuizCompletion } from "./useQuizCompletion";
 import { validateUserAndBook, checkBookCompletion, showValidationError } from "@/utils/validationUtils";
@@ -48,6 +47,7 @@ export const useBookValidation = ({
   const [showQuestDialog, setShowQuestDialog] = useState(false);
   const [unlockedQuests, setUnlockedQuests] = useState<any[]>([]);
   const [validationSegment, setValidationSegment] = useState<number | null>(null);
+  const completionHandledBookRef = useRef<string | null>(null);
   
   // FIX P0-1: Store confetti timers for cleanup to prevent memory leaks
   const confettiTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -69,6 +69,10 @@ export const useBookValidation = ({
       confettiTimersRef.current = [];
     };
   }, []);
+
+  useEffect(() => {
+    completionHandledBookRef.current = null;
+  }, [userId, book?.id, currentBook?.id]);
 
   const showConfetti = () => {
     console.log("🎊 TRIGGERING CONFETTI");
@@ -107,8 +111,6 @@ export const useBookValidation = ({
       console.error("❌ Confetti failed:", error);
     }
   };
-  const { forceRefresh } = useReadingProgress();
-
   // Monthly reward
   const { monthlyReward, showMonthlyReward, setShowMonthlyReward } = useMonthlyReward(userId);
 
@@ -224,16 +226,12 @@ export const useBookValidation = ({
         setIsValidating(true);
         await prepareAndShowQuestion(segmentToValidate);
         
-        // Refresh immédiat pour éviter les états incohérents
-        forceRefresh();
       } catch (error: any) {
         toast.error("Erreur de validation", {
           description: error.message || "Impossible de préparer la validation",
           duration: 5000
         });
         
-        // Refresh même en cas d'erreur pour resynchroniser
-        forceRefresh();
       } finally {
         setIsValidating(false);
       }
@@ -279,12 +277,15 @@ export const useBookValidation = ({
         }
 
         // Handle completed books
-        if ((currentBook || book)?.isCompleted) {
+        const completedBook = currentBook || book;
+        const completedBookId = completedBook?.id;
+        if (completedBook?.isCompleted && completedBookId && completionHandledBookRef.current !== completedBookId) {
+          completionHandledBookRef.current = completedBookId;
           const completedBooks = localStorage.getItem(`completed_books_${userId}`)
             ? JSON.parse(localStorage.getItem(`completed_books_${userId}`) || '[]')
             : [];
-          if (!completedBooks.some((b: Book) => b.id === (currentBook || book)!.id)) {
-            completedBooks.push(currentBook || book);
+          if (!completedBooks.some((b: Book) => b.id === completedBookId)) {
+            completedBooks.push(completedBook);
             localStorage.setItem(`completed_books_${userId}`, JSON.stringify(completedBooks));
           }
           
@@ -326,19 +327,17 @@ export const useBookValidation = ({
       toast.success("Segment validé avec succès !");
     }
     
-    // Force refresh de toutes les données
-    console.log("🔄 Forcing complete data refresh");
+    // Rafraîchir les données locales uniquement : la liste globale est déjà gérée par useQuizCompletion
+    console.log("🔄 Refreshing book data after validation");
     if (refreshProgressData) {
       await refreshProgressData();
     }
-    forceRefresh();
     
     return result;
   }, [
     handleQuizComplete,
     showConfetti,
     refreshProgressData,
-    forceRefresh,
     userId,
     setCurrentBook,
     currentBook,
@@ -374,7 +373,6 @@ export const useBookValidation = ({
     remainingLockTime,
     handleLockExpire,
     newBadges,
-    forceRefresh,
     showBadgeDialog,
     setShowBadgeDialog,
     unlockedBadges,
@@ -415,7 +413,6 @@ export const useBookValidation = ({
     remainingLockTime,
     handleLockExpire,
     newBadges,
-    forceRefresh,
     showBadgeDialog,
     unlockedBadges,
     showQuestDialog,

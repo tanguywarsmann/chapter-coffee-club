@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 
-export function useExpectedSegments(book?: any): number {
-  return useMemo(() => Number(
+export function resolveExpectedSegments(book?: any): number {
+  return Number(
     book?.expectedSegments ??
     book?.expected_segments ??
     book?.totalSegments ??
     book?.total_chapters ??
     0
-  ), [book]);
+  );
+}
+
+export function useExpectedSegments(book?: any): number {
+  return useMemo(() => resolveExpectedSegments(book), [book]);
 }

@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { Link } from "react-router-dom";
 
 export default function About() {
   return (
@@ -21,10 +21,10 @@ export default function About() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-6">🚀 Qu'est-ce que VREAD ?</h2>
-          
+
           <p className="mb-6">
-            VREAD est l'application qui <strong>gamifie intelligemment votre expérience de lecture</strong>. 
-            Finies les lectures abandonnées à mi-parcours ! Grâce à notre système unique de validation par questions IA, 
+            VREAD est l'application qui <strong>gamifie intelligemment votre expérience de lecture</strong>.
+            Finies les lectures abandonnées à mi-parcours ! Grâce à notre système unique de validation par questions IA,
             chaque segment de lecture devient un défi stimulant et chaque page tournée, un succès tangible.
           </p>
 
@@ -41,8 +41,8 @@ export default function About() {
 
           <h2 className="text-2xl font-semibold mt-12 mb-6">🎯 Notre mission</h2>
           <p className="mb-6">
-            <strong>Démocratiser la lecture régulière</strong> en la rendant accessible, motivante et sociale. 
-            Nous croyons que chaque personne peut développer une habitude de lecture durable avec les bons outils 
+            <strong>Démocratiser la lecture régulière</strong> en la rendant accessible, motivante et sociale.
+            Nous croyons que chaque personne peut développer une habitude de lecture durable avec les bons outils
             et la bonne communauté. VREAD transforme la lecture solitaire en aventure collective.
           </p>
 
@@ -78,21 +78,21 @@ export default function About() {
 
           <h2 className="text-2xl font-semibold mt-12 mb-6">👥 L'équipe VREAD</h2>
           <p className="mb-6">
-            VREAD est né de la passion d'une équipe de développeurs et de passionnés de littérature. 
-            Nous sommes convaincus que la technologie peut servir la culture et rendre la lecture plus accessible 
-            à l'ère numérique. Chaque fonctionnalité est pensée avec soin pour respecter l'expérience de lecture 
+            VREAD est né de la passion d'une équipe de développeurs et de passionnés de littérature.
+            Nous sommes convaincus que la technologie peut servir la culture et rendre la lecture plus accessible
+            à l'ère numérique. Chaque fonctionnalité est pensée avec soin pour respecter l'expérience de lecture
             tout en l'enrichissant.
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-6">📞 Contact et support</h2>
           <p className="mb-4">
-            Des questions ? Des suggestions ? Notre équipe est à votre écoute pour améliorer continuellement 
+            Des questions ? Des suggestions ? Notre équipe est à votre écoute pour améliorer continuellement
             votre expérience VREAD. Rejoignez notre communauté Discord ou écrivez-nous directement !
           </p>
           <p className="mb-6">
             <strong>Pour nous contacter :</strong>{" "}
-            <a 
-              href="mailto:tanguy@vread.fr" 
+            <a
+              href="mailto:tanguy@vread.fr"
               className="text-logo-accent hover:underline font-medium"
             >
               tanguy@vread.fr
@@ -106,6 +106,7 @@ export default function About() {
             </p>
             <Link
               to="/auth"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
               className="inline-block bg-white text-logo-background hover:bg-gray-100 px-8 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg"
             >
               Créer mon compte gratuitement

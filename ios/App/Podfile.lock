@@ -2,21 +2,30 @@ PODS:
   - Capacitor (7.4.4):
     - CapacitorCordova
   - CapacitorCordova (7.4.4)
+  - CapacitorKeyboard (7.0.3):
+    - Capacitor
   - CapacitorLocalNotifications (7.0.3):
+    - Capacitor
+  - CapacitorPreferences (7.0.2):
+    - Capacitor
+  - CapacitorSplashScreen (7.0.3):
     - Capacitor
   - CapacitorStatusBar (7.0.3):
     - Capacitor
-  - PurchasesHybridCommon (17.11.0):
-    - RevenueCat (= 5.44.1)
-  - RevenueCat (5.44.1)
-  - RevenuecatPurchasesCapacitor (11.2.8):
+  - PurchasesHybridCommon (17.17.0):
+    - RevenueCat (= 5.47.0)
+  - RevenueCat (5.47.0)
+  - RevenuecatPurchasesCapacitor (11.2.13):
     - Capacitor
-    - PurchasesHybridCommon (= 17.11.0)
+    - PurchasesHybridCommon (= 17.17.0)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
+  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
 
@@ -30,8 +39,14 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
   CapacitorLocalNotifications:
     :path: "../../node_modules/@capacitor/local-notifications"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
+  CapacitorSplashScreen:
+    :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
   RevenuecatPurchasesCapacitor:
@@ -40,12 +55,15 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
+  CapacitorKeyboard: 62f36104f26d53d8b3a2a43f2a69fe714f1777d5
   CapacitorLocalNotifications: 0811aef56ab2e5f7f9ae72f47d3473ab50c29038
+  CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
+  CapacitorSplashScreen: e388b8e0ed0e982a9d3a40417f478e7a018a8763
   CapacitorStatusBar: 0659ddc7b1713764a05831463d215b177a15d054
-  PurchasesHybridCommon: d820837b12781f2af5dbb5faba428811a59b6743
-  RevenueCat: c63342889404269918c1196708246d7c21cf8e6d
-  RevenuecatPurchasesCapacitor: 25ff15bb4d4d46a80f44fe21c367c6f33ffcc83f
+  PurchasesHybridCommon: fc38c0596d63ad06a3acab2937496fbf77f8af07
+  RevenueCat: e9024be15991ff39bf6bd887def57693115ec8c5
+  RevenuecatPurchasesCapacitor: 0324ca6739cde22d5836af2719ab2547ee589369
 
-PODFILE CHECKSUM: b189928879df6f009998d69978814ebd63975737
+PODFILE CHECKSUM: 0ee6f14b4b742362575c1c1f49407044da16b51c
 
 COCOAPODS: 1.16.2

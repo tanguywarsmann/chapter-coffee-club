@@ -64,53 +64,55 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        <Button
-          variant={hasVoted ? "default" : "outline"}
-          size="sm"
-          className="flex-col h-auto py-2 px-3"
-          onClick={handleVote}
-          disabled={isVoting}
-        >
-          <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
-          <span className="text-xs font-semibold">{votesCount}</span>
-        </Button>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="sm:w-24 flex sm:flex-col gap-2">
+          <Button
+            variant={hasVoted ? "default" : "outline"}
+            size="sm"
+            className="flex-1 sm:flex-auto flex flex-col items-center justify-center gap-1 py-2"
+            onClick={handleVote}
+            disabled={isVoting}
+          >
+            <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
+            <span className="text-xs font-semibold">{votesCount}</span>
+          </Button>
+        </div>
 
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={typeInfo.color}>
+            <Badge className={`${typeInfo.color} whitespace-nowrap`}>
               {typeInfo.emoji} {typeInfo.label}
             </Badge>
             {feedback.category && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs break-words">
                 {feedback.category}
               </Badge>
             )}
-            <Badge className={statusInfo.color}>
+            <Badge className={`${statusInfo.color} whitespace-nowrap`}>
               {statusInfo.label}
             </Badge>
           </div>
 
-          <h3 className="font-semibold text-lg">{feedback.title}</h3>
-          <p className="text-muted-foreground text-sm">{feedback.description}</p>
+          <h3 className="font-semibold text-lg leading-snug break-words">{feedback.title}</h3>
+          <p className="text-muted-foreground text-sm break-words">{feedback.description}</p>
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
             {!feedback.is_anonymous && feedback.profiles && (
-              <div className="flex items-center gap-2">
-                <Avatar className="h-5 w-5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Avatar className="h-5 w-5 flex-shrink-0">
                   <AvatarImage src={feedback.profiles.avatar_url} />
                   <AvatarFallback>
                     {feedback.profiles.username?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
-                <span>@{feedback.profiles.username}</span>
+                <span className="truncate max-w-[140px] sm:max-w-none">@{feedback.profiles.username}</span>
               </div>
             )}
             {feedback.is_anonymous && (
               <span className="italic">Anonyme</span>
             )}
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <Clock className="h-3 w-3" />
               {formatDistanceToNow(new Date(feedback.created_at), {
                 addSuffix: true,
@@ -119,7 +121,7 @@ export function FeedbackCard({ feedback, onVoteChange }: Props) {
             </div>
 
             {feedback.comments_count > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 whitespace-nowrap">
                 <MessageSquare className="h-3 w-3" />
                 {feedback.comments_count}
               </div>

@@ -1,4 +1,3 @@
-import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,11 +15,11 @@ export const LanguageToggle = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="hover:bg-brand-100/50 transition-colors"
+          className="font-bold hover:bg-black/5 hover:text-foreground transition-colors h-10 px-2 py-1 flex gap-2 items-center"
           aria-label={t.language.switch}
         >
-          <Globe className="h-5 w-5" />
+          <span className="text-lg leading-none">{language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+          <span className="text-sm">{language.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px] bg-white border-brand-200 z-50">

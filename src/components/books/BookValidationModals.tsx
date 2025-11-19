@@ -8,6 +8,7 @@ import { LockTimer } from "./LockTimer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Clock } from "lucide-react";
 import { memo } from "react";
+import { resolveExpectedSegments } from "@/hooks/useExpectedSegments";
 
 interface BookValidationModalsProps {
   book: Book;
@@ -56,13 +57,7 @@ export const BookValidationModals = memo(({
   onLockExpire
 }: BookValidationModalsProps) => {
   // Fallback robuste pour expectedSegments
-  const expectedSegmentsSafe = Number(
-    book?.expectedSegments ??
-    book?.expected_segments ??
-    book?.totalSegments ??
-    book?.total_chapters ??
-    0
-  );
+  const expectedSegmentsSafe = resolveExpectedSegments(book);
   
   // N'effectuer le rendu que si une des modales est visible
   if (!showValidationModal && !showQuizModal && !showSuccessMessage) {

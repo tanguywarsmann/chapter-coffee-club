@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { BookCard } from '@/components/books/BookCard'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SearchBar } from "@/components/books/SearchBar";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { BookPlus } from "lucide-react";
+import { BookGridSkeleton } from "@/components/ui/book-grid-skeleton";
 
 type Category = 'litterature' | 'religion' | 'essai' | 'bio'
 
@@ -15,6 +16,7 @@ export default function Explore() {
   const { t } = useTranslation();
   const { isPremium } = useAuth();
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const navigate = useNavigate()
 
   const allowed: Category[] = ['litterature','religion','essai','bio']
@@ -39,6 +41,33 @@ export default function Explore() {
     navigate({ search: params.toString() }, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, q])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const paramCat = params.get('cat') as Category
+    const nextCat: Category = allowed.includes(paramCat) ? paramCat : 'litterature'
+    const nextQuery = (params.get('q') ?? '').trim()
+
+    let shouldResetPage = false
+    setCategory(prev => {
+      if (prev !== nextCat) {
+        shouldResetPage = true
+        return nextCat
+      }
+      return prev
+    })
+    setQ(prev => {
+      if (prev !== nextQuery) {
+        shouldResetPage = true
+        return nextQuery
+      }
+      return prev
+    })
+    if (shouldResetPage) {
+      setPage(1)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search])
 
   useEffect(() => {
     let mounted = true;
@@ -130,13 +159,16 @@ export default function Explore() {
     )
   }
 
+  const showInitialSkeleton = useMemo(() => loading && books.length === 0 && !error, [loading, books.length, error]);
+  const showInlineLoading = loading && books.length > 0;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       
-      <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
         <div className="space-y-4">
-          <h1 className="text-3xl font-serif font-medium text-coffee-darker">Explorer</h1>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker">Explorer</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Onglets catégories */}
@@ -158,9 +190,9 @@ export default function Explore() {
           </div>
         </div>
 
-        {loading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
+        {showInlineLoading && <p className="text-sm text-muted-foreground">Chargement des livres…</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
-        {!loading && !error && books.length === 0 && (
+        {!showInitialSkeleton && !loading && !error && books.length === 0 && (
           <div className="text-center py-12 space-y-4">
             <p className="text-lg text-muted-foreground">
               {q.length > 0 
@@ -182,9 +214,13 @@ export default function Explore() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {books.map(b => <BookCard key={b.id} book={b} />)}
-        </div>
+        {showInitialSkeleton ? (
+          <BookGridSkeleton count={10} showTitle={false} />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {books.map(b => <BookCard key={b.id} book={b} />)}
+          </div>
+        )}
 
         <div className="flex items-center justify-center gap-3 mt-6">
           <button

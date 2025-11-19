@@ -1,5 +1,7 @@
 
 import { createClient } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
+import { Preferences } from "@capacitor/preferences";
 import type { Database } from './types';
 
 // Tolérance aux différents noms d'ENV possibles après rollback
@@ -81,6 +83,25 @@ const safeStorage = {
   }
 };
 
+const capacitorStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    const { value } = await Preferences.get({ key });
+    return value ?? null;
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    await Preferences.set({ key, value });
+  },
+  removeItem: async (key: string): Promise<void> => {
+    await Preferences.remove({ key });
+  }
+};
+
+const isIOSNative = typeof window !== 'undefined' &&
+  !!Capacitor?.isNativePlatform?.() &&
+  Capacitor.getPlatform() === 'ios';
+
+const authStorage = isIOSNative ? capacitorStorage : safeStorage;
+
 // FIX P0-1: Singleton pattern pour éviter Multiple GoTrueClient instances
 let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
 
@@ -88,7 +109,7 @@ const getSupabaseClient = () => {
   if (!supabaseInstance) {
     supabaseInstance = createClient<Database>(url, key, {
       auth: {
-        storage: safeStorage,
+        storage: authStorage,
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,

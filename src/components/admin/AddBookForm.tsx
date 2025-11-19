@@ -1,19 +1,17 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2, Upload } from "lucide-react";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/services/books/utils";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Book } from "@/types/book";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Plus, Upload } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const addBookSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
@@ -94,12 +92,12 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
   // Function to generate empty segments for the book
   const generateEmptySegments = async (bookSlug: string, totalPages: number): Promise<void> => {
     const expectedSegments = Math.ceil(totalPages / 30);
-    
+
     if (expectedSegments <= 0) return;
-    
+
     try {
       const segmentEntries = [];
-      
+
       for (let i = 0; i < expectedSegments; i++) {
         segmentEntries.push({
           book_slug: bookSlug,
@@ -108,13 +106,13 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
           answer: ""
         });
       }
-      
+
       const { error } = await supabase
         .from("reading_questions")
         .upsert(segmentEntries, { onConflict: 'book_slug,segment' });
-        
+
       if (error) throw error;
-      
+
       console.log(`${expectedSegments} segments vides générés pour le livre ${bookSlug}`);
     } catch (error) {
       console.error("Erreur lors de la génération des segments vides:", error);
@@ -130,16 +128,16 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
     try {
       // Generate a slug from title and author
       const slug = slugify(data.title + "-" + data.author);
-      
+
       // Upload cover image if provided
       let coverUrl = data.cover_url;
       if (coverFile) {
         coverUrl = await uploadCoverImage(coverFile, slug);
       }
-      
+
       // Generate a UUID for the book
       const id = crypto.randomUUID();
-      
+
       // Create book record
       const bookData = {
         id,
@@ -152,20 +150,20 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
         tags: [], // Default empty tags array
         is_published: data.is_published,
       };
-      
+
       const { error } = await supabase
         .from("books")
         .insert(bookData);
-      
+
       if (error) throw error;
-      
+
       // Generate empty segments for the book
       await generateEmptySegments(slug, data.total_pages);
-      
+
       toast.success(`"${data.title}" a été ajouté à la base de données.`, {
         description: "Livre ajouté avec succès"
       });
-      
+
       form.reset();
       setCoverFile(null);
       setCoverPreviewUrl(null);
@@ -208,7 +206,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="author"
@@ -222,7 +220,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="total_pages"
@@ -236,7 +234,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -250,7 +248,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <div className="space-y-2">
               <FormLabel>Couverture</FormLabel>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,9 +260,9 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                       <FormItem>
                         <FormLabel className="text-body-sm text-muted-foreground">URL de l'image</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="https://example.com/cover.jpg" 
-                            {...field} 
+                          <Input
+                            placeholder="https://example.com/cover.jpg"
+                            {...field}
                             onChange={(e) => {
                               field.onChange(e);
                               handleUrlChange(e);
@@ -276,7 +274,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-4">
                     <label htmlFor="cover-upload" className="flex flex-col items-center justify-center cursor-pointer">
                       <Upload className="h-6 w-6 text-gray-400 mb-2" />
@@ -292,14 +290,14 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-center">
                   {coverPreviewUrl ? (
                     <div className="relative w-40 h-56 overflow-hidden rounded-md border border-gray-200">
-                      <img 
-                        src={coverPreviewUrl} 
-                        alt="Aperçu" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={coverPreviewUrl}
+                        alt="Aperçu"
+                        className="w-full h-full object-cover"
                         onError={() => setCoverPreviewUrl(null)}
                       />
                     </div>
@@ -311,7 +309,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </div>
               </div>
             </div>
-            
+
             <FormField
               control={form.control}
               name="is_published"
@@ -322,7 +320,7 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                     <FormMessage />
                   </div>
                   <FormControl>
-                    <Checkbox 
+                    <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -330,11 +328,11 @@ export function AddBookForm({ onBookAdded }: AddBookFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsDialogOpen(false)}
                 disabled={isLoading}
               >

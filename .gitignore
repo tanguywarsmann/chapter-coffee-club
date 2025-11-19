@@ -33,3 +33,5 @@ registerSW.js
 # Playwright
 playwright-report/
 test-results/
+.env
+.env.production

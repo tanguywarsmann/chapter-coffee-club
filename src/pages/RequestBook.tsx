@@ -5,7 +5,7 @@ export default function RequestBook() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="container mx-auto py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
         <RequestBookComponent />
       </main>
     </div>

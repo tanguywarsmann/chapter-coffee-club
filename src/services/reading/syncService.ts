@@ -84,23 +84,14 @@ export const initializeNewBookReading = async (userId: string, bookId: string): 
  */
 export const getBooksInProgressFromAPI = async (userId: string): Promise<BookWithProgress[]> => {
   const userProgress = await getUserReadingProgress(userId);
-  return Promise.all(userProgress.map(async progress => {
-    try {
-      const book = await getBookById(progress.book_id);
-      if (!book) return null;
 
-      return {
-        ...book,
-        chaptersRead: progress.chaptersRead,
-        progressPercent: progress.progressPercent,
-        nextSegmentPage: progress.nextSegmentPage,
-        isCompleted: progress.progressPercent >= 100
-      } as unknown as BookWithProgress;
-    } catch (error) {
-      console.error(`Error fetching book ${progress.book_id}:`, error);
-      return null;
-    }
-  })).then(books => books.filter((book): book is BookWithProgress => book !== null));
+  return userProgress.map(progress => ({
+    ...progress,
+    chaptersRead: progress.chaptersRead,
+    progressPercent: progress.progressPercent,
+    nextSegmentPage: progress.nextSegmentPage,
+    isCompleted: progress.progressPercent >= 100
+  } as BookWithProgress));
 };
 
 /**

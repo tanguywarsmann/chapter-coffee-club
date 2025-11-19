@@ -90,10 +90,10 @@ export default function Admin() {
     <AuthGuard>
       <AdminGuard>
         <AdminLayout>
-          <div className="min-h-screen bg-logo-background text-logo-text">
-            <main className="mx-auto w-full px-4 max-w-none py-6 space-y-6">
+          <div className="min-h-screen bg-background">
+            <main className="max-w-6xl mx-auto px-4 py-8 md:py-12 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h1 className="text-3xl font-serif font-medium text-coffee-darker">{texts.admin}</h1>
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-coffee-darker">{texts.admin}</h1>
               
               {/* Simplified buttons on mobile */}
               {!isMobile && (

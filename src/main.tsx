@@ -1,12 +1,12 @@
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Keyboard } from '@capacitor/keyboard';
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import { HelmetProvider } from "react-helmet-async"
 import { ConfettiProvider } from "@/components/confetti/ConfettiProvider"
 import './index.css'
-import { exposeAuditHelpers } from '@/utils/jokerAudit';
 import { JOKER_MIN_SEGMENTS_ENABLED, JOKER_MIN_SEGMENTS } from "@/utils/jokerConstraints";
 import { initRevenueCat } from '@/lib/revenuecat';
 
@@ -19,23 +19,7 @@ console.info("[JOKER FLAGS] front", {
 
 // AUDIT: Expose audit helpers in development
 if (import.meta.env.DEV) {
-  exposeAuditHelpers();
-  import("@/debug/consoleTap");
   import("@/debug/finalValidation");
-
-  // FIX: Freeze detection - monitor main thread blocking
-  let lastCheck = Date.now();
-  setInterval(() => {
-    const now = Date.now();
-    const delta = now - lastCheck;
-    if (delta > 2000) {
-      console.error(`[FREEZE DETECTED] Main thread blocked for ${delta}ms`);
-      console.trace('[FREEZE] Stack trace:');
-    }
-    lastCheck = now;
-  }, 1000);
-
-  console.info('[FREEZE DETECTION] Monitoring enabled - will alert if main thread blocks >2s');
 }
 
 /** Bootstrap: init platform services, then render */
@@ -46,6 +30,19 @@ if (import.meta.env.DEV) {
     if (platform === 'ios') {
       await StatusBar.setOverlaysWebView({ overlay: false });
       await StatusBar.setStyle({ style: Style.Dark });
+      await Keyboard.setAccessoryBarVisible({ isVisible: false });
+
+      const body = document.body;
+      Keyboard.addListener('keyboardWillShow', (info) => {
+        body.classList.add('keyboard-open');
+        if (info?.keyboardHeight) {
+          body.style.setProperty('--keyboard-height', `${info.keyboardHeight}px`);
+        }
+      });
+      Keyboard.addListener('keyboardWillHide', () => {
+        body.classList.remove('keyboard-open');
+        body.style.removeProperty('--keyboard-height');
+      });
       
       console.log('[BOOTSTRAP] Initializing RevenueCat for iOS...');
       const { appleIAPService } = await import('@/services/iap/appleIAPService');

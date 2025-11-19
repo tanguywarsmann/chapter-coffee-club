@@ -20,7 +20,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useJokerAndReveal } from "@/services/jokerService";
 import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
 import { debugLog, auditJokerState, canUseJokers } from "@/utils/jokerConstraints";
-import { collectJokerAuditData } from "@/utils/jokerAudit";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateReadingSegmentBeta } from "@/services/reading/validationServiceBeta"; // garde la validation serveur existante
 
@@ -258,15 +257,6 @@ export function QuizModal({
       if (question?.book_id) {
         const bookId = question.book_id;
         auditJokerState(bookId, expectedSegments, "QuizModal.handleJokerConfirm");
-        collectJokerAuditData({
-          bookId,
-          expectedSegments,
-          currentJokersAllowed: jokersAllowed,
-          currentJokersUsed: jokersUsed,
-          currentJokersRemaining: actualJokersRemaining,
-          wouldBeBlockedByNewRule: expectedSegments < 3,
-          context: "QuizModal.handleJokerConfirm",
-        });
       }
 
       console.info("[JOKER] before-call", {
