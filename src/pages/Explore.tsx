@@ -25,6 +25,7 @@ export default function Explore() {
   const [category, setCategory] = useState<ExploreCategory>(initialCat)
   const [q, setQ] = useState(initialQ)
   const [page, setPage] = useState(1)
+  const [searchInput, setSearchInput] = useState(initialQ)
 
   const {
     data,
@@ -38,13 +39,18 @@ export default function Explore() {
 
   // Mémoriser la catégorie et la recherche dans l'URL sans provoquer de boucle
   useEffect(() => {
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams()
     params.set('cat', category)
     if (q) params.set('q', q)
-    else params.delete('q')
-    navigate({ search: params.toString() }, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, q])
+    const nextSearch = params.toString()
+    const currentSearch = location.search.replace(/^\?/, '')
+
+    if (nextSearch === currentSearch) {
+      return
+    }
+
+    navigate({ search: nextSearch }, { replace: true })
+  }, [category, q, location.search, navigate])
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -67,30 +73,26 @@ export default function Explore() {
       }
       return prev
     })
+    setSearchInput(nextQuery)
     if (shouldResetPage) {
       setPage(1)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search])
 
-  useEffect(() => {
-    let mounted = true;
-    const abortController = new AbortController();
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
-    const runFetch = async () => {
-      if (mounted) {
-        await fetchBooks();
-      }
-    };
-
-    runFetch();
-
-    return () => {
-      mounted = false;
-      abortController.abort();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, page, q])
+  const handleSearch = (value: string) => {
+    const trimmedValue = value.trim()
+    setSearchInput(trimmedValue)
+    setQ(trimmedValue)
+    setPage(1)
+    scrollToTop()
+  }
 
   const getCategoryLabel = (cat: ExploreCategory) => {
     return t.explore.categories[cat] || t.explore.categories.litterature;
@@ -100,7 +102,11 @@ export default function Explore() {
     const active = category === value
     return (
       <button
-        onClick={() => { setCategory(value); setPage(1) }}
+        onClick={() => {
+          setCategory(value);
+          setPage(1);
+          scrollToTop();
+        }}
         className={`px-4 py-2 text-sm rounded-lg transition-colors ${
           active 
             ? 'bg-neutral text-neutral-foreground font-medium' 
@@ -137,7 +143,9 @@ export default function Explore() {
             {/* Barre de recherche à droite sur desktop, au-dessus sur mobile */}
             <div className="order-1 sm:order-2 w-full sm:max-w-md" role="search" aria-label="Recherche de livres">
               <SearchBar
-                onSearch={(value) => { setQ(value.trim()); setPage(1); }}
+                value={searchInput}
+                onValueChange={setSearchInput}
+                onSearch={handleSearch}
                 placeholder="Titre ou auteur…"
                 isSearching={isFetching}
               />
@@ -193,14 +201,23 @@ export default function Explore() {
           <button
             className="px-3 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted transition-colors"
             disabled={page === 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => {
+              setPage(p => {
+                const next = Math.max(1, p - 1)
+                return next
+              })
+              scrollToTop()
+            }}
           >
             Précédent
           </button>
           <span className="text-sm text-muted-foreground">Page {page}</span>
           <button
             className="px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors"
-            onClick={() => setPage(p => p + 1)}
+            onClick={() => {
+              setPage(p => p + 1)
+              scrollToTop()
+            }}
           >
             Suivant
           </button>

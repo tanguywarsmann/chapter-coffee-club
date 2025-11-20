@@ -17,10 +17,11 @@ import {
   getBooksReadCount,
   getEstimatedReadingTime,
   getTotalPagesRead,
-  getValidatedSegmentsCount
+  getValidatedSegmentsCount,
 } from "@/services/reading/statsService";
 import { getFollowerCounts } from "@/services/user/profileService";
 import { getDisplayName, getUserProfile } from "@/services/user/userProfileService";
+import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   BookOpen,
@@ -28,178 +29,173 @@ import {
   Edit3,
   Target,
   TrendingUp,
-  Users
+  Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
+
+type UserProfile = Awaited<ReturnType<typeof getUserProfile>>;
+type FollowerCounts = Awaited<ReturnType<typeof getFollowerCounts>>;
+type UserBadges = Awaited<ReturnType<typeof getUserBadges>>;
+type Badge = UserBadges extends (infer T)[] ? T : never;
+type ReadingProgress = Awaited<ReturnType<typeof getUserReadingProgress>>;
+type ReadingProgressItem = ReadingProgress extends (infer T)[] ? T : never;
+
+interface ProfileBasicsResult {
+  profile: UserProfile | null;
+  counts: FollowerCounts;
+}
+
+interface ProfileStats {
+  booksRead: number;
+  totalPages: number;
+  segmentsValidated: number;
+  readingTime: number;
+}
+
+interface ProfileBooksResult {
+  current: ReadingProgressItem[];
+  completed: ReadingProgressItem[];
+}
+
+const useProfileBasics = (profileUserId?: string | null) => {
+  return useQuery<ProfileBasicsResult>({
+    queryKey: ["profile", "basics", profileUserId],
+    enabled: !!profileUserId,
+    staleTime: 1000 * 60,
+    queryFn: async () => {
+      try {
+        const [profile, counts] = await Promise.all([
+          getUserProfile(profileUserId as string),
+          getFollowerCounts(profileUserId as string),
+        ]);
+        return { profile, counts };
+      } catch (error) {
+        console.error("[PROFILE] Error in basics query:", error);
+        toast.error("Erreur lors du chargement du profil");
+        throw error;
+      }
+    },
+  });
+};
+
+const useProfileBadges = (profileUserId?: string | null) => {
+  return useQuery<Badge[]>({
+    queryKey: ["profile", "badges", profileUserId],
+    enabled: !!profileUserId,
+    staleTime: 1000 * 60,
+    queryFn: async () => {
+      try {
+        const badges = await getUserBadges(profileUserId as string);
+        return badges.slice(0, 6);
+      } catch (error) {
+        console.error("[PROFILE] Error in badges query:", error);
+        // Ne pas spammer les toasts, l'information principale vient du profil
+        return [];
+      }
+    },
+  });
+};
+
+const useProfileStats = (profileUserId?: string | null, isOwnProfile?: boolean) => {
+  return useQuery<ProfileStats>({
+    queryKey: ["profile", "stats", profileUserId],
+    enabled: !!profileUserId && !!isOwnProfile,
+    staleTime: 1000 * 60,
+    queryFn: async () => {
+      try {
+        const [booksRead, totalPages, segmentsValidated, readingTime] = await Promise.all([
+          getBooksReadCount(profileUserId as string),
+          getTotalPagesRead(profileUserId as string),
+          getValidatedSegmentsCount(profileUserId as string),
+          getEstimatedReadingTime(profileUserId as string),
+        ]);
+
+        return {
+          booksRead,
+          totalPages,
+          segmentsValidated,
+          readingTime,
+        };
+      } catch (error) {
+        console.error("[PROFILE] Error in stats query:", error);
+        return {
+          booksRead: 0,
+          totalPages: 0,
+          segmentsValidated: 0,
+          readingTime: 0,
+        };
+      }
+    },
+  });
+};
+
+const useProfileBooks = (profileUserId?: string | null, activeTab?: string) => {
+  const shouldLoadBooks = activeTab === "books" || activeTab === "overview";
+
+  return useQuery<ProfileBooksResult>({
+    queryKey: ["profile", "books", profileUserId],
+    enabled: !!profileUserId && shouldLoadBooks,
+    staleTime: 1000 * 60,
+    queryFn: async () => {
+      try {
+        const readingProgress = await getUserReadingProgress(profileUserId as string, {
+          limit: 10,
+        });
+
+        const current = readingProgress.filter(
+          (p) => p.status === "in_progress",
+        ) as ReadingProgressItem[];
+
+        const completed = readingProgress
+          .filter((p) => {
+            return (
+              p.status === "completed" ||
+              p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
+            );
+          })
+          .slice(0, 8) as ReadingProgressItem[];
+
+        return { current, completed };
+      } catch (error) {
+        console.error("[PROFILE] Error in books query:", error);
+        return { current: [], completed: [] };
+      }
+    },
+  });
+};
 
 export default function Profile() {
   const params = useParams<{ userId?: string }>();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [profileData, setProfileData] = useState<any>(null);
-  const [followerCounts, setFollowerCounts] = useState({ followers: 0, following: 0 });
-  const [badges, setBadges] = useState<any[]>([]);
-  const [currentBooks, setCurrentBooks] = useState<any[]>([]);
-  const [completedBooks, setCompletedBooks] = useState<any[]>([]);
-  const [stats, setStats] = useState({
-    booksRead: 0,
-    totalPages: 0,
-    segmentsValidated: 0,
-    readingTime: 0
-  });
-  const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [booksLoaded, setBooksLoaded] = useState(false);
 
   const profileUserId = params.userId || user?.id;
   const isOwnProfile = !params.userId || (user && user.id === params.userId);
 
-  useEffect(() => {
-    if (!profileUserId) return;
+  const basicsQuery = useProfileBasics(profileUserId);
+  const badgesQuery = useProfileBadges(profileUserId);
+  const statsQuery = useProfileStats(profileUserId, isOwnProfile);
+  const booksQuery = useProfileBooks(profileUserId, activeTab);
 
-    // AbortController to cancel requests on unmount
-    const abortController = new AbortController();
-    let mounted = true;
-
-    async function fetchProfileData() {
-      // Performance monitoring
-      const startTime = performance.now();
-
-      try {
-        setLoading(true);
-
-        // CRITICAL OPTIMIZATION: Only fetch essential data on initial load
-        // Phase 1: Fetch ONLY profile + counts (2 queries) - Books loaded on-demand
-        console.log('[PROFILE] Phase 1: Fetching profile + counts for userId:', profileUserId);
-        const [profile, counts] = await Promise.all([
-          getUserProfile(profileUserId).catch(err => {
-            console.error('[PROFILE] getUserProfile failed:', err);
-            toast.error('Impossible de charger le profil');
-            return null;
-          }),
-          getFollowerCounts(profileUserId).catch(err => {
-            console.error('[PROFILE] getFollowerCounts failed:', err);
-            return { followers: 0, following: 0 };
-          })
-        ]);
-
-        if (!mounted || abortController.signal.aborted) return;
-
-        console.log('[PROFILE] Phase 1 complete:', { hasProfile: !!profile, counts });
-        setProfileData(profile);
-        setFollowerCounts(counts);
-
-        // Phase 2: Fetch secondary data (badges and stats) AFTER essential data
-        // This avoids saturating the connection pool
-        console.log('[PROFILE] Phase 2: Fetching badges...');
-        const [userBadges] = await Promise.all([
-          getUserBadges(profileUserId).catch(err => {
-            console.error('[PROFILE] getUserBadges failed:', err);
-            return [];
-          })
-        ]);
-
-        if (!mounted || abortController.signal.aborted) return;
-
-        console.log('[PROFILE] Phase 2 complete:', { badgeCount: userBadges.length });
-        setBadges(userBadges.slice(0, 6)); // Show only first 6 badges
-
-        // Phase 3: Fetch stats (only for own profile, sequentially to reduce load)
-        if (isOwnProfile) {
-          console.log('[PROFILE] Phase 3: Fetching stats...');
-          const [booksRead, totalPages, segmentsValidated, readingTime] = await Promise.all([
-            getBooksReadCount(profileUserId).catch(err => {
-              console.error('[PROFILE] getBooksReadCount failed:', err);
-              return 0;
-            }),
-            getTotalPagesRead(profileUserId).catch(err => {
-              console.error('[PROFILE] getTotalPagesRead failed:', err);
-              return 0;
-            }),
-            getValidatedSegmentsCount(profileUserId).catch(err => {
-              console.error('[PROFILE] getValidatedSegmentsCount failed:', err);
-              return 0;
-            }),
-            getEstimatedReadingTime(profileUserId).catch(err => {
-              console.error('[PROFILE] getEstimatedReadingTime failed:', err);
-              return 0;
-            })
-          ]);
-
-          if (!mounted || abortController.signal.aborted) return;
-
-          console.log('[PROFILE] Phase 3 complete:', { booksRead, totalPages, segmentsValidated, readingTime });
-          setStats({
-            booksRead,
-            totalPages,
-            segmentsValidated,
-            readingTime
-          });
-        }
-
-        console.log('[PROFILE] All phases complete');
-      } catch (error) {
-        // Only log error if request wasn't aborted
-        if (!abortController.signal.aborted) {
-          console.error("[PROFILE] Error fetching profile data:", error);
-          toast.error('Erreur lors du chargement du profil');
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-
-          // Performance metrics
-          const duration = performance.now() - startTime;
-          if (duration > 3000) {
-            console.warn(`[PROFILE PERF] Slow load detected: ${duration.toFixed(0)}ms`);
-          } else {
-            console.log(`[PROFILE PERF] Load time: ${duration.toFixed(0)}ms`);
-          }
-        }
-      }
-    }
-
-    fetchProfileData();
-
-    // CRITICAL FIX: Cleanup function to cancel requests when navigating away
-    return () => {
-      mounted = false;
-      abortController.abort();
-      console.log("[PROFILE CLEANUP] Aborting pending requests to prevent connection pool exhaustion");
+  const profileData = basicsQuery.data?.profile ?? null;
+  const followerCounts = basicsQuery.data?.counts ?? { followers: 0, following: 0 };
+  const badges = (badgesQuery.data ?? []) as Badge[];
+  const stats: ProfileStats =
+    statsQuery.data ?? {
+      booksRead: 0,
+      totalPages: 0,
+      segmentsValidated: 0,
+      readingTime: 0,
     };
-  }, [profileUserId, isOwnProfile]);
 
-  // LAZY LOADING: Fetch books only when "books" or "overview" tab is active
-  useEffect(() => {
-    if (!profileUserId || booksLoaded) return;
-    if (activeTab !== "books" && activeTab !== "overview") return;
+  const currentBooks = (booksQuery.data?.current ?? []) as ReadingProgressItem[];
+  const completedBooks = (booksQuery.data?.completed ?? []) as ReadingProgressItem[];
 
-    async function fetchBooks() {
-      try {
-        // Only fetch first 10 books for performance
-        const readingProgress = await getUserReadingProgress(profileUserId, { limit: 10 });
-
-        if (readingProgress) {
-          const current = readingProgress.filter(p => p.status === "in_progress");
-          const completed = readingProgress.filter(p =>
-            p.status === "completed" ||
-            p.chaptersRead >= (p.totalChapters || p.expectedSegments || 1)
-          ).slice(0, 8); // Show only first 8 completed books
-
-          setCurrentBooks(current);
-          setCompletedBooks(completed);
-          setBooksLoaded(true);
-        }
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      }
-    }
-
-    fetchBooks();
-  }, [activeTab, profileUserId, booksLoaded]);
+  const isLoading = basicsQuery.isLoading && !profileData;
 
   const displayName = getDisplayName(
     profileData?.username,
@@ -210,15 +206,14 @@ export default function Profile() {
   const refreshProfile = async () => {
     if (!profileUserId) return;
     try {
-      const profile = await getUserProfile(profileUserId);
-      setProfileData(profile);
+      await basicsQuery.refetch();
       setIsEditingProfile(false);
     } catch (error) {
       console.error("Error refreshing profile:", error);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <AuthGuard>
         <div className="min-h-screen bg-background">
@@ -249,7 +244,7 @@ export default function Profile() {
                 {/* Avatar and Basic Info */}
                 <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-shrink-0">
                   <EnhancedAvatar
-                    src={profileData?.avatar}
+                    src={profileData?.avatar_url}
                     alt={displayName}
                     fallbackText={displayName}
                     size="xl"
@@ -330,7 +325,13 @@ export default function Profile() {
 
                         {/* Account management link for own profile */}
                         {isOwnProfile && (
-                          <div className="flex-shrink-0">
+                          <div className="flex flex-col gap-2 flex-shrink-0 text-right">
+                            <Link
+                              to="/onboarding"
+                              className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                            >
+                              Rejouer l'onboarding
+                            </Link>
                             <Link
                               to="/settings/delete-account"
                               className="text-xs text-muted-foreground hover:text-destructive transition-colors underline-offset-4 hover:underline"

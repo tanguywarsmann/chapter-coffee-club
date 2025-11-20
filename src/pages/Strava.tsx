@@ -367,9 +367,14 @@ export default function Strava() {
               <p className="text-body text-muted-foreground mb-8">
                 Gratuit • iPhone & Web • Catalogue de classiques inclus
               </p>
-              <Button asChild size="lg" className="text-body">
-                <Link to="/auth">Essayer VREAD gratuitement</Link>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg" className="text-body text-white bg-primary hover:bg-primary/90">
+                  <Link to="/auth">Essayer VREAD gratuitement</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="text-body border-primary text-primary hover:bg-primary/10">
+                  <Link to="/a-propos">En savoir plus sur VREAD</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </section>

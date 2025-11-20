@@ -18,11 +18,16 @@ const getCachedProgressForUser = (userId?: string | null): BookWithProgress[] | 
   return cached.data as BookWithProgress[];
 };
 
-export const useReadingProgress = () => {
+interface UseReadingProgressOptions {
+  deferMs?: number;
+}
+
+export const useReadingProgress = (options: UseReadingProgressOptions = {}) => {
+  const { deferMs = 0 } = options;
   const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
   const initialCachedProgress = getCachedProgressForUser(user?.id);
   const [readingProgress, setReadingProgress] = useState<BookWithProgress[]>(initialCachedProgress ?? []);
-  const [isLoading, setIsLoading] = useState(() => !initialCachedProgress);
+  const [isLoading, setIsLoading] = useState(() => (deferMs > 0 ? false : !initialCachedProgress));
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -32,6 +37,7 @@ export const useReadingProgress = () => {
   const lastFetchTimestamp = useRef(0);
   const retryCountRef = useRef(0); // ✅ Use ref instead of state to avoid re-renders
   const timeoutRefs = useRef<number[]>([]); // ✅ Track timeouts for cleanup
+  const deferredFetchRef = useRef<number | null>(null);
   const hasWarmDataRef = useRef<boolean>(!!(initialCachedProgress && initialCachedProgress.length > 0));
   const MIN_FETCH_INTERVAL = 500; // Interval minimal entre deux fetchs (en ms)
 
@@ -48,7 +54,7 @@ export const useReadingProgress = () => {
         setIsLoading(false);
         hasWarmDataRef.current = cached.length > 0;
       } else if (!isFetching.current) {
-        setIsLoading(true);
+        setIsLoading(deferMs > 0 ? false : true);
         hasWarmDataRef.current = false;
       }
     } else {
@@ -62,8 +68,12 @@ export const useReadingProgress = () => {
       // ✅ Cleanup all pending timeouts
       timeoutRefs.current.forEach(clearTimeout);
       timeoutRefs.current = [];
+      if (deferredFetchRef.current !== null) {
+        clearTimeout(deferredFetchRef.current);
+        deferredFetchRef.current = null;
+      }
     };
-  }, [user]);
+  }, [user, deferMs]);
 
   const fetchProgress = useCallback(async (forceRefresh = false) => {
     logger.debug("=== FETCH PROGRESS START ===", { userId: user?.id, forceRefresh });
@@ -156,11 +166,28 @@ export const useReadingProgress = () => {
   // ✅ Effect pour charger les données au montage ou changement d'utilisateur
   useEffect(() => {
     if (user?.id && !hasFetched.current && !isFetching.current && isInitialized && !isAuthLoading) {
-      fetchProgress();
+      if (deferMs > 0 && !hasWarmDataRef.current) {
+        if (deferredFetchRef.current) {
+          clearTimeout(deferredFetchRef.current);
+        }
+        deferredFetchRef.current = window.setTimeout(() => {
+          deferredFetchRef.current = null;
+          fetchProgress();
+        }, deferMs);
+      } else {
+        fetchProgress();
+      }
     } else if (!user?.id) {
       setIsLoading(false);
     }
-  }, [user, fetchProgress, isInitialized, isAuthLoading]); // ✅ fetchProgress is stable now
+
+    return () => {
+      if (deferredFetchRef.current !== null) {
+        clearTimeout(deferredFetchRef.current);
+        deferredFetchRef.current = null;
+      }
+    };
+  }, [user, fetchProgress, isInitialized, isAuthLoading, deferMs]); // ✅ fetchProgress is stable now
 
   // ✅ Effect pour réagir au déclencheur de rafraîchissement
   useEffect(() => {

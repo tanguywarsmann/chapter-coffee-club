@@ -3,29 +3,38 @@ import { AdminGuard } from '@/components/admin/AdminGuard';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { GlobalLoadingWatchdog } from '@/components/GlobalLoadingWatchdog';
 import { AppSuspenseFallback } from '@/components/navigation/AppSuspenseFallback';
+import Home from '@/pages/Home';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from '@capacitor/core';
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Helper to hide splash screen when the app is ready (hydrated & first route loaded)
 const SplashHider = () => {
   useEffect(() => {
-    const hideSplash = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const raf = window.requestAnimationFrame(async () => {
       try {
-        await SplashScreen.hide();
+        await SplashScreen.hide({ fadeOutDuration: 200 });
         console.log("[SPLASH] Hidden successfully");
       } catch (e) {
         console.error("[SPLASH] Failed to hide:", e);
       }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(raf);
     };
-    hideSplash();
   }, []);
   return null;
 };
 
 // Lazy load pages
 const Landing = lazy(() => import('@/pages/Landing'));
-const Home = lazy(() => import('@/pages/Home'));
+const IOSOnboarding = lazy(() => import('@/pages/IOSOnboarding'));
 const Auth = lazy(() => import('@/pages/Auth'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const Profile = lazy(() => import('@/pages/Profile'));
@@ -71,6 +80,11 @@ const AppRouter = () => {
         <Route path="/landing" element={<Landing />} />
         <Route path="/home" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/onboarding" element={
+          <AuthGuard>
+            <IOSOnboarding />
+          </AuthGuard>
+        } />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/profile" element={<Profile />} />

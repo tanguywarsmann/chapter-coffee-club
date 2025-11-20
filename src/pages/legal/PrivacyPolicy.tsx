@@ -3,19 +3,20 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import AppFooter from "@/components/layout/AppFooter";
 
 export function PrivacyPolicy() {
   const navigate = useNavigate();
 
   return (
-    <>
+    <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>Politique de Confidentialité - VREAD</title>
         <meta name="description" content="Politique de confidentialité de VREAD : collecte, utilisation et protection de vos données personnelles." />
         <meta name="robots" content="index, follow" />
       </Helmet>
       
-      <div className="min-h-screen bg-background p-4">
+      <div className="flex-1 p-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
             <Button 
@@ -188,6 +189,7 @@ export function PrivacyPolicy() {
           </Card>
         </div>
       </div>
-    </>
+      <AppFooter />
+    </div>
   );
 }

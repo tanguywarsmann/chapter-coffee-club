@@ -11,7 +11,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useStatusBar } from "@/hooks/useStatusBar";
 import { Style } from "@capacitor/status-bar";
 import { EnhancedAvatar } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
@@ -26,7 +25,7 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { setStatusBarColor, setStatusBarStyle } = useStatusBar();
 
   // Handle status bar color changes based on menu state
@@ -42,16 +41,23 @@ export const MobileMenu = ({ isAdmin, isPremium }: MobileMenuProps) => {
     }
   }, [isSheetOpen, setStatusBarColor, setStatusBarStyle]);
 
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const handleNavigation = (path: string) => {
     setIsSheetOpen(false);
+    scrollToTop();
     navigate(path);
   };
 
   const handleLogout = async () => {
     try {
       setIsSheetOpen(false);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      scrollToTop();
+      await signOut();
       toast.success("Déconnexion réussie");
       setTimeout(() => navigate("/"), 100);
     } catch (e) {

@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "@/components/ui/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import Image from "@/components/ui/image";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -18,12 +19,13 @@ export default function ResetPassword() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { updatePassword } = useAuth();
 
   useEffect(() => {
     // Écouter l'événement PASSWORD_RECOVERY
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[ResetPassword] Auth event:', event, 'Session:', !!session);
-      
+
       if (event === "PASSWORD_RECOVERY") {
         setIsSessionReady(true);
       }
@@ -45,22 +47,22 @@ export default function ResetPassword() {
     if (pwd.length < 8) {
       return "Le mot de passe doit contenir au moins 8 caractères";
     }
-    
+
     const hasUpperCase = /[A-Z]/.test(pwd);
     const hasLowerCase = /[a-z]/.test(pwd);
     const hasNumber = /[0-9]/.test(pwd);
-    
+
     if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       return "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre";
     }
-    
+
     return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!password || !confirmPassword) {
       setError("Veuillez remplir tous les champs");
       return;
@@ -80,29 +82,29 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (updateError) {
-        // Détecter les erreurs spécifiques
-        if (updateError.message.includes("expired") || updateError.message.includes("invalid")) {
-          throw new Error("Le lien de réinitialisation a expiré. Veuillez relancer une nouvelle demande.");
-        }
-        throw updateError;
-      }
+      await updatePassword(password);
 
       setIsSuccess(true);
       toast.success("Mot de passe mis à jour avec succès!");
-      
+
       // Rediriger vers la page de connexion après 2 secondes
       setTimeout(() => {
         navigate("/auth");
       }, 2000);
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du mot de passe:", error);
-      setError(error.message || "Erreur lors de la mise à jour. Veuillez réessayer.");
-      toast.error(error.message || "Erreur lors de la mise à jour");
+
+      const message: string =
+        error?.message ||
+        "Erreur lors de la mise à jour. Veuillez réessayer.";
+
+      if (message.includes("expired") || message.includes("invalid")) {
+        setError("Le lien de réinitialisation a expiré. Veuillez relancer une nouvelle demande.");
+        toast.error("Le lien de réinitialisation a expiré. Veuillez relancer une nouvelle demande.");
+      } else {
+        setError(message);
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -139,8 +141,8 @@ export default function ResetPassword() {
               <p className="text-gray-600">
                 Le lien de réinitialisation est invalide ou a expiré. Veuillez relancer une nouvelle demande de réinitialisation.
               </p>
-              <Button 
-                onClick={() => navigate("/auth")} 
+              <Button
+                onClick={() => navigate("/auth")}
                 className="bg-coffee-dark hover:bg-coffee-darker"
               >
                 Retour à la connexion
@@ -157,9 +159,9 @@ export default function ResetPassword() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-logo-background p-4">
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8 text-center">
-          <Image 
-            src="/branding/vread-logo.svg" 
-            alt="VREAD Logo" 
+          <Image
+            src="/branding/vread-logo.svg"
+            alt="VREAD Logo"
             className="mx-auto mb-4 w-40 h-auto"
           />
           <p className="text-logo-text text-lg mb-6">
@@ -199,7 +201,7 @@ export default function ResetPassword() {
                   Au moins 8 caractères avec une majuscule, une minuscule et un chiffre
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
                 <Input
@@ -213,10 +215,10 @@ export default function ResetPassword() {
                   required
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-coffee-dark hover:bg-coffee-darker" 
+
+              <Button
+                type="submit"
+                className="w-full bg-coffee-dark hover:bg-coffee-darker"
                 disabled={isLoading}
               >
                 {isLoading ? (

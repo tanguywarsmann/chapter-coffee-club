@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n/LanguageContext';
 
-const APP_VERSION = "v1.21";
+const APP_VERSION = "v1.22";
 
 export const AppFooter = () => {
   const { isPremium } = useAuth();

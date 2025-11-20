@@ -18,10 +18,10 @@ export default function ReadingList() {
   const {
     books,
     loading,
+    error,
+    retry,
     navigateToBook,
   } = useReadingListPage();
-  
-  const error = null; // No error handling needed with new structure
 
   // Log spécifique pour le débogage des listes de livres
   logger.debug("Reading list state", {
@@ -29,24 +29,29 @@ export default function ReadingList() {
     inProgressCount: books.inProgress?.length || 0,
     completedCount: books.completed?.length || 0,
     isLoading: loading.isLoading,
-    isLoadingReadingList: loading.isLoadingReadingList,
-    isDataReady: loading.isDataReady
+    isFetching: loading.isFetching
   });
 
   const renderContent = () => {
-    // Afficher toujours le loader si les données ne sont pas prêtes
-    if (loading.isLoading || loading.isLoadingReadingList || !loading.isDataReady) {
-      logger.debug("Showing loading state", {
-        isLoading: loading.isLoading, 
-        isLoadingReadingList: loading.isLoadingReadingList,
-        isDataReady: loading.isDataReady
-      });
+    if (loading.isLoading) {
+      logger.debug("Showing loading state");
       return <LoadingBookList />;
     }
     
     if (error) {
       logger.warn("Showing error state");
-      return <BookEmptyState hasError={true} />;
+      return (
+        <div className="text-center p-8 border border-dashed rounded-lg">
+          <p className="text-muted-foreground mb-4">Impossible de charger votre liste de lecture.</p>
+          <p className="text-sm text-destructive mb-4">{error}</p>
+          <button
+            className="text-coffee-dark hover:text-coffee-darker underline"
+            onClick={() => retry()}
+          >
+            Réessayer
+          </button>
+        </div>
+      );
     }
     
     if (!books.toRead?.length && !books.inProgress?.length && !books.completed?.length) {

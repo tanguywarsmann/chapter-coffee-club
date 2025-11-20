@@ -43,7 +43,7 @@ export default function Home() {
     readingProgress,
     isLoading,
     handleProgressUpdate
-  } = useReadingProgress();
+  } = useReadingProgress({ deferMs: 300 });
 
   const navigate = useNavigate();
 

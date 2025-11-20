@@ -381,10 +381,10 @@ export default function Duolingo() {
                 Gratuit • iPhone & Web • Catalogue de classiques inclus
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="text-body">
+                <Button asChild size="lg" className="text-body text-white bg-primary hover:bg-primary/90">
                   <Link to="/auth">Essayer VREAD gratuitement</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="text-body">
+                <Button asChild variant="outline" size="lg" className="text-body border-primary text-primary hover:bg-primary/10">
                   <Link to="/a-propos">En savoir plus sur VREAD</Link>
                 </Button>
               </div>

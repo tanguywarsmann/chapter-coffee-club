@@ -8,7 +8,6 @@ import { BookyWidget } from "@/components/booky/BookyWidget";
 import { Search } from "lucide-react";
 import { ReadingProgress, BookWithProgress } from "@/types/reading";
 import { texts } from "@/i18n/texts";
-import { HomePageSkeleton } from "@/components/home/HomePageSkeleton";
 
 interface MainContentProps {
   searchResults: Book[] | null;
@@ -62,24 +61,23 @@ export const MainContent = memo(function MainContent({
     );
   }
 
-  const showInitialSkeleton = !searchResults && !isSearching && !isRedirecting &&
-    (isLoading || isLoadingCurrentBook) &&
-    !currentReading &&
-    (!readingProgress || readingProgress.length === 0);
-
-  if (showInitialSkeleton) {
-    return <HomePageSkeleton />;
-  }
-
   // Main home layout - simplified and elegant
   return (
     <div className="space-y-8 md:space-y-12">
       {/* Hero Section - Current Reading */}
       <HeroCurrentBook
         currentReading={currentReading}
-        isLoading={isLoadingCurrentBook}
+        isLoading={isLoadingCurrentBook || isLoading}
         onContinueReading={onContinueReading}
       />
+
+      {readingProgress && readingProgress.length > 0 && (
+        <div className="bg-white/50 backdrop-blur rounded-2xl border border-white/30 px-6 py-4 text-center text-sm text-muted-foreground">
+          {readingProgress.length === 1
+            ? "1 lecture en cours. Continuez votre livre !"
+            : `${readingProgress.length} lectures en cours. Continuez votre livre !`}
+        </div>
+      )}
 
       {/* Booky Widget - Companion Progress */}
       <BookyWidget />

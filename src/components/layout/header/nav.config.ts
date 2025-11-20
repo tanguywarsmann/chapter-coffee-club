@@ -37,7 +37,12 @@ export function buildNav(opts: { isPremium?: boolean; isAdmin?: boolean; t?: any
     { to: "/home", label: nav.home, icon: Home, ariaLabel: `${nav.home}` },
     { to: "/explore", label: nav.explore, icon: BookCheck, ariaLabel: `${nav.explore}` },
     { to: "/achievements", label: nav.achievements, icon: Trophy, ariaLabel: `${nav.achievements}` },
-    { to: "/request-book", label: nav.requestBook, icon: BookPlus, ariaLabel: nav.requestBook },
+    { 
+      to: isPremium ? "/request-book" : "/premium", 
+      label: nav.requestBook, 
+      icon: BookPlus, 
+      ariaLabel: nav.requestBook 
+    },
     { to: "/reading-list", label: nav.readingList, icon: BookCheck, ariaLabel: `${nav.readingList}` },
     { to: "/discover", label: nav.discover, icon: Users, ariaLabel: `${nav.discover}` },
     { to: "/feedback", label: nav.feedback, icon: MessageSquare, ariaLabel: nav.feedback },

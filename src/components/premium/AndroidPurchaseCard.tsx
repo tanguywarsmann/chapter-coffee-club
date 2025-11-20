@@ -9,6 +9,7 @@ import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
 
 export function AndroidPurchaseCard() {
   const { t } = useTranslation();
+  const { supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -40,6 +41,26 @@ export function AndroidPurchaseCard() {
     }
   };
 
+  const activatePremiumInDB = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('profiles')
+        .update({ 
+          is_premium: true, 
+          premium_since: new Date().toISOString(),
+          premium_type: 'android'
+        })
+        .eq('id', user.id);
+        
+      console.log('[Android] Premium activated in DB');
+    } catch (e) {
+      console.error('[Android] Failed to activate in DB:', e);
+    }
+  };
+
   const handlePurchase = async () => {
     console.log('[AndroidPurchaseCard] Purchase button clicked');
     setIsPurchasing(true);
@@ -48,6 +69,7 @@ export function AndroidPurchaseCard() {
       const success = await purchaseLifetime();
       
       if (success) {
+        await activatePremiumInDB();
         toast.success(t.premium.toast.activated, {
           description: t.premium.toast.activatedDesc
         });
@@ -80,6 +102,7 @@ export function AndroidPurchaseCard() {
       const success = await restorePurchases();
       
       if (success) {
+        await activatePremiumInDB();
         toast.success(t.premium.toast.restored, {
           description: t.premium.toast.restoredDesc
         });

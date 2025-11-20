@@ -100,7 +100,14 @@ const isIOSNative = typeof window !== 'undefined' &&
   !!Capacitor?.isNativePlatform?.() &&
   Capacitor.getPlatform() === 'ios';
 
-const authStorage = isIOSNative ? capacitorStorage : safeStorage;
+// IMPORTANT:
+// Supabase JS auth expects a synchronous storage interface. Capacitor Preferences
+// are async and can cause subtle hangs (getSession / signOut never resolving).
+// To keep auth stable across web and native, we currently always use the
+// safeStorage adapter (localStorage with in-memory fallback).
+// If you re-introduce capacitorStorage here, make sure to wrap it in a
+// sync-compatible layer first.
+const authStorage = safeStorage;
 
 // FIX P0-1: Singleton pattern pour éviter Multiple GoTrueClient instances
 let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;

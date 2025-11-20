@@ -1,15 +1,13 @@
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { BookPlus, Crown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Capacitor } from '@capacitor/core';
 
 export function RequestBook() {
   const { user, isPremium } = useAuth();
@@ -59,7 +57,7 @@ export function RequestBook() {
       if (error) throw error;
 
       toast.success(t.requestBook.toast.success);
-      
+
       // Reset form
       setFormData({ title: '', author: '', isbn: '', reason: '' });
     } catch (error) {
@@ -70,24 +68,9 @@ export function RequestBook() {
     }
   };
 
-  // Paywall if not Premium
+  // Redirect to Premium if not eligible
   if (!isPremium) {
-    const isIOS = Capacitor.getPlatform() === 'ios';
-    
-    return (
-      <div className="max-w-2xl mx-auto">
-        <Card className="p-8 text-center">
-          <Crown className="mx-auto h-16 w-16 text-yellow-500 mb-4" />
-          <h2 className="text-2xl font-bold mb-2">{t.requestBook.paywall.title}</h2>
-          <p className="text-muted-foreground mb-6">
-            {t.requestBook.paywall.description}
-          </p>
-          <Button onClick={() => navigate('/premium')} size="lg">
-            {isIOS ? t.requestBook.paywall.ctaIOS : t.requestBook.paywall.cta}
-          </Button>
-        </Card>
-      </div>
-    );
+    return <Navigate to="/premium" replace />;
   }
 
   return (

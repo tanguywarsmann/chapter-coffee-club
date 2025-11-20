@@ -19,6 +19,27 @@ export const fr = {
 		feedback: "Feedback",
 	},
 
+	// iOS Mini Onboarding
+	onboardingIOS: {
+		title: "Prêt à prouver que tu lis vraiment ?",
+		subtitle:
+			"Vread découpe ton livre en checkpoints. Tu valides ta lecture avec des questions.",
+		primaryCta: "C'est parti",
+		skipCta: "Je verrai plus tard",
+		question: "Qu'est-ce qui t'a fait télécharger Vread ?",
+		options: {
+			abandonBooks: "J'abandonne tous mes livres à 30 pages",
+			scrollMoreThanRead: "Je scroll plus que je lis",
+			nightstandBook: "Je veux enfin finir ce livre sur ma table de chevet",
+		},
+		feedback: {
+			abandonBooks: "On va changer ça.",
+			scrollMoreThanRead: "Vread va te remettre dans le rythme.",
+			nightstandBook: "Challenge accepted.",
+		},
+		finalCta: "Ajouter mon premier livre",
+	},
+
 	// Landing Page
 	landing: {
 		title: "Si ce n'est pas sur VREAD, tu ne l'as pas lu",

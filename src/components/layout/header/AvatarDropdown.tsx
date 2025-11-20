@@ -2,33 +2,32 @@
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
 import { EnhancedAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { texts } from "@/i18n/texts";
-import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Shield, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const AvatarDropdown = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, isPremium } = useAuth();
+  const { user, isPremium, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        toast.error("Erreur lors de la déconnexion");
-        return;
-      }
-
+      await signOut();
       toast.success("Déconnexion réussie");
-
       setTimeout(() => {
         navigate("/");
       }, 100);
-    } catch (e) {
+    } catch {
       toast.error("Erreur inattendue lors de la déconnexion");
     }
   };

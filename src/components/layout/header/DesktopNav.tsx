@@ -14,6 +14,12 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
   const location = useLocation();
   const items = buildNav({ isAdmin, isPremium, t });
 
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <nav className="hidden md:flex items-center gap-2 text-body-sm font-medium flex-1">
       {items.map(({ to, label, icon: Icon, ariaLabel }) => {
@@ -30,6 +36,7 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
                   : "text-muted-foreground hover:text-primary hover:bg-white/25"
               )}
               aria-label={ariaLabel ?? label}
+              onClick={scrollToTop}
             >
               {Icon && (
                 <Icon
@@ -40,7 +47,7 @@ export const DesktopNav = ({ isAdmin, isPremium }: DesktopNavProps) => {
                 />
               )}
               {label}
-              {to === "/request-book" && !isPremium && (
+              {(to === "/request-book" || to === "/premium") && !isPremium && (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-1">
                   Premium
                 </span>

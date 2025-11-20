@@ -1,113 +1,79 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchReadingProgress, fetchBooksForStatus } from "@/services/reading/readingListService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Book } from "@/types/book";
 
-type RLState = {
-  toReadCount: number;
-  inProgressCount: number;
-  completedCount: number;
-  isLoading: boolean;
-  isLoadingReadingList: boolean;
-  hasInitialFetch: boolean;
-  isDataReady: boolean;
-  toRead: Book[];
-  inProgress: Book[];
-  completed: Book[];
+interface ReadingListData {
+  books: {
+    toRead: Book[];
+    inProgress: Book[];
+    completed: Book[];
+  };
+  counts: {
+    toRead: number;
+    inProgress: number;
+    completed: number;
+  };
+}
+
+const loadReadingList = async (userId: string): Promise<ReadingListData> => {
+  const payload = await fetchReadingProgress(userId);
+
+  const [toRead, inProgress, completed] = await Promise.all([
+    fetchBooksForStatus(payload, "to_read", userId),
+    fetchBooksForStatus(payload, "in_progress", userId),
+    fetchBooksForStatus(payload, "completed", userId),
+  ]);
+
+  return {
+    books: {
+      toRead,
+      inProgress,
+      completed,
+    },
+    counts: {
+      toRead: payload.toReadCount,
+      inProgress: payload.inProgressCount,
+      completed: payload.completedCount,
+    },
+  };
 };
 
 export const useReadingListPage = () => {
   const navigate = useNavigate();
-  const { user, session, isInitialized, isLoading: isAuthLoading } = useAuth();
-  const [state, setState] = useState<RLState>({
-    toReadCount: 0,
-    inProgressCount: 0,
-    completedCount: 0,
-    isLoading: true,
-    isLoadingReadingList: false,
-    hasInitialFetch: false,
-    isDataReady: false,
-    toRead: [],
-    inProgress: [],
-    completed: [],
-  });
+  const { user, isInitialized, isLoading: isAuthLoading } = useAuth();
 
   const navigateToBook = useCallback((bookId: string) => {
     navigate(`/books/${bookId}`);
   }, [navigate]);
 
-  useEffect(() => {
-    if (!isInitialized || isAuthLoading) {
-      console.log('[ReadingList] Waiting for auth to initialize...');
-      setState(s => ({ ...s, isLoading: true, isLoadingReadingList: true }));
-      return;
-    }
-    
-    if (!user?.id) {
-      console.log("⚪ [ReadingList] no user, finishing empty");
-      setState(s => ({ ...s, isLoading: false, isLoadingReadingList: false, hasInitialFetch: true, isDataReady: true }));
-      return;
-    }
+  const enabled = Boolean(user?.id && isInitialized && !isAuthLoading);
 
-    let cancelled = false;
-    const run = async () => {
-      try {
-        setState(s => ({ ...s, isLoading: true, isLoadingReadingList: true }));
-        console.log("[useReadingListPage] User:", user, " Session:", session);
-        
-        // Récupérer les données brutes de progression
-        const payload = await fetchReadingProgress(user.id);
+  const readingListQuery = useQuery({
+    queryKey: ["reading-list-page", user?.id],
+    enabled,
+    queryFn: () => loadReadingList(user!.id),
+    staleTime: 1000 * 60,
+  });
 
-        if (cancelled) return;
+  const books = readingListQuery.data?.books ?? {
+    toRead: [],
+    inProgress: [],
+    completed: [],
+  };
 
-        // Utiliser le service qui calcule correctement les segments validés et la progression
-        const toReadBooks = await fetchBooksForStatus(payload, 'to_read', user.id);
-        const inProgressBooks = await fetchBooksForStatus(payload, 'in_progress', user.id);
-        const completedBooks = await fetchBooksForStatus(payload, 'completed', user.id);
-
-        setState(s => ({
-          ...s,
-          toReadCount: payload.toReadCount,
-          inProgressCount: payload.inProgressCount,
-          completedCount: payload.completedCount,
-          toRead: toReadBooks,
-          inProgress: inProgressBooks,
-          completed: completedBooks,
-          isLoading: false,
-          isLoadingReadingList: false,
-          hasInitialFetch: true,
-          isDataReady: true,
-        }));
-      } catch (e) {
-        console.error("[useReadingListPage] fatal:", e);
-        if (cancelled) return;
-        setState(s => ({
-          ...s,
-          isLoading: false,
-          isLoadingReadingList: false,
-          hasInitialFetch: true,
-          isDataReady: true,
-        }));
-      }
-    };
-
-    run();
-    return () => { cancelled = true; };
-  }, [user?.id, isInitialized, isAuthLoading]);
+  const error = readingListQuery.error ? (readingListQuery.error as Error).message : null;
 
   return {
-    books: {
-      toRead: state.toRead,
-      inProgress: state.inProgress,
-      completed: state.completed
-    },
+    books,
     loading: {
-      isLoading: state.isLoading,
-      isLoadingReadingList: state.isLoadingReadingList,
-      isDataReady: state.isDataReady,
-      isFetching: false
+      isLoading: !isInitialized || isAuthLoading || (enabled && readingListQuery.isLoading),
+      isFetching: enabled && readingListQuery.isFetching,
     },
+    error,
+    retry: readingListQuery.refetch,
     navigateToBook,
   };
 };

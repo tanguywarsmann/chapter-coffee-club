@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
@@ -8,18 +8,37 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
   isSearching?: boolean;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 
-export function SearchBar({ 
-  onSearch, 
-  placeholder = "Rechercher un livre par titre, auteur...", 
-  isSearching = false 
+export function SearchBar({
+  onSearch,
+  placeholder = "Rechercher un livre par titre, auteur...",
+  isSearching = false,
+  value,
+  onValueChange,
 }: SearchBarProps) {
-  const [query, setQuery] = useState("");
+  const isControlled = value !== undefined;
+  const [internalQuery, setInternalQuery] = useState(value ?? "");
+
+  useEffect(() => {
+    if (isControlled) {
+      setInternalQuery(value ?? "");
+    }
+  }, [isControlled, value]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(query);
+    const currentValue = isControlled ? value ?? "" : internalQuery;
+    onSearch(currentValue.trim());
+  };
+
+  const handleChange = (nextValue: string) => {
+    if (!isControlled) {
+      setInternalQuery(nextValue);
+    }
+    onValueChange?.(nextValue);
   };
 
   return (
@@ -27,8 +46,8 @@ export function SearchBar({
       <Input
         type="search"
         placeholder={placeholder}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={isControlled ? value ?? "" : internalQuery}
+        onChange={(e) => handleChange(e.target.value)}
         className="pr-12 border-coffee-light focus-visible:ring-coffee-dark bg-white h-12 text-md"
       />
       <Button 

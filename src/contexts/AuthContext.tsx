@@ -21,6 +21,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshUserStatus: () => Promise<void>;
   pollForPremiumStatus: (showToastOnUpgrade?: boolean) => Promise<boolean>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -37,7 +39,9 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => {},
   signOut: async () => {},
   refreshUserStatus: async () => {},
-  pollForPremiumStatus: async () => false
+  pollForPremiumStatus: async () => false,
+  requestPasswordReset: async () => {},
+  updatePassword: async () => {}
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -48,6 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const WATCHDOG_SKIP_THRESHOLD_MS = 90_000; // 90s safety buffer before expiry
+
+  const logSessionSnapshot = useCallback((label: string, snapshot: Session | null) => {
+    const hasSession = !!snapshot;
+    const expiresAt = snapshot?.expires_at ? new Date(snapshot.expires_at * 1000).toISOString() : 'unknown';
+    const userId = snapshot?.user?.id ?? 'anon';
+    console.info(`[AUTH][SESSION][${label}] has=${hasSession} user=${userId} expiresAt=${expiresAt}`);
+  }, []);
 
   const fetchUserStatus = useCallback(async (userId: string) => {
     try {
@@ -136,6 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
+        logSessionSnapshot('bootstrap:getSession', currentSession ?? null);
+
         if (!mounted) {
           return;
         }
@@ -179,6 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           console.log("[AUTH CONTEXT] Auth state change:", event);
+
+          logSessionSnapshot(`auth-state:${event}`, newSession ?? null);
 
           // Détecter token expiré / session invalide
           if (event === "TOKEN_REFRESHED") {
@@ -317,20 +334,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw new Error(error.message);
-  }, []);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Certains projets Supabase renvoient déjà une session après signUp.
+    // Dans ce cas, on met immédiatement à jour le contexte pour que l'UI
+    // reflète l'état connecté sans attendre l'événement onAuthStateChange.
+    if (data?.session?.user) {
+      const currentUser = data.session.user;
+      const status = await syncUserData(currentUser.id, currentUser.email ?? undefined);
+
+      const enrichedUser = {
+        ...currentUser,
+        is_admin: status?.isAdmin || false,
+        is_premium: status?.isPremium || false,
+      } as any;
+
+      setUser(enrichedUser);
+      setSession(data.session);
+      setIsInitialized(true);
+      setIsLoading(false);
+    }
+  }, [syncUserData]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data?.session?.user) {
+      const currentUser = data.session.user;
+      const status = await syncUserData(currentUser.id, currentUser.email ?? undefined);
+
+      const enrichedUser = {
+        ...currentUser,
+        is_admin: status?.isAdmin || false,
+        is_premium: status?.isPremium || false,
+      } as any;
+
+      setUser(enrichedUser);
+      setSession(data.session);
+      setIsInitialized(true);
+      setIsLoading(false);
+    }
+  }, [syncUserData]);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    setError(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    setError(null);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }, []);
 
   const signOut = useCallback(async () => {
     setError(null);
-    const { error } = await supabase.auth.signOut();
-    if (error) throw new Error(error.message);
+
+    // Clear local auth state eagerly to avoid sticky sessions in case
+    // the Supabase auth listener does not fire or the storage adapter glitches
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
+    setIsPremium(false);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("[AUTH CONTEXT] Error during signOut:", error);
+        throw new Error(error.message);
+      }
+    } catch (err) {
+      console.error("[AUTH CONTEXT] Exception during signOut:", err);
+      // Surface a generic error but keep local state cleared
+      setError("Erreur lors de la déconnexion");
+      throw err;
+    }
   }, []);
 
   const refreshUserStatus = useCallback(async () => {
@@ -460,59 +556,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, [user?.id, isPremium, signOut]);
 
-  // AUTH WATCHDOG: Surveille régulièrement la session Supabase pour éviter l'état zombie
-  useEffect(() => {
-    let isCancelled = false;
-
-    const runWatchdog = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-
-        if (isCancelled) return;
-
-        if (error) {
-          const errorInfo = handleSupabaseError("authWatchdog", error);
-
-          if (errorInfo.isAuthExpired) {
-            console.warn("[AUTH WATCHDOG] Session expired via getSession, dispatching event");
-            window.dispatchEvent(new Event('auth-expired'));
-            setTimeout(() => signOut(), 0);
-          }
-
-          return;
-        }
-
-        const currentSession = data?.session || null;
-
-        // Cas 1: pas de session Supabase mais un user dans le contexte → état zombie
-        if (!currentSession && user) {
-          console.warn("[AUTH WATCHDOG] No Supabase session but user in context, dispatching event");
-          window.dispatchEvent(new Event('auth-expired'));
-          setTimeout(() => signOut(), 0);
-          return;
-        }
-
-        // Cas 2: session Supabase existe mais le contexte croit que l'utilisateur est déconnecté
-        if (currentSession && !user) {
-          console.log("[AUTH WATCHDOG] Supabase has a session but context has no user. No action, only logging for now.");
-        }
-      } catch (err) {
-        if (isCancelled) return;
-        console.error("[AUTH WATCHDOG] Unexpected error in watchdog:", err);
-      }
-    };
-
-    // Première vérification rapide
-    runWatchdog();
-
-    // Vérification périodique toutes les 60 secondes
-    const intervalId = setInterval(runWatchdog, 60_000);
-
-    return () => {
-      isCancelled = true;
-      clearInterval(intervalId);
-    };
-  }, [user, signOut]);
+  // Removed custom auth watchdog: Supabase autoRefresh handles session lifecycle
 
   const contextValue = useMemo(() => ({
     supabase,
@@ -528,7 +572,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshUserStatus,
-    pollForPremiumStatus
+    pollForPremiumStatus,
+    requestPasswordReset,
+    updatePassword
   }), [
     session,
     user,
@@ -541,7 +587,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshUserStatus,
-    pollForPremiumStatus
+    pollForPremiumStatus,
+    requestPasswordReset,
+    updatePassword
   ]);
 
   return (

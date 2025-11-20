@@ -1,4 +1,6 @@
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
+import { Apple } from "@/components/icons/Apple";
+import { Google } from "@/components/icons/Google";
 import AppFooter from "@/components/layout/AppFooter";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { isIOSNative } from "@/utils/platform";
 import { Eye, EyeOff } from "lucide-react";
 import * as React from "react";
 import { Helmet } from "react-helmet-async";
@@ -21,7 +24,7 @@ export default function AuthPage() {
   const initialMode = params.get("mode") === "login" ? "login" : "signup";
   const [mode, setMode] = React.useState<"signup" | "login">(initialMode as "signup" | "login");
 
-  const { signUp, signIn, setError } = useAuth();
+  const { signUp, signIn, setError, requestPasswordReset, user } = useAuth();
   const { t } = useTranslation();
 
   // Password visibility
@@ -76,8 +79,18 @@ export default function AuthPage() {
   const handleSuccessRedirect = () => {
     // Check for return URL in location state
     const state = location.state as { from?: { pathname: string } } | null;
-    const from = state?.from?.pathname || "/home";
-    navigate(from, { replace: true });
+    const from = state?.from?.pathname;
+
+    if ((isIOSNative() || import.meta.env.DEV) && !user?.user_metadata?.ios_onboarding_done) {
+      navigate("/onboarding", { replace: true });
+      return;
+    }
+
+    navigate(from || "/home", { replace: true });
+  };
+
+  const handleSocialLogin = () => {
+    toast.info("Not yet implemented, coming soon");
   };
 
   async function handleSignup(e?: React.FormEvent) {
@@ -266,6 +279,28 @@ export default function AuthPage() {
                             <Button type="submit" disabled={sLoading} className="w-full bg-white py-3 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60 shadow-lg">
                               {sLoading ? t.auth.signingUp : t.auth.createAccount}
                             </Button>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleSocialLogin}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                              >
+                                <Google className="mr-2 h-4 w-4" />
+                                Google
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleSocialLogin}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                              >
+                                <Apple className="mr-2 h-4 w-4 fill-current" />
+                                Apple
+                              </Button>
+                            </div>
+
                             <button type="button" onClick={() => setMode("login")} className="text-sm text-white/90 hover:text-white underline decoration-white/60 underline-offset-4 transition-colors">
                               {t.auth.alreadyRegistered}
                             </button>
@@ -335,6 +370,51 @@ export default function AuthPage() {
                             <Button type="submit" disabled={lLoading} className="w-full bg-white py-3 font-bold text-reed-primary hover:bg-reed-light hover:text-reed-darker disabled:opacity-60 shadow-lg">
                               {lLoading ? t.auth.loggingIn : t.auth.signIn}
                             </Button>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleSocialLogin}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                              >
+                                <Google className="mr-2 h-4 w-4" />
+                                Google
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleSocialLogin}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                              >
+                                <Apple className="mr-2 h-4 w-4 fill-current" />
+                                Apple
+                              </Button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const email = lEmail.trim();
+                                if (!email) {
+                                  toast.error("Renseigne ton email pour recevoir un lien de réinitialisation");
+                                  return;
+                                }
+                                try {
+                                  await requestPasswordReset(email);
+                                  toast.success("Email de réinitialisation envoyé. Vérifie ta boîte mail.");
+                                } catch (err) {
+                                  const message =
+                                    err instanceof Error
+                                      ? err.message
+                                      : "Impossible d'envoyer l'email de réinitialisation";
+                                  toast.error(message);
+                                }
+                              }}
+                              className="text-xs text-white/90 hover:text-white underline decoration-white/60 underline-offset-4 transition-colors"
+                            >
+                              Mot de passe oublié ?
+                            </button>
                             <button type="button" onClick={() => setMode("signup")} className="text-sm text-white/90 hover:text-white underline decoration-white/60 underline-offset-4 transition-colors">
                               {t.auth.firstTimeHere} {t.auth.createAccount}
                             </button>
