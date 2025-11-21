@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function IOSOnboarding() {
     const { t } = useTranslation();
@@ -29,32 +30,56 @@ export default function IOSOnboarding() {
     }, [user, navigate]);
 
     const markOnboardingDone = async () => {
+        if (!user?.id) {
+            toast.error("Vous devez être connecté pour terminer l'onboarding");
+            return false;
+        }
+
         try {
-            await supabase.auth.updateUser({
+            const { error } = await supabase.auth.updateUser({
                 data: { ios_onboarding_done: true }
             });
-        } catch (e) {
+
+            if (error) {
+                throw error;
+            }
+
+            return true;
+        } catch (e: any) {
             console.error("Failed to save onboarding status", e);
+            toast.error("Impossible d'enregistrer votre progression. Veuillez réessayer.");
+            return false;
         }
     };
 
     const handleFinish = async () => {
         setIsLoading(true);
 
-        // Celebration!
         try {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.8 },
-                colors: ['#10b981', '#3b82f6', '#f59e0b']
-            });
-        } catch (e) {
-            console.error("Confetti failed", e);
-        }
+            // Celebration!
+            try {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.8 },
+                    colors: ['#10b981', '#3b82f6', '#f59e0b']
+                });
+            } catch (e) {
+                console.error("Confetti failed", e);
+            }
 
-        await markOnboardingDone();
-        navigate("/explore", { replace: true });
+            const saved = await markOnboardingDone();
+            if (!saved) {
+                return;
+            }
+
+            navigate("/explore", { replace: true });
+        } catch (e) {
+            console.error("Error finishing onboarding", e);
+            toast.error("Une erreur est survenue. Merci de réessayer.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

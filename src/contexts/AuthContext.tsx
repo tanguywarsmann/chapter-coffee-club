@@ -1,10 +1,10 @@
 
-import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { syncUserProfile } from '@/services/user/userProfileService';
 import { handleSupabaseError } from '@/services/supabaseErrorHandler';
+import { syncUserProfile } from '@/services/user/userProfileService';
+import { Session, User } from '@supabase/supabase-js';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   supabase: typeof supabase;
@@ -34,14 +34,14 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isPremium: false,
   error: null,
-  setError: () => {},
-  signUp: async () => {},
-  signIn: async () => {},
-  signOut: async () => {},
-  refreshUserStatus: async () => {},
+  setError: () => { },
+  signUp: async () => { },
+  signIn: async () => { },
+  signOut: async () => { },
+  refreshUserStatus: async () => { },
   pollForPremiumStatus: async () => false,
-  requestPasswordReset: async () => {},
-  updatePassword: async () => {}
+  requestPasswordReset: async () => { },
+  updatePassword: async () => { }
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -75,14 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         const errorInfo = handleSupabaseError('fetchUserStatus', error);
         console.error('Error fetching user status:', errorInfo);
-        
+
         // If auth expired, dispatch event and trigger signout
         if (errorInfo.isAuthExpired) {
           console.log("[AUTH] Auth expired in fetchUserStatus, dispatching event");
           window.dispatchEvent(new Event('auth-expired'));
           setTimeout(() => signOut(), 0);
         }
-        
+
         setIsAdmin(false);
         setIsPremium(false);
         return { isAdmin: false, isPremium: false };
@@ -161,22 +161,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError("Error connecting to Supabase");
         }
 
-        // If user exists, sync their profile BEFORE updating state
+        // Set auth state immediately based on session only (non-blocking)
         if (currentSession?.user) {
-          const status = await syncUserData(currentSession.user.id, currentSession.user.email);
-
-          if (!mounted) {
-            return;
-          }
-
-          // Enrichir l'user avec les données du profil
-          const enrichedUser = {
-            ...currentSession.user,
-            is_admin: status?.isAdmin || false,
-            is_premium: status?.isPremium || false
-          } as any;
-
-          setUser(enrichedUser);
+          setUser(currentSession.user as any);
           setSession(currentSession);
         } else {
           setUser(null);
@@ -186,6 +173,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Always set initialized to true and loading to false, regardless of session status
         setIsInitialized(true);
         setIsLoading(false);
+
+        // Enrich profile/admin/premium in background (do not block init)
+        if (currentSession?.user) {
+          void syncUserData(currentSession.user.id, currentSession.user.email).then((status) => {
+            if (!mounted) return;
+            setIsAdmin(!!status?.isAdmin);
+            setIsPremium(!!status?.isPremium);
+            setUser(prev => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                is_admin: !!status?.isAdmin,
+                is_premium: !!status?.isPremium
+              } as any;
+            });
+          });
+        }
 
         // NOW set up the auth state change listener for future changes
         const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
@@ -212,21 +216,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
-          // If user exists, sync their profile BEFORE updating state
+          // If user exists, set auth state immediately, then enrich in background
           if (newSession?.user) {
-            const status = await syncUserData(newSession.user.id, newSession.user.email);
-
-            if (!mounted) return;
-
-            // Enrichir l'user avec les données du profil
-            const enrichedUser = {
-              ...newSession.user,
-              is_admin: status?.isAdmin || false,
-              is_premium: status?.isPremium || false
-            } as any;
-
-            setUser(enrichedUser);
+            setUser(newSession.user as any);
             setSession(newSession);
+            void syncUserData(newSession.user.id, newSession.user.email).then((status) => {
+              if (!mounted) return;
+              setIsAdmin(!!status?.isAdmin);
+              setIsPremium(!!status?.isPremium);
+              setUser(prev => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  is_admin: !!status?.isAdmin,
+                  is_premium: !!status?.isPremium
+                } as any;
+              });
+            });
           } else {
             setUser(null);
             setSession(null);
@@ -263,7 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const prevPremiumRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!user?.id) return;
+    const userId = session?.user?.id;
+    if (!userId) return;
 
     // Initialiser avec l'état actuel pour éviter un toast au démarrage
     prevPremiumRef.current = isPremium;
@@ -272,12 +279,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('[AUTH REALTIME] Initial premium state:', isPremium);
 
     const channel = supabase
-      .channel(`premium-status-${user.id}`)
+      .channel(`premium-status-${userId}`)
       .on('postgres_changes', {
         event: '*', // Écoute INSERT et UPDATE
         schema: 'public',
         table: 'profiles',
-        filter: `id=eq.${user.id}`
+        filter: `id=eq.${userId}`
       }, (payload) => {
         console.log('[AUTH REALTIME] 📡 Received profile change:', payload.eventType, payload);
 
@@ -330,7 +337,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('[AUTH REALTIME] Cleaning up real-time listener');
       supabase.removeChannel(channel);
     };
-  }, [user?.id]); // Retirer isPremium des deps pour éviter re-création
+  }, [session?.user?.id]); // Retirer isPremium des deps pour éviter re-création
+
+  // Établit une session valide à partir des paramètres du lien de récupération Supabase
+  const ensureRecoverySession = useCallback(async () => {
+    // Si une session existe déjà, rien à faire
+    const { data: { session: existingSession } } = await supabase.auth.getSession();
+    if (existingSession) {
+      return existingSession;
+    }
+
+    // Supabase envoie access_token/refresh_token ou un code selon la config
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const accessToken = hashParams.get("access_token") ?? searchParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token") ?? searchParams.get("refresh_token");
+    const code = searchParams.get("code") ?? hashParams.get("code");
+
+    if (code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error || !data?.session) {
+        throw new Error(error?.message || "Lien de réinitialisation invalide ou expiré.");
+      }
+      return data.session;
+    }
+
+    if (accessToken && refreshToken) {
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      if (error || !data?.session) {
+        throw new Error(error?.message || "Session invalide pour la réinitialisation du mot de passe.");
+      }
+      return data.session;
+    }
+
+    throw new Error("Lien de réinitialisation invalide ou expiré.");
+  }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
     setError(null);
@@ -341,22 +386,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Certains projets Supabase renvoient déjà une session après signUp.
-    // Dans ce cas, on met immédiatement à jour le contexte pour que l'UI
-    // reflète l'état connecté sans attendre l'événement onAuthStateChange.
+    // Mettre à jour l'état auth immédiatement, enrichir en arrière-plan.
     if (data?.session?.user) {
       const currentUser = data.session.user;
-      const status = await syncUserData(currentUser.id, currentUser.email ?? undefined);
-
-      const enrichedUser = {
-        ...currentUser,
-        is_admin: status?.isAdmin || false,
-        is_premium: status?.isPremium || false,
-      } as any;
-
-      setUser(enrichedUser);
+      setUser(currentUser as any);
       setSession(data.session);
       setIsInitialized(true);
       setIsLoading(false);
+      void syncUserData(currentUser.id, currentUser.email ?? undefined).then((status) => {
+        setIsAdmin(!!status?.isAdmin);
+        setIsPremium(!!status?.isPremium);
+        setUser(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            is_admin: !!status?.isAdmin,
+            is_premium: !!status?.isPremium
+          } as any;
+        });
+      });
     }
   }, [syncUserData]);
 
@@ -370,18 +418,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data?.session?.user) {
       const currentUser = data.session.user;
-      const status = await syncUserData(currentUser.id, currentUser.email ?? undefined);
-
-      const enrichedUser = {
-        ...currentUser,
-        is_admin: status?.isAdmin || false,
-        is_premium: status?.isPremium || false,
-      } as any;
-
-      setUser(enrichedUser);
+      setUser(currentUser as any);
       setSession(data.session);
       setIsInitialized(true);
       setIsLoading(false);
+      void syncUserData(currentUser.id, currentUser.email ?? undefined).then((status) => {
+        setIsAdmin(!!status?.isAdmin);
+        setIsPremium(!!status?.isPremium);
+        setUser(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            is_admin: !!status?.isAdmin,
+            is_premium: !!status?.isPremium
+          } as any;
+        });
+      });
     }
   }, [syncUserData]);
 
@@ -398,12 +450,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updatePassword = useCallback(async (newPassword: string) => {
     setError(null);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    try {
+      await ensureRecoverySession();
 
-    if (error) {
-      throw new Error(error.message);
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Rafraîchir la session après mise à jour du mot de passe
+      const { data: { session: refreshed } } = await supabase.auth.getSession();
+      if (refreshed?.user) {
+        const status = await syncUserData(refreshed.user.id, refreshed.user.email ?? undefined);
+        const enrichedUser = {
+          ...refreshed.user,
+          is_admin: status?.isAdmin || false,
+          is_premium: status?.isPremium || false,
+        } as any;
+        setUser(enrichedUser);
+        setSession(refreshed);
+      }
+    } catch (err: any) {
+      const message = err?.message || "Erreur lors de la mise à jour du mot de passe";
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
     }
-  }, []);
+  }, [ensureRecoverySession, syncUserData]);
 
   const signOut = useCallback(async () => {
     setError(null);
@@ -494,7 +566,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           const errorInfo = handleSupabaseError('pollForPremiumStatus', error);
           console.error(`[AUTH POLL] Error on attempt ${attempt}:`, errorInfo);
-          
+
           // If auth expired, dispatch event, stop polling and trigger signout
           if (errorInfo.isAuthExpired) {
             console.log("[AUTH POLL] Auth expired, dispatching event and stopping poll");

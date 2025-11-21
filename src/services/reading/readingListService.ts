@@ -9,6 +9,7 @@ import {
 } from '@/utils/readingListErrors';
 import { assertValidBook } from '@/utils/bookValidation';
 import { getValidatedSegmentCount, getAllValidatedSegmentCounts } from './validatedSegmentCount';
+import { withRequestTimeout } from '@/utils/requestWithTimeout';
 
 type ProgressRow = {
   id: string;
@@ -126,25 +127,29 @@ export const addBookToReadingList = async (book: Book): Promise<boolean> => {
 export async function fetchReadingProgress(userId: string): Promise<ReadingListPayload> {
   console.log("[fetchReadingProgress] start for", userId);
 
-  const { data, error } = await supabase
-    .from("reading_progress")
-    .select(
+  const { data, error } = await withRequestTimeout(
+    supabase
+      .from("reading_progress")
+      .select(
+        `
+        id,
+        user_id,
+        book_id,
+        current_page,
+        total_pages,
+        status,
+        updated_at,
+        started_at,
+        books:books_public(
+          id, slug, title, author, cover_url, total_chapters, expected_segments
+        )
       `
-      id,
-      user_id,
-      book_id,
-      current_page,
-      total_pages,
-      status,
-      updated_at,
-      started_at,
-      books:books_public(
-        id, slug, title, author, cover_url, total_chapters, expected_segments
       )
-    `
-    )
-    .eq("user_id", userId)
-    .order("updated_at", { ascending: false });
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false }),
+    12000,
+    "fetchReadingProgress"
+  );
 
   if (error) {
     console.error("[fetchReadingProgress] error:", error);

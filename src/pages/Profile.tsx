@@ -27,12 +27,13 @@ import {
   BookOpen,
   Clock,
   Edit3,
+  Play,
   Target,
   TrendingUp,
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 type UserProfile = Awaited<ReturnType<typeof getUserProfile>>;
@@ -170,6 +171,7 @@ export default function Profile() {
   const params = useParams<{ userId?: string }>();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
 
@@ -325,13 +327,16 @@ export default function Profile() {
 
                         {/* Account management link for own profile */}
                         {isOwnProfile && (
-                          <div className="flex flex-col gap-2 flex-shrink-0 text-right">
-                            <Link
-                              to="/onboarding"
-                              className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                          <div className="flex flex-col gap-2 flex-shrink-0 text-right items-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs sm:text-sm border-coffee-light hover:bg-coffee-light/20"
+                              onClick={() => navigate("/onboarding")}
                             >
+                              <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                               Rejouer l'onboarding
-                            </Link>
+                            </Button>
                             <Link
                               to="/settings/delete-account"
                               className="text-xs text-muted-foreground hover:text-destructive transition-colors underline-offset-4 hover:underline"

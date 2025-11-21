@@ -24,11 +24,14 @@ export default function AuthPage() {
   const initialMode = params.get("mode") === "login" ? "login" : "signup";
   const [mode, setMode] = React.useState<"signup" | "login">(initialMode as "signup" | "login");
 
-  const { signUp, signIn, setError, requestPasswordReset, user } = useAuth();
+  const { signUp, signIn, setError, requestPasswordReset, user, supabase, isInitialized } = useAuth();
   const { t } = useTranslation();
+
+  const fromParam = params.get("from");
 
   // Password visibility
   const [showPassword, setShowPassword] = React.useState(false);
+  const [socialLoading, setSocialLoading] = React.useState<"google" | "apple" | null>(null);
 
   // Refs for keyboard navigation
   const sEmailRef = React.useRef<HTMLInputElement>(null);
@@ -79,7 +82,7 @@ export default function AuthPage() {
   const handleSuccessRedirect = () => {
     // Check for return URL in location state
     const state = location.state as { from?: { pathname: string } } | null;
-    const from = state?.from?.pathname;
+    const from = state?.from?.pathname || fromParam || undefined;
 
     if ((isIOSNative() || import.meta.env.DEV) && !user?.user_metadata?.ios_onboarding_done) {
       navigate("/onboarding", { replace: true });
@@ -89,8 +92,46 @@ export default function AuthPage() {
     navigate(from || "/home", { replace: true });
   };
 
-  const handleSocialLogin = () => {
-    toast.info("Not yet implemented, coming soon");
+  const buildOAuthRedirectUrl = () => {
+    const url = new URL(`${window.location.origin}/auth`);
+    url.searchParams.set("mode", "login");
+    const state = location.state as { from?: { pathname: string } } | null;
+    const from = state?.from?.pathname || fromParam;
+    if (from) {
+      url.searchParams.set("from", from);
+    }
+    return url.toString();
+  };
+
+  const handleSocialLogin = async (provider: "google" | "apple") => {
+    if (provider === "apple") {
+      toast.info("Apple arrive bientôt");
+      return;
+    }
+
+    setSocialLoading(provider);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: buildOAuthRedirectUrl(),
+          queryParams: {
+            prompt: "select_account",
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.info("Redirection vers Google…");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Impossible de se connecter avec Google";
+      toast.error(message);
+    } finally {
+      setSocialLoading(null);
+    }
   };
 
   async function handleSignup(e?: React.FormEvent) {
@@ -146,6 +187,12 @@ export default function AuthPage() {
     }
   };
 
+  React.useEffect(() => {
+    if (isInitialized && user) {
+      handleSuccessRedirect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized, user?.id]);
 
   return (
     <>
@@ -284,17 +331,19 @@ export default function AuthPage() {
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleSocialLogin}
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={() => handleSocialLogin("google")}
+                                disabled={socialLoading !== null}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white disabled:opacity-60"
                               >
                                 <Google className="mr-2 h-4 w-4" />
-                                Google
+                                {socialLoading === "google" ? "Connexion..." : "Google"}
                               </Button>
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleSocialLogin}
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={() => handleSocialLogin("apple")}
+                                disabled={socialLoading !== null}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white disabled:opacity-60"
                               >
                                 <Apple className="mr-2 h-4 w-4 fill-current" />
                                 Apple
@@ -375,17 +424,19 @@ export default function AuthPage() {
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleSocialLogin}
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={() => handleSocialLogin("google")}
+                                disabled={socialLoading !== null}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white disabled:opacity-60"
                               >
                                 <Google className="mr-2 h-4 w-4" />
-                                Google
+                                {socialLoading === "google" ? "Connexion..." : "Google"}
                               </Button>
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleSocialLogin}
-                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                                onClick={() => handleSocialLogin("apple")}
+                                disabled={socialLoading !== null}
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white disabled:opacity-60"
                               >
                                 <Apple className="mr-2 h-4 w-4 fill-current" />
                                 Apple

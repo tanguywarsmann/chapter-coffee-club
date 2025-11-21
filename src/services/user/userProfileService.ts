@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { withRequestTimeout } from "@/utils/requestWithTimeout";
 
 type ProfileRecord = Database['public']['Tables']['profiles']['Row'];
 
@@ -23,11 +24,15 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
 
     if (currentUserId && currentUserId === userId) {
       // Propre profil: on peut lire toutes les colonnes (dont l'email)
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      const { data, error } = await withRequestTimeout(
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle(),
+        12000,
+        "getUserProfile:own"
+      );
       
       if (error) {
         console.error("Error fetching own user profile:", error);
@@ -40,9 +45,13 @@ export async function getUserProfile(userId: string): Promise<ProfileRecord | nu
     }
 
     // Profil public d'un autre utilisateur: utiliser l'RPC sécurisé sans email
-    const { data: publicData, error: publicError } = await supabase
-      .rpc('get_public_profile', { target_id: userId })
-      .maybeSingle();
+    const { data: publicData, error: publicError } = await withRequestTimeout(
+      supabase
+        .rpc('get_public_profile', { target_id: userId })
+        .maybeSingle(),
+      12000,
+      "getUserProfile:public"
+    );
 
     if (publicError) {
       console.error("Error fetching public profile via RPC:", publicError);
@@ -139,11 +148,15 @@ export async function syncUserProfile(userId: string, email: string | undefined)
 
   try {
     // Vérifier si un profil existe déjà
-    const { data: existingProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, username, email, avatar_url, is_premium, premium_since, is_admin, created_at, updated_at')
-      .eq('id', userId)
-      .maybeSingle();
+    const { data: existingProfile, error: profileError } = await withRequestTimeout(
+      supabase
+        .from('profiles')
+        .select('id, username, email, avatar_url, is_premium, premium_since, is_admin, created_at, updated_at')
+        .eq('id', userId)
+        .maybeSingle(),
+      12000,
+      "syncUserProfile:select"
+    );
       
       if (profileError) {
         console.error("Error checking existing profile:", profileError);
@@ -156,10 +169,14 @@ export async function syncUserProfile(userId: string, email: string | undefined)
       if (existingProfile) {
         // Mise à jour de l'email si le profil existe déjà
         if (email) {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ email })
-            .eq('id', userId);
+          const { error: updateError } = await withRequestTimeout(
+            supabase
+              .from('profiles')
+              .update({ email })
+              .eq('id', userId),
+            12000,
+            "syncUserProfile:update"
+          );
           
           if (updateError) {
             console.error("Error updating profile:", updateError);
@@ -171,14 +188,18 @@ export async function syncUserProfile(userId: string, email: string | undefined)
         }
       } else {
         // Création d'un nouveau profil si aucun n'existe
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            email,
-            username: null,
-            is_admin: false
-          });
+        const { error: insertError } = await withRequestTimeout(
+          supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email,
+              username: null,
+              is_admin: false
+            }),
+          12000,
+          "syncUserProfile:insert"
+        );
         
         if (insertError) {
           console.error("Error creating profile:", insertError);
