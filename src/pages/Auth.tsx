@@ -104,20 +104,22 @@ export default function AuthPage() {
   };
 
   const handleSocialLogin = async (provider: "google" | "apple") => {
-    if (provider === "apple") {
-      toast.info("Apple arrive bientôt");
-      return;
-    }
-
     setSocialLoading(provider);
+
+    const providerLabel = provider === "google" ? "Google" : "Apple";
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider,
         options: {
           redirectTo: buildOAuthRedirectUrl(),
-          queryParams: {
-            prompt: "select_account",
-          },
+          // Google supports this query param, Apple ignores unknown params
+          queryParams:
+            provider === "google"
+              ? {
+                  prompt: "select_account",
+                }
+              : undefined,
         },
       });
 
@@ -125,9 +127,10 @@ export default function AuthPage() {
         throw error;
       }
 
-      toast.info("Redirection vers Google…");
+      toast.info(`Redirection vers ${providerLabel}\u2026`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Impossible de se connecter avec Google";
+      const message =
+        err instanceof Error ? err.message : `Impossible de se connecter avec ${providerLabel}`;
       toast.error(message);
     } finally {
       setSocialLoading(null);
