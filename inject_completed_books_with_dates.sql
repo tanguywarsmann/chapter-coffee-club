@@ -1,5 +1,5 @@
 -- =============================================
--- Script d'injection : Livres terminés avec dates précises
+-- Script d'injection : Livres terminés avec dates et heures variées
 -- Utilise completed_at pour le feed (pas updated_at)
 -- Date: 2025-11-24
 -- =============================================
@@ -58,12 +58,49 @@ dated AS (
     book_id,
     segment,
     CASE
-      WHEN rn BETWEEN  1 AND  5 THEN TIMESTAMPTZ '2025-11-19 12:00:00+00'
-      WHEN rn BETWEEN  6 AND 11 THEN TIMESTAMPTZ '2025-11-20 12:00:00+00'
-      WHEN rn BETWEEN 12 AND 16 THEN TIMESTAMPTZ '2025-11-21 12:00:00+00'
-      WHEN rn BETWEEN 17 AND 21 THEN TIMESTAMPTZ '2025-11-22 12:00:00+00'
-      WHEN rn BETWEEN 22 AND 26 THEN TIMESTAMPTZ '2025-11-23 12:00:00+00'
-      WHEN rn BETWEEN 27 AND 32 THEN TIMESTAMPTZ '2025-11-24 12:00:00+00'
+      -- 19 nov: 5 livres à des heures variées
+      WHEN rn = 1 THEN TIMESTAMPTZ '2025-11-19 09:23:00+00'
+      WHEN rn = 2 THEN TIMESTAMPTZ '2025-11-19 14:47:00+00'
+      WHEN rn = 3 THEN TIMESTAMPTZ '2025-11-19 16:12:00+00'
+      WHEN rn = 4 THEN TIMESTAMPTZ '2025-11-19 19:35:00+00'
+      WHEN rn = 5 THEN TIMESTAMPTZ '2025-11-19 21:18:00+00'
+      
+      -- 20 nov: 6 livres
+      WHEN rn = 6 THEN TIMESTAMPTZ '2025-11-20 08:41:00+00'
+      WHEN rn = 7 THEN TIMESTAMPTZ '2025-11-20 11:27:00+00'
+      WHEN rn = 8 THEN TIMESTAMPTZ '2025-11-20 13:54:00+00'
+      WHEN rn = 9 THEN TIMESTAMPTZ '2025-11-20 17:03:00+00'
+      WHEN rn = 10 THEN TIMESTAMPTZ '2025-11-20 19:29:00+00'
+      WHEN rn = 11 THEN TIMESTAMPTZ '2025-11-20 22:16:00+00'
+      
+      -- 21 nov: 5 livres
+      WHEN rn = 12 THEN TIMESTAMPTZ '2025-11-21 10:15:00+00'
+      WHEN rn = 13 THEN TIMESTAMPTZ '2025-11-21 12:38:00+00'
+      WHEN rn = 14 THEN TIMESTAMPTZ '2025-11-21 15:51:00+00'
+      WHEN rn = 15 THEN TIMESTAMPTZ '2025-11-21 18:44:00+00'
+      WHEN rn = 16 THEN TIMESTAMPTZ '2025-11-21 20:57:00+00'
+      
+      -- 22 nov: 5 livres
+      WHEN rn = 17 THEN TIMESTAMPTZ '2025-11-22 09:08:00+00'
+      WHEN rn = 18 THEN TIMESTAMPTZ '2025-11-22 13:22:00+00'
+      WHEN rn = 19 THEN TIMESTAMPTZ '2025-11-22 16:47:00+00'
+      WHEN rn = 20 THEN TIMESTAMPTZ '2025-11-22 19:11:00+00'
+      WHEN rn = 21 THEN TIMESTAMPTZ '2025-11-22 21:33:00+00'
+      
+      -- 23 nov: 5 livres
+      WHEN rn = 22 THEN TIMESTAMPTZ '2025-11-23 08:52:00+00'
+      WHEN rn = 23 THEN TIMESTAMPTZ '2025-11-23 11:19:00+00'
+      WHEN rn = 24 THEN TIMESTAMPTZ '2025-11-23 14:26:00+00'
+      WHEN rn = 25 THEN TIMESTAMPTZ '2025-11-23 17:49:00+00'
+      WHEN rn = 26 THEN TIMESTAMPTZ '2025-11-23 20:34:00+00'
+      
+      -- 24 nov: 6 livres
+      WHEN rn = 27 THEN TIMESTAMPTZ '2025-11-24 09:37:00+00'
+      WHEN rn = 28 THEN TIMESTAMPTZ '2025-11-24 12:14:00+00'
+      WHEN rn = 29 THEN TIMESTAMPTZ '2025-11-24 14:58:00+00'
+      WHEN rn = 30 THEN TIMESTAMPTZ '2025-11-24 16:42:00+00'
+      WHEN rn = 31 THEN TIMESTAMPTZ '2025-11-24 18:25:00+00'
+      WHEN rn = 32 THEN TIMESTAMPTZ '2025-11-24 21:03:00+00'
     END AS completed_at
   FROM selected
 )
