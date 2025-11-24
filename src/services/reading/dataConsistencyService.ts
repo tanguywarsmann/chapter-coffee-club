@@ -63,13 +63,21 @@ export const fixInconsistentReadingStatus = async (userId: string) => {
         if (progress.status !== correctStatus || Math.abs(progress.current_page - correctCurrentPage) > 10) {
           console.log(`[DataConsistency] Correction ${bookId}: ${progress.status} -> ${correctStatus}, page ${progress.current_page} -> ${correctCurrentPage}`);
           
+          // Préparer les données de mise à jour
+          const updateData: any = {
+            status: correctStatus,
+            current_page: correctCurrentPage,
+            updated_at: new Date().toISOString()
+          };
+          
+          // Si on passe à 'completed' et que completed_at n'est pas déjà défini, le mettre à jour
+          if (correctStatus === 'completed' && !progress.completed_at) {
+            updateData.completed_at = new Date().toISOString();
+          }
+          
           const { error: updateError } = await supabase
             .from('reading_progress')
-            .update({
-              status: correctStatus,
-              current_page: correctCurrentPage,
-              updated_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', progress.id);
 
           if (updateError) {
