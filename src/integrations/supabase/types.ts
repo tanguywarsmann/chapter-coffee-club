@@ -950,6 +950,7 @@ export type Database = {
       reading_progress: {
         Row: {
           book_id: string
+          completed_at: string | null
           current_page: number
           id: string
           started_at: string | null
@@ -962,6 +963,7 @@ export type Database = {
         }
         Insert: {
           book_id: string
+          completed_at?: string | null
           current_page?: number
           id?: string
           started_at?: string | null
@@ -974,6 +976,7 @@ export type Database = {
         }
         Update: {
           book_id?: string
+          completed_at?: string | null
           current_page?: number
           id?: string
           started_at?: string | null
