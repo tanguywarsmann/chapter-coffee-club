@@ -66,9 +66,9 @@ export async function getDiscoverData(userId: string): Promise<DiscoverData> {
     readersLength: rawData.readers?.length
   });
   
-  // Filtrer les lecteurs pour ne garder que ceux avec au moins 1 livre en cours
+  // Garder tous les lecteurs suggérés par la RPC (même sans livre en cours)
   const activeReaders = Array.isArray(rawData.readers) 
-    ? rawData.readers.filter((reader: DiscoverReader) => reader.in_progress > 0)
+    ? rawData.readers
     : [];
 
   const result: DiscoverData = {
