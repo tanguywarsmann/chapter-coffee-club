@@ -11,9 +11,10 @@ interface SuccessMessageProps {
   onClose?: () => void;
   segment: number;
   userId?: string; // ✅ Phase 3.2: Nouveau prop pour afficher XP
+  expectedSegments?: number;
 }
 
-export function SuccessMessage({ isOpen, onClose, segment, userId }: SuccessMessageProps) {
+export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegments }: SuccessMessageProps) {
   const { showConfetti } = useConfetti();
   const [userLevel, setUserLevel] = useState<any>(null);
   
@@ -32,6 +33,7 @@ export function SuccessMessage({ isOpen, onClose, segment, userId }: SuccessMess
   const nextSegment = segment + 1;
   const xpForNext = userLevel ? getXPForNextLevel(userLevel.level) : 100;
   const progressPercent = userLevel ? Math.min(100, (userLevel.xp / xpForNext) * 100) : 0;
+  const hasNextSegment = !!expectedSegments && segment < expectedSegments;
   
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose && onClose()}>
@@ -81,10 +83,12 @@ export function SuccessMessage({ isOpen, onClose, segment, userId }: SuccessMess
           )}
           
           {/* Message de progression */}
-          <div className="text-sm text-muted-foreground mt-4">
-            <p className="mb-1">Prochain segment : <strong>{nextSegment}</strong></p>
-            <p className="text-xs">Rendez-vous dans 30 pages</p>
-          </div>
+          {hasNextSegment && (
+            <div className="text-sm text-muted-foreground mt-4">
+              <p className="mb-1">Prochain segment : <strong>{nextSegment}</strong></p>
+              <p className="text-xs">Rendez-vous dans 30 pages</p>
+            </div>
+          )}
         </div>
         
         <div className="flex justify-center mt-4">
