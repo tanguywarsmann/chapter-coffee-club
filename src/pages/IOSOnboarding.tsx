@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
-import { isIOSNative } from "@/utils/platform";
 import confetti from 'canvas-confetti';
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -17,17 +16,16 @@ export default function IOSOnboarding() {
     const [selectedReason, setSelectedReason] = useState<keyof typeof t.onboardingIOS.options | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Guard: redirect if not iOS native or already completed
-    useEffect(() => {
-        if (!isIOSNative() && !import.meta.env.DEV) {
-            navigate("/home", { replace: true });
-            return;
-        }
+    const onboardingDone = Boolean(
+        user?.user_metadata?.onboarding_done ?? user?.user_metadata?.ios_onboarding_done
+    );
 
-        if (user?.user_metadata?.ios_onboarding_done) {
+    // Guard: redirect if onboarding already completed
+    useEffect(() => {
+        if (onboardingDone) {
             navigate("/home", { replace: true });
         }
-    }, [user, navigate]);
+    }, [onboardingDone, navigate]);
 
     const markOnboardingDone = async () => {
         if (!user?.id) {
@@ -37,7 +35,7 @@ export default function IOSOnboarding() {
 
         try {
             const { error } = await supabase.auth.updateUser({
-                data: { ios_onboarding_done: true }
+                data: { onboarding_done: true, ios_onboarding_done: true }
             });
 
             if (error) {

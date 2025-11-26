@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { isIOSNative } from "@/utils/platform";
 import { Eye, EyeOff } from "lucide-react";
 import * as React from "react";
 import { Helmet } from "react-helmet-async";
@@ -83,13 +82,21 @@ export default function AuthPage() {
     // Check for return URL in location state
     const state = location.state as { from?: { pathname: string } } | null;
     const from = state?.from?.pathname || fromParam || undefined;
+    const onboardingDone = Boolean(
+      user?.user_metadata?.onboarding_done ?? user?.user_metadata?.ios_onboarding_done
+    );
 
-    if (import.meta.env.DEV && !user?.user_metadata?.ios_onboarding_done) {
+    if (!onboardingDone) {
       navigate("/onboarding", { replace: true });
       return;
     }
 
-    navigate(from || "/home", { replace: true });
+    if (from) {
+      navigate(from, { replace: true });
+      return;
+    }
+
+    navigate("/home", { replace: true });
   };
 
   const buildOAuthRedirectUrl = () => {
