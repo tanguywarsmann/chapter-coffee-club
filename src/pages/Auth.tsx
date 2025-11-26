@@ -84,7 +84,7 @@ export default function AuthPage() {
     const state = location.state as { from?: { pathname: string } } | null;
     const from = state?.from?.pathname || fromParam || undefined;
 
-    if ((isIOSNative() || import.meta.env.DEV) && !user?.user_metadata?.ios_onboarding_done) {
+    if (import.meta.env.DEV && !user?.user_metadata?.ios_onboarding_done) {
       navigate("/onboarding", { replace: true });
       return;
     }
@@ -117,8 +117,8 @@ export default function AuthPage() {
           queryParams:
             provider === "google"
               ? {
-                  prompt: "select_account",
-                }
+                prompt: "select_account",
+              }
               : undefined,
         },
       });
