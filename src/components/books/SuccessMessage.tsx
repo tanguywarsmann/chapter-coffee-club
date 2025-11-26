@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useConfetti } from "@/components/confetti/ConfettiProvider";
 import { CheckCircle } from "lucide-react";
 import { getUserLevel, getXPForNextLevel } from "@/services/user/levelService";
+import { toast } from "sonner";
 
 interface SuccessMessageProps {
   isOpen: boolean;
@@ -12,9 +13,10 @@ interface SuccessMessageProps {
   segment: number;
   userId?: string; // ✅ Phase 3.2: Nouveau prop pour afficher XP
   expectedSegments?: number;
+  bookTitle?: string;
 }
 
-export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegments }: SuccessMessageProps) {
+export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegments, bookTitle }: SuccessMessageProps) {
   const { showConfetti } = useConfetti();
   const [userLevel, setUserLevel] = useState<any>(null);
   
@@ -34,6 +36,35 @@ export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegme
   const xpForNext = userLevel ? getXPForNextLevel(userLevel.level) : 100;
   const progressPercent = userLevel ? Math.min(100, (userLevel.xp / xpForNext) * 100) : 0;
   const hasNextSegment = !!expectedSegments && segment < expectedSegments;
+  const shareText = `Je viens de terminer ${bookTitle ? `"${bookTitle}"` : "un livre"} sur VREAD !`;
+
+  const handleShareInstagram = async () => {
+    const sharePayload = {
+      title: "VREAD",
+      text: shareText,
+      url: window.location.origin
+    };
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(sharePayload);
+        toast.success("Partagé !");
+        return;
+      }
+    } catch (e) {
+      console.error("Native share failed", e);
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(`${shareText} ${window.location.origin}`);
+      }
+      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+      toast.info("Texte copié. Ouvre Instagram pour le coller dans ta story.");
+    } catch (e) {
+      toast.error("Impossible de préparer le partage. Réessaie plus tard.");
+    }
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose && onClose()}>
@@ -92,12 +123,21 @@ export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegme
         </div>
         
         <div className="flex justify-center mt-4">
-          <Button 
-            onClick={() => onClose && onClose()} 
-            className="bg-coffee-dark hover:bg-coffee-darker"
-          >
-            Continuer ma lecture
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+            <Button 
+              onClick={() => onClose && onClose()} 
+              className="bg-coffee-dark hover:bg-coffee-darker w-full sm:w-auto"
+            >
+              Continuer ma lecture
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleShareInstagram}
+              className="w-full sm:w-auto"
+            >
+              Partager sur Instagram
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
