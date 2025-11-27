@@ -116,6 +116,8 @@ export const BookValidationModals = memo(({
           isOpen={showSuccessMessage}
           onClose={onSuccessClose}
           segment={currentQuestion?.segment || 0}
+          expectedSegments={expectedSegmentsSafe}
+          bookTitle={book.title}
           userId={userId} // ✅ Passer userId à SuccessMessage
         />
       )}
