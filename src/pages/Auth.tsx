@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
+import { App as CapApp } from "@capacitor/app";
 import { Eye, EyeOff } from "lucide-react";
 import * as React from "react";
 import { Helmet } from "react-helmet-async";
@@ -100,6 +103,14 @@ export default function AuthPage() {
   };
 
   const buildOAuthRedirectUrl = () => {
+    const isNativePlatform = Capacitor.isNativePlatform();
+
+    // Sur mobile, utiliser le custom URL scheme
+    if (isNativePlatform) {
+      return "vreadapp://auth/callback";
+    }
+
+    // Sur web, utiliser l'URL web normale
     const url = new URL(`${window.location.origin}/auth`);
     url.searchParams.set("mode", "login");
     const state = location.state as { from?: { pathname: string } } | null;
@@ -114,9 +125,10 @@ export default function AuthPage() {
     setSocialLoading(provider);
 
     const providerLabel = provider === "google" ? "Google" : "Apple";
+    const isNativePlatform = Capacitor.isNativePlatform();
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: buildOAuthRedirectUrl(),
@@ -134,12 +146,24 @@ export default function AuthPage() {
         throw error;
       }
 
-      toast.info(`Redirection vers ${providerLabel}\u2026`);
+      // Sur mobile (iOS/Android), ouvrir le navigateur in-app
+      if (isNativePlatform && data?.url) {
+        toast.info(`Ouverture de ${providerLabel}...`);
+
+        // Ouvrir le navigateur in-app avec l'URL OAuth
+        // Le deep link handler (appUrlOpen) gérera le retour automatiquement
+        await Browser.open({
+          url: data.url,
+          windowName: "_self"
+        });
+      } else {
+        // Sur web, le navigateur redirige automatiquement
+        toast.info(`Redirection vers ${providerLabel}\u2026`);
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : `Impossible de se connecter avec ${providerLabel}`;
       toast.error(message);
-    } finally {
       setSocialLoading(null);
     }
   };
@@ -203,6 +227,105 @@ export default function AuthPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized, user?.id]);
+
+  // Gérer le deep linking pour OAuth sur mobile
+  React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const handleDeepLink = async (event: { url: string }) => {
+      console.log('[AUTH] Deep link received:', event.url);
+
+      // Vérifier si c'est un callback OAuth
+      if (event.url.includes('auth/callback')) {
+        // Fermer le navigateur in-app s'il est encore ouvert
+        try {
+          await Browser.close();
+        } catch (e) {
+          console.log('[AUTH] Browser was not open or already closed');
+        }
+
+        try {
+          // Parser l'URL du deep link
+          // Format: vreadapp://auth/callback#access_token=...&refresh_token=...
+          // Ou: vreadapp://auth/callback?code=...
+          const urlStr = event.url.replace('vreadapp://', 'https://dummy.com/');
+          const url = new URL(urlStr);
+
+          // Extraire les tokens du hash (implicit flow)
+          const hashParams = new URLSearchParams(url.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          // Ou extraire le code (PKCE flow)
+          const code = url.searchParams.get('code');
+
+          console.log('[AUTH] Processing OAuth callback...', {
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken,
+            hasCode: !!code
+          });
+
+          if (code) {
+            // PKCE flow : échanger le code contre une session
+            console.log('[AUTH] Using PKCE flow with code');
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+            if (error) {
+              console.error('[AUTH] Error exchanging code for session:', error);
+              toast.error('Erreur lors de la connexion');
+              setSocialLoading(null);
+              return;
+            }
+
+            if (data?.session) {
+              console.log('[AUTH] Session created successfully!');
+              toast.success('Connexion réussie !');
+              handleSuccessRedirect();
+            }
+          } else if (accessToken && refreshToken) {
+            // Implicit flow : créer la session directement avec les tokens
+            console.log('[AUTH] Using implicit flow with tokens');
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+
+            if (error) {
+              console.error('[AUTH] Error setting session:', error);
+              toast.error('Erreur lors de la connexion');
+              setSocialLoading(null);
+              return;
+            }
+
+            if (data?.session) {
+              console.log('[AUTH] Session created successfully!');
+              toast.success('Connexion réussie !');
+              handleSuccessRedirect();
+            }
+          } else {
+            console.error('[AUTH] No valid tokens or code found in callback URL');
+            toast.error('Authentification échouée');
+          }
+
+          setSocialLoading(null);
+        } catch (error) {
+          console.error('[AUTH] Error handling deep link:', error);
+          toast.error('Erreur lors du traitement du lien');
+          setSocialLoading(null);
+        }
+      }
+    };
+
+    // Écouter les événements d'ouverture d'URL
+    const listener = CapApp.addListener('appUrlOpen', handleDeepLink);
+
+    return () => {
+      listener.then(l => l.remove());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
