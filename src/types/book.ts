@@ -30,6 +30,7 @@ export interface Book {
   totalSegments?: number;
   progressPercent?: number;
   nextSegmentPage?: number;
+  currentSegment?: number;
   
   // Add camelCase alias for expected_segments to fix type errors
   expectedSegments?: number;

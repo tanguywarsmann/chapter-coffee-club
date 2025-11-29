@@ -5,7 +5,7 @@ export type DiscoverFeedItem = {
   actor_id: string;
   actor_name: string;
   avatar_url: string | null;
-  kind: 'finished' | 'badge';
+  kind: 'finished' | 'badge' | 'joined';
   book_id?: string;
   payload_title: string;
   ts: string;

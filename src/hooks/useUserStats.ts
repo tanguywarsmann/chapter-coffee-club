@@ -3,7 +3,7 @@ import { getUserStats, UserStats } from '@/services/reading/statsService';
 
 export const useUserStats = (
   userId: string,
-  options?: UseQueryOptions<UserStats, unknown, UserStats, readonly ["user-stats", string]>
+  options?: Partial<Omit<UseQueryOptions<UserStats, unknown, UserStats, readonly ["user-stats", string]>, 'queryKey' | 'queryFn'>>
 ) =>
   useQuery({
     queryKey: ['user-stats', userId],
