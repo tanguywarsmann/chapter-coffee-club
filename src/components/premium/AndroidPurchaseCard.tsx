@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/i18n/LanguageContext';
 import { isPremium, purchaseLifetime, restorePurchases, getLifetimePackage } from '@/lib/revenuecat';
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AndroidPurchaseCard() {
   const { t } = useTranslation();
