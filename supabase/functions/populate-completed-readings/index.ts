@@ -89,13 +89,13 @@ Deno.serve(async (req) => {
       { id: '6dab0ece-632f-4b92-96af-0c316eef43d5', title: 'Un automne pour te pardonner', total_pages: 330 },
     ];
 
-    // Utilisateurs inactifs avec leur nombre de lectures
+    // Utilisateurs avec noms complets
     const users: UserData[] = [
-      { id: '5b343db8-83a9-444f-bcd3-2dc3cd32713b', username: 'Philippine R', readingCount: 6 },
-      { id: 'ceb9626d-4d60-4e7c-a4ac-e87d7dee1dc3', username: 'Charlotte Barr', readingCount: 7 },
-      { id: 'a055bf42-b367-42d8-9922-73d2f32aa0c0', username: 'Théo Satty', readingCount: 8 },
-      { id: 'e0ebd4ca-d8ba-4fee-8494-8304477cfd7c', username: 'Salomon C', readingCount: 9 },
-      { id: '8f23978c-e3ae-49fb-80ee-e2ccae803818', username: 'Kévin Vu', readingCount: 10 },
+      { id: '5b343db8-83a9-444f-bcd3-2dc3cd32713b', username: 'Philippine Renault', readingCount: 6 },
+      { id: 'ceb9626d-4d60-4e7c-a4ac-e87d7dee1dc3', username: 'Charlotte Barreau', readingCount: 7 },
+      { id: 'a055bf42-b367-42d8-9922-73d2f32aa0c0', username: 'Théo Sattler', readingCount: 8 },
+      { id: 'e0ebd4ca-d8ba-4fee-8494-8304477cfd7c', username: 'Salomon Cazeneuve', readingCount: 9 },
+      { id: '8f23978c-e3ae-49fb-80ee-e2ccae803818', username: 'Kévin Vuong', readingCount: 10 },
     ];
 
     // Dates de plage
