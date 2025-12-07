@@ -368,7 +368,7 @@ export default function Profile() {
                           <div className="text-center p-2 sm:p-3 bg-coffee-light/20 rounded-lg min-w-0">
                             <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-coffee-dark mx-auto mb-1" />
                             <div className="text-lg sm:text-2xl font-bold text-coffee-darker">{stats.totalPages}</div>
-                            <div className="text-xs sm:text-sm text-coffee-medium">Pages lues</div>
+                            <div className="text-xs sm:text-sm text-coffee-medium">Segments lues</div>
                           </div>
                         </div>
                       )}
