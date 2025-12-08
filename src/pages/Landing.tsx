@@ -25,48 +25,7 @@ export default function Landing() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [displayName, setDisplayName] = useState<string>("");
 
-  // NATIVE IOS ENTRY
-  if (isIOSNative()) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center p-6 overflow-hidden relative">
-        {/* Background Texture */}
-        <div className="fixed inset-0 opacity-[0.02] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] bg-repeat" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="w-full max-w-sm"
-        >
-          <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-2xl p-8 text-center flex flex-col gap-6 ring-1 ring-white/20 rounded-3xl">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-serif font-bold text-white leading-tight">
-                {t.onboardingIOS.title}
-              </h1>
-              <p className="text-white/80 text-body">
-                {t.onboardingIOS.subtitle}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 pt-2">
-              <Link to="/auth?mode=signup" className="w-full">
-                <Button className="w-full bg-white text-reed-primary hover:bg-white/90 font-bold py-6 text-lg shadow-lg transition-transform active:scale-95 rounded-xl">
-                  {t.onboardingIOS.primaryCta}
-                </Button>
-              </Link>
-              
-              <Link to="/auth?mode=login" className="block w-full">
-                <button className="text-white/60 text-sm hover:text-white transition-colors py-2">
-                  J'ai déjà un compte
-                </button>
-              </Link>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-    );
-  }
-
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -136,6 +95,49 @@ export default function Landing() {
     }
   };
 
+  // NATIVE IOS ENTRY - conditional return AFTER all hooks
+  if (isIOSNative()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center p-6 overflow-hidden relative">
+        {/* Background Texture */}
+        <div className="fixed inset-0 opacity-[0.02] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] bg-repeat" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="w-full max-w-sm"
+        >
+          <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-2xl p-8 text-center flex flex-col gap-6 ring-1 ring-white/20 rounded-3xl">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-serif font-bold text-white leading-tight">
+                {t.onboardingIOS.title}
+              </h1>
+              <p className="text-white/80 text-body">
+                {t.onboardingIOS.subtitle}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 pt-2">
+              <Link to="/auth?mode=signup" className="w-full">
+                <Button className="w-full bg-white text-reed-primary hover:bg-white/90 font-bold py-6 text-lg shadow-lg transition-transform active:scale-95 rounded-xl">
+                  {t.onboardingIOS.primaryCta}
+                </Button>
+              </Link>
+              
+              <Link to="/auth?mode=login" className="block w-full">
+                <button className="text-white/60 text-sm hover:text-white transition-colors py-2">
+                  J'ai déjà un compte
+                </button>
+              </Link>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Main web rendering
   return (
     <>
       <style>{`
