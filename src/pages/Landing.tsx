@@ -1,4 +1,5 @@
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
+import { CertificationDemo } from "@/components/landing/CertificationDemo";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { ValueSection } from "@/components/landing/ValueSection";
@@ -266,6 +267,9 @@ export default function Landing() {
                 {t.landing.ctaSubtext}
               </p>
             </motion.div>
+
+            {/* Animation Certification en Direct */}
+            <CertificationDemo />
 
             {/* Section Comment ça marche */}
             <HowItWorks />

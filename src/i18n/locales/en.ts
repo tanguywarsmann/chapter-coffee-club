@@ -92,6 +92,11 @@ export const en: Translations = {
       with4: "Shareable on Instagram/LinkedIn",
       mechanism: "The principle: Read 30 pages → Answer questions → Validate your segment → Continue the adventure",
     },
+    certificationDemo: {
+      question: "What strange golden object does Dumbledore consult before Hagrid's arrival?",
+      answer: "WATCH",
+      certified: "READING CERTIFIED",
+    },
   },
 
   // Public Home Page

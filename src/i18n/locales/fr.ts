@@ -90,8 +90,13 @@ export const fr = {
 			with2: "Question IA = preuve imparable",
 			with3: "Bookies : likes et commentaires",
 			with4: "Partageable sur Instagram/LinkedIn",
-			mechanism:
-				"Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
+		mechanism:
+			"Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
+		},
+		certificationDemo: {
+			question: "Quel objet d'or étrange Dumbledore consulte-t-il avant l'arrivée de Hagrid ?",
+			answer: "MONTRE",
+			certified: "LECTURE CERTIFIÉE",
 		},
 	},
 
