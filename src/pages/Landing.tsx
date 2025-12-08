@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { getDisplayName } from "@/services/user/userProfileService";
 import { isIOSNative } from "@/utils/platform";
-import confetti from 'canvas-confetti';
+
 import { motion } from "framer-motion";
 import { ArrowRight, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -19,21 +19,11 @@ import { Card } from "@/components/ui/card";
 export default function Landing() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [revealed, setRevealed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const ctaRef = useRef<HTMLAnchorElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [displayName, setDisplayName] = useState<string>("");
 
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Calculate display name
   useEffect(() => {
@@ -68,32 +58,6 @@ export default function Landing() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const letters = ['D', 'E', 'U', 'X', 'L', 'I', 'V', 'R', 'E', 'S'];
-
-  const bookColors = [
-    '#8B4513', '#A0522D', '#8B7355', '#996633', '#8B6F47',
-    '#704214', '#9C6644', '#A67B5B', '#8B6F47', '#B85C38'
-  ];
-
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 200,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#10b981', '#3b82f6', '#f59e0b']
-    });
-
-    if (window.confetti) {
-      setTimeout(() => {
-        window.confetti({
-          particleCount: 100,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 }
-        });
-      }, 500);
-    }
-  };
 
   // NATIVE IOS ENTRY - conditional return AFTER all hooks
   if (isIOSNative()) {
@@ -233,121 +197,6 @@ export default function Landing() {
               <span className="text-white/70">{t.landing.socialProof}</span>
             </motion.p>
 
-            {/* Pile */}
-            <div className="py-8 flex flex-col items-center w-full">
-              <div className="relative mx-auto" style={{ width: '200px', height: '300px' }}>
-
-                {/* 10 livres */}
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => {
-                  const isBottom = i === 8;
-                  const isTop = i === 9;
-                  const shouldStay = isBottom || isTop;
-
-                  return (
-                    <div
-                      key={i}
-                      className="absolute left-0 right-0 transition-all duration-700"
-                      style={{
-                        bottom: revealed
-                          ? (shouldStay ? (isBottom ? '0px' : '60px') : '-120px')
-                          : `${(9 - i) * 26}px`,
-                        opacity: revealed && !shouldStay ? 0 : 1,
-                      }}
-                    >
-                      <div
-                        className="w-full h-14 rounded-xl flex items-center justify-center relative border-2 transition-all duration-700"
-                        style={{
-                          backgroundColor: shouldStay && revealed ? '#FFFFFF' : bookColors[i],
-                          borderColor: shouldStay && revealed ? '#EEDCC8' : 'rgba(255,255,255,0.2)',
-                          boxShadow: shouldStay && revealed
-                            ? '0 15px 60px rgba(166,123,91,0.6), 0 0 100px rgba(166,123,91,0.4)'
-                            : '0 5px 20px rgba(0,0,0,0.4)',
-                        }}
-                      >
-                        {!revealed && (
-                          <>
-                            <div className="absolute top-3 left-4 right-4 h-px bg-white/20" />
-                            <div className="absolute bottom-3 left-4 right-4 h-px bg-white/20" />
-                          </>
-                        )}
-
-                        <span
-                          className="font-bold transition-all duration-700"
-                          style={{
-                            color: shouldStay && revealed ? '#B85C38' : '#FFFFFF',
-                            textShadow: !revealed ? '0 3px 8px rgba(0,0,0,0.7)' : 'none',
-                            fontSize: revealed && shouldStay ? '32px' : '56px',
-                            letterSpacing: revealed && shouldStay ? '-1px' : '0px',
-                          }}
-                        >
-                          {revealed && shouldStay
-                            ? (isBottom ? t.landing.twoBooks.split(' ')[1] : t.landing.twoBooks.split(' ')[0])
-                            : letters[i]
-                          }
-                        </span>
-
-                        {shouldStay && revealed && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent rounded-xl pointer-events-none" />
-                        )}
-                      </div>
-
-                      <div
-                        className="absolute -right-2.5 top-0 w-2.5 h-14 rounded-r-xl transition-all duration-700"
-                        style={{
-                          backgroundColor: shouldStay && revealed ? '#F5E6D3' : bookColors[i],
-                          opacity: revealed && !shouldStay ? 0 : 1,
-                          boxShadow: '3px 0 10px rgba(0,0,0,0.4)',
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-
-                {/* Zone cliquable - Seulement le tiers inférieur */}
-                <div
-                  className="absolute left-0 right-0 cursor-pointer z-50 hover:bg-white/5 transition-colors rounded-xl"
-                  style={{
-                    bottom: '0px',
-                    height: '100px',
-                  }}
-                  onClick={() => {
-                    setRevealed(true);
-                    triggerConfetti();
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    setRevealed(true);
-                    triggerConfetti();
-                  }}
-                />
-
-              </div>
-
-              {!revealed && (
-                <p className="text-white/60 text-body-sm mt-10 animate-bounce text-center w-full">
-                  {isMobile ? t.landing.touchToReveal : t.landing.clickToReveal}
-                </p>
-              )}
-
-              {revealed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRevealed(false);
-                  }}
-                  className="text-white/70 hover:text-white text-body-sm underline underline-offset-4 mt-10 transition-colors"
-                >
-                  {t.landing.restart}
-                </button>
-              )}
-            </div>
-
-            {/* Texte final */}
-            <h2 className="text-hero text-white font-serif text-center w-full">
-              {t.landing.finalTitle1}
-              <br />
-              {t.landing.finalTitle2}
-            </h2>
 
             {/* CTA Magnétique */}
             <motion.div
