@@ -1,4 +1,6 @@
 import LogoVreadPng from "@/components/brand/LogoVreadPng";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { SocialProof } from "@/components/landing/SocialProof";
 import { ValueSection } from "@/components/landing/ValueSection";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -176,26 +178,58 @@ export default function Landing() {
           <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
 
             {/* Logo */}
-            <div className="relative inline-block mb-6">
+            <div className="relative inline-block mb-4">
               <div className="absolute inset-0 bg-white/20 blur-3xl animate-pulse" />
-              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-10 border-2 border-white/20 shadow-2xl">
-                <LogoVreadPng size={120} className="md:w-[140px]" />
+              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl">
+                <LogoVreadPng size={100} className="md:w-[120px]" />
               </div>
             </div>
 
-            {/* Titre */}
-            <h1 className="text-hero text-white font-serif text-center w-full">
-              {t.landing.heroTitle1}
-              <br />
-              {t.landing.heroTitle2}
-              <br />
-              {t.landing.heroTitle3}
-            </h1>
+            {/* Badge Strava */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6"
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+              }}
+            >
+              <span className="text-white/90 font-medium tracking-wide">
+                {t.landing.stravaBadge}
+              </span>
+            </motion.div>
 
-            {/* New Tagline */}
-            <p className="text-white/60 text-body-sm mt-6 max-w-md mx-auto leading-relaxed font-medium tracking-wide">
-              {t.landing.title}
-            </p>
+            {/* Slogan Principal (HERO) */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-center w-full leading-tight"
+              style={{
+                color: 'white',
+                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              <span className="block">{t.landing.heroSlogan}</span>
+              <span className="block">{t.landing.heroSlogan2}</span>
+            </motion.h1>
+
+            {/* Sous-titre + Social Proof */}
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="text-white/90 text-lg md:text-xl mt-6 max-w-lg mx-auto leading-relaxed font-medium"
+              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
+            >
+              {t.landing.heroSubtitle}
+              <br />
+              <span className="text-white/70">{t.landing.socialProof}</span>
+            </motion.p>
 
             {/* Pile */}
             <div className="py-8 flex flex-col items-center w-full">
@@ -375,70 +409,21 @@ export default function Landing() {
                   ))}
                 </div>
               </Link>
+
+              {/* CTA Subtext */}
+              <p className="text-white/60 text-sm mt-3">
+                {t.landing.ctaSubtext}
+              </p>
             </motion.div>
+
+            {/* Section Comment ça marche */}
+            <HowItWorks />
 
             {/* Section Valeur VREAD */}
             <ValueSection />
 
-            {/* Slogan 3D avec blob organique */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1 }}
-              className="pt-8 pb-20 w-full flex justify-center px-4 relative"
-            >
-              {/* Blob organique animé en arrière-plan */}
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                  rotate: [0, 5, 0],
-                }}
-                transition={{
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{
-                  filter: 'blur(60px)',
-                }}
-              >
-                <div
-                  className="w-[600px] h-[400px]"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(166,123,91,0.15), transparent)',
-                    borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
-                  }}
-                />
-              </motion.div>
-
-              {/* Texte 3D */}
-              <motion.h2
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative text-6xl md:text-7xl font-extrabold text-center leading-tight max-w-5xl"
-                style={{
-                  background: 'linear-gradient(135deg, #FFFFFF, #E8DCC8)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: `
-                    0 1px 0 #C4A287,
-                    0 2px 0 #B5977D,
-                    0 3px 0 #A67B5B,
-                    0 6px 12px rgba(0,0,0,0.15),
-                    0 12px 24px rgba(0,0,0,0.1)
-                  `,
-                }}
-              >
-                <span className="block">{t.landing.sloganPart1} <span className="font-black">{t.landing.sloganPart2}</span></span>
-                <span className="block">{t.landing.sloganPart3}</span>
-                <span className="block">{t.landing.sloganPart4}</span>
-              </motion.h2>
-            </motion.div>
+            {/* Section Social Proof */}
+            <SocialProof />
 
           </div>
         </div>
@@ -446,15 +431,15 @@ export default function Landing() {
         {/* Footer */}
         <footer className="py-12 border-t border-white/10 w-full">
           <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-body-sm px-4">
-            <Link to="/blog" className="text-white/50 hover:text-white transition-colors">
+            <Link to="/blog" className="text-white/70 hover:text-white transition-colors">
               {t.nav.blog}
             </Link>
-            <span className="text-white/30 text-xl md:text-2xl">·</span>
-            <Link to="/press" className="text-white/50 hover:text-white transition-colors">
+            <span className="text-white/40 text-xl md:text-2xl">·</span>
+            <Link to="/press" className="text-white/70 hover:text-white transition-colors">
               {t.nav.press}
             </Link>
-            <span className="text-white/30 text-xl md:text-2xl">·</span>
-            <Link to="/about" className="text-white/50 hover:text-white transition-colors">
+            <span className="text-white/40 text-xl md:text-2xl">·</span>
+            <Link to="/about" className="text-white/70 hover:text-white transition-colors">
               {t.nav.contact}
             </Link>
           </nav>
