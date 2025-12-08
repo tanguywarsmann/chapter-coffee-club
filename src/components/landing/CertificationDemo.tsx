@@ -2,7 +2,7 @@ import { motion, useSpring, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import confetti from "canvas-confetti";
-import { BookOpen, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 const PHASES = {
   book: { start: 0, duration: 2500 },
@@ -14,15 +14,17 @@ const PHASES = {
 
 const TOTAL_DURATION = 10000;
 
-// Brand colors from tailwind config (HSL 25-35 warm tones)
+// Brand colors - warm amber/brown palette
 const BRAND = {
-  primary: 'hsl(25, 40%, 50%)',      // reed-primary
-  primaryLight: 'hsl(35, 30%, 82%)', // reed-secondary  
-  dark: 'hsl(25, 40%, 20%)',         // brand-800
-  darker: 'hsl(25, 40%, 12%)',       // brand-900
-  light: 'hsl(35, 30%, 92%)',        // brand-100
-  cream: 'hsl(30, 35%, 98%)',        // brand-50
-  medium: 'hsl(25, 30%, 70%)',       // brand-400
+  primary: 'hsl(25, 40%, 50%)',
+  primaryDark: 'hsl(25, 40%, 40%)',
+  primaryLight: 'hsl(25, 40%, 60%)',
+  secondary: 'hsl(35, 30%, 82%)',
+  dark: 'hsl(25, 40%, 18%)',
+  darker: 'hsl(25, 40%, 12%)',
+  light: 'hsl(35, 30%, 92%)',
+  cream: 'hsl(30, 35%, 97%)',
+  muted: 'hsl(25, 20%, 55%)',
 };
 
 export function CertificationDemo() {
@@ -44,14 +46,14 @@ export function CertificationDemo() {
       setTimeout(() => {
         setPhase('celebration');
         confetti({
-          particleCount: 45,
-          spread: 65,
-          origin: { y: 0.6, x: 0.5 },
-          colors: ['hsl(25, 40%, 50%)', 'hsl(35, 30%, 82%)', 'hsl(25, 40%, 65%)', '#22c55e'],
+          particleCount: 40,
+          spread: 55,
+          origin: { y: 0.55, x: 0.5 },
+          colors: [BRAND.primary, BRAND.secondary, BRAND.primaryLight, BRAND.light],
           shapes: ['circle'],
-          scalar: 0.85,
-          gravity: 1.1,
-          ticks: 120,
+          scalar: 0.8,
+          gravity: 1,
+          ticks: 100,
         });
       }, PHASES.celebration.start);
       setTimeout(() => setPhase('reset'), PHASES.reset.start);
@@ -70,305 +72,313 @@ export function CertificationDemo() {
   const answer = t.landing.certificationDemo?.answer || "MONTRE";
   const certified = t.landing.certificationDemo?.certified || "LECTURE CERTIFIÉE";
 
+  const isQuestionVisible = ['question', 'answer', 'celebration'].includes(phase);
+  const isAnswerVisible = ['answer', 'celebration'].includes(phase);
+
   return (
     <motion.div
       key={cycleKey}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="w-full max-w-lg mx-auto my-14 md:my-20 px-4"
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-md mx-auto my-16 md:my-20 px-4"
     >
-      {/* Main card */}
-      <div 
-        className="relative rounded-3xl overflow-hidden"
-        style={{
-          background: `linear-gradient(170deg, ${BRAND.dark} 0%, ${BRAND.darker} 100%)`,
-          boxShadow: '0 30px 60px -20px rgba(0,0,0,0.4)',
-        }}
-      >
-        {/* Top accent line */}
+      {/* Card container */}
+      <div className="relative">
+        {/* Outer glow */}
         <div 
-          className="absolute top-0 left-0 right-0 h-1"
-          style={{ background: `linear-gradient(90deg, transparent, ${BRAND.primary}, transparent)` }}
+          className="absolute -inset-1 rounded-[26px] opacity-50 blur-xl"
+          style={{ background: `linear-gradient(135deg, ${BRAND.primary}, transparent, ${BRAND.primaryDark})` }}
         />
+        
+        {/* Main card */}
+        <div 
+          className="relative rounded-[24px] overflow-hidden"
+          style={{
+            background: `linear-gradient(175deg, ${BRAND.dark} 0%, ${BRAND.darker} 100%)`,
+            boxShadow: `
+              0 1px 0 0 rgba(255,255,255,0.06) inset,
+              0 -1px 0 0 rgba(0,0,0,0.2) inset,
+              0 40px 70px -20px rgba(0,0,0,0.5)
+            `,
+          }}
+        >
+          {/* Subtle top highlight */}
+          <div 
+            className="absolute top-0 left-[10%] right-[10%] h-[1px]"
+            style={{ background: `linear-gradient(90deg, transparent, ${BRAND.primary}50, transparent)` }}
+          />
 
-        {/* Content */}
-        <div className="relative p-6 md:p-10">
-          
-          {/* Step indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center gap-2">
-              {['book', 'question', 'answer', 'celebration'].map((step, i) => (
-                <motion.div
-                  key={step}
-                  className="flex items-center"
-                  animate={{
-                    opacity: phase === 'reset' ? 0.3 : 
-                             ['book', 'question', 'answer', 'celebration'].indexOf(phase) >= i ? 1 : 0.3
-                  }}
-                >
-                  <div 
-                    className="w-2 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      background: ['book', 'question', 'answer', 'celebration'].indexOf(phase) >= i 
-                        ? BRAND.primary 
-                        : 'rgba(255,255,255,0.2)',
-                      boxShadow: ['book', 'question', 'answer', 'celebration'].indexOf(phase) >= i 
-                        ? `0 0 8px ${BRAND.primary}` 
-                        : 'none'
-                    }}
-                  />
-                  {i < 3 && (
+          <div className="relative px-6 py-8 md:px-10 md:py-10">
+            
+            {/* Progress dots */}
+            <div className="flex justify-center gap-3 mb-8">
+              {[0, 1, 2, 3].map((i) => {
+                const phaseIndex = ['book', 'question', 'answer', 'celebration'].indexOf(phase);
+                const isActive = phaseIndex >= i && phase !== 'reset';
+                const isCurrent = phaseIndex === i && phase !== 'reset';
+                
+                return (
+                  <motion.div
+                    key={i}
+                    className="relative"
+                    animate={{ scale: isCurrent ? 1 : 1 }}
+                  >
+                    {isCurrent && (
+                      <motion.div
+                        className="absolute -inset-1 rounded-full"
+                        style={{ background: BRAND.primary }}
+                        animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.3, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
+                    )}
                     <div 
-                      className="w-8 h-[2px] mx-1"
-                      style={{ 
-                        background: ['book', 'question', 'answer', 'celebration'].indexOf(phase) > i 
-                          ? BRAND.primary 
-                          : 'rgba(255,255,255,0.1)' 
+                      className="relative w-2 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        background: isActive ? BRAND.primary : 'rgba(255,255,255,0.15)',
                       }}
                     />
-                  )}
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* === BOOK === */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ 
-              opacity: phase === 'reset' ? 0 : 1, 
-              y: 0,
-            }}
-            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-            className="flex flex-col items-center mb-8"
-          >
-            {/* Book visual */}
-            <div className="relative">
-              {/* Glow behind book */}
-              <div 
-                className="absolute -inset-4 rounded-2xl blur-2xl opacity-30"
-                style={{ background: BRAND.primary }}
-              />
-              
+            {/* === BOOK === */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: phase === 'reset' ? 0 : 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex flex-col items-center mb-6"
+            >
               {/* Book */}
-              <motion.div 
-                className="relative w-24 h-32 md:w-28 md:h-38 rounded-lg overflow-hidden"
-                style={{
-                  background: `linear-gradient(135deg, hsl(25, 50%, 35%) 0%, hsl(25, 45%, 25%) 100%)`,
-                  boxShadow: `
-                    6px 6px 20px rgba(0,0,0,0.3),
-                    inset 0 1px 0 rgba(255,255,255,0.1)
-                  `,
-                  border: `2px solid ${BRAND.primary}`,
-                }}
-                animate={{ 
-                  rotateY: phase === 'book' ? [0, -3, 0] : 0,
-                }}
-                transition={{ duration: 1.5, ease: "easeInOut" }}
-              >
-                {/* Book inner border */}
+              <div className="relative mb-4">
+                {/* Soft shadow */}
                 <div 
-                  className="absolute inset-2 rounded border"
-                  style={{ borderColor: 'rgba(255,255,255,0.15)' }}
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-16 h-3 rounded-full blur-lg"
+                  style={{ background: 'rgba(0,0,0,0.4)' }}
                 />
                 
-                {/* Book content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3">
-                  <motion.span
-                    className="text-xl md:text-2xl mb-1"
-                    animate={{ 
-                      filter: ['drop-shadow(0 0 4px rgba(255,255,255,0.5))', 'drop-shadow(0 0 8px rgba(255,255,255,0.8))', 'drop-shadow(0 0 4px rgba(255,255,255,0.5))']
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    ⚡
-                  </motion.span>
+                <motion.div 
+                  className="relative"
+                  animate={{ rotateY: phase === 'book' ? [0, -2, 0] : 0 }}
+                  transition={{ duration: 2, ease: "easeInOut" }}
+                  style={{ perspective: 800 }}
+                >
+                  {/* Book body */}
                   <div 
-                    className="text-[9px] md:text-[10px] font-serif font-bold uppercase tracking-wider"
-                    style={{ color: BRAND.cream }}
+                    className="relative w-20 h-28 md:w-24 md:h-32 rounded-r-lg rounded-l-sm"
+                    style={{
+                      background: `linear-gradient(145deg, ${BRAND.primaryDark} 0%, hsl(25, 40%, 32%) 50%, hsl(25, 40%, 28%) 100%)`,
+                      boxShadow: `
+                        4px 4px 16px rgba(0,0,0,0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.1),
+                        inset -1px 0 0 rgba(255,255,255,0.05)
+                      `,
+                    }}
                   >
-                    Harry Potter
+                    {/* Spine */}
+                    <div 
+                      className="absolute left-0 top-0 bottom-0 w-2"
+                      style={{
+                        background: `linear-gradient(90deg, hsl(25, 40%, 25%), hsl(25, 40%, 30%))`,
+                        borderRadius: '2px 0 0 2px',
+                      }}
+                    />
+
+                    {/* Inner frame */}
+                    <div 
+                      className="absolute inset-3 rounded-sm"
+                      style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                    />
+
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <motion.span
+                        className="text-lg md:text-xl"
+                        animate={{ 
+                          opacity: [0.8, 1, 0.8],
+                          filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)']
+                        }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
+                      >
+                        ⚡
+                      </motion.span>
+                      <span 
+                        className="text-[8px] md:text-[9px] font-serif font-semibold uppercase tracking-widest mt-0.5"
+                        style={{ color: BRAND.light }}
+                      >
+                        Harry Potter
+                      </span>
+                    </div>
+
+                    {/* Pages */}
+                    <div 
+                      className="absolute right-0 top-1 bottom-1 w-[3px]"
+                      style={{
+                        background: `linear-gradient(90deg, ${BRAND.secondary}, ${BRAND.cream})`,
+                        borderRadius: '0 2px 2px 0',
+                      }}
+                    />
                   </div>
-                </div>
+                </motion.div>
+              </div>
 
-                {/* Pages edge */}
-                <div 
-                  className="absolute right-0 top-1 bottom-1 w-1"
-                  style={{
-                    background: `linear-gradient(90deg, ${BRAND.light}, ${BRAND.cream})`,
-                    borderRadius: '0 2px 2px 0',
-                  }}
-                />
-              </motion.div>
-            </div>
-
-            {/* Page counter */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center gap-2 mt-5"
-            >
-              <BookOpen className="w-4 h-4" style={{ color: BRAND.medium }} />
-              <span style={{ color: BRAND.medium }} className="text-sm">Page</span>
-              <motion.span 
-                className="text-2xl font-bold font-serif tabular-nums"
-                style={{ color: BRAND.primary }}
-              >
-                {displayPages}
-              </motion.span>
-              <span style={{ color: 'rgba(255,255,255,0.3)' }} className="text-sm">/30</span>
+              {/* Counter */}
+              <div className="flex items-baseline gap-1.5">
+                <motion.span 
+                  className="text-3xl md:text-4xl font-serif font-bold tabular-nums"
+                  style={{ color: BRAND.primary }}
+                >
+                  {displayPages}
+                </motion.span>
+                <span 
+                  className="text-sm font-medium"
+                  style={{ color: BRAND.muted }}
+                >
+                  / 30 pages
+                </span>
+              </div>
             </motion.div>
-          </motion.div>
 
-          {/* === QUESTION === */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ 
-              opacity: ['question', 'answer', 'celebration'].includes(phase) ? 1 : 0,
-              y: ['question', 'answer', 'celebration'].includes(phase) ? 0 : 20,
-            }}
-            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-            className="mb-5"
-          >
-            <div 
-              className="rounded-2xl p-5"
-              style={{
-                background: BRAND.cream,
-                boxShadow: '0 8px 30px -10px rgba(0,0,0,0.2)',
+            {/* === QUESTION === */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ 
+                opacity: isQuestionVisible ? 1 : 0,
+                y: isQuestionVisible ? 0 : 16,
               }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mb-4"
             >
-              {/* Label */}
-              <div className="flex items-center gap-2 mb-3">
+              <div 
+                className="relative rounded-xl p-4 md:p-5"
+                style={{
+                  background: BRAND.cream,
+                  boxShadow: `
+                    0 4px 20px -6px rgba(0,0,0,0.15),
+                    0 1px 0 0 rgba(255,255,255,0.8) inset
+                  `,
+                }}
+              >
+                {/* Accent bar */}
                 <div 
-                  className="w-1.5 h-1.5 rounded-full"
+                  className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
                   style={{ background: BRAND.primary }}
                 />
-                <span 
-                  className="text-[10px] font-bold uppercase tracking-widest"
-                  style={{ color: BRAND.dark }}
-                >
-                  Question
-                </span>
-              </div>
 
-              {/* Question text */}
-              <div 
-                className="text-sm md:text-[15px] leading-relaxed font-medium"
-                style={{ color: BRAND.darker }}
-              >
-                <BlurStaggerText 
-                  text={question} 
-                  isVisible={['question', 'answer', 'celebration'].includes(phase)} 
-                />
-              </div>
-            </div>
-          </motion.div>
+                <div className="pl-3">
+                  {/* Label */}
+                  <span 
+                    className="inline-block text-[9px] font-bold uppercase tracking-[0.12em] mb-2"
+                    style={{ color: BRAND.muted }}
+                  >
+                    Question
+                  </span>
 
-          {/* === ANSWER === */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ 
-              opacity: ['answer', 'celebration'].includes(phase) ? 1 : 0,
-              y: ['answer', 'celebration'].includes(phase) ? 0 : 15
-            }}
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="mb-5"
-          >
-            <div 
-              className="rounded-xl p-4 text-center"
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: `1px solid rgba(255,255,255,0.1)`,
-              }}
-            >
-              <div className="flex items-center justify-center gap-3">
-                <span 
-                  className="text-xs uppercase tracking-wider"
-                  style={{ color: BRAND.medium }}
-                >
-                  Réponse
-                </span>
-                <div className="flex items-center">
-                  <GoldenLetterReveal 
-                    word={answer} 
-                    isVisible={['answer', 'celebration'].includes(phase)} 
-                  />
-                  {phase === 'answer' && (
-                    <motion.span
-                      animate={{ opacity: [1, 0, 1] }}
-                      transition={{ duration: 0.6, repeat: Infinity }}
-                      className="ml-0.5 w-[2px] h-6 rounded-full"
-                      style={{ background: BRAND.primary }}
-                    />
-                  )}
+                  {/* Text */}
+                  <p 
+                    className="text-[13px] md:text-sm leading-relaxed font-medium"
+                    style={{ color: BRAND.dark }}
+                  >
+                    <BlurStaggerText text={question} isVisible={isQuestionVisible} />
+                  </p>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* === CELEBRATION === */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ 
-              opacity: phase === 'celebration' ? 1 : 0,
-              scale: phase === 'celebration' ? 1 : 0.9
-            }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 300, 
-              damping: 25,
-              delay: phase === 'celebration' ? 0.15 : 0
-            }}
-            className="flex flex-col items-center gap-4"
-          >
-            {/* Checkmark */}
+            {/* === ANSWER === */}
             <motion.div
-              className="relative"
-              initial={{ scale: 0 }}
-              animate={{ scale: phase === 'celebration' ? 1 : 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ 
+                opacity: isAnswerVisible ? 1 : 0,
+                y: isAnswerVisible ? 0 : 12
+              }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="mb-4"
             >
               <div 
-                className="w-14 h-14 rounded-full flex items-center justify-center"
+                className="rounded-xl py-3 px-4"
                 style={{
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  boxShadow: '0 8px 25px -5px rgba(34,197,94,0.5)',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
                 }}
               >
-                <Check className="w-7 h-7 text-white" strokeWidth={3} />
+                <div className="flex items-center justify-between">
+                  <span 
+                    className="text-[10px] uppercase tracking-widest font-medium"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                  >
+                    Réponse
+                  </span>
+                  <div className="flex items-center">
+                    <LetterReveal word={answer} isVisible={isAnswerVisible} />
+                    {phase === 'answer' && (
+                      <motion.div
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                        className="w-[2px] h-5 ml-0.5 rounded-full"
+                        style={{ background: BRAND.primary }}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             </motion.div>
 
-            {/* Badge */}
+            {/* === SUCCESS === */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ 
                 opacity: phase === 'celebration' ? 1 : 0,
-                y: phase === 'celebration' ? 0 : 8
+                scale: phase === 'celebration' ? 1 : 0.95
               }}
-              transition={{ delay: 0.4, duration: 0.3 }}
+              transition={{ 
+                duration: 0.4,
+                ease: [0.23, 1, 0.32, 1],
+                delay: phase === 'celebration' ? 0.1 : 0
+              }}
+              className="flex flex-col items-center pt-2"
             >
-              <div 
-                className="px-6 py-2.5 rounded-full font-bold text-sm tracking-wide"
-                style={{
-                  background: `linear-gradient(135deg, ${BRAND.primary} 0%, hsl(25, 40%, 45%) 100%)`,
-                  color: 'white',
-                  boxShadow: `0 6px 20px -5px ${BRAND.primary}`,
-                }}
+              {/* Check icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: phase === 'celebration' ? 1 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
+                className="mb-3"
               >
-                ✓ {certified}
-              </div>
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.primaryDark} 100%)`,
+                    boxShadow: `0 8px 24px -6px ${BRAND.primary}`,
+                  }}
+                >
+                  <Check className="w-6 h-6 text-white" strokeWidth={2.5} />
+                </div>
+              </motion.div>
+
+              {/* Text */}
+              <motion.span
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ 
+                  opacity: phase === 'celebration' ? 1 : 0,
+                  y: phase === 'celebration' ? 0 : 6
+                }}
+                transition={{ delay: 0.35 }}
+                className="text-sm font-bold tracking-wide"
+                style={{ color: BRAND.primary }}
+              >
+                {certified}
+              </motion.span>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </motion.div>
   );
 }
 
-// === SUB-COMPONENTS ===
-
+// Blur stagger effect for question text
 function BlurStaggerText({ text, isVisible }: { text: string; isVisible: boolean }) {
   const words = text.split(' ');
   
@@ -376,19 +386,18 @@ function BlurStaggerText({ text, isVisible }: { text: string; isVisible: boolean
     <motion.span
       initial="hidden"
       animate={isVisible ? "visible" : "hidden"}
-      variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+      variants={{ visible: { transition: { staggerChildren: 0.04 } } }}
     >
       {words.map((word, i) => (
         <motion.span
           key={i}
-          className="inline-block mr-[0.3em]"
+          className="inline-block mr-[0.25em]"
           variants={{
-            hidden: { opacity: 0, filter: "blur(4px)", y: 3 },
+            hidden: { opacity: 0, filter: "blur(3px)" },
             visible: { 
               opacity: 1, 
               filter: "blur(0px)",
-              y: 0,
-              transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
+              transition: { duration: 0.25, ease: "easeOut" }
             }
           }}
         >
@@ -399,29 +408,26 @@ function BlurStaggerText({ text, isVisible }: { text: string; isVisible: boolean
   );
 }
 
-function GoldenLetterReveal({ word, isVisible }: { word: string; isVisible: boolean }) {
-  const letters = word.split('');
-  
+// Letter reveal for answer
+function LetterReveal({ word, isVisible }: { word: string; isVisible: boolean }) {
   return (
     <motion.span
       initial="hidden"
       animate={isVisible ? "visible" : "hidden"}
-      variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+      variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
       className="flex"
     >
-      {letters.map((letter, i) => (
+      {word.split('').map((letter, i) => (
         <motion.span
           key={i}
-          className="text-2xl md:text-3xl font-bold font-serif"
-          style={{
-            color: BRAND.primary,
-            textShadow: `0 0 20px ${BRAND.primary}`,
-          }}
+          className="text-xl md:text-2xl font-bold font-serif"
+          style={{ color: BRAND.primary }}
           variants={{
-            hidden: { opacity: 0, y: 12, scale: 0.8 },
+            hidden: { opacity: 0, y: 8 },
             visible: { 
-              opacity: 1, y: 0, scale: 1,
-              transition: { type: "spring", stiffness: 300, damping: 18 }
+              opacity: 1, 
+              y: 0,
+              transition: { type: "spring", stiffness: 350, damping: 20 }
             }
           }}
         >
