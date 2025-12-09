@@ -219,16 +219,8 @@ export async function updateCompanionProgress(
     daysDifference !== null &&
     daysDifference >= 4;
 
-  // Update ritual flags if rituals should be shown
-  if (isFirstDay) {
-    updates.has_seen_birth_ritual = true;
-  }
-  if (isFirstWeek) {
-    updates.has_seen_week_ritual = true;
-  }
-  if (isReturnAfterBreak) {
-    updates.has_seen_return_ritual = true;
-  }
+  // NOTE: Ritual flags are NOT marked here anymore.
+  // They are marked as seen only when user closes the ritual modal (markRitualAsSeen).
 
   // Apply updates
   const { data: updatedCompanion, error } = await supabase
@@ -258,4 +250,32 @@ export async function updateCompanionProgress(
     isReturnAfterBreak,
     companion: updatedCompanion,
   };
+}
+
+/**
+ * Mark a ritual as seen in the database.
+ * Should be called ONLY when the user closes the ritual modal.
+ */
+export async function markRitualAsSeen(
+  userId: string,
+  ritualType: 'birth' | 'week' | 'return'
+): Promise<void> {
+  const columnMap = {
+    birth: 'has_seen_birth_ritual',
+    week: 'has_seen_week_ritual',
+    return: 'has_seen_return_ritual',
+  } as const;
+
+  const column = columnMap[ritualType];
+
+  const { error } = await supabase
+    .from('user_companion')
+    .update({ [column]: true })
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error(`[markRitualAsSeen] Error marking ${ritualType}:`, error);
+  } else {
+    console.log(`[markRitualAsSeen] Marked ${ritualType} ritual as seen for user ${userId}`);
+  }
 }
