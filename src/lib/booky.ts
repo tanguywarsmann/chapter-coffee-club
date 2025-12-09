@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { handleSupabaseError } from "@/services/supabaseErrorHandler";
+import { getStageForReadingDays } from "./bookyStages";
 
 // Types
 export interface CompanionData {
@@ -22,6 +23,9 @@ export interface UpdateProgressResult {
   isFirstDay: boolean;
   isFirstWeek: boolean;
   isReturnAfterBreak: boolean;
+  isEvolution: boolean;
+  previousStage: number;
+  newStage: number;
   companion: CompanionData;
 }
 
@@ -189,11 +193,18 @@ export async function updateCompanionProgress(
     updates.last_reading_date = validationDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
   }
 
-  // Calculate stage evolution (egg → fox cub transition at 1+ days)
+  // Calculate stage evolution progressively using 5-stage system
   const newTotalReadingDays = updates.total_reading_days ?? previousTotalReadingDays;
-  if (newTotalReadingDays >= 1) {
-    updates.current_stage = 2;
+  const previousStage = companion.current_stage;
+  const calculatedStage = getStageForReadingDays(newTotalReadingDays);
+  const newStageId = calculatedStage.id;
+  
+  if (newStageId !== previousStage) {
+    updates.current_stage = newStageId;
   }
+  
+  // Detect evolution (stage 2→3, 3→4, 4→5, not birth 1→2 which is handled by isFirstDay)
+  const isEvolution = newStageId > previousStage && previousStage >= 2;
 
   // Reset segments_this_week on Monday if needed
   const today = new Date();
@@ -241,6 +252,9 @@ export async function updateCompanionProgress(
     isFirstDay,
     isFirstWeek,
     isReturnAfterBreak,
+    isEvolution,
+    previousStage,
+    newStage: newStageId,
     companion: updatedCompanion
   });
 
@@ -248,6 +262,9 @@ export async function updateCompanionProgress(
     isFirstDay,
     isFirstWeek,
     isReturnAfterBreak,
+    isEvolution,
+    previousStage,
+    newStage: newStageId,
     companion: updatedCompanion,
   };
 }

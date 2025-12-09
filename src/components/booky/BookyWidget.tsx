@@ -2,9 +2,13 @@ import { memo, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCompanion, ensureCompanionExists } from "@/lib/booky";
+import { getStageById, getProgressToNextStage } from "@/lib/bookyStages";
 import { BookyStatsModal } from "./BookyStatsModal";
+import { BookyAvatar } from "./BookyAvatar";
+import { StageParticles } from "./StageParticles";
 import { motion } from "framer-motion";
-import { Flame, BookOpen } from "lucide-react";
+import { Flame, BookOpen, ChevronRight } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export const BookyWidget = memo(function BookyWidget() {
   const { user } = useAuth();
@@ -19,19 +23,15 @@ export const BookyWidget = memo(function BookyWidget() {
 
   console.log("🦊 [Booky][Widget] companion data from react-query:", companion);
 
-  // Auto-création du companion si besoin
+  // Auto-create companion if needed
   useEffect(() => {
     if (!user?.id) return;
     if (isLoading) return;
-
-    // Si un companion existe déjà, ne rien faire
     if (companion) return;
 
-    // Auto-création du companion au premier chargement
     (async () => {
       try {
         const created = await ensureCompanionExists(user.id);
-        // Mettre immédiatement à jour le cache pour le widget
         queryClient.setQueryData(["companion", user.id], created);
       } catch (error) {
         console.error("[BookyWidget] Failed to ensure companion:", error);
@@ -52,7 +52,7 @@ export const BookyWidget = memo(function BookyWidget() {
         <div className="text-xs font-semibold text-neutral-700 mb-2 flex items-center justify-between">
           <span>🛠️ DEBUG BOOKY</span>
           <button 
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["companion", user.id] })}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["companion", user?.id] })}
             className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
           >
             Refresh
@@ -86,7 +86,7 @@ export const BookyWidget = memo(function BookyWidget() {
     );
   };
 
-  // État "mystère" : l'œuf est visible même sans companion en DB
+  // Mystery state: egg visible even without companion in DB
   if (!companion) {
     return (
       <div>
@@ -94,50 +94,22 @@ export const BookyWidget = memo(function BookyWidget() {
           className="relative cursor-pointer group"
           onClick={() => setIsModalOpen(true)}
           whileHover={{ scale: 1.02 }}
-          animate={{
-            y: [0, -4, 0],
-          }}
+          animate={{ y: [0, -4, 0] }}
           transition={{
-            y: {
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            },
+            y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
           }}
         >
-          <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 backdrop-blur-sm rounded-2xl p-6 border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 backdrop-blur-sm rounded-2xl p-6 border border-border/40 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
             <div className="flex items-center gap-6">
-              {/* Œuf mystère */}
               <div className="relative flex-shrink-0">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-5xl">
-                  🥚
-                </div>
-                <div className="absolute inset-0 rounded-full bg-primary/5 blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <BookyAvatar stageId={1} size="lg" animate />
               </div>
-
-              {/* Message mystère */}
               <div className="flex-1">
                 <p className="text-sm text-foreground/70 italic">
                   Il se passe quelque chose quand tu lis…
                 </p>
               </div>
-
-              {/* Hover indicator */}
-              <div className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
             </div>
           </div>
         </motion.div>
@@ -146,8 +118,8 @@ export const BookyWidget = memo(function BookyWidget() {
     );
   }
 
-  const isEgg = companion.current_stage === 1;
-  const hasGlasses = companion.current_streak >= 7;
+  const stage = getStageById(companion.current_stage);
+  const progressInfo = getProgressToNextStage(companion.total_reading_days);
 
   return (
     <div>
@@ -155,56 +127,66 @@ export const BookyWidget = memo(function BookyWidget() {
         className="relative cursor-pointer group"
         onClick={() => setIsModalOpen(true)}
         whileHover={{ scale: 1.02 }}
-        animate={{
-          y: [0, -4, 0],
-        }}
+        animate={{ y: [0, -4, 0] }}
         transition={{
-          y: {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
+          y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
         }}
       >
-        <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 backdrop-blur-sm rounded-2xl p-6 border border-border/40 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-6">
+        <div 
+          className="relative rounded-2xl p-6 border border-border/40 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${stage.gradient[0]}15, ${stage.gradient[1]}10)`,
+          }}
+        >
+          {/* Stage particles for stages 3+ */}
+          <StageParticles stageId={companion.current_stage} count={6} />
+          
+          <div className="relative z-10 flex items-center gap-5">
             {/* Booky Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-5xl">
-                {isEgg ? "🥚" : hasGlasses ? "🦊🤓" : "🦊"}
-              </div>
-              {/* Subtle glow effect */}
-              <div className="absolute inset-0 rounded-full bg-primary/5 blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <BookyAvatar stageId={companion.current_stage} size="lg" animate />
+              {/* Glow effect */}
+              <div 
+                className="absolute inset-0 rounded-full blur-xl -z-10 opacity-0 group-hover:opacity-60 transition-opacity"
+                style={{ backgroundColor: stage.glowColor }}
+              />
             </div>
 
-            {/* Stats */}
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 text-foreground/80">
-                <Flame className="w-4 h-4 text-orange-500" />
-                <span className="font-medium">{companion.current_streak} jours</span>
+            {/* Stats and Progress */}
+            <div className="flex-1 space-y-3">
+              {/* Stage name */}
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {stage.name}
+              </p>
+              
+              {/* Streak and segments */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 text-foreground/80">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span className="font-semibold">{companion.current_streak}j</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-foreground/60 text-sm">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <span>{companion.segments_this_week} cette semaine</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-foreground/60 text-sm">
-                <BookOpen className="w-4 h-4 text-primary" />
-                <span>{companion.segments_this_week} segments cette semaine</span>
-              </div>
+
+              {/* Progress to next stage */}
+              {progressInfo && (
+                <div className="space-y-1">
+                  <Progress 
+                    value={progressInfo.progress} 
+                    className="h-1.5 bg-muted/50"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {progressInfo.daysRemaining} jour{progressInfo.daysRemaining > 1 ? 's' : ''} → prochaine évolution
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Hover indicator */}
-            <div className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
           </div>
         </div>
       </motion.div>
