@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Sparkles, BookOpen, ArrowRight } from 'lucide-react';
+import { Sparkles, BookOpen, MessageCircleQuestion, CheckCircle, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // VREAD Brand colors
@@ -19,37 +19,28 @@ interface CelebrationStepProps {
   genres: string[];
 }
 
-interface SuggestedBook {
-  id: string;
-  title: string;
-  author: string;
-  cover_url: string | null;
-  slug: string;
-}
+const howItWorksSteps = [
+  {
+    icon: BookOpen,
+    title: 'Lis 30 pages',
+    description: 'Avance dans ton livre, à ton rythme',
+  },
+  {
+    icon: MessageCircleQuestion,
+    title: 'Réponds à 1 question',
+    description: "L'IA te pose une question sur ta lecture",
+  },
+  {
+    icon: CheckCircle,
+    title: 'Lecture certifiée',
+    description: 'Ta progression est validée et visible',
+  },
+];
 
 export const CelebrationStep = ({ objective, genres }: CelebrationStepProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [suggestedBook, setSuggestedBook] = useState<SuggestedBook | null>(null);
   const [completing, setCompleting] = useState(false);
-
-  // Fetch suggested book based on genres
-  useEffect(() => {
-    const fetchSuggestedBook = async () => {
-      const { data } = await supabase
-        .from('books')
-        .select('id, title, author, cover_url, slug')
-        .eq('is_published', true)
-        .limit(1)
-        .single();
-      
-      if (data) {
-        setSuggestedBook(data);
-      }
-    };
-
-    fetchSuggestedBook();
-  }, [genres]);
 
   // Trigger confetti on mount
   useEffect(() => {
@@ -85,15 +76,6 @@ export const CelebrationStep = ({ objective, genres }: CelebrationStepProps) => 
         .from('profiles')
         .update({ onboarding_seen_at: new Date().toISOString() })
         .eq('id', user.id);
-    }
-  };
-
-  const handleStartBook = async () => {
-    await completeOnboarding();
-    if (suggestedBook) {
-      navigate(`/book/${suggestedBook.slug}`);
-    } else {
-      navigate('/explore');
     }
   };
 
@@ -155,67 +137,63 @@ export const CelebrationStep = ({ objective, genres }: CelebrationStepProps) => 
         {getPersonalizedMessage()}
       </motion.p>
 
-      {/* Suggested book card */}
-      {suggestedBook && (
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="w-full max-w-sm mb-8"
-        >
-          <p className="text-sm text-[#A67B5B] text-center mb-4">
-            Voici un livre parfait pour commencer
-          </p>
-          
-          <div className="relative bg-[#2A1810]/80 rounded-2xl p-4 border border-[#A67B5B]/30
-                          shadow-xl shadow-[#1A0F0A]/50">
-            <div className="flex items-center gap-4">
-              {/* Book cover */}
-              <motion.div 
-                className="relative w-20 h-28 rounded-lg overflow-hidden shadow-lg flex-shrink-0"
-                whileHover={{ scale: 1.05, rotateY: 10 }}
-                style={{ transformStyle: 'preserve-3d', perspective: 1000 }}
-              >
-                {suggestedBook.cover_url ? (
-                  <img 
-                    src={suggestedBook.cover_url} 
-                    alt={suggestedBook.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#A67B5B] to-[#8B6544] 
-                                  flex items-center justify-center">
-                    <BookOpen className="w-8 h-8 text-[#F5E6D3]/50" />
-                  </div>
-                )}
-                
-                {/* 3D edge effect */}
-                <div className="absolute inset-y-0 right-0 w-1 bg-gradient-to-l from-black/30 to-transparent" />
-              </motion.div>
-              
-              {/* Book info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-serif font-bold text-[#F5E6D3] text-lg leading-tight line-clamp-2">
-                  {suggestedBook.title}
-                </h3>
-                <p className="text-[#A67B5B] text-sm mt-1">
-                  {suggestedBook.author}
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* CTA buttons */}
+      {/* How it works section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="w-full max-w-sm space-y-3"
+        transition={{ delay: 0.4 }}
+        className="w-full max-w-sm mb-8"
+      >
+        <p className="text-sm text-[#A67B5B] text-center mb-4 uppercase tracking-wider">
+          Comment ça marche
+        </p>
+        
+        <div className="space-y-3">
+          {howItWorksSteps.map((step, index) => (
+            <motion.div
+              key={step.title}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + index * 0.15 }}
+              className="flex items-center gap-4 bg-[#2A1810]/80 rounded-xl p-4 
+                         border border-[#A67B5B]/20"
+            >
+              {/* Step number with icon */}
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4A574]/20 to-[#A67B5B]/20 
+                                flex items-center justify-center border border-[#A67B5B]/30">
+                  <step.icon className="w-5 h-5 text-[#D4A574]" />
+                </div>
+                {/* Step number badge */}
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#D4A574] 
+                                flex items-center justify-center">
+                  <span className="text-xs font-bold text-[#1A0F0A]">{index + 1}</span>
+                </div>
+              </div>
+              
+              {/* Step content */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-[#F5E6D3] text-base">
+                  {step.title}
+                </h3>
+                <p className="text-[#A67B5B] text-sm">
+                  {step.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* CTA button */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+        className="w-full max-w-sm"
       >
         <Button
-          onClick={handleStartBook}
+          onClick={handleExplore}
           disabled={completing}
           className="w-full h-14 rounded-xl bg-[#D4A574] hover:bg-[#C49A6C] text-[#1A0F0A] font-semibold text-lg
                      shadow-lg shadow-[#A67B5B]/30 transition-all duration-200"
@@ -228,20 +206,10 @@ export const CelebrationStep = ({ objective, genres }: CelebrationStepProps) => 
             />
           ) : (
             <span className="flex items-center gap-2">
-              Commencer ce livre
+              Choisir mon premier livre
               <ArrowRight className="w-5 h-5" />
             </span>
           )}
-        </Button>
-        
-        <Button
-          onClick={handleExplore}
-          disabled={completing}
-          variant="ghost"
-          className="w-full h-12 rounded-xl text-[#A67B5B] hover:text-[#D4A574] hover:bg-[#A67B5B]/10
-                     font-medium transition-all duration-200"
-        >
-          Explorer d'autres livres
         </Button>
       </motion.div>
     </motion.div>
