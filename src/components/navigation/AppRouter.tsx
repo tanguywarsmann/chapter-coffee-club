@@ -34,7 +34,7 @@ const SplashHider = () => {
 
 // Lazy load pages
 const Landing = lazy(() => import('@/pages/Landing'));
-const IOSOnboarding = lazy(() => import('@/pages/IOSOnboarding'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
 const Auth = lazy(() => import('@/pages/Auth'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const Profile = lazy(() => import('@/pages/Profile'));
@@ -82,7 +82,7 @@ const AppRouter = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/onboarding" element={
           <AuthGuard>
-            <IOSOnboarding />
+            <Onboarding />
           </AuthGuard>
         } />
         <Route path="/reset-password" element={<ResetPassword />} />
