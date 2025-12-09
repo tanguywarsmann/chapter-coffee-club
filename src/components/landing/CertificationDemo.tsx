@@ -46,14 +46,15 @@ export function CertificationDemo() {
       setTimeout(() => {
         setPhase('celebration');
         confetti({
-          particleCount: 40,
-          spread: 55,
-          origin: { y: 0.55, x: 0.5 },
-          colors: [BRAND.primary, BRAND.secondary, BRAND.primaryLight, BRAND.light],
+          particleCount: 15,
+          spread: 35,
+          origin: { y: 0.6, x: 0.5 },
+          colors: [BRAND.primary, BRAND.secondary, BRAND.primaryLight],
           shapes: ['circle'],
-          scalar: 0.8,
-          gravity: 1,
-          ticks: 100,
+          scalar: 0.5,
+          gravity: 1.2,
+          ticks: 60,
+          drift: 0,
         });
       }, PHASES.celebration.start);
       setTimeout(() => setPhase('reset'), PHASES.reset.start);
