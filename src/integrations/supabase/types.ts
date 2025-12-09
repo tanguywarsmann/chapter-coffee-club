@@ -877,9 +877,11 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string | null
+          favorite_genres: string[] | null
           id: string
           is_admin: boolean | null
           is_premium: boolean | null
+          onboarding_objective: string | null
           onboarding_seen_at: string | null
           onboarding_version: number | null
           premium_since: string | null
@@ -891,9 +893,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          favorite_genres?: string[] | null
           id: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          onboarding_objective?: string | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
           premium_since?: string | null
@@ -905,9 +909,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          favorite_genres?: string[] | null
           id?: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          onboarding_objective?: string | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
           premium_since?: string | null
