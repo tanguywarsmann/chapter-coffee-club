@@ -49,7 +49,7 @@ export const fr = {
 		heroSlogan: "Si ce n'est pas sur VREAD,",
 		heroSlogan2: "tu ne l'as pas lu.",
 		heroSubtitle: "Certifie ta lecture. Partage tes progrès.",
-		socialProof: "Rejoins 1 800+ lecteurs",
+		socialProof: "Rejoins 1 900+ lecteurs",
 		ctaSubtext: "Gratuit • Sans engagement",
 		heroTitle1: "En moyenne,",
 		heroTitle2: "sur dix livres achetés,",
@@ -74,7 +74,7 @@ export const fr = {
 			catchphrase: "Le mot est dans le texte — introuvable en ligne, impossible à tricher.",
 		},
 		stats: {
-			users: "1 800+",
+			users: "1 900+",
 			usersLabel: "lecteurs actifs",
 			organic: "100%",
 			organicLabel: "bouche-à-oreille",
