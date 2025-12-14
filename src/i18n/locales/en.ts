@@ -49,7 +49,7 @@ export const en: Translations = {
     heroSlogan: "If it's not on VREAD,",
     heroSlogan2: "you haven't read it.",
     heroSubtitle: "Certify your reading. Share your progress.",
-    socialProof: "Join 1,800+ readers",
+    socialProof: "Join 1,900+ readers",
     ctaSubtext: "Free • No commitment",
     heroTitle1: "On average,",
     heroTitle2: "out of ten books purchased,",
@@ -74,7 +74,7 @@ export const en: Translations = {
       catchphrase: "The word is in the text — unfindable online, impossible to cheat.",
     },
     stats: {
-      users: "1,800+",
+      users: "1,900+",
       usersLabel: "active readers",
       organic: "100%",
       organicLabel: "word-of-mouth",
