@@ -157,10 +157,10 @@ export function IOSPurchaseCard() {
       {/* Social proof */}
       <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground mt-4 mb-2">
         <span className="flex items-center gap-1">
-          <span className="text-yellow-500">⭐</span> 4.8/5 App Store
+          <span className="text-yellow-500">⭐</span> 5/5 App Store
         </span>
         <span className="text-muted-foreground/50">•</span>
-        <span>500+ lecteurs</span>
+        <span>2000+ lecteurs Premium</span>
       </div>
 
       <div className="flex items-center gap-2 mb-2">
