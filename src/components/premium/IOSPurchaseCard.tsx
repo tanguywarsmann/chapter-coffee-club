@@ -148,11 +148,22 @@ export function IOSPurchaseCard() {
 
   return (
     <Card className="p-8 border-2 border-orange-500 relative shadow-2xl bg-gradient-to-br from-orange-50/50 to-yellow-50/50 md:scale-105 md:z-10">
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 whitespace-nowrap">
+      {/* Early Bird Badge with urgency */}
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap shadow-lg">
+        <span className="animate-pulse">🔥</span>
         {t.premium.earlyBirdBadge}
       </div>
 
-      <div className="flex items-center gap-2 mb-2 mt-2">
+      {/* Social proof */}
+      <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground mt-4 mb-2">
+        <span className="flex items-center gap-1">
+          <span className="text-yellow-500">⭐</span> 4.8/5 App Store
+        </span>
+        <span className="text-muted-foreground/50">•</span>
+        <span>500+ lecteurs</span>
+      </div>
+
+      <div className="flex items-center gap-2 mb-2">
         <h3 className="text-2xl font-bold">{t.premium.cards.lifetime.titleAlt}</h3>
         <PremiumBadge size="md" variant="compact" />
       </div>
@@ -166,7 +177,14 @@ export function IOSPurchaseCard() {
         <span className="text-lg font-semibold text-orange-700">{t.premium.cards.lifetime.period}</span>
       </div>
 
-      <p className="text-sm font-semibold text-orange-600 mb-6">
+      {/* Urgency deadline */}
+      <div className="bg-orange-100 border border-orange-200 rounded-lg px-3 py-2 mb-4">
+        <p className="text-sm font-semibold text-orange-700 text-center">
+          ⏰ {t.premium.cards.lifetime.validUntil}
+        </p>
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center mb-4">
         {t.premium.cards.lifetime.iosNote}
       </p>
 
@@ -200,18 +218,21 @@ export function IOSPurchaseCard() {
       <Button
         onClick={handlePurchase}
         disabled={isPurchasing || isAlreadyPremium}
-        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg"
+        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold mb-3 min-h-[56px] text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
         size="lg"
       >
         {isAlreadyPremium ? (
-          "Vous êtes déjà Premium"
+          "Vous êtes déjà Premium ✓"
         ) : isPurchasing ? (
           <span className="flex items-center gap-3">
             <Loader2 className="h-6 w-6 animate-spin" />
             {t.premium.loading.purchase}
           </span>
         ) : (
-          `${t.premium.buttons.buy} - ${displayPrice}`
+          <span className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            Débloquer Premium - {displayPrice}
+          </span>
         )}
       </Button>
 
