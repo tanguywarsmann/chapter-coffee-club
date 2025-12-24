@@ -144,12 +144,11 @@ export function AdminBookList() {
       
       if (booksError) throw booksError;
       
-      // Récupérer l'état des segments depuis la vue
-      const { data: statuses } = await supabase
-        .from('book_segment_status')
-        .select('*');
+      // Vue book_segment_status non disponible - fallback vide
+      // TODO: Créer la vue SQL quand Supabase sera modifiable
+      const statuses: BookSegmentStatus[] = [];
       
-      const bySlug = new Map(statuses?.map(s => [s.slug, s as BookSegmentStatus]) ?? []);
+      const bySlug = new Map(statuses.map(s => [s.slug, s]));
       
       // Transformer les données pour l'affichage
       const booksWithStatus: BookValidationStatus[] = booksData.map(book => {
