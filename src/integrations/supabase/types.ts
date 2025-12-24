@@ -14,33 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _backup_reading_questions: {
-        Row: {
-          answer: string | null
-          book_id: string | null
-          book_slug: string | null
-          id: string | null
-          question: string | null
-          segment: number | null
-        }
-        Insert: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Update: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Relationships: []
-      }
       activity_likes: {
         Row: {
           created_at: string
@@ -67,27 +40,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_likes_liker_id_fkey"
-            columns: ["liker_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_likes_liker_id_fkey"
-            columns: ["liker_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "activity_likes_liker_id_fkey"
-            columns: ["liker_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "activity_likes_progress_id_fkey"
@@ -210,27 +162,6 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: true
             referencedRelation: "blog_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_featured_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: true
-            referencedRelation: "v_featured_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_featured_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: true
-            referencedRelation: "v_featured_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_featured_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: true
-            referencedRelation: "v_news_recent"
             referencedColumns: ["id"]
           },
         ]
@@ -439,6 +370,44 @@ export type Database = {
         }
         Relationships: []
       }
+      customer: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          plan: Database["public"]["Enums"]["plan"] | null
+          status: Database["public"]["Enums"]["status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id: string
+          plan?: Database["public"]["Enums"]["plan"] | null
+          status?: Database["public"]["Enums"]["status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["plan"] | null
+          status?: Database["public"]["Enums"]["status"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_user_id_profiles_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_bookys: {
         Row: {
           created_at: string
@@ -538,27 +507,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "feedback_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "feedback_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       feedback_quick_ratings: {
@@ -587,27 +535,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_quick_ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_quick_ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "feedback_quick_ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -668,27 +595,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "feedback_submissions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_submissions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "feedback_submissions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       feedback_votes: {
@@ -724,27 +630,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "feedback_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "feedback_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -815,27 +700,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "notifications_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notifications_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "notifications_progress_id_fkey"
             columns: ["progress_id"]
             isOneToOne: false
@@ -848,27 +712,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notifications_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -922,6 +765,35 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          expo_token: string
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expo_token: string
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expo_token?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_profiles_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quests: {
         Row: {
@@ -994,13 +866,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "reading_progress_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "book_segment_status"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "reading_progress_book_fk"
             columns: ["book_id"]
@@ -1086,13 +951,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_reading_progress"
-            columns: ["progress_id"]
-            isOneToOne: false
-            referencedRelation: "reading_progress"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_reading_validations_progress"
             columns: ["progress_id"]
             isOneToOne: false
@@ -1111,13 +969,6 @@ export type Database = {
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "reading_questions_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reading_validations_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "book_segment_status"
             referencedColumns: ["id"]
           },
           {
@@ -1164,39 +1015,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["badge_id"]
-          },
-          {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1335,27 +1158,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_feedback_points_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_feedback_points_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_feedback_points_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       user_levels: {
@@ -1472,27 +1274,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "v_missing_badges"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "v_user_badge_stats"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       validation_locks: {
@@ -1525,13 +1306,6 @@ export type Database = {
             foreignKeyName: "validation_locks_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "book_segment_status"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "validation_locks_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
@@ -1546,18 +1320,6 @@ export type Database = {
       }
     }
     Views: {
-      book_segment_status: {
-        Row: {
-          available_questions: number | null
-          expected_segments: number | null
-          id: string | null
-          missing_segments: number[] | null
-          slug: string | null
-          status: string | null
-          title: string | null
-        }
-        Relationships: []
-      }
       books_explore: {
         Row: {
           author: string | null
@@ -1615,33 +1377,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          id: string | null
-          is_admin: boolean | null
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_admin?: never
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_admin?: never
-          updated_at?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
       reading_questions_public: {
         Row: {
           book_id: string | null
@@ -1663,162 +1398,6 @@ export type Database = {
           id?: string | null
           question?: string | null
           segment?: number | null
-        }
-        Relationships: []
-      }
-      v_apple_iap_summary: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          expires_date: string | null
-          product_id: string | null
-          purchase_date: string | null
-          subscription_status: string | null
-          transaction_id: string | null
-          user_id: string | null
-          username: string | null
-        }
-        Relationships: []
-      }
-      v_featured_posts: {
-        Row: {
-          author: string | null
-          content: string | null
-          created_at: string | null
-          excerpt: string | null
-          id: string | null
-          image_alt: string | null
-          image_url: string | null
-          position: number | null
-          published: boolean | null
-          published_at: string | null
-          slug: string | null
-          tags: string[] | null
-          title: string | null
-          updated_at: string | null
-          weight: number | null
-        }
-        Relationships: []
-      }
-      v_featured_public: {
-        Row: {
-          excerpt: string | null
-          id: string | null
-          image_alt: string | null
-          image_url: string | null
-          published_at: string | null
-          slug: string | null
-          title: string | null
-        }
-        Insert: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Update: {
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Relationships: []
-      }
-      v_missing_badges: {
-        Row: {
-          badge_id: string | null
-          category: string | null
-          label: string | null
-          slug: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
-      v_news_recent: {
-        Row: {
-          author: string | null
-          excerpt: string | null
-          id: string | null
-          image_alt: string | null
-          image_url: string | null
-          published_at: string | null
-          slug: string | null
-          title: string | null
-        }
-        Insert: {
-          author?: string | null
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Update: {
-          author?: string | null
-          excerpt?: string | null
-          id?: string | null
-          image_alt?: string | null
-          image_url?: string | null
-          published_at?: string | null
-          slug?: string | null
-          title?: string | null
-        }
-        Relationships: []
-      }
-      v_user_badge_stats: {
-        Row: {
-          books_completed: number | null
-          books_this_month: number | null
-          has_fast_read_3d: boolean | null
-          has_fast_read_7d: boolean | null
-          pages_read: number | null
-          streak_best: number | null
-          streak_current: number | null
-          total_validations: number | null
-          user_created_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          books_completed?: never
-          books_this_month?: never
-          has_fast_read_3d?: never
-          has_fast_read_7d?: never
-          pages_read?: never
-          streak_best?: never
-          streak_current?: never
-          total_validations?: never
-          user_created_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          books_completed?: never
-          books_this_month?: never
-          has_fast_read_3d?: never
-          has_fast_read_7d?: never
-          pages_read?: never
-          streak_best?: never
-          streak_current?: never
-          total_validations?: never
-          user_created_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      xp_health_check: {
-        Row: {
-          last_refreshed: string | null
-          niveau_moyen: number | null
-          profiles_orphelins: number | null
-          profils_valides_sans_level: number | null
-          xp_moyen: number | null
         }
         Relationships: []
       }
@@ -1966,7 +1545,18 @@ export type Database = {
         | "streak_lost"
         | "weekly_digest"
         | "booky_received"
+        | "new_follower"
+      plan: "free" | "premium" | "enterprise"
       reading_status: "to_read" | "in_progress" | "completed"
+      status:
+        | "active"
+        | "canceled"
+        | "incomplete"
+        | "incomplete_expired"
+        | "past_due"
+        | "paused"
+        | "trialing"
+        | "unpaid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2102,8 +1692,20 @@ export const Constants = {
         "streak_lost",
         "weekly_digest",
         "booky_received",
+        "new_follower",
       ],
+      plan: ["free", "premium", "enterprise"],
       reading_status: ["to_read", "in_progress", "completed"],
+      status: [
+        "active",
+        "canceled",
+        "incomplete",
+        "incomplete_expired",
+        "past_due",
+        "paused",
+        "trialing",
+        "unpaid",
+      ],
     },
   },
 } as const
