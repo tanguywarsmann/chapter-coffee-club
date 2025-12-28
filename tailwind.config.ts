@@ -21,7 +21,9 @@ export default {
 		extend: {
 			fontFamily: {
 				serif: ['Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+				display: ['Playfair Display', 'Georgia', 'serif'],
+				body: ['Lato', 'Inter', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -100,7 +102,15 @@ export default {
 					background: 'hsl(25, 40%, 50%)',
 					text: 'hsl(35, 30%, 92%)',
 					accent: 'hsl(35, 30%, 82%)'
-				}
+				},
+				// New landing page colors
+				cream: 'hsl(40, 40%, 97%)',
+				beige: 'hsl(35, 35%, 90%)',
+				copper: {
+					DEFAULT: 'hsl(25, 55%, 45%)',
+					light: 'hsl(25, 50%, 55%)',
+				},
+				gold: 'hsl(40, 70%, 50%)'
 			},
 			fontSize: {
 				'display': ['clamp(3rem, 5vw + 1rem, 4.5rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
@@ -125,7 +135,9 @@ export default {
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'4xl': '2rem',
+				'5xl': '2.5rem',
 			},
 			keyframes: {
 				'accordion-down': {

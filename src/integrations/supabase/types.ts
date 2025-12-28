@@ -247,6 +247,24 @@ export type Database = {
         }
         Relationships: []
       }
+      book_chat_subscriptions: {
+        Row: {
+          book_slug: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          book_slug: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          book_slug?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       book_chats: {
         Row: {
           book_slug: string
@@ -721,9 +739,11 @@ export type Database = {
           created_at: string | null
           email: string | null
           favorite_genres: string[] | null
+          first_name: string | null
           id: string
           is_admin: boolean | null
           is_premium: boolean | null
+          last_name: string | null
           onboarding_objective: string | null
           onboarding_seen_at: string | null
           onboarding_version: number | null
@@ -737,9 +757,11 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           favorite_genres?: string[] | null
+          first_name?: string | null
           id: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          last_name?: string | null
           onboarding_objective?: string | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
@@ -753,9 +775,11 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           favorite_genres?: string[] | null
+          first_name?: string | null
           id?: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          last_name?: string | null
           onboarding_objective?: string | null
           onboarding_seen_at?: string | null
           onboarding_version?: number | null
@@ -906,6 +930,60 @@ export type Database = {
           id?: string
           question?: string
           segment?: number
+        }
+        Relationships: []
+      }
+      reading_questions_duplicates_backup: {
+        Row: {
+          answer: string | null
+          book_id: string | null
+          book_slug: string | null
+          id: string | null
+          question: string | null
+          segment: number | null
+        }
+        Insert: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Update: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Relationships: []
+      }
+      reading_questions_orphans_backup: {
+        Row: {
+          answer: string | null
+          book_id: string | null
+          book_slug: string | null
+          id: string | null
+          question: string | null
+          segment: number | null
+        }
+        Insert: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
+        }
+        Update: {
+          answer?: string | null
+          book_id?: string | null
+          book_slug?: string | null
+          id?: string | null
+          question?: string | null
+          segment?: number | null
         }
         Relationships: []
       }
