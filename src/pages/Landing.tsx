@@ -135,10 +135,10 @@ export default function Landing() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
                   <Link
                     to="/auth"
-                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg"
+                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg cursor-pointer"
                   >
-                    Commencer l'aventure
-                    <ArrowRight className="w-5 h-5" />
+                    <span>Commencer l'aventure</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
 
@@ -424,7 +424,7 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex items-center gap-3">
-                <img src="/images/logo.png" alt="VREAD" className="h-8 w-auto brightness-0 invert" />
+                <img src="/images/logo.png" alt="VREAD" className="h-8 w-auto" />
                 <span className="font-display font-semibold">VREAD</span>
               </div>
 
@@ -432,8 +432,8 @@ export default function Landing() {
                 <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
                 <Link to="/a-propos" className="hover:text-white transition-colors">À propos</Link>
                 <Link to="/presse" className="hover:text-white transition-colors">Presse</Link>
-                <Link to="/mentions-legales" className="hover:text-white transition-colors">Mentions légales</Link>
-                <Link to="/confidentialite" className="hover:text-white transition-colors">Confidentialité</Link>
+                <Link to="/legal/terms" className="hover:text-white transition-colors">CGU</Link>
+                <Link to="/legal/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
               </div>
 
               <p className="text-white/50 text-sm">
