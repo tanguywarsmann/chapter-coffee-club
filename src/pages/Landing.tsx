@@ -1,32 +1,20 @@
-import LogoVreadPng from "@/components/brand/LogoVreadPng";
-import { CertificationDemo } from "@/components/landing/CertificationDemo";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { SocialProof } from "@/components/landing/SocialProof";
-import { ValueSection } from "@/components/landing/ValueSection";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTranslation } from "@/i18n/LanguageContext";
-import { getDisplayName } from "@/services/user/userProfileService";
 import { isIOSNative } from "@/utils/platform";
-
 import { motion } from "framer-motion";
-import { ArrowRight, User } from "lucide-react";
+import { ArrowRight, User, CheckCircle2, Sparkles, BookOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n/LanguageContext";
+import { getDisplayName } from "@/services/user/userProfileService";
 
 export default function Landing() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const ctaRef = useRef<HTMLAnchorElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [displayName, setDisplayName] = useState<string>("");
 
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-
-  // Calculate display name
   useEffect(() => {
     if (user) {
       const name = getDisplayName(
@@ -38,35 +26,10 @@ export default function Landing() {
     }
   }, [user]);
 
-  // Magnetic CTA effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!ctaRef.current) return;
-      const rect = ctaRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const distance = Math.sqrt(x * x + y * y);
-
-      if (distance < 150) {
-        const strength = (150 - distance) / 150;
-        setMousePos({ x: x * strength * 0.15, y: y * strength * 0.15 });
-      } else {
-        setMousePos({ x: 0, y: 0 });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-
-  // NATIVE IOS ENTRY - conditional return AFTER all hooks
+  // NATIVE IOS ENTRY
   if (isIOSNative()) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col items-center justify-center p-6 overflow-hidden relative">
-        {/* Background Texture */}
-        <div className="fixed inset-0 opacity-[0.02] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] bg-repeat" />
-
+      <div className="min-h-screen bg-gradient-to-br from-copper to-copper-light flex flex-col items-center justify-center p-6 overflow-hidden relative">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -75,17 +38,17 @@ export default function Landing() {
         >
           <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-2xl p-8 text-center flex flex-col gap-6 ring-1 ring-white/20 rounded-3xl">
             <div className="space-y-2">
-              <h1 className="text-2xl font-serif font-bold text-white leading-tight">
+              <h1 className="text-2xl font-display font-bold text-white leading-tight">
                 {t.onboardingIOS.title}
               </h1>
-              <p className="text-white/80 text-body">
+              <p className="text-white/80 text-body font-body">
                 {t.onboardingIOS.subtitle}
               </p>
             </div>
 
             <div className="flex flex-col gap-4 pt-2">
               <Link to="/auth?mode=signup" className="w-full">
-                <Button className="w-full bg-white text-reed-primary hover:bg-white/90 font-bold py-6 text-lg shadow-lg transition-transform active:scale-95 rounded-xl">
+                <Button className="w-full bg-white text-copper hover:bg-white/90 font-bold py-6 text-lg shadow-lg transition-transform active:scale-95 rounded-xl">
                   {t.onboardingIOS.primaryCta}
                 </Button>
               </Link>
@@ -102,202 +65,382 @@ export default function Landing() {
     );
   }
 
-  // Main web rendering
+  // Main web rendering - New Landing Page
   return (
     <>
-      <style>{`
-        @keyframes gradient-shift {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-      `}</style>
-
       <Helmet>
-        <title>{t.landing.title}</title>
-        <meta name="description" content={t.landing.description} />
+        <title>VREAD - Le Strava de la lecture</title>
+        <meta name="description" content="Prouvez que vous avez vraiment lu. VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs." />
       </Helmet>
 
-      {/* Container principal - overflow différent mobile/desktop */}
-      <div className="min-h-screen bg-gradient-to-br from-reed-primary to-reed-secondary flex flex-col overflow-x-hidden md:overflow-x-visible">
+      <div className="min-h-screen bg-cream font-body">
+        
+        {/* ===== NAVIGATION ===== */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-lg border-b border-beige">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/images/logo.png" alt="VREAD" className="h-10 w-auto" />
+              <span className="text-xl font-display font-semibold text-coffee-darker hidden sm:inline">VREAD</span>
+            </Link>
 
-        {/* Language toggle in top right */}
-        <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-50">
-          <LanguageToggle />
-        </div>
-
-        {/* Logged in badge in top left */}
-        {user && (
-          <Link to="/home" className="absolute top-[calc(1rem+env(safe-area-inset-top))] left-4 z-50">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg hover:bg-white/20 transition-colors">
-              <User className="w-4 h-4 text-white" />
-              <span className="text-sm font-bold text-white tracking-wide truncate max-w-[150px]">
-                {displayName}
-              </span>
-            </div>
-          </Link>
-        )}
-
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-8 w-full">
-          <div className="w-full max-w-4xl space-y-8 text-center flex flex-col items-center">
-
-            {/* Logo */}
-            <div className="relative inline-block mb-4">
-              <div className="absolute inset-0 bg-white/20 blur-3xl animate-pulse" />
-              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl">
-                <LogoVreadPng size={100} className="md:w-[120px]" />
-              </div>
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#features" className="text-coffee-dark hover:text-copper transition-colors font-medium">Fonctionnalités</a>
+              <a href="#experience" className="text-coffee-dark hover:text-copper transition-colors font-medium">Expérience</a>
+              <a href="#community" className="text-coffee-dark hover:text-copper transition-colors font-medium">Communauté</a>
             </div>
 
-            {/* Badge Strava */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6"
-              style={{
-                background: 'rgba(255,255,255,0.12)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-              }}
+            <a 
+              href="https://apps.apple.com/fr/app/v-read/id6752836822"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-copper hover:bg-copper-light text-white px-5 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-md"
             >
-              <span className="text-white/90 font-medium tracking-wide">
-                {t.landing.stravaBadge}
-              </span>
+              Télécharger
+            </a>
+          </div>
+        </nav>
+
+        {/* ===== HERO SECTION ===== */}
+        <section className="pt-32 pb-20 md:pt-40 md:pb-32 px-6 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-20 right-0 w-96 h-96 bg-copper/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gold/5 rounded-full blur-3xl" />
+          
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              {/* Left content */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}
+                className="text-center lg:text-left"
+              >
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-copper/10 border border-copper/20 rounded-full mb-8">
+                  <span className="w-2 h-2 bg-copper rounded-full animate-pulse" />
+                  <span className="text-copper font-semibold text-sm">Le Strava de la lecture</span>
+                </div>
+
+                {/* Main title */}
+                <h1 className="text-sculptural font-display text-coffee-darkest mb-6">
+                  Prouvez que vous avez <span className="italic text-copper">vraiment</span> lu
+                </h1>
+
+                {/* Subtitle */}
+                <p className="text-lg md:text-xl text-coffee-dark/80 mb-10 max-w-xl mx-auto lg:mx-0 font-body leading-relaxed">
+                  VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2000+ lecteurs passionnés.
+                </p>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
+                  <Link
+                    to="/auth"
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg"
+                  >
+                    Commencer l'aventure
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+
+                <p className="text-coffee-medium text-sm">
+                  Gratuit • Disponible sur iOS • <span className="text-copper">Bientôt sur Android</span>
+                </p>
+              </motion.div>
+
+              {/* Right - iPhone mockup */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="relative flex justify-center"
+              >
+                <div className="relative">
+                  <div className="iphone-frame w-64 md:w-72">
+                    <img src="/images/screen-library.png" alt="VREAD App - Bibliothèque" />
+                  </div>
+                  
+                  {/* Floating XP badge */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.8, duration: 0.4 }}
+                    className="absolute -right-4 top-20 bg-white rounded-2xl shadow-xl p-4 border border-beige"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gold to-copper rounded-full flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-coffee-medium font-medium">XP Gagnés</p>
+                        <p className="text-xl font-display font-bold text-coffee-darker">+150</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== FEATURES SECTION ===== */}
+        <section id="features" className="py-20 md:py-32 px-6 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-coffee-darkest mb-4">
+                Tout ce qu'il vous faut pour lire plus
+              </h2>
+              <p className="text-coffee-dark/70 text-lg max-w-2xl mx-auto">
+                Une expérience de lecture gamifiée qui vous motive à atteindre vos objectifs
+              </p>
             </motion.div>
 
-            {/* Slogan Principal (HERO) */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-center w-full leading-tight"
-              style={{
-                color: 'white',
-                textShadow: '0 4px 20px rgba(0,0,0,0.3)'
-              }}
-            >
-              <span className="block">{t.landing.heroSlogan}</span>
-              <span className="block">{t.landing.heroSlogan2}</span>
-            </motion.h1>
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0 }}
+                className="feature-card bg-cream rounded-3xl overflow-hidden"
+              >
+                <div className="aspect-[4/5] overflow-hidden">
+                  <img 
+                    src="/images/screen-progression.png" 
+                    alt="Suivi de progression" 
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">Suivi Précis</h3>
+                  <p className="text-coffee-dark/70">Visualisez votre progression page par page, chapitre par chapitre.</p>
+                </div>
+              </motion.div>
 
-            {/* Sous-titre + Social Proof */}
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-white/90 text-lg md:text-xl mt-6 max-w-lg mx-auto leading-relaxed font-medium"
-              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
-            >
-              {t.landing.heroSubtitle}
-              <br />
-              <span className="text-white/70">{t.landing.socialProof}</span>
-            </motion.p>
+              {/* Feature 2 */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="feature-card bg-cream rounded-3xl overflow-hidden md:mt-12"
+              >
+                <div className="aspect-[4/5] overflow-hidden">
+                  <img 
+                    src="/images/screen-success.png" 
+                    alt="Gamification" 
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">Gamification</h3>
+                  <p className="text-coffee-dark/70">Gagnez des XP, débloquez des badges et grimpez dans le classement.</p>
+                </div>
+              </motion.div>
 
+              {/* Feature 3 */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="feature-card bg-cream rounded-3xl overflow-hidden md:mt-24"
+              >
+                <div className="aspect-[4/5] overflow-hidden">
+                  <img 
+                    src="/images/screen-library2.png" 
+                    alt="Bibliothèque" 
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">+100 Livres</h3>
+                  <p className="text-coffee-dark/70">Une bibliothèque qui s'enrichit chaque semaine de nouveaux titres.</p>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
 
-            {/* CTA Magnétique */}
+        {/* ===== EXPERIENCE SECTION ===== */}
+        <section id="experience" className="py-20 md:py-32 px-6 bg-coffee-darker text-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6">
+                  Prouvez que vous avez lu
+                </h2>
+                <p className="text-white/80 text-lg mb-10 leading-relaxed">
+                  Fini les lectures survolées. Avec VREAD, validez votre compréhension grâce à des quiz intelligents adaptés à chaque chapitre. Chaque segment lu est certifié.
+                </p>
+
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                    <CheckCircle2 className="w-5 h-5 text-gold" />
+                    <span className="font-medium">Quiz adaptatifs</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                    <CheckCircle2 className="w-5 h-5 text-gold" />
+                    <span className="font-medium">2 jokers par livre</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                    <CheckCircle2 className="w-5 h-5 text-gold" />
+                    <span className="font-medium">Progression certifiée</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="flex justify-center"
+              >
+                <div className="iphone-frame w-64 md:w-72">
+                  <img src="/images/screen-book-detail.png" alt="Détail du livre" />
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== ONBOARDING SECTION ===== */}
+        <section className="py-20 md:py-32 px-6 bg-beige">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="flex justify-center order-2 lg:order-1"
+              >
+                <div className="iphone-frame w-64 md:w-72">
+                  <img src="/images/screen-welcome.png" alt="Écran de bienvenue" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="order-1 lg:order-2"
+              >
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-coffee-darkest mb-6">
+                  Prêt en 30 secondes
+                </h2>
+                <p className="text-coffee-dark/80 text-lg mb-10 leading-relaxed">
+                  Créez votre profil en quelques clics et commencez à lire immédiatement. Aucune configuration complexe.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">1</div>
+                    <div>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">Créez votre compte</h3>
+                      <p className="text-coffee-dark/70">Email ou connexion sociale en un clic</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">2</div>
+                    <div>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">Choisissez vos genres</h3>
+                      <p className="text-coffee-dark/70">On personnalise votre bibliothèque</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">3</div>
+                    <div>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">Lisez et validez</h3>
+                      <p className="text-coffee-dark/70">C'est parti pour l'aventure !</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== COMMUNITY SECTION ===== */}
+        <section id="community" className="py-20 md:py-32 px-6 bg-cream relative overflow-hidden">
+          <div className="max-w-7xl mx-auto text-center">
+            {/* 3 iPhones composition */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="pt-16 w-full flex flex-col items-center gap-6"
+              className="flex justify-center items-end gap-4 md:gap-8 mb-16"
             >
-              <Link
-                ref={ctaRef}
-                to={user ? "/home" : "/auth"}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-                className="relative inline-flex items-center gap-3 px-16 py-6 text-2xl font-serif font-bold text-white rounded-full overflow-hidden group transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#A67B5B]/20 focus:ring-offset-4"
-                style={{
-                  background: 'linear-gradient(135deg, #A67B5B, #8B6F47, #A67B5B)',
-                  backgroundSize: '200% 200%',
-                  animation: 'gradient-shift 3s ease infinite',
-                  boxShadow: `
-                    0 20px 60px rgba(166,123,91,0.4),
-                    0 10px 30px rgba(166,123,91,0.3)
-                  `,
-                  transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
-                  textShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                }}
-              >
-                <span className="relative z-10">{user ? "CONTINUER MA LECTURE" : t.landing.cta}</span>
-                <motion.div
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <ArrowRight className="w-6 h-6 relative z-10" />
-                </motion.div>
-
-                {/* Overlay hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                {/* Particles effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  {[...Array(8)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 bg-white rounded-full"
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1, 0],
-                        x: [0, Math.cos(i * 45 * Math.PI / 180) * 40],
-                        y: [0, Math.sin(i * 45 * Math.PI / 180) * 40],
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        delay: i * 0.1,
-                      }}
-                      style={{
-                        left: '50%',
-                        top: '50%',
-                      }}
-                    />
-                  ))}
-                </div>
-              </Link>
-
-              {/* CTA Subtext */}
-              <p className="text-white/60 text-sm mt-3">
-                {t.landing.ctaSubtext}
-              </p>
+              <div className="iphone-frame w-40 md:w-52 opacity-80 -rotate-6 translate-y-8">
+                <img src="/images/screen-library.png" alt="Communauté" />
+              </div>
+              <div className="iphone-frame w-48 md:w-64 z-10">
+                <img src="/images/screen-success.png" alt="Succès" />
+              </div>
+              <div className="iphone-frame w-40 md:w-52 opacity-80 rotate-6 translate-y-8">
+                <img src="/images/screen-progression.png" alt="Progression" />
+              </div>
             </motion.div>
 
-            {/* Animation Certification en Direct */}
-            <CertificationDemo />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-coffee-darkest mb-6">
+                Rejoignez 2000+ lecteurs passionnés
+              </h2>
+              <p className="text-coffee-dark/70 text-lg max-w-2xl mx-auto mb-10">
+                Une communauté bienveillante qui partage le même objectif : lire plus et mieux.
+              </p>
 
-            {/* Section Comment ça marche */}
-            <HowItWorks />
-
-            {/* Section Valeur VREAD */}
-            <ValueSection />
-
-            {/* Section Social Proof */}
-            <SocialProof />
-
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                <a
+                  href="https://apps.apple.com/fr/app/v-read/id6752836822"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-coffee-darkest hover:bg-coffee-darker text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  Télécharger VREAD
+                </a>
+              </div>
+              <p className="text-coffee-medium text-sm">
+                Disponible sur iOS • <span className="text-copper font-medium">Bientôt sur Android</span>
+              </p>
+            </motion.div>
           </div>
-        </div>
+        </section>
 
-        {/* Footer */}
-        <footer className="py-12 border-t border-white/10 w-full">
-          <nav className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-body-sm px-4">
-            <Link to="/blog" className="text-white/70 hover:text-white transition-colors">
-              {t.nav.blog}
-            </Link>
-            <span className="text-white/40 text-xl md:text-2xl">·</span>
-            <Link to="/press" className="text-white/70 hover:text-white transition-colors">
-              {t.nav.press}
-            </Link>
-            <span className="text-white/40 text-xl md:text-2xl">·</span>
-            <Link to="/about" className="text-white/70 hover:text-white transition-colors">
-              {t.nav.contact}
-            </Link>
-          </nav>
+        {/* ===== FOOTER ===== */}
+        <footer className="py-12 px-6 bg-coffee-darkest text-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex items-center gap-3">
+                <img src="/images/logo.png" alt="VREAD" className="h-8 w-auto brightness-0 invert" />
+                <span className="font-display font-semibold">VREAD</span>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
+                <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
+                <Link to="/a-propos" className="hover:text-white transition-colors">À propos</Link>
+                <Link to="/presse" className="hover:text-white transition-colors">Presse</Link>
+                <Link to="/mentions-legales" className="hover:text-white transition-colors">Mentions légales</Link>
+                <Link to="/confidentialite" className="hover:text-white transition-colors">Confidentialité</Link>
+              </div>
+
+              <p className="text-white/50 text-sm">
+                © 2024 VREAD. Tous droits réservés.
+              </p>
+            </div>
+          </div>
         </footer>
 
       </div>
