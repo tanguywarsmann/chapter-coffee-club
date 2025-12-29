@@ -132,13 +132,14 @@ export default function Landing() {
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6 relative z-20">
                   <Link
                     to="/auth"
-                    className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg cursor-pointer"
+                    className="group relative z-30 inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg cursor-pointer select-none"
+                    style={{ pointerEvents: 'auto' }}
                   >
-                    <span>Commencer l'aventure</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <span className="pointer-events-none">Commencer l'aventure</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform pointer-events-none" />
                   </Link>
                 </div>
 
