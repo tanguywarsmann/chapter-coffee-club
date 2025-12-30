@@ -259,7 +259,7 @@ export default function Landing() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">+100 Livres</h3>
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">+1000 Livres</h3>
                   <p className="text-coffee-dark/70">Une bibliothèque qui s'enrichit chaque semaine de nouveaux titres.</p>
                 </div>
               </motion.div>
