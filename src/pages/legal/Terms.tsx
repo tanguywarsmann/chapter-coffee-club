@@ -64,14 +64,49 @@ export function Terms() {
 
               <section>
                 <h2 className="text-xl font-semibold text-coffee-dark">5. Achats In-App</h2>
-                <div className="space-y-3 text-coffee-darker/80">
-                  <p>
-                    VREAD propose un abonnement Premium à <strong>29€</strong> en achat unique (<strong>Lifetime</strong>).
-                  </p>
+                <div className="space-y-4 text-coffee-darker/80">
+                  <p>VREAD propose plusieurs formules Premium :</p>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-coffee-dark mb-2">Abonnement mensuel</h3>
+                    <ul className="list-disc ml-6 space-y-1">
+                      <li>Nom : VREAD Premium Mensuel</li>
+                      <li>Durée : 1 mois (renouvellement automatique)</li>
+                      <li>Prix : <strong>7,99€/mois</strong></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-coffee-dark mb-2">Abonnement annuel</h3>
+                    <ul className="list-disc ml-6 space-y-1">
+                      <li>Nom : VREAD Premium Annuel</li>
+                      <li>Durée : 1 an (renouvellement automatique)</li>
+                      <li>Prix : <strong>39,99€/an</strong></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-coffee-dark mb-2">Achat unique (Lifetime)</h3>
+                    <ul className="list-disc ml-6 space-y-1">
+                      <li>Nom : VREAD Premium à vie</li>
+                      <li>Prix : <strong>29,99€</strong> (paiement unique, accès illimité)</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-coffee-dark mb-2">Conditions des abonnements auto-renouvelables</h3>
+                    <ul className="list-disc ml-6 space-y-1">
+                      <li>Le paiement est débité sur votre compte Apple lors de la confirmation d'achat</li>
+                      <li>L'abonnement se renouvelle automatiquement sauf annulation au moins 24 heures avant la fin de la période en cours</li>
+                      <li>Le compte est débité pour le renouvellement dans les 24 heures précédant la fin de la période en cours</li>
+                      <li>Vous pouvez gérer et annuler vos abonnements dans les Réglages de votre compte App Store après l'achat</li>
+                    </ul>
+                  </div>
+                  
                   <p>
                     <strong>Politique de remboursement :</strong> Les achats effectués via Apple App Store 
                     sont soumis à la politique de remboursement d'Apple. Pour demander un remboursement, 
-                    veuillez contacter directement le support Apple via{" "}
+                    contactez le support Apple via{" "}
                     <a 
                       href="https://reportaproblem.apple.com/" 
                       target="_blank" 
