@@ -30,6 +30,9 @@ export const AppFooter = () => {
             <Link to="/strava" className="hover:text-foreground transition-colors">
               Le Strava de la lecture
             </Link>
+            <Link to="/ia" className="hover:text-foreground transition-colors">
+              IA
+            </Link>
             <Link to="/request-book" className="hover:text-foreground transition-colors inline-flex items-center gap-2">
               {t.nav.requestBook}
               {!isPremium && (

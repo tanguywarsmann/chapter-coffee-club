@@ -55,6 +55,7 @@ const About = lazy(() => import('@/pages/About'));
 const Press = lazy(() => import('@/pages/Press'));
 const Duolingo = lazy(() => import('@/pages/Duolingo'));
 const Strava = lazy(() => import('@/pages/Strava'));
+const IA = lazy(() => import('@/pages/IA'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const Search = lazy(() => import('@/pages/Search'));
 
@@ -109,6 +110,7 @@ const AppRouter = () => {
         <Route path="/presse" element={<Press />} />
         <Route path="/duolingo" element={<Duolingo />} />
         <Route path="/strava" element={<Strava />} />
+        <Route path="/ia" element={<IA />} />
         <Route path="/sitemap.xml" element={<SitemapXML />} />
 
         {/* Aliases with redirects */}

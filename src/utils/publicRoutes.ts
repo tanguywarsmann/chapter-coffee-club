@@ -13,6 +13,7 @@ export const PUBLIC_ROUTES = [
   '/auth',
   '/reset-password',
   '/premium',
+  '/ia',
   '/legal/privacy',
   '/legal/terms'
 ] as const;
