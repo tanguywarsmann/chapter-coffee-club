@@ -314,6 +314,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { loc: `${BASE}/`, lastmod: new Date().toISOString(), priority: '1.0', changefreq: 'weekly' },
       { loc: `${BASE}/a-propos`, lastmod: new Date().toISOString(), priority: '0.9', changefreq: 'monthly' },
       { loc: `${BASE}/presse`, lastmod: new Date().toISOString(), priority: '0.8', changefreq: 'monthly' },
+      { loc: `${BASE}/ia`, lastmod: new Date().toISOString(), priority: '0.8', changefreq: 'monthly' },
       { loc: `${BASE}/blog`, lastmod: new Date().toISOString(), priority: '0.9', changefreq: 'weekly' },
     ];
 

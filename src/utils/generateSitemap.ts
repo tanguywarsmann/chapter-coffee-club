@@ -41,6 +41,12 @@ export async function generateSitemap() {
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>${baseUrl}/ia</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   ${posts?.map(post => `
   <url>
     <loc>${baseUrl}/blog/${post.slug}</loc>
