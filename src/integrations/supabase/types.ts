@@ -1603,6 +1603,11 @@ export type Database = {
         Args: { p_amount?: number; p_user_id: string }
         Returns: Json
       }
+      is_valid_answer: {
+        Args: { expected: string; user_input: string }
+        Returns: boolean
+      }
+      normalize_text: { Args: { str: string }; Returns: string }
       rebuild_user_xp: { Args: { p_user_id: string }; Returns: Json }
       unaccent: { Args: { "": string }; Returns: string }
       use_joker: {
