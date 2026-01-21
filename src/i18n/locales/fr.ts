@@ -90,13 +90,88 @@ export const fr = {
 			with2: "Question IA = preuve imparable",
 			with3: "Bookies : likes et commentaires",
 			with4: "Partageable sur Instagram/LinkedIn",
-		mechanism:
-			"Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
+			mechanism:
+				"Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
 		},
 		certificationDemo: {
 			question: "Quel objet d'or étrange Dumbledore consulte-t-il avant l'arrivée de Hagrid ?",
 			answer: "MONTRE",
 			certified: "LECTURE CERTIFIÉE",
+		},
+		// Nouvelles clés landing page
+		nav: {
+			features: "Fonctionnalités",
+			experience: "Expérience",
+			community: "Communauté",
+			download: "Télécharger",
+		},
+		hero: {
+			badge: "Le Strava de la lecture",
+			title: "Prouvez que vous avez ",
+			titleHighlight: "vraiment",
+			titleEnd: " lu",
+			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2000+ lecteurs passionnés.",
+			ctaPrimary: "Commencer l'aventure",
+			ctaAvailability: "Gratuit • Disponible sur iOS • ",
+			ctaAndroid: "Bientôt sur Android",
+			xpEarned: "XP Gagnés",
+		},
+		features: {
+			title: "Tout ce qu'il vous faut pour lire plus",
+			subtitle: "Une expérience de lecture gamifiée qui vous motive à atteindre vos objectifs",
+			tracking: {
+				title: "Suivi Précis",
+				description: "Visualisez votre progression page par page, chapitre par chapitre.",
+			},
+			gamification: {
+				title: "Gamification",
+				description: "Gagnez des XP, débloquez des badges et grimpez dans le classement.",
+			},
+			library: {
+				title: "+1000 Livres",
+				description: "Une bibliothèque qui s'enrichit chaque semaine de nouveaux titres.",
+			},
+		},
+		experience: {
+			title: "Prouvez que vous avez lu",
+			subtitle: "Fini les lectures survolées. Avec VREAD, validez votre compréhension grâce à des quiz intelligents adaptés à chaque chapitre. Chaque segment lu est certifié.",
+			quiz: "Quiz adaptatifs",
+			jokers: "2 jokers par livre",
+			certified: "Progression certifiée",
+		},
+		onboarding: {
+			title: "Prêt en 30 secondes",
+			subtitle: "Créez votre profil en quelques clics et commencez à lire immédiatement. Aucune configuration complexe.",
+			step1: {
+				title: "Créez votre compte",
+				description: "Email ou connexion sociale en un clic",
+			},
+			step2: {
+				title: "Choisissez vos genres",
+				description: "On personnalise votre bibliothèque",
+			},
+			step3: {
+				title: "Lisez et validez",
+				description: "C'est parti pour l'aventure !",
+			},
+		},
+		community: {
+			title: "Rejoignez 2000+ lecteurs passionnés",
+			subtitle: "Une communauté bienveillante qui partage le même objectif : lire plus et mieux.",
+			ctaDownload: "Télécharger VREAD",
+			availability: "Disponible sur iOS • ",
+			androidSoon: "Bientôt sur Android",
+		},
+		footer: {
+			blog: "Blog",
+			about: "À propos",
+			press: "Presse",
+			terms: "CGU",
+			privacy: "Confidentialité",
+			copyright: "© 2024 VREAD. Tous droits réservés.",
+		},
+		ios: {
+			alreadyAccount: "J'ai déjà un compte",
 		},
 	},
 

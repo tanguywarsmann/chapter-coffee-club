@@ -97,6 +97,81 @@ export const en: Translations = {
       answer: "WATCH",
       certified: "READING CERTIFIED",
     },
+    // New landing page keys
+    nav: {
+      features: "Features",
+      experience: "Experience",
+      community: "Community",
+      download: "Download",
+    },
+    hero: {
+      badge: "The Strava of reading",
+      title: "Prove you've ",
+      titleHighlight: "actually",
+      titleEnd: " read",
+      subtitle: "VREAD certifies your reading with adaptive quizzes and rewards you with exclusive badges. Join 2000+ passionate readers.",
+      ctaPrimary: "Start the adventure",
+      ctaAvailability: "Free • Available on iOS • ",
+      ctaAndroid: "Coming soon on Android",
+      xpEarned: "XP Earned",
+    },
+    features: {
+      title: "Everything you need to read more",
+      subtitle: "A gamified reading experience that motivates you to reach your goals",
+      tracking: {
+        title: "Precise Tracking",
+        description: "Visualize your progress page by page, chapter by chapter.",
+      },
+      gamification: {
+        title: "Gamification",
+        description: "Earn XP, unlock badges and climb the leaderboard.",
+      },
+      library: {
+        title: "1000+ Books",
+        description: "A library enriched every week with new titles.",
+      },
+    },
+    experience: {
+      title: "Prove you've read",
+      subtitle: "No more skimmed readings. With VREAD, validate your understanding through smart quizzes adapted to each chapter. Each segment read is certified.",
+      quiz: "Adaptive quizzes",
+      jokers: "2 jokers per book",
+      certified: "Certified progression",
+    },
+    onboarding: {
+      title: "Ready in 30 seconds",
+      subtitle: "Create your profile in a few clicks and start reading immediately. No complex setup.",
+      step1: {
+        title: "Create your account",
+        description: "Email or one-click social login",
+      },
+      step2: {
+        title: "Choose your genres",
+        description: "We personalize your library",
+      },
+      step3: {
+        title: "Read and validate",
+        description: "Let the adventure begin!",
+      },
+    },
+    community: {
+      title: "Join 2000+ passionate readers",
+      subtitle: "A supportive community sharing the same goal: read more and better.",
+      ctaDownload: "Download VREAD",
+      availability: "Available on iOS • ",
+      androidSoon: "Coming soon on Android",
+    },
+    footer: {
+      blog: "Blog",
+      about: "About",
+      press: "Press",
+      terms: "Terms",
+      privacy: "Privacy",
+      copyright: "© 2024 VREAD. All rights reserved.",
+    },
+    ios: {
+      alreadyAccount: "I already have an account",
+    },
   },
 
   // Public Home Page
