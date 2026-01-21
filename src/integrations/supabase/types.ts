@@ -307,6 +307,55 @@ export type Database = {
         }
         Relationships: []
       }
+      book_ratings: {
+        Row: {
+          book_id: string
+          created_at: string | null
+          id: string
+          rating: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string | null
+          id?: string
+          rating: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string | null
+          id?: string
+          rating?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_ratings_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_ratings_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_requests: {
         Row: {
           book_author: string | null
@@ -342,6 +391,55 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      book_reviews: {
+        Row: {
+          book_id: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_reviews_book_id_books_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_reviews_book_id_books_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_reviews_user_id_profiles_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       books: {
         Row: {
@@ -851,6 +949,7 @@ export type Database = {
       }
       reading_progress: {
         Row: {
+          abandoned_at: string | null
           book_id: string
           completed_at: string | null
           current_page: number
@@ -864,6 +963,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          abandoned_at?: string | null
           book_id: string
           completed_at?: string | null
           current_page?: number
@@ -877,6 +977,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          abandoned_at?: string | null
           book_id?: string
           completed_at?: string | null
           current_page?: number
@@ -1630,7 +1731,7 @@ export type Database = {
         | "booky_received"
         | "new_follower"
       plan: "free" | "premium" | "enterprise"
-      reading_status: "to_read" | "in_progress" | "completed"
+      reading_status: "to_read" | "in_progress" | "completed" | "abandoned"
       status:
         | "active"
         | "canceled"
@@ -1778,7 +1879,7 @@ export const Constants = {
         "new_follower",
       ],
       plan: ["free", "premium", "enterprise"],
-      reading_status: ["to_read", "in_progress", "completed"],
+      reading_status: ["to_read", "in_progress", "completed", "abandoned"],
       status: [
         "active",
         "canceled",

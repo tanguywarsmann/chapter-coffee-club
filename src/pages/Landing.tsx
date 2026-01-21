@@ -55,7 +55,7 @@ export default function Landing() {
               
               <Link to="/auth?mode=login" className="block w-full">
                 <button className="text-white/60 text-sm hover:text-white transition-colors py-2">
-                  J'ai déjà un compte
+                  {t.landing.ios.alreadyAccount}
                 </button>
               </Link>
             </div>
@@ -69,8 +69,8 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>VREAD - Le Strava de la lecture</title>
-        <meta name="description" content="Prouvez que vous avez vraiment lu. VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs." />
+        <title>VREAD - {t.landing.hero.badge}</title>
+        <meta name="description" content={t.landing.hero.subtitle} />
       </Helmet>
 
       <div className="min-h-screen bg-cream font-body">
@@ -84,9 +84,9 @@ export default function Landing() {
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-coffee-dark hover:text-copper transition-colors font-medium">Fonctionnalités</a>
-              <a href="#experience" className="text-coffee-dark hover:text-copper transition-colors font-medium">Expérience</a>
-              <a href="#community" className="text-coffee-dark hover:text-copper transition-colors font-medium">Communauté</a>
+              <a href="#features" className="text-coffee-dark hover:text-copper transition-colors font-medium">{t.landing.nav.features}</a>
+              <a href="#experience" className="text-coffee-dark hover:text-copper transition-colors font-medium">{t.landing.nav.experience}</a>
+              <a href="#community" className="text-coffee-dark hover:text-copper transition-colors font-medium">{t.landing.nav.community}</a>
             </div>
 
             <a 
@@ -95,7 +95,7 @@ export default function Landing() {
               rel="noopener noreferrer"
               className="bg-copper hover:bg-copper-light text-white px-5 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-md"
             >
-              Télécharger
+              {t.landing.nav.download}
             </a>
           </div>
         </nav>
@@ -118,17 +118,17 @@ export default function Landing() {
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-copper/10 border border-copper/20 rounded-full mb-8">
                   <span className="w-2 h-2 bg-copper rounded-full animate-pulse" />
-                  <span className="text-copper font-semibold text-sm">Le Strava de la lecture</span>
+                  <span className="text-copper font-semibold text-sm">{t.landing.hero.badge}</span>
                 </div>
 
                 {/* Main title */}
                 <h1 className="text-sculptural font-display text-coffee-darkest mb-6">
-                  Prouvez que vous avez <span className="italic text-copper">vraiment</span> lu
+                  {t.landing.hero.title}<span className="italic text-copper">{t.landing.hero.titleHighlight}</span>{t.landing.hero.titleEnd}
                 </h1>
 
                 {/* Subtitle */}
                 <p className="text-lg md:text-xl text-coffee-dark/80 mb-10 max-w-xl mx-auto lg:mx-0 font-body leading-relaxed">
-                  VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2000+ lecteurs passionnés.
+                  {t.landing.hero.subtitle}
                 </p>
 
                 {/* CTA Buttons */}
@@ -138,13 +138,13 @@ export default function Landing() {
                     className="group relative z-30 inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg cursor-pointer select-none"
                     style={{ pointerEvents: 'auto' }}
                   >
-                    <span className="pointer-events-none">Commencer l'aventure</span>
+                    <span className="pointer-events-none">{t.landing.hero.ctaPrimary}</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform pointer-events-none" />
                   </Link>
                 </div>
 
                 <p className="text-coffee-medium text-sm">
-                  Gratuit • Disponible sur iOS • <span className="text-copper">Bientôt sur Android</span>
+                  {t.landing.hero.ctaAvailability}<span className="text-copper">{t.landing.hero.ctaAndroid}</span>
                 </p>
               </motion.div>
 
@@ -172,7 +172,7 @@ export default function Landing() {
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-coffee-medium font-medium">XP Gagnés</p>
+                        <p className="text-xs text-coffee-medium font-medium">{t.landing.hero.xpEarned}</p>
                         <p className="text-xl font-display font-bold text-coffee-darker">+150</p>
                       </div>
                     </div>
@@ -193,10 +193,10 @@ export default function Landing() {
               className="text-center mb-16"
             >
               <h2 className="text-3xl md:text-4xl font-display font-bold text-coffee-darkest mb-4">
-                Tout ce qu'il vous faut pour lire plus
+                {t.landing.features.title}
               </h2>
               <p className="text-coffee-dark/70 text-lg max-w-2xl mx-auto">
-                Une expérience de lecture gamifiée qui vous motive à atteindre vos objectifs
+                {t.landing.features.subtitle}
               </p>
             </motion.div>
 
@@ -217,8 +217,8 @@ export default function Landing() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">Suivi Précis</h3>
-                  <p className="text-coffee-dark/70">Visualisez votre progression page par page, chapitre par chapitre.</p>
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">{t.landing.features.tracking.title}</h3>
+                  <p className="text-coffee-dark/70">{t.landing.features.tracking.description}</p>
                 </div>
               </motion.div>
 
@@ -238,8 +238,8 @@ export default function Landing() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">Gamification</h3>
-                  <p className="text-coffee-dark/70">Gagnez des XP, débloquez des badges et grimpez dans le classement.</p>
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">{t.landing.features.gamification.title}</h3>
+                  <p className="text-coffee-dark/70">{t.landing.features.gamification.description}</p>
                 </div>
               </motion.div>
 
@@ -259,8 +259,8 @@ export default function Landing() {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">+1000 Livres</h3>
-                  <p className="text-coffee-dark/70">Une bibliothèque qui s'enrichit chaque semaine de nouveaux titres.</p>
+                  <h3 className="text-xl font-display font-bold text-coffee-darker mb-2">{t.landing.features.library.title}</h3>
+                  <p className="text-coffee-dark/70">{t.landing.features.library.description}</p>
                 </div>
               </motion.div>
             </div>
@@ -277,24 +277,24 @@ export default function Landing() {
                 viewport={{ once: true }}
               >
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6">
-                  Prouvez que vous avez lu
+                  {t.landing.experience.title}
                 </h2>
                 <p className="text-white/80 text-lg mb-10 leading-relaxed">
-                  Fini les lectures survolées. Avec VREAD, validez votre compréhension grâce à des quiz intelligents adaptés à chaque chapitre. Chaque segment lu est certifié.
+                  {t.landing.experience.subtitle}
                 </p>
 
                 <div className="flex flex-wrap gap-4">
                   <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
                     <CheckCircle2 className="w-5 h-5 text-gold" />
-                    <span className="font-medium">Quiz adaptatifs</span>
+                    <span className="font-medium">{t.landing.experience.quiz}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
                     <CheckCircle2 className="w-5 h-5 text-gold" />
-                    <span className="font-medium">2 jokers par livre</span>
+                    <span className="font-medium">{t.landing.experience.jokers}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
                     <CheckCircle2 className="w-5 h-5 text-gold" />
-                    <span className="font-medium">Progression certifiée</span>
+                    <span className="font-medium">{t.landing.experience.certified}</span>
                   </div>
                 </div>
               </motion.div>
@@ -335,32 +335,32 @@ export default function Landing() {
                 className="order-1 lg:order-2"
               >
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-coffee-darkest mb-6">
-                  Prêt en 30 secondes
+                  {t.landing.onboarding.title}
                 </h2>
                 <p className="text-coffee-dark/80 text-lg mb-10 leading-relaxed">
-                  Créez votre profil en quelques clics et commencez à lire immédiatement. Aucune configuration complexe.
+                  {t.landing.onboarding.subtitle}
                 </p>
 
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">1</div>
                     <div>
-                      <h3 className="font-display font-bold text-coffee-darker text-lg">Créez votre compte</h3>
-                      <p className="text-coffee-dark/70">Email ou connexion sociale en un clic</p>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">{t.landing.onboarding.step1.title}</h3>
+                      <p className="text-coffee-dark/70">{t.landing.onboarding.step1.description}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">2</div>
                     <div>
-                      <h3 className="font-display font-bold text-coffee-darker text-lg">Choisissez vos genres</h3>
-                      <p className="text-coffee-dark/70">On personnalise votre bibliothèque</p>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">{t.landing.onboarding.step2.title}</h3>
+                      <p className="text-coffee-dark/70">{t.landing.onboarding.step2.description}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-copper text-white rounded-full flex items-center justify-center font-display font-bold shrink-0">3</div>
                     <div>
-                      <h3 className="font-display font-bold text-coffee-darker text-lg">Lisez et validez</h3>
-                      <p className="text-coffee-dark/70">C'est parti pour l'aventure !</p>
+                      <h3 className="font-display font-bold text-coffee-darker text-lg">{t.landing.onboarding.step3.title}</h3>
+                      <p className="text-coffee-dark/70">{t.landing.onboarding.step3.description}</p>
                     </div>
                   </div>
                 </div>
@@ -396,10 +396,10 @@ export default function Landing() {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-coffee-darkest mb-6">
-                Rejoignez 2000+ lecteurs passionnés
+                {t.landing.community.title}
               </h2>
               <p className="text-coffee-dark/70 text-lg max-w-2xl mx-auto mb-10">
-                Une communauté bienveillante qui partage le même objectif : lire plus et mieux.
+                {t.landing.community.subtitle}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
@@ -410,11 +410,11 @@ export default function Landing() {
                   className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-coffee-darkest hover:bg-coffee-darker text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg"
                 >
                   <BookOpen className="w-5 h-5" />
-                  Télécharger VREAD
+                  {t.landing.community.ctaDownload}
                 </a>
               </div>
               <p className="text-coffee-medium text-sm">
-                Disponible sur iOS • <span className="text-copper font-medium">Bientôt sur Android</span>
+                {t.landing.community.availability}<span className="text-copper font-medium">{t.landing.community.androidSoon}</span>
               </p>
             </motion.div>
           </div>
@@ -430,15 +430,15 @@ export default function Landing() {
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
-                <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
-                <Link to="/a-propos" className="hover:text-white transition-colors">À propos</Link>
-                <Link to="/presse" className="hover:text-white transition-colors">Presse</Link>
-                <Link to="/legal/terms" className="hover:text-white transition-colors">CGU</Link>
-                <Link to="/legal/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
+                <Link to="/blog" className="hover:text-white transition-colors">{t.landing.footer.blog}</Link>
+                <Link to="/a-propos" className="hover:text-white transition-colors">{t.landing.footer.about}</Link>
+                <Link to="/presse" className="hover:text-white transition-colors">{t.landing.footer.press}</Link>
+                <Link to="/legal/terms" className="hover:text-white transition-colors">{t.landing.footer.terms}</Link>
+                <Link to="/legal/privacy" className="hover:text-white transition-colors">{t.landing.footer.privacy}</Link>
               </div>
 
               <p className="text-white/50 text-sm">
-                © 2024 VREAD. Tous droits réservés.
+                {t.landing.footer.copyright}
               </p>
             </div>
           </div>
