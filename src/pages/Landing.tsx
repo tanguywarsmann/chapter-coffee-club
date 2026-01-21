@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { Globe } from "lucide-react";
 import { getDisplayName } from "@/services/user/userProfileService";
 
 export default function Landing() {
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -435,6 +436,14 @@ export default function Landing() {
                 <Link to="/presse" className="hover:text-white transition-colors">{t.landing.footer.press}</Link>
                 <Link to="/legal/terms" className="hover:text-white transition-colors">{t.landing.footer.terms}</Link>
                 <Link to="/legal/privacy" className="hover:text-white transition-colors">{t.landing.footer.privacy}</Link>
+                <button
+                  onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+                  className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+                  aria-label={t.language.switch}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>{language === 'fr' ? 'EN' : 'FR'}</span>
+                </button>
               </div>
 
               <p className="text-white/50 text-sm">
