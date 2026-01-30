@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vread.app",
+      "sha256_cert_fingerprints": [
+        "71:54:93:02:98:4C:BC:9B:93:7F:7F:04:D6:1D:77:8B:0D:47:77:23:5C:64:13:3E:76:3F:B8:40:84:A7:D4:86"
+      ]
+    }
+  }
+]
