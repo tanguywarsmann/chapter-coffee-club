@@ -44,6 +44,7 @@ const createBaseBookWithProgress = (book: Book, userId?: string | null): BookWit
     updated_at: new Date().toISOString(),
     user_id: userId ?? "",
     completed_at: book.completed_at ?? "",
+    abandoned_at: book.abandoned_at ?? "",
   };
 };
 

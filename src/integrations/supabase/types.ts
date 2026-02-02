@@ -341,13 +341,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "book_ratings_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "book_ratings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -423,13 +416,6 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "book_reviews_book_id_books_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
           {
@@ -998,13 +984,6 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "reading_progress_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       reading_questions: {
@@ -1031,60 +1010,6 @@ export type Database = {
           id?: string
           question?: string
           segment?: number
-        }
-        Relationships: []
-      }
-      reading_questions_duplicates_backup: {
-        Row: {
-          answer: string | null
-          book_id: string | null
-          book_slug: string | null
-          id: string | null
-          question: string | null
-          segment: number | null
-        }
-        Insert: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Update: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Relationships: []
-      }
-      reading_questions_orphans_backup: {
-        Row: {
-          answer: string | null
-          book_id: string | null
-          book_slug: string | null
-          id: string | null
-          question: string | null
-          segment: number | null
-        }
-        Insert: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Update: {
-          answer?: string | null
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
         }
         Relationships: []
       }
@@ -1144,24 +1069,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_reading_validations_question"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "reading_questions_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "reading_validations_book_fk"
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reading_validations_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1187,14 +1098,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_badges_badge_id_fkey"
+            foreignKeyName: "user_badges_badge_id_badges_id_fkey"
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "badges"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_badges_user_id_fkey"
+            foreignKeyName: "user_badges_user_id_profiles_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1341,27 +1252,32 @@ export type Database = {
       }
       user_levels: {
         Row: {
-          id: string
-          last_updated: string | null
+          last_updated: string
           level: number
           user_id: string
           xp: number
         }
         Insert: {
-          id?: string
-          last_updated?: string | null
+          last_updated?: string
           level?: number
           user_id: string
           xp?: number
         }
         Update: {
-          id?: string
-          last_updated?: string | null
+          last_updated?: string
           level?: number
           user_id?: string
           xp?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_levels_user_id_profiles_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_monthly_rewards: {
         Row: {
@@ -1488,98 +1404,11 @@ export type Database = {
             referencedRelation: "books"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "validation_locks_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      books_explore: {
-        Row: {
-          author: string | null
-          category: string | null
-          cover_url: string | null
-          created_at: string | null
-          description: string | null
-          expected_segments: number | null
-          id: string | null
-          is_published: boolean | null
-          slug: string | null
-          tags: string[] | null
-          title: string | null
-          total_chapters: number | null
-          total_pages: number | null
-        }
-        Relationships: []
-      }
-      books_public: {
-        Row: {
-          author: string | null
-          cover_url: string | null
-          description: string | null
-          expected_segments: number | null
-          id: string | null
-          slug: string | null
-          tags: string[] | null
-          title: string | null
-          total_chapters: number | null
-          total_pages: number | null
-        }
-        Insert: {
-          author?: string | null
-          cover_url?: string | null
-          description?: string | null
-          expected_segments?: number | null
-          id?: string | null
-          slug?: string | null
-          tags?: string[] | null
-          title?: string | null
-          total_chapters?: number | null
-          total_pages?: number | null
-        }
-        Update: {
-          author?: string | null
-          cover_url?: string | null
-          description?: string | null
-          expected_segments?: number | null
-          id?: string | null
-          slug?: string | null
-          tags?: string[] | null
-          title?: string | null
-          total_chapters?: number | null
-          total_pages?: number | null
-        }
-        Relationships: []
-      }
-      reading_questions_public: {
-        Row: {
-          book_id: string | null
-          book_slug: string | null
-          id: string | null
-          question: string | null
-          segment: number | null
-        }
-        Insert: {
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Update: {
-          book_id?: string | null
-          book_slug?: string | null
-          id?: string | null
-          question?: string | null
-          segment?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       activate_premium: { Args: never; Returns: Json }
@@ -1730,6 +1559,8 @@ export type Database = {
         | "weekly_digest"
         | "booky_received"
         | "new_follower"
+        | "badge_earned"
+        | "book_chat_message"
       plan: "free" | "premium" | "enterprise"
       reading_status: "to_read" | "in_progress" | "completed" | "abandoned"
       status:
@@ -1877,6 +1708,8 @@ export const Constants = {
         "weekly_digest",
         "booky_received",
         "new_follower",
+        "badge_earned",
+        "book_chat_message",
       ],
       plan: ["free", "premium", "enterprise"],
       reading_status: ["to_read", "in_progress", "completed", "abandoned"],

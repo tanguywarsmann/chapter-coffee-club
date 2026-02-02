@@ -1,15 +1,19 @@
 import { isIOSNative } from "@/utils/platform";
 import { motion } from "framer-motion";
-import { ArrowRight, User, CheckCircle2, Sparkles, BookOpen } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, CheckCircle2, Sparkles, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
-import { Globe } from "lucide-react";
 import { getDisplayName } from "@/services/user/userProfileService";
+import { Apple } from "@/components/icons/Apple";
+import { Google } from "@/components/icons/Google";
+
+const IOS_URL = "https://apps.apple.com/fr/app/v-read/id6752836822";
+const ANDROID_URL = "https://play.google.com/store/apps/details?id=com.vread.app";
 
 export default function Landing() {
   const { t, language, setLanguage } = useTranslation();
@@ -90,14 +94,26 @@ export default function Landing() {
               <a href="#community" className="text-coffee-dark hover:text-copper transition-colors font-medium">{t.landing.nav.community}</a>
             </div>
 
-            <a 
-              href="https://apps.apple.com/fr/app/v-read/id6752836822"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-copper hover:bg-copper-light text-white px-5 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-md"
-            >
-              {t.landing.nav.download}
-            </a>
+            <div className="flex items-center gap-2">
+              <a 
+                href={IOS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-coffee-darkest hover:bg-coffee-darker text-white px-4 py-2.5 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-md text-sm"
+              >
+                <Apple className="w-4 h-4 fill-current" />
+                <span className="hidden sm:inline">iOS</span>
+              </a>
+              <a 
+                href={ANDROID_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-coffee-darkest hover:bg-coffee-darker text-white px-4 py-2.5 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-md text-sm"
+              >
+                <Google className="w-4 h-4" />
+                <span className="hidden sm:inline">Android</span>
+              </a>
+            </div>
           </div>
         </nav>
 
@@ -145,7 +161,7 @@ export default function Landing() {
                 </div>
 
                 <p className="text-coffee-medium text-sm">
-                  {t.landing.hero.ctaAvailability}<span className="text-copper">{t.landing.hero.ctaAndroid}</span>
+                  {t.landing.hero.ctaAvailability}
                 </p>
               </motion.div>
 
@@ -403,19 +419,34 @@ export default function Landing() {
                 {t.landing.community.subtitle}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <a
-                  href="https://apps.apple.com/fr/app/v-read/id6752836822"
+                  href={IOS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-coffee-darkest hover:bg-coffee-darker text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg text-lg"
+                  className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-black hover:bg-coffee-darkest text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg min-w-[180px]"
                 >
-                  <BookOpen className="w-5 h-5" />
-                  {t.landing.community.ctaDownload}
+                  <Apple className="w-6 h-6 fill-current" />
+                  <div className="text-left">
+                    <p className="text-[10px] opacity-80 leading-none">Télécharger sur</p>
+                    <p className="text-base font-bold leading-tight">App Store</p>
+                  </div>
+                </a>
+                <a
+                  href={ANDROID_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-black hover:bg-coffee-darkest text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg min-w-[180px]"
+                >
+                  <Google className="w-6 h-6" />
+                  <div className="text-left">
+                    <p className="text-[10px] opacity-80 leading-none">Disponible sur</p>
+                    <p className="text-base font-bold leading-tight">Google Play</p>
+                  </div>
                 </a>
               </div>
-              <p className="text-coffee-medium text-sm">
-                {t.landing.community.availability}<span className="text-copper font-medium">{t.landing.community.androidSoon}</span>
+              <p className="text-coffee-medium text-sm mt-6">
+                {t.landing.community.availability}
               </p>
             </motion.div>
           </div>
