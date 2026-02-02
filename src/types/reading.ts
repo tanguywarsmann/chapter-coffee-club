@@ -42,7 +42,7 @@ export interface ReadingProgressRow {
   current_page: number
   started_at: string
   updated_at: string
-  status: "to_read" | "in_progress" | "completed"
+  status: "to_read" | "in_progress" | "completed" | "abandoned"
   streak_current: number
   streak_best: number
   validations?: ReadingValidation[]
@@ -138,7 +138,7 @@ export interface ValidateReadingResponse {
 export interface ReadingList {
   user_id: string
   book_id: string
-  status: "to_read" | "in_progress" | "completed"
+  status: "to_read" | "in_progress" | "completed" | "abandoned"
   added_at: string
 }
 
