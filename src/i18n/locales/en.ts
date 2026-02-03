@@ -154,7 +154,7 @@ export const en: Translations = {
       },
     },
     community: {
-      title: "Join 2000+ passionate readers",
+      title: "Join 2500+ passionate readers",
       subtitle: "A supportive community sharing the same goal: read more and better.",
       ctaDownload: "Download VREAD",
       availability: "Available on iOS and Android",

@@ -155,7 +155,7 @@ export const fr = {
 			},
 		},
 		community: {
-			title: "Rejoignez 2000+ lecteurs passionnés",
+			title: "Rejoignez 2500+ lecteurs passionnés",
 			subtitle: "Une communauté bienveillante qui partage le même objectif : lire plus et mieux.",
 			ctaDownload: "Télécharger VREAD",
 			availability: "Disponible sur iOS et Android",
