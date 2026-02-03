@@ -148,16 +148,26 @@ export default function Landing() {
                   {t.landing.hero.subtitle}
                 </p>
 
-                {/* CTA Buttons */}
+                {/* CTA Buttons - App Store Links */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6 relative z-20">
-                  <Link
-                    to="/auth"
-                    className="group relative z-30 inline-flex items-center justify-center gap-3 px-8 py-4 bg-copper hover:bg-copper-light text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg cursor-pointer select-none"
-                    style={{ pointerEvents: 'auto' }}
+                  <a
+                    href="https://apps.apple.com/fr/app/v-read/id6752836822"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative z-30 inline-flex items-center justify-center gap-3 px-6 py-4 bg-coffee-darkest hover:bg-coffee-dark text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer select-none"
                   >
-                    <span className="pointer-events-none">{t.landing.hero.ctaPrimary}</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform pointer-events-none" />
-                  </Link>
+                    <Apple className="w-6 h-6 fill-current" />
+                    <span>App Store</span>
+                  </a>
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.vread.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative z-30 inline-flex items-center justify-center gap-3 px-6 py-4 bg-coffee-darkest hover:bg-coffee-dark text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer select-none"
+                  >
+                    <Google className="w-5 h-5" />
+                    <span>Google Play</span>
+                  </a>
                 </div>
 
                 <p className="text-coffee-medium text-sm">
