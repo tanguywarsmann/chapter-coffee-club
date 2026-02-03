@@ -110,7 +110,7 @@ export const fr = {
 			title: "Prouvez que vous avez ",
 			titleHighlight: "vraiment",
 			titleEnd: " lu",
-			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2000+ lecteurs passionnés.",
+			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2500+ lecteurs passionnés.",
 			ctaPrimary: "Commencer l'aventure",
 			ctaAvailability: "Gratuit • Disponible sur iOS et Android",
 			xpEarned: "XP Gagnés",
