@@ -1,101 +1,148 @@
 
 
-# Plan : Ajout du lien Android + Badges App Store professionnels
+# Plan final : Migration de nettoyage octobre 2025 (version production-ready)
 
-## Contexte
+## Donnees mesurees
 
-L'application VREAD est maintenant disponible sur Android. Il faut mettre a jour la landing page pour :
-1. Afficher deux CTAs distincts (iOS App Store + Google Play Store)
-2. Utiliser les icones Apple et Android (deja existantes dans `src/components/icons/`)
-3. Supprimer les mentions "Bientot sur Android"
-4. Mettre a jour le copyright de 2024 a 2025
+- **371 impacted_real_users** (comptes reels ayant au moins 1 ligne dans la fenetre octobre)
+- ~3 000 lignes a supprimer au total, reparties sur 6 tables
+- Estimation duree : **< 30 secondes**
 
-## Modifications a apporter
+## Structure de la migration SQL
 
-### 1. Fichier : `src/pages/Landing.tsx`
-
-**Imports a ajouter :**
-- Importer les composants `Apple` et `Google` depuis `@/components/icons/Apple` et `@/components/icons/Google`
-- Supprimer l'import `BookOpen` de lucide-react (plus utilise)
-
-**Navigation (ligne ~93-100) :**
-Remplacer le bouton unique "Telecharger" par deux boutons cote a cote avec icones :
+### Phase 0 : Timeouts de securite + Index manquants
 
 ```text
-Avant:  [Telecharger]
-Apres:  [Apple icon] iOS    [Android icon] Android
+SET LOCAL lock_timeout = '2s';
+SET LOCAL statement_timeout = '10min';
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_badges_earned_at 
+  ON user_badges(earned_at);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_book_completion_awards_awarded_at 
+  ON book_completion_awards(awarded_at);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_monthly_rewards_user_unlocked 
+  ON user_monthly_rewards(user_id, unlocked_at);
 ```
 
-Design : Deux boutons compacts avec icones, style coherent avec le reste de la nav.
+Note : `CREATE INDEX CONCURRENTLY` ne peut pas s'executer dans une transaction. Ces index seront crees **avant** la transaction principale, dans un bloc separe.
 
-**Section Hero (lignes ~147-149) :**
-Remplacer le texte "Disponible sur iOS - Bientot sur Android" par :
-- "Disponible sur iOS et Android"
-
-**Section Community (lignes ~406-419) :**
-Remplacer le CTA unique par deux badges App Store professionnels :
-- Badge Apple App Store avec icone Apple
-- Badge Google Play Store avec icone Android
-
-Supprimer la mention "Bientot sur Android" et la remplacer par "Disponible sur iOS et Android".
-
-**Footer (ligne ~449-451) :**
-Mettre a jour le copyright de 2024 a 2025.
-
-### 2. Fichiers : Traductions FR et EN
-
-**`src/i18n/locales/fr.ts` :**
-- Modifier `landing.hero.ctaAvailability` : "Gratuit - Disponible sur iOS et Android"
-- Supprimer `landing.hero.ctaAndroid` (ou le vider)
-- Modifier `landing.community.availability` : "Disponible sur iOS et Android"
-- Supprimer `landing.community.androidSoon`
-- Modifier `landing.footer.copyright` : "(c) 2025 VREAD. Tous droits reserves."
-
-**`src/i18n/locales/en.ts` :**
-- Memes modifications en anglais
-
-### 3. Design des CTAs
-
-**Style des boutons App Store :**
+### Phase 1 : Transaction principale
 
 ```text
-+----------------------------------+  +----------------------------------+
-|  [Apple icon]  App Store         |  |  [Play icon]  Google Play       |
-+----------------------------------+  +----------------------------------+
+BEGIN;
+
+-- CTEs de population
+WITH fake_users AS (
+  SELECT id FROM profiles 
+  WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01'
+),
+real_users AS (
+  SELECT id FROM profiles WHERE id NOT IN (SELECT id FROM fake_users)
+),
+impacted_real_users AS (
+  real_users avec au moins 1 ligne octobre dans :
+  user_badges OR reading_validations OR feed_events 
+  OR book_completion_awards OR user_monthly_rewards
+)
+
+-- ASSERTIONS (RAISE EXCEPTION si fake_user detecte)
+-- SUPPRESSIONS dans l'ordre FK
+-- RECALCUL reading_progress
+-- RECALCUL user_companion (cible)
+-- rebuild_user_xp() et auto_grant_badges() en boucle sur 371 users
+
+COMMIT;
 ```
 
-- Fond sombre (`bg-coffee-darkest` ou `bg-black`)
-- Texte blanc
-- Icones blanches (fill="currentColor")
-- Border radius arrondi (`rounded-xl`)
-- Effet hover avec scale
-- Espacement egal entre les deux
+### Phase 2 : Post-migration (hors transaction)
 
-**Pour la navigation :**
-Boutons plus compacts adaptes a la nav :
-- Deux boutons avec seulement les icones sur mobile
-- Icones + texte court sur desktop
+```text
+VACUUM ANALYZE user_badges;
+VACUUM ANALYZE feed_events;
+VACUUM ANALYZE feed_bookys;
+VACUUM ANALYZE reading_validations;
+```
 
-## Liens a utiliser
+## Detail des operations (dans la transaction)
 
-| Plateforme | URL |
-|------------|-----|
-| iOS App Store | `https://apps.apple.com/fr/app/v-read/id6752836822` |
-| Google Play Store | `https://play.google.com/store/apps/details?id=com.vread.app` |
+### 1. CTEs de population
 
-## Resume des fichiers a modifier
+Trois CTEs reutilisees partout :
+- `fake_users` : profiles crees en 2024
+- `real_users` : tous sauf fake_users
+- `impacted_real_users` : real_users avec activite dans `[2025-10-01, 2025-11-01)`
 
-| Fichier | Modifications |
-|---------|---------------|
-| `src/pages/Landing.tsx` | Imports, nav, hero, community, footer |
-| `src/i18n/locales/fr.ts` | Textes disponibilite + copyright 2025 |
-| `src/i18n/locales/en.ts` | Textes disponibilite + copyright 2025 |
+### 2. Assertions pre-suppression (7 verifications)
 
-## Resultat attendu
+Pour chaque table cible, RAISE EXCEPTION si :
+- Une ligne dans la fenetre octobre appartient a un fake_user
+- Le nombre de lignes a supprimer depasse le preview mesure x2 (garde-fou)
 
-- Navigation : Deux icones/boutons pour telecharger l'app
-- Hero : Texte mis a jour "Disponible sur iOS et Android"
-- Community : Deux badges App Store professionnels cote a cote
-- Footer : Copyright 2025
-- Look professionnel et coherent avec la direction artistique existante
+### 3. Suppressions (ordre FK respecte)
+
+| Etape | Table | Filtre | Lignes estimees |
+|-------|-------|--------|-----------------|
+| 3a | feed_bookys | event_id IN feed_events octobre des impacted | ~1 027 |
+| 3b | feed_events | actor_id IN impacted + created_at octobre | ~520 |
+| 3c | user_badges | user_id IN impacted + earned_at octobre | ~1 306 |
+| 3d | book_completion_awards | user_id IN impacted + awarded_at octobre | ~2 |
+| 3e | user_monthly_rewards | user_id IN impacted + unlocked_at octobre | ~6 |
+| 3f | reading_validations | user_id IN impacted + validated_at octobre | ~146 |
+
+### 4. Nettoyage reading_progress (impacted_real_users uniquement)
+
+- Supprimer les progress sans aucune validation restante (toutes tables confondues)
+- Pour les progress avec validations restantes : recalculer `current_page` = max(segment) des validations, `status` = 'in_progress' si etait 'completed' artificiellement
+
+### 5. Recalcul user_companion (impacted_real_users uniquement)
+
+Recalcul cible base sur les validations restantes :
+- `total_reading_days` = jours distincts de validation
+- `current_streak` et `longest_streak` = recalcul depuis historique restant
+- `last_reading_date` = derniere validation
+- `segments_this_week` = validations de la semaine courante
+- `current_stage` = seuils (0=1, 1=2, 7=3, 21=4, 50=5)
+- Flags rituels : non touches
+
+### 6. Recalcul XP et badges (371 users, en boucle)
+
+```text
+FOR user_id IN (SELECT id FROM impacted_real_users) LOOP
+  PERFORM rebuild_user_xp(user_id);
+  PERFORM auto_grant_badges(user_id);
+END LOOP;
+```
+
+Ces fonctions prennent un `p_user_id` en parametre : aucun effet global.
+
+## Garanties de securite
+
+| Garantie | Mecanisme |
+|----------|-----------|
+| Zero fake_user touche | CTE `fake_users` + RAISE EXCEPTION avant chaque DELETE |
+| Zero suppression hors octobre | Filtre date strict + assertion |
+| Scope limite a 371 users | CTE `impacted_real_users` |
+| Pas de lock prolonge | `lock_timeout = 2s` |
+| Pas de timeout infini | `statement_timeout = 10min` |
+| Pas de perf degradee apres | VACUUM ANALYZE post-migration |
+| XP/badges non globaux | Appel par user_id uniquement |
+| user_companion recalcule proprement | Recalcul cible, pas de reset aveugle |
+
+## Index crees (avant transaction)
+
+| Index | Table | Colonnes |
+|-------|-------|----------|
+| `idx_user_badges_earned_at` | user_badges | earned_at |
+| `idx_book_completion_awards_awarded_at` | book_completion_awards | awarded_at |
+| `idx_user_monthly_rewards_user_unlocked` | user_monthly_rewards | (user_id, unlocked_at) |
+
+## Fichiers a creer
+
+| Fichier | Contenu |
+|---------|---------|
+| Script SQL Phase 0 | Creation des 3 index (CONCURRENTLY, hors transaction) |
+| Script SQL Phase 1 | Transaction principale : CTEs, assertions, suppressions, recalculs |
+| Script SQL Phase 2 | VACUUM ANALYZE sur les tables impactees |
+
+Aucun fichier TypeScript modifie. Les erreurs TypeScript existantes (`books_public`, `reading_questions_public`) sont pre-existantes et non liees a cette migration.
 
