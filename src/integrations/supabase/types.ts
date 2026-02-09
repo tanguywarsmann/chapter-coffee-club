@@ -1408,7 +1408,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      book_requests_with_email: {
+        Row: {
+          book_author: string | null
+          book_title: string | null
+          created_at: string | null
+          id: string | null
+          isbn: string | null
+          reason: string | null
+          status: string | null
+          updated_at: string | null
+          user_email: string | null
+          user_id: string | null
+          user_username: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_premium: { Args: never; Returns: Json }
