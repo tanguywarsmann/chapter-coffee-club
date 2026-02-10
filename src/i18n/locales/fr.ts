@@ -367,7 +367,7 @@ export const fr = {
 				priceWithValue: "Acheter - {price} Lifetime",
 				period: "Accès à vie",
 				periodOnce: "Accès à vie - Paiement unique",
-				validUntil: "Valable jusqu'au 31 décembre",
+				validUntil: "Valable jusqu'au 15 février",
 				iosNote: "🍎 Achat via App Store",
 				features: {
 					requestBooks: "Demander l'ajout de n'importe quel livre",
