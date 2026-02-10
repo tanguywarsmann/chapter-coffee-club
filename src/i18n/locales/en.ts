@@ -112,6 +112,7 @@ export const en: Translations = {
       subtitle: "VREAD certifies your reading with adaptive quizzes and rewards you with exclusive badges. Join 2500+ passionate readers.",
       ctaPrimary: "Start the adventure",
       ctaAvailability: "Free • Available on iOS and Android",
+      desktopLink: "Access the site on desktop",
       xpEarned: "XP Earned",
     },
     features: {
@@ -158,6 +159,7 @@ export const en: Translations = {
       subtitle: "A supportive community sharing the same goal: read more and better.",
       ctaDownload: "Download VREAD",
       availability: "Available on iOS and Android",
+      desktopLink: "Access the site on desktop",
     },
     footer: {
       blog: "Blog",

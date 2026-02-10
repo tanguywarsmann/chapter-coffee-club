@@ -170,7 +170,14 @@ export default function Landing() {
                   </a>
                 </div>
 
-                <p className="text-coffee-medium text-sm">
+                <Link
+                  to="/auth?mode=login"
+                  className="inline-block text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors mt-2"
+                >
+                  {t.landing.hero.desktopLink}
+                </Link>
+
+                <p className="text-coffee-medium text-sm mt-2">
                   {t.landing.hero.ctaAvailability}
                 </p>
               </motion.div>
@@ -455,7 +462,15 @@ export default function Landing() {
                   </div>
                 </a>
               </div>
-              <p className="text-coffee-medium text-sm mt-6">
+              <div className="mt-4">
+                <Link
+                  to="/auth?mode=login"
+                  className="text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors"
+                >
+                  {t.landing.community.desktopLink}
+                </Link>
+              </div>
+              <p className="text-coffee-medium text-sm mt-4">
                 {t.landing.community.availability}
               </p>
             </motion.div>
