@@ -9,6 +9,7 @@ import { ConfettiProvider } from "@/components/confetti/ConfettiProvider"
 import './index.css'
 import { JOKER_MIN_SEGMENTS_ENABLED, JOKER_MIN_SEGMENTS } from "@/utils/jokerConstraints";
 import { initRevenueCat } from '@/lib/revenuecat';
+import '@/utils/supabaseHealthCheck'; // Auto-register window.__supabaseHealthCheck
 
 console.info("[BOOTSTRAP] Loading React app");
 

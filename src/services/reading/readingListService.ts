@@ -16,10 +16,10 @@ type ProgressRow = {
   book_id: string;
   current_page: number;
   total_pages: number;
-  status: 'to_read' | 'in_progress' | 'completed';
+  status: 'to_read' | 'in_progress' | 'completed' | 'abandoned';
   updated_at?: string | null;
   started_at?: string | null;
-  books?: any; // jointure books_public
+  books?: any; // jointure books
 };
 
 type ReadingListPayload = {
@@ -138,7 +138,7 @@ export async function fetchReadingProgress(userId: string): Promise<ReadingListP
       status,
       updated_at,
       started_at,
-      books:books_public(
+      books(
         id, slug, title, author, cover_url, total_chapters, expected_segments
       )
     `

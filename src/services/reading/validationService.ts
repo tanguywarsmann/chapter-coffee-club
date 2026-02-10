@@ -24,8 +24,9 @@ export const validateReading = async (
 
     // 1) Infos livre (pour slug & cohérence)
     const { data: bookData, error: bookError } = await supabase
-      .from("books_public")
+      .from("books")
       .select("slug, total_pages")
+      .eq("is_published", true)
       .eq("id", request.book_id)
       .maybeSingle();
 

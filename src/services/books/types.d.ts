@@ -3,7 +3,8 @@ import { Database } from "@/integrations/supabase/types";
 import { Book } from "@/types/book";
 
 export type BookRecord = Database["public"]["Tables"]["books"]["Row"];
-export type BookPublicRecord = Database["public"]["Views"]["books_public"]["Row"];
+// Redirigé vers la table books (la vue books_public n'existe plus)
+export type BookPublicRecord = Database["public"]["Tables"]["books"]["Row"];
 export type InsertableBook = Omit<Book, "id">;
 
 // Define user_badges types that align with our database table

@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function getBookBySlug(slug: string) {
   const { data, error } = await supabase
-    .from("books_public")
+    .from("books")
     .select("*")
+    .eq("is_published", true)
     .eq("slug", slug)
     .single();
   
@@ -22,8 +23,9 @@ export async function getBookBySlug(slug: string) {
 
 export async function getBookById(id: string) {
   const { data, error } = await supabase
-    .from("books_public")
+    .from("books")
     .select("*")
+    .eq("is_published", true)
     .eq("id", id)
     .single();
   
@@ -37,8 +39,9 @@ export async function getBookById(id: string) {
 
 export async function getBookExpectedSegments(bookSlug: string) {
   const { data, error } = await supabase
-    .from("books_public")
+    .from("books")
     .select("expected_segments")
+    .eq("is_published", true)
     .eq("slug", bookSlug)
     .single();
   

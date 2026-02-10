@@ -8,14 +8,20 @@ const bookCache = new Map<string, { data: Book, timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Récupère tous les livres avec cache amélioré
+ * Récupère tous les livres publiés avec cache amélioré
  */
 export const getAllBooks = async (includeUnpublished = false): Promise<Book[]> => {
   try {
-    const { data, error } = await supabase
-      .from('books_public')
+    let query = supabase
+      .from('books')
       .select('*')
       .order('title');
+
+    if (!includeUnpublished) {
+      query = query.eq('is_published', true);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching books:', error);
@@ -54,18 +60,15 @@ export const getBookById = async (id: string): Promise<Book | null> => {
   // Vérifier le cache local
   const cached = bookCache.get(cleanId);
   if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-    console.log(`[DEBUG] Cache hit pour livre: ${cleanId}`);
     return cached.data;
   }
   
   try {
-    console.log(`[DEBUG] Recherche livre avec identifiant: "${cleanId}"`);
-    
     // D'abord recherche par slug (plus fiable pour les URLs)
-    console.log(`[DEBUG] Recherche par slug: ${cleanId}`);
     const { data: slugData, error: slugError } = await supabase
-      .from('books_public')
+      .from('books')
       .select('*')
+      .eq('is_published', true)
       .eq('slug', cleanId)
       .maybeSingle();
     
@@ -74,7 +77,6 @@ export const getBookById = async (id: string): Promise<Book | null> => {
     }
     
     if (slugData) {
-      console.log(`[DEBUG] Livre trouvé par slug: ${slugData.title} (${slugData.id})`);
       const book = mapBookFromRecord(slugData as BookPublicRecord);
       
       // Mettre en cache avec les deux clés possibles
@@ -87,10 +89,10 @@ export const getBookById = async (id: string): Promise<Book | null> => {
     // Si pas trouvé par slug, essayer par ID
     const isUuid = isValidUuid(cleanId);
     if (isUuid) {
-      console.log(`[DEBUG] Recherche par UUID: ${cleanId}`);
       const { data: idData, error: idError } = await supabase
-        .from('books_public')
+        .from('books')
         .select('*')
+        .eq('is_published', true)
         .eq('id', cleanId)
         .maybeSingle();
       
@@ -99,7 +101,6 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       }
       
       if (idData) {
-        console.log(`[DEBUG] Livre trouvé par ID: ${idData.title} (${idData.id})`);
         const book = mapBookFromRecord(idData as BookPublicRecord);
         
         // Mettre en cache
@@ -110,31 +111,8 @@ export const getBookById = async (id: string): Promise<Book | null> => {
         
         return book;
       }
-    } else {
-      // Si ce n'est pas un UUID, essayer comme slug sans filtre published
-      console.log(`[DEBUG] Recherche par slug sans filtre published: ${cleanId}`);
-      const { data: anySlugData, error: anySlugError } = await supabase
-        .from('books_public')
-        .select('*')
-        .eq('slug', cleanId)
-        .maybeSingle();
-      
-      if (anySlugError && anySlugError.code !== 'PGRST116') {
-        console.error(`[ERROR] Erreur lors de la recherche par slug sans filtre:`, anySlugError);
-      }
-      
-      if (anySlugData) {
-        console.log(`[DEBUG] Livre trouvé par slug sans filtre: ${anySlugData.title} (${anySlugData.id})`);
-        const book = mapBookFromRecord(anySlugData as BookPublicRecord);
-        
-        // Mettre en cache
-        bookCache.set(cleanId, { data: book, timestamp: Date.now() });
-        
-        return book;
-      }
     }
     
-    console.log(`[DEBUG] Aucun livre trouvé pour: ${cleanId}`);
     return null;
 
   } catch (error) {
@@ -154,8 +132,9 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
   
   try {
     let query = supabase
-      .from('books_public')
+      .from('books')
       .select('*')
+      .eq('is_published', true)
       .contains('tags', `{${category}}`);
   
     const { data, error } = await query;
@@ -178,8 +157,9 @@ export const getBooksByCategory = async (category: string, includeUnpublished = 
 export const getBooksBySpecificCategory = async (category: 'religion' | 'essai' | 'litterature'): Promise<Book[]> => {
   try {
     let query = supabase
-      .from('books_public')
+      .from('books')
       .select('*')
+      .eq('is_published', true)
       .order('title');
 
     if (category === 'religion') {
@@ -211,8 +191,9 @@ export const getBooksBySpecificCategory = async (category: 'religion' | 'essai' 
 export const getAvailableCategories = async (): Promise<string[]> => {
   try {
     const { data, error } = await supabase
-      .from('books_public')
-      .select('tags');
+      .from('books')
+      .select('tags')
+      .eq('is_published', true);
 
     if (error) {
       console.error('Error fetching book categories:', error);
@@ -222,7 +203,7 @@ export const getAvailableCategories = async (): Promise<string[]> => {
     const allTags = new Set<string>();
     data?.forEach(book => {
       if (book.tags && Array.isArray(book.tags)) {
-        book.tags.forEach(tag => allTags.add(tag));
+        book.tags.forEach((tag: string) => allTags.add(tag));
       }
     });
     

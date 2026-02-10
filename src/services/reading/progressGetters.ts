@@ -95,7 +95,7 @@ export const getUserReadingProgress = async (
         .from("reading_progress")
         .select(`
           *,
-          books:books_public(
+          books(
             id, slug, title, author, cover_url, total_chapters, expected_segments
           )
         `)
@@ -208,7 +208,7 @@ export const getBookReadingProgress = async (userId: string, bookId: string): Pr
         .from("reading_progress")
         .select(`
           *,
-          books:books_public(
+          books(
             id, slug, title, author, cover_url, total_chapters, expected_segments
           )
         `)
@@ -322,7 +322,7 @@ export const getBooksByStatus = async (userId: string, status: "to_read" | "in_p
       .from("reading_progress")
       .select(`
         *,
-        books:books_public(
+        books(
           id, slug, title, author, cover_url, total_chapters, expected_segments
         )
       `)
