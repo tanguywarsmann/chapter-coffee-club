@@ -113,6 +113,7 @@ export const fr = {
 			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2500+ lecteurs passionnés.",
 			ctaPrimary: "Commencer l'aventure",
 			ctaAvailability: "Gratuit • Disponible sur iOS et Android",
+			desktopLink: "Accéder au site sur ordi",
 			xpEarned: "XP Gagnés",
 		},
 		features: {
@@ -159,6 +160,7 @@ export const fr = {
 			subtitle: "Une communauté bienveillante qui partage le même objectif : lire plus et mieux.",
 			ctaDownload: "Télécharger VREAD",
 			availability: "Disponible sur iOS et Android",
+			desktopLink: "Accéder au site sur ordi",
 		},
 		footer: {
 			blog: "Blog",
