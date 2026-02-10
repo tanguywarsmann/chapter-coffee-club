@@ -42,8 +42,15 @@ export async function getCorrectAnswerAfterJoker(params: JokerRevealParams): Pro
 
 export async function getQuestionForBookSegment(bookSlug: string, segment: number): Promise<PublicReadingQuestion | null> {
   try {
+    // Guard: only query reading_questions if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.warn('[questionService] No authenticated session — skipping reading_questions fetch');
+      return null;
+    }
+
     const { data, error } = await supabase
-      .from('reading_questions_public')
+      .from('reading_questions')
       .select('id, book_slug, segment, question, book_id')
       .eq('book_slug', bookSlug)
       .eq('segment', segment)

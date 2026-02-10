@@ -40,10 +40,6 @@ export async function useJokerAndReveal(params: {
 
 /**
  * Utilise un joker de manière atomique via RPC
- * @param bookId - ID du livre
- * @param userId - ID de l'utilisateur
- * @param segment - Numéro du segment
- * @returns Résultat de l'utilisation du joker
  */
 export async function useJokerAtomically(
   bookId: string,
@@ -102,9 +98,6 @@ export async function useJokerAtomically(
 
 /**
  * Récupère le nombre de jokers restants pour un livre
- * @param bookId - ID du livre (peut être UUID ou slug)
- * @param userId - ID de l'utilisateur
- * @returns Nombre de jokers restants
  */
 export async function getRemainingJokers(
   bookId: string,
@@ -116,8 +109,9 @@ export async function getRemainingJokers(
     
     // First try by id (UUID)
     const uuidResult = await supabase
-      .from('books_public')
+      .from('books')
       .select('expected_segments')
+      .eq('is_published', true)
       .eq('id', bookId)
       .maybeSingle();
     
@@ -125,12 +119,12 @@ export async function getRemainingJokers(
       bookData = uuidResult.data;
       bookError = null;
     } else {
-      // If not found by UUID, try by slug using the main books table
+      // If not found by UUID, try by slug
       const slugResult = await supabase
         .from('books')
         .select('expected_segments, id')
-        .eq('slug', bookId)
         .eq('is_published', true)
+        .eq('slug', bookId)
         .maybeSingle();
       
       if (!slugResult.error && slugResult.data) {
