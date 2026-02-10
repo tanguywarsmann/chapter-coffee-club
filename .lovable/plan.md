@@ -1,148 +1,72 @@
 
+# Plan : Fix site sans toucher au backend Supabase
 
-# Plan final : Migration de nettoyage octobre 2025 (version production-ready)
+## Diagnostic confirme
 
-## Donnees mesurees
+Le fichier `types.ts` genere ne contient que `book_requests_with_email` dans `Views`. Les vues `books_public`, `books_explore`, et `reading_questions_public` n'existent plus en DB. Toutes les requetes `from('books_public')` etc. echouent au niveau TypeScript.
 
-- **371 impacted_real_users** (comptes reels ayant au moins 1 ligne dans la fenetre octobre)
-- ~3 000 lignes a supprimer au total, reparties sur 6 tables
-- Estimation duree : **< 30 secondes**
+## Modifications prevues
 
-## Structure de la migration SQL
+### 1. `src/services/books/types.d.ts`
+- Changer `BookPublicRecord` de `Database["public"]["Views"]["books_public"]["Row"]` vers `Database["public"]["Tables"]["books"]["Row"]` (memes colonnes)
 
-### Phase 0 : Timeouts de securite + Index manquants
+### 2. `src/services/books/bookQueries.ts` (8 requetes)
+- Tous les `from('books_public')` deviennent `from('books')` avec `.eq('is_published', true)` ajoute
+- Cast `as any` sur les appels `from()` pour contourner le typage strict Supabase qui ne reconnait que les noms de tables/vues du schema genere
 
-```text
-SET LOCAL lock_timeout = '2s';
-SET LOCAL statement_timeout = '10min';
+### 3. `src/services/bookQueries.ts` (3 requetes)
+- `getBookBySlug`, `getBookById`, `getBookExpectedSegments` : `from('books')` + `.eq('is_published', true)`
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_badges_earned_at 
-  ON user_badges(earned_at);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_book_completion_awards_awarded_at 
-  ON book_completion_awards(awarded_at);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_monthly_rewards_user_unlocked 
-  ON user_monthly_rewards(user_id, unlocked_at);
-```
+### 4. `src/hooks/useHomeSearch.ts` (1 requete)
+- `from('books')` + `.eq('is_published', true)`
 
-Note : `CREATE INDEX CONCURRENTLY` ne peut pas s'executer dans une transaction. Ces index seront crees **avant** la transaction principale, dans un bloc separe.
+### 5. `src/hooks/useExploreBooks.ts` (1 requete, logique category)
+- Remplacer `from('books_explore')` par `from('books')` + `.eq('is_published', true)`
+- Supprimer `.eq('category', category)` (n'existe pas sur la table)
+- Ajouter le filtrage par category via les tags :
+  - `religion` : `.contains('tags', ['Religion'])`
+  - `essai` : `.contains('tags', ['Essai'])`
+  - `bio` : `.contains('tags', ['Biographie'])`
+  - `litterature` : pas de filtre tag cote Supabase, filtrage cote front apres fetch pour exclure les livres ayant Religion/Essai/Biographie dans tags (gere aussi `tags = NULL` qui sont inclus dans litterature)
 
-### Phase 1 : Transaction principale
+### 6. `src/services/questionService.ts` (1 requete + guard auth)
+- Remplacer `from('reading_questions_public')` par `from('reading_questions')`
+- Garder `.select('id, book_slug, segment, question, book_id')` (pas de colonne `answer`)
+- Ajouter un check `supabase.auth.getSession()` : si pas de session, retourner `null` (le composant appelant gere deja le cas null)
 
-```text
-BEGIN;
+### 7. `src/services/jokerService.ts` (1 requete)
+- Ligne 119 : `from('books_public')` devient `from('books')` + `.eq('is_published', true)`
 
--- CTEs de population
-WITH fake_users AS (
-  SELECT id FROM profiles 
-  WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01'
-),
-real_users AS (
-  SELECT id FROM profiles WHERE id NOT IN (SELECT id FROM fake_users)
-),
-impacted_real_users AS (
-  real_users avec au moins 1 ligne octobre dans :
-  user_badges OR reading_validations OR feed_events 
-  OR book_completion_awards OR user_monthly_rewards
-)
+### 8. `src/services/reading/validationService.ts` (1 requete)
+- Ligne 27 : `from('books_public')` devient `from('books')` + `.eq('is_published', true)`
 
--- ASSERTIONS (RAISE EXCEPTION si fake_user detecte)
--- SUPPRESSIONS dans l'ordre FK
--- RECALCUL reading_progress
--- RECALCUL user_companion (cible)
--- rebuild_user_xp() et auto_grant_badges() en boucle sur 371 users
+### 9. Check env + smoke test (nouveau)
+- Ajouter un utilitaire `src/utils/supabaseHealthCheck.ts` qui :
+  - Verifie que `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont definis
+  - Fait un `SELECT count(*) FROM books WHERE is_published = true` en smoke test
+  - Log le resultat en console (URL masquee, count de livres)
+  - Exporte une fonction appelable depuis la console ou un composant admin
 
-COMMIT;
-```
+## Securite
 
-### Phase 2 : Post-migration (hors transaction)
+- `answer` jamais selectionne dans `reading_questions`
+- `reading_questions` accessible uniquement si session authenticated
+- `is_published = true` ajoute sur toutes les requetes books
+- Tags NULL geres dans le filtre litterature (inclus par defaut)
+- Zero migration SQL
 
-```text
-VACUUM ANALYZE user_badges;
-VACUUM ANALYZE feed_events;
-VACUUM ANALYZE feed_bookys;
-VACUUM ANALYZE reading_validations;
-```
+## Resume
 
-## Detail des operations (dans la transaction)
+| Fichier | Changements |
+|---------|-------------|
+| `src/services/books/types.d.ts` | 1 type redirige vers Tables |
+| `src/services/books/bookQueries.ts` | 8 from() corriges |
+| `src/services/bookQueries.ts` | 3 from() corriges |
+| `src/hooks/useHomeSearch.ts` | 1 from() corrige |
+| `src/hooks/useExploreBooks.ts` | 1 from() + logique category + tags NULL |
+| `src/services/questionService.ts` | 1 from() + guard auth |
+| `src/services/jokerService.ts` | 1 from() corrige |
+| `src/services/reading/validationService.ts` | 1 from() corrige |
+| `src/utils/supabaseHealthCheck.ts` | Nouveau fichier : check env + smoke test |
 
-### 1. CTEs de population
-
-Trois CTEs reutilisees partout :
-- `fake_users` : profiles crees en 2024
-- `real_users` : tous sauf fake_users
-- `impacted_real_users` : real_users avec activite dans `[2025-10-01, 2025-11-01)`
-
-### 2. Assertions pre-suppression (7 verifications)
-
-Pour chaque table cible, RAISE EXCEPTION si :
-- Une ligne dans la fenetre octobre appartient a un fake_user
-- Le nombre de lignes a supprimer depasse le preview mesure x2 (garde-fou)
-
-### 3. Suppressions (ordre FK respecte)
-
-| Etape | Table | Filtre | Lignes estimees |
-|-------|-------|--------|-----------------|
-| 3a | feed_bookys | event_id IN feed_events octobre des impacted | ~1 027 |
-| 3b | feed_events | actor_id IN impacted + created_at octobre | ~520 |
-| 3c | user_badges | user_id IN impacted + earned_at octobre | ~1 306 |
-| 3d | book_completion_awards | user_id IN impacted + awarded_at octobre | ~2 |
-| 3e | user_monthly_rewards | user_id IN impacted + unlocked_at octobre | ~6 |
-| 3f | reading_validations | user_id IN impacted + validated_at octobre | ~146 |
-
-### 4. Nettoyage reading_progress (impacted_real_users uniquement)
-
-- Supprimer les progress sans aucune validation restante (toutes tables confondues)
-- Pour les progress avec validations restantes : recalculer `current_page` = max(segment) des validations, `status` = 'in_progress' si etait 'completed' artificiellement
-
-### 5. Recalcul user_companion (impacted_real_users uniquement)
-
-Recalcul cible base sur les validations restantes :
-- `total_reading_days` = jours distincts de validation
-- `current_streak` et `longest_streak` = recalcul depuis historique restant
-- `last_reading_date` = derniere validation
-- `segments_this_week` = validations de la semaine courante
-- `current_stage` = seuils (0=1, 1=2, 7=3, 21=4, 50=5)
-- Flags rituels : non touches
-
-### 6. Recalcul XP et badges (371 users, en boucle)
-
-```text
-FOR user_id IN (SELECT id FROM impacted_real_users) LOOP
-  PERFORM rebuild_user_xp(user_id);
-  PERFORM auto_grant_badges(user_id);
-END LOOP;
-```
-
-Ces fonctions prennent un `p_user_id` en parametre : aucun effet global.
-
-## Garanties de securite
-
-| Garantie | Mecanisme |
-|----------|-----------|
-| Zero fake_user touche | CTE `fake_users` + RAISE EXCEPTION avant chaque DELETE |
-| Zero suppression hors octobre | Filtre date strict + assertion |
-| Scope limite a 371 users | CTE `impacted_real_users` |
-| Pas de lock prolonge | `lock_timeout = 2s` |
-| Pas de timeout infini | `statement_timeout = 10min` |
-| Pas de perf degradee apres | VACUUM ANALYZE post-migration |
-| XP/badges non globaux | Appel par user_id uniquement |
-| user_companion recalcule proprement | Recalcul cible, pas de reset aveugle |
-
-## Index crees (avant transaction)
-
-| Index | Table | Colonnes |
-|-------|-------|----------|
-| `idx_user_badges_earned_at` | user_badges | earned_at |
-| `idx_book_completion_awards_awarded_at` | book_completion_awards | awarded_at |
-| `idx_user_monthly_rewards_user_unlocked` | user_monthly_rewards | (user_id, unlocked_at) |
-
-## Fichiers a creer
-
-| Fichier | Contenu |
-|---------|---------|
-| Script SQL Phase 0 | Creation des 3 index (CONCURRENTLY, hors transaction) |
-| Script SQL Phase 1 | Transaction principale : CTEs, assertions, suppressions, recalculs |
-| Script SQL Phase 2 | VACUUM ANALYZE sur les tables impactees |
-
-Aucun fichier TypeScript modifie. Les erreurs TypeScript existantes (`books_public`, `reading_questions_public`) sont pre-existantes et non liees a cette migration.
-
+Total : 9 fichiers, 16 requetes corrigees, 0 migration SQL.
