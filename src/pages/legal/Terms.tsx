@@ -72,7 +72,7 @@ export function Terms() {
                     <ul className="list-disc ml-6 space-y-1">
                       <li>Nom : VREAD Premium Mensuel</li>
                       <li>Durée : 1 mois (renouvellement automatique)</li>
-                      <li>Prix : <strong>7,99€/mois</strong></li>
+                      <li>Prix : <strong>4,99€/mois</strong></li>
                     </ul>
                   </div>
                   
@@ -89,7 +89,7 @@ export function Terms() {
                     <h3 className="text-lg font-medium text-coffee-dark mb-2">Achat unique (Lifetime)</h3>
                     <ul className="list-disc ml-6 space-y-1">
                       <li>Nom : VREAD Premium à vie</li>
-                      <li>Prix : <strong>29,99€</strong> (paiement unique, accès illimité)</li>
+                      <li>Prix : <strong>39,99€ jusqu'au 15 février</strong> (paiement unique, accès illimité)</li>
                     </ul>
                   </div>
                   
@@ -119,8 +119,8 @@ export function Terms() {
                   <p>
                     <strong>Support :</strong> Pour toute question concernant votre abonnement, 
                     contactez-nous à{" "}
-                    <a href="mailto:contact@vread.fr" className="text-coffee-dark underline">
-                      contact@vread.fr
+                    <a href="mailto:tanguy@vread.fr" className="text-coffee-dark underline">
+                      tanguy@vread.fr
                     </a>
                   </p>
                 </div>
@@ -137,7 +137,7 @@ export function Terms() {
               <section>
                 <h2 className="text-xl font-semibold text-coffee-dark">7. Contact</h2>
                 <p className="text-coffee-darker/80">
-                  Pour toute question : <a href="mailto:contact@vread.fr" className="text-coffee-dark underline">contact@vread.fr</a>
+                  Pour toute question : <a href="mailto:tanguy@vread.fr" className="text-coffee-dark underline">tanguy@vread.fr</a>
                 </p>
               </section>
 
