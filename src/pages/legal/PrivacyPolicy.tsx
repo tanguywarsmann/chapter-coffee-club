@@ -135,7 +135,7 @@ export function PrivacyPolicy() {
                 </p>
                 <ul className="text-coffee-darker/80 list-disc pl-6">
                   <li>Gérer vos données directement depuis les réglages de l'application</li>
-                  <li>Nous contacter à : <a href="mailto:privacy@vread.fr" className="text-coffee-dark underline">privacy@vread.fr</a></li>
+                  <li>Nous contacter à : <a href="mailto:tanguy@vread.fr" className="text-coffee-dark underline">tanguy@vread.fr</a></li>
                 </ul>
               </section>
 
@@ -172,8 +172,8 @@ export function PrivacyPolicy() {
                   Pour toute question concernant cette politique ou vos données personnelles :
                 </p>
                 <ul className="text-coffee-darker/80 list-disc pl-6">
-                  <li>Email : <a href="mailto:privacy@vread.fr" className="text-coffee-dark underline">privacy@vread.fr</a></li>
-                  <li>Support : <a href="mailto:support@vread.fr" className="text-coffee-dark underline">support@vread.fr</a></li>
+                  <li>Email : <a href="mailto:tanguy@vread.fr" className="text-coffee-dark underline">tanguy@vread.fr</a></li>
+                  <li>Support : <a href="mailto:tanguy@vread.fr" className="text-coffee-dark underline">tanguy@vread.fr</a></li>
                 </ul>
                 <p className="text-coffee-darker/80 mt-2">
                   Vous avez également le droit de déposer une plainte auprès de la CNIL (Commission Nationale 
