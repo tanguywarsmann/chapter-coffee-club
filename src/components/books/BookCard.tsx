@@ -57,7 +57,7 @@ export function BookCard({
   const hasActions = showAddButton || showDeleteButton || Boolean(actionLabel);
   const infoItems = [
     book.pages ? `${book.pages} pages` : null,
-    (book.totalChapters || book.total_chapters || book.expectedSegments) ? `${book.totalChapters || book.total_chapters || book.expectedSegments} segments` : null,
+    Number.isFinite(book.expectedSegments) ? `${book.expectedSegments} segments` : null,
     book.language ? (book.language.length <= 3 ? book.language.toUpperCase() : book.language) : null
   ].filter(Boolean) as string[];
   const cardMinHeight = hasActions
