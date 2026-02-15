@@ -172,7 +172,7 @@ export default function Landing() {
 
                 <Link
                   to="/auth?mode=login"
-                  className="inline-block text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors mt-2"
+                  className="inline-block text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors mt-2 px-4 py-3 relative z-30 pointer-events-auto"
                 >
                   {t.landing.hero.desktopLink}
                 </Link>
@@ -465,7 +465,7 @@ export default function Landing() {
               <div className="mt-4">
                 <Link
                   to="/auth?mode=login"
-                  className="text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors"
+                  className="text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors px-4 py-3 inline-block"
                 >
                   {t.landing.community.desktopLink}
                 </Link>
