@@ -1,31 +1,41 @@
 
-## Fix Affichage "Segments" dans BookCard
 
-### Diagnostic
-Ligne 59 de `src/components/books/BookCard.tsx` contient :
-```typescript
-(book.totalChapters || book.total_chapters || book.expectedSegments) ? `${book.totalChapters || book.total_chapters || book.expectedSegments} segments` : null,
+## Améliorer la hitbox du lien "Accéder au site sur ordi"
+
+### Problème
+Les deux liens "Accéder au site sur ordi" (hero section ligne 173 et community section ligne 466) sont des `<Link>` avec `text-sm` et aucun padding. La zone cliquable est limitée à la hauteur du texte (~14px), bien en dessous du minimum ergonomique de 44px.
+
+De plus, le lien du hero est potentiellement masqué par les boutons App Store/Google Play au-dessus qui ont `z-30`.
+
+### Correction (fichier unique : `src/pages/Landing.tsx`)
+
+**Lien hero (ligne 173-178)** : ajouter du padding vertical + horizontal, un z-index suffisant, et `pointer-events-auto` pour garantir la cliquabilité.
+
+```
+Avant :
+  className="inline-block text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors mt-2"
+
+Après :
+  className="inline-block text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors mt-2 px-4 py-3 relative z-30 pointer-events-auto"
 ```
 
-Ce code utilise un fallback cascade qui affiche `totalChapters` (42) au lieu de `expectedSegments` (5) pour "Madeleine avant l'aube" et autres livres.
+**Lien community (ligne 466-471)** : même traitement, ajouter du padding.
 
-### Solution (100% Front)
-Remplacer cette ligne par :
-```typescript
-Number.isFinite(book.expectedSegments) ? `${book.expectedSegments} segments` : null,
+```
+Avant :
+  className="text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors"
+
+Après :
+  className="text-coffee-medium/70 hover:text-copper text-sm underline underline-offset-2 transition-colors px-4 py-3 inline-block"
 ```
 
-### Justification
-- `expectedSegments` est correctement mappé depuis `record.expected_segments` dans `bookMapper.ts` (ligne 27)
-- `Number.isFinite()` est robuste : teste si la valeur existe ET est un nombre valide (inclut 0, exclut undefined/NaN/Infinity)
-- Aucun fallback vers `totalChapters` ou `total_chapters` (ces champs ne sont pas pertinents pour afficher les segments)
-- Zéro impact sur les autres champs (pages, language, catégories restent inchangés)
+### Résultat
+- Hitbox passe de ~14px de haut a ~44px (14px texte + 12px padding haut + 12px padding bas)
+- Le lien reste visuellement identique (pas de background, juste du padding invisible)
+- Le z-index et pointer-events garantissent que le lien n'est pas masqué par les CTAs au-dessus
 
-### Fichier modifié
-- `src/components/books/BookCard.tsx` (ligne 59)
+### Scope
+- 1 fichier modifié : `src/pages/Landing.tsx`
+- 2 lignes changées (les className des deux liens)
+- Zéro impact backend, zéro migration
 
-### Vérification
-Après le fix :
-1. Ouvrir `/explore`
-2. Chercher "Madeleine avant l'aube"
-3. Vérifier que la pastille affiche `5 segments` (ou la valeur d'`expected_segments` du livre) au lieu de `42 segments`
