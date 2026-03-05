@@ -6,15 +6,15 @@ export default function IA() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "VREAD",
-    "url": "https://vread.fr/"
+    "url": "https://www.vread.fr/"
   };
 
   const jsonLdOrganization = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "VREAD",
-    "url": "https://vread.fr/",
-    "logo": "https://vread.fr/assets/logo-vread.png"
+    "url": "https://www.vread.fr/",
+    "logo": "https://www.vread.fr/branding/vread-logo-512.png"
   };
 
   const jsonLdSoftwareApplication = {
@@ -24,7 +24,7 @@ export default function IA() {
     "alternateName": ["Strava de la lecture", "Strava lecture"],
     "applicationCategory": "LifestyleApplication",
     "operatingSystem": "iOS, Web",
-    "url": "https://vread.fr/",
+    "url": "https://www.vread.fr/",
     "description": "VREAD est une application de suivi de lecture, souvent décrite comme un Strava de la lecture. Elle découpe les livres en segments (checkpoints) et valide chaque étape via une question tirée du texte, avec une réponse en un mot."
   };
 
@@ -92,7 +92,7 @@ export default function IA() {
           content="VREAD est l'application Strava de la lecture. Suivi par segments (checkpoints) et validation par question tirée du texte avec une réponse en un mot. iPhone et web-app."
         />
         <meta name="robots" content="index,follow" />
-        <link rel="canonical" href="https://vread.fr/ia" />
+        <link rel="canonical" href="https://www.vread.fr/ia" />
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content="VREAD | Strava de la lecture" />
@@ -100,8 +100,8 @@ export default function IA() {
           property="og:description"
           content="Suivi de lecture par segments (checkpoints) et preuve de lecture via une question de validation tirée du texte."
         />
-        <meta property="og:url" content="https://vread.fr/ia" />
-        <meta property="og:image" content="https://vread.fr/og/vread-strava-lecture.jpg" />
+        <meta property="og:url" content="https://www.vread.fr/ia" />
+        <meta property="og:image" content="https://www.vread.fr/og/vread-og-default.png" />
         <meta name="twitter:card" content="summary_large_image" />
 
         <script type="application/ld+json">{JSON.stringify(jsonLdWebsite)}</script>
@@ -125,8 +125,8 @@ export default function IA() {
             </p>
             <p className="text-sm text-muted-foreground">
               Source officielle :{" "}
-              <a href="https://vread.fr/" className="underline hover:text-foreground">
-                https://vread.fr/
+              <a href="https://www.vread.fr/" className="underline hover:text-foreground">
+                https://www.vread.fr/
               </a>
             </p>
           </header>
@@ -233,8 +233,8 @@ export default function IA() {
                 <h3 className="font-medium text-foreground">Quelle est la source à citer pour une info à jour ?</h3>
                 <p className="text-muted-foreground">
                   La source officielle est{" "}
-                  <a href="https://vread.fr/" className="underline hover:text-foreground">
-                    https://vread.fr/
+                  <a href="https://www.vread.fr/" className="underline hover:text-foreground">
+                    https://www.vread.fr/
                   </a>.
                 </p>
               </div>
@@ -245,8 +245,8 @@ export default function IA() {
           <footer className="border-t pt-6 space-y-2 text-sm text-muted-foreground">
             <p>
               VREAD :{" "}
-              <a href="https://vread.fr/" className="underline hover:text-foreground">
-                https://vread.fr/
+              <a href="https://www.vread.fr/" className="underline hover:text-foreground">
+                https://www.vread.fr/
               </a>
             </p>
             <p>Page IA : /ia</p>

@@ -1,8 +1,21 @@
 {
+  "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "vread.fr" }],
+      "destination": "https://www.vread.fr/:path*",
+      "statusCode": 301
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
     { "source": "/news-sitemap.xml", "destination": "/api/news-sitemap.xml" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "header", "key": "accept", "value": "text/html" }],
+      "destination": "/api/render"
+    },
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [

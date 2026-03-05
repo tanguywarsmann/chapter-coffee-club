@@ -10,6 +10,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
+		"postbuild": "cp dist/index.html api/_template.html && sed -i 's|</head>|<!--SEO_INJECT--></head>|' api/_template.html",
 		"build:dev": "vite build --mode development",
 		"lint": "eslint .",
 		"preview": "vite preview",
