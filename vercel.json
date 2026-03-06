@@ -13,10 +13,10 @@
     { "source": "/api/:path*", "destination": "/api/:path*" },
     {
       "source": "/:path*",
-      "has": [{ "type": "header", "key": "accept", "value": "text/html" }],
+      "has": [{ "type": "header", "key": "accept", "value": ".*text/html.*" }],
       "destination": "/api/render"
     },
-    { "source": "/:path*", "destination": "/index.html" }
+    { "source": "/:path((?!.*\\.).)*", "destination": "/index.html" }
   ],
   "headers": [
     {
