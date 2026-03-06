@@ -334,7 +334,7 @@ export default async function handler(
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", seo.cache);
   if (seo.noindex) {
-    res.setHeader("X-Robots-Tag", "noindex");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
   }
   res.status(seo.status || 200).send(html);
 }
