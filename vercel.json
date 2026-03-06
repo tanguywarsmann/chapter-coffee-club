@@ -11,6 +11,8 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
     { "source": "/news-sitemap.xml", "destination": "/api/news-sitemap.xml" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/blog/:path*", "destination": "/api/render" },
+    { "source": "/blog", "destination": "/api/render" },
     { "source": "/:path((?!.*\\.).)*", "destination": "/api/render" }
   ],
   "headers": [

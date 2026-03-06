@@ -333,6 +333,7 @@ export default async function handler(
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", seo.cache);
+  res.setHeader("X-VREAD-Renderer", "api-render");
   if (seo.noindex) {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
   }
