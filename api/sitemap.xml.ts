@@ -73,40 +73,6 @@ function validateAndParseDate(dateValue: any, fallbackDate: Date = new Date()): 
   return fallbackDate.toISOString();
 }
 
-/**
- * Extraction des images depuis le frontmatter
- * Support des champs: image, cover, thumbnail, og_image, images
- */
-function extractImages(frontmatter: any, baseUrl: string): string[] {
-  const images: string[] = [];
-  const possibleImageFields = ['image', 'cover', 'thumbnail', 'og_image', 'featured_image'];
-  
-  // Images individuelles
-  for (const field of possibleImageFields) {
-    const imageValue = frontmatter[field];
-    if (imageValue && typeof imageValue === 'string') {
-      // Convertir les chemins relatifs en URLs complètes
-      const imageUrl = imageValue.startsWith('http') 
-        ? imageValue 
-        : `${baseUrl}${imageValue.startsWith('/') ? '' : '/'}${imageValue}`;
-      images.push(imageUrl);
-    }
-  }
-  
-  // Tableau d'images
-  if (Array.isArray(frontmatter.images)) {
-    frontmatter.images.forEach((img: any) => {
-      if (typeof img === 'string') {
-        const imageUrl = img.startsWith('http') 
-          ? img 
-          : `${baseUrl}${img.startsWith('/') ? '' : '/'}${img}`;
-        images.push(imageUrl);
-      }
-    });
-  }
-  
-  return [...new Set(images)]; // Dédoublonnage
-}
 
 /**
  * Récupération des articles depuis Supabase uniquement (source de vérité alignée avec render.ts)
