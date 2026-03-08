@@ -9,6 +9,38 @@ const DEFAULT_OG_IMAGE = `${DOMAIN}/og/vread-og-default.png`;
 
 const FALLBACK_TEMPLATE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!--SEO_INJECT--></head><body><div id="root"></div></body></html>`;
 
+// App routes that should NEVER be indexed
+const NOINDEX_PREFIXES = [
+  "/auth", "/onboarding", "/reset-password", "/profile", "/u/",
+  "/home", "/landing", "/book/", "/books/",
+  "/reading-list", "/discover", "/explore", "/search",
+  "/achievements", "/followers/", "/finished-chat/",
+  "/feedback", "/request-book", "/settings/",
+  "/admin", "/blog-admin",
+  "/sitemap.xml", "/api/",
+];
+
+// Query params to strip from canonical
+const STRIP_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid", "ref", "mc_cid", "mc_eid"];
+
+function isNoindexRoute(pathname: string): boolean {
+  return NOINDEX_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/") || pathname.startsWith(prefix));
+}
+
+function normalizeCanonical(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl);
+    STRIP_PARAMS.forEach(p => url.searchParams.delete(p));
+    // Remove trailing slash except for root
+    let path = url.pathname.replace(/\/+$/, "") || "/";
+    // Lowercase the path
+    path = path.toLowerCase();
+    return `${DOMAIN}${path === "/" ? "" : path}`;
+  } catch {
+    return rawUrl;
+  }
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
