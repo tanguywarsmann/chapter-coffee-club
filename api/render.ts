@@ -358,7 +358,9 @@ export default async function handler(
   res.setHeader("X-VREAD-Renderer", "api-render");
 
   try {
-    const pathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
+    const rawPathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
+    const pathname = rawPathname.toLowerCase();
+    const canonical = normalizeCanonical(`${DOMAIN}${pathname}`);
 
     let seo: SeoData;
 
@@ -367,7 +369,7 @@ export default async function handler(
       const entry = SEO_MAP[pathname];
       seo = {
         ...entry,
-        canonical: `${DOMAIN}${pathname === "/" ? "" : pathname}`,
+        canonical,
         cache: "public, s-maxage=86400, stale-while-revalidate=604800",
       };
     }
@@ -394,17 +396,30 @@ export default async function handler(
       } else {
         seo = {
           ...SEO_MAP["/"]!,
-          canonical: DOMAIN,
+          canonical: `${DOMAIN}/blog`,
           cache: "public, s-maxage=86400, stale-while-revalidate=604800",
         };
       }
     }
-    // Unknown route
+    // App routes — noindex
+    else if (isNoindexRoute(pathname)) {
+      seo = {
+        title: "VREAD",
+        description: "Application de suivi de lecture.",
+        canonical: "",
+        ogType: "website",
+        ogImage: DEFAULT_OG_IMAGE,
+        noindex: true,
+        cache: "private, no-store",
+      };
+    }
+    // Unknown route — still serve SPA but noindex
     else {
       seo = {
         ...SEO_MAP["/"]!,
-        canonical: `${DOMAIN}${pathname}`,
-        cache: "public, s-maxage=86400, stale-while-revalidate=604800",
+        canonical,
+        cache: "public, s-maxage=3600, stale-while-revalidate=86400",
+        noindex: true,
       };
     }
 

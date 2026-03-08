@@ -309,13 +309,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sitemapIndex = parseInt(String(req.query.index || '0'));
 
   try {
-    // Pages statiques principales
+    // Pages statiques principales — uniquement les pages indexables avec SEO dédié
+    const now = new Date().toISOString();
     const staticPages: SitemapUrl[] = [
-      { loc: `${BASE}/`, lastmod: new Date().toISOString(), priority: '1.0', changefreq: 'weekly' },
-      { loc: `${BASE}/a-propos`, lastmod: new Date().toISOString(), priority: '0.9', changefreq: 'monthly' },
-      { loc: `${BASE}/presse`, lastmod: new Date().toISOString(), priority: '0.8', changefreq: 'monthly' },
-      { loc: `${BASE}/ia`, lastmod: new Date().toISOString(), priority: '0.8', changefreq: 'monthly' },
-      { loc: `${BASE}/blog`, lastmod: new Date().toISOString(), priority: '0.9', changefreq: 'weekly' },
+      { loc: `${BASE}/`, lastmod: now, priority: '1.0', changefreq: 'weekly' },
+      { loc: `${BASE}/blog`, lastmod: now, priority: '0.9', changefreq: 'weekly' },
+      { loc: `${BASE}/a-propos`, lastmod: now, priority: '0.9', changefreq: 'monthly' },
+      { loc: `${BASE}/presse`, lastmod: now, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${BASE}/ia`, lastmod: now, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${BASE}/duolingo`, lastmod: now, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${BASE}/strava`, lastmod: now, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${BASE}/premium`, lastmod: now, priority: '0.7', changefreq: 'monthly' },
+      { loc: `${BASE}/legal/privacy`, lastmod: now, priority: '0.3', changefreq: 'yearly' },
+      { loc: `${BASE}/legal/terms`, lastmod: now, priority: '0.3', changefreq: 'yearly' },
     ];
 
     // Récupération automatique de tous les articles
