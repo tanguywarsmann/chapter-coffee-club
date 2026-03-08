@@ -360,7 +360,8 @@ export default async function handler(
   try {
     const rawPathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
     const pathname = rawPathname.toLowerCase();
-    const canonical = normalizeCanonical(`${DOMAIN}${pathname}`);
+    // Canonical = DOMAIN + clean pathname, never query params
+    const canonical = `${DOMAIN}${pathname === "/" ? "" : pathname}`;
 
     let seo: SeoData;
 
@@ -429,6 +430,7 @@ export default async function handler(
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", seo.cache);
+    res.setHeader("X-VREAD-Canonical", seo.canonical || "none");
     if (seo.noindex) {
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
     }
