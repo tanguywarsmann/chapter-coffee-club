@@ -1,8 +1,6 @@
 // api/sitemap.xml.ts — Sitemap dynamique v2 avec améliorations
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { readdir, readFile } from 'fs/promises';
-import { join } from 'path';
-import matter from 'gray-matter';
+// Note: file-based blog post reading removed — Supabase DB is the single source of truth
 
 // Constantes de configuration
 const GOOGLE_SITEMAP_LIMIT = 50000;
@@ -75,112 +73,25 @@ function validateAndParseDate(dateValue: any, fallbackDate: Date = new Date()): 
   return fallbackDate.toISOString();
 }
 
-/**
- * Extraction des images depuis le frontmatter
- * Support des champs: image, cover, thumbnail, og_image, images
- */
-function extractImages(frontmatter: any, baseUrl: string): string[] {
-  const images: string[] = [];
-  const possibleImageFields = ['image', 'cover', 'thumbnail', 'og_image', 'featured_image'];
-  
-  // Images individuelles
-  for (const field of possibleImageFields) {
-    const imageValue = frontmatter[field];
-    if (imageValue && typeof imageValue === 'string') {
-      // Convertir les chemins relatifs en URLs complètes
-      const imageUrl = imageValue.startsWith('http') 
-        ? imageValue 
-        : `${baseUrl}${imageValue.startsWith('/') ? '' : '/'}${imageValue}`;
-      images.push(imageUrl);
-    }
-  }
-  
-  // Tableau d'images
-  if (Array.isArray(frontmatter.images)) {
-    frontmatter.images.forEach((img: any) => {
-      if (typeof img === 'string') {
-        const imageUrl = img.startsWith('http') 
-          ? img 
-          : `${baseUrl}${img.startsWith('/') ? '' : '/'}${img}`;
-        images.push(imageUrl);
-      }
-    });
-  }
-  
-  return [...new Set(images)]; // Dédoublonnage
-}
 
 /**
- * Lecture améliorée des articles markdown avec gestion d'erreurs par fichier
+ * Récupération des articles depuis Supabase uniquement (source de vérité alignée avec render.ts)
+ * Les fichiers markdown ne sont PAS utilisés pour éviter les 404 dans le sitemap.
  */
-async function getAllBlogPostsFromFiles(baseUrl: string): Promise<{ posts: BlogPost[], errors: number }> {
-  let errorCount = 0;
-  const posts: BlogPost[] = [];
-  
-  try {
-    const blogDir = join(process.cwd(), 'content/blog');
-    const files = await readdir(blogDir);
-    const markdownFiles = files.filter(file => file.endsWith('.md') || file.endsWith('.mdx'));
-    
-    // Traitement par batch pour éviter la surcharge
-    for (let i = 0; i < markdownFiles.length; i += BATCH_SIZE) {
-      const batch = markdownFiles.slice(i, i + BATCH_SIZE);
-      
-      const batchResults = await Promise.allSettled(
-        batch.map(async (file) => {
-          const filePath = join(blogDir, file);
-          const fileContent = await readFile(filePath, 'utf8');
-          const { data: frontmatter } = matter(fileContent);
-          
-          const slug = file.replace(/\.(md|mdx)$/, '');
-          
-          // Validation des dates avec fallback
-          const lastmod = validateAndParseDate(
-            frontmatter.updated_at || frontmatter.created_at || frontmatter.date
-          );
-          
-          // Extraction des images
-          const images = extractImages(frontmatter, baseUrl);
-          
-          return {
-            slug,
-            lastmod,
-            published: frontmatter.published !== false,
-            images: images.length > 0 ? images : undefined,
-          };
-        })
-      );
-      
-      // Traitement des résultats du batch
-      batchResults.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          if (result.value.published) {
-            posts.push(result.value);
-          }
-        } else {
-          errorCount++;
-          console.error(`Erreur parsing ${batch[index]}:`, result.reason);
-        }
-      });
-    }
-    
-    return { posts, errors: errorCount };
-  } catch (error) {
-    console.error('Erreur lecture dossier blog:', error);
-    return { posts: [], errors: 1 };
-  }
-}
+async function getAllBlogPosts(baseUrl: string, supabaseUrl?: string, supabaseKey?: string): Promise<{ posts: BlogPost[], stats: Partial<SitemapStats> }> {
+  const startTime = Date.now();
 
-/**
- * Lecture améliorée des articles depuis Supabase avec gestion d'erreurs
- */
-async function getAllBlogPostsFromDB(supabaseUrl: string, supabaseKey: string, baseUrl: string): Promise<{ posts: BlogPost[], errors: number }> {
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Sitemap: Supabase credentials missing, no blog posts included');
+    return { posts: [], stats: { blogPosts: 0, errors: 1, generationTime: Date.now() - startTime, fromFiles: 0, fromDB: 0 } };
+  }
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000); // Timeout plus long
+  const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
     const qs = new URL(`${supabaseUrl}/rest/v1/blog_posts`);
-    qs.searchParams.set('select', 'slug,updated_at,created_at,published,image_url,image_alt');
+    qs.searchParams.set('select', 'slug,updated_at,created_at,image_url');
     qs.searchParams.set('published', 'eq.true');
     qs.searchParams.set('order', 'updated_at.desc');
     qs.searchParams.set('limit', '10000');
@@ -192,58 +103,33 @@ async function getAllBlogPostsFromDB(supabaseUrl: string, supabaseKey: string, b
     });
 
     clearTimeout(timeout);
-    
+
     if (!response.ok) throw new Error(`Supabase error: ${response.status}`);
-    
+
     const rows = await response.json();
-    const posts = rows.map((row: any) => {
+    const posts: BlogPost[] = rows.map((row: any) => {
       const lastmod = validateAndParseDate(row.updated_at || row.created_at);
       const images = row.image_url ? [
         row.image_url.startsWith('http') ? row.image_url : `${baseUrl}${row.image_url}`
       ] : undefined;
-      
-      return {
-        slug: row.slug,
-        lastmod,
-        published: true,
-        images
-      };
+
+      return { slug: row.slug, lastmod, published: true, images };
     });
-    
-    return { posts, errors: 0 };
+
+    const stats = {
+      blogPosts: posts.length,
+      errors: 0,
+      generationTime: Date.now() - startTime,
+      fromFiles: 0,
+      fromDB: posts.length,
+    };
+
+    return { posts, stats };
   } catch (error) {
     clearTimeout(timeout);
-    console.error('Erreur récupération articles DB:', error);
-    return { posts: [], errors: 1 };
+    console.error('Sitemap: Supabase fetch failed, no blog posts included:', error);
+    return { posts: [], stats: { blogPosts: 0, errors: 1, generationTime: Date.now() - startTime, fromFiles: 0, fromDB: 0 } };
   }
-}
-
-/**
- * Système hybride optimisé avec métriques
- */
-async function getAllBlogPosts(baseUrl: string, supabaseUrl?: string, supabaseKey?: string): Promise<{ posts: BlogPost[], stats: Partial<SitemapStats> }> {
-  const startTime = Date.now();
-  
-  const [fileResult, dbResult] = await Promise.all([
-    getAllBlogPostsFromFiles(baseUrl),
-    supabaseUrl && supabaseKey ? getAllBlogPostsFromDB(supabaseUrl, supabaseKey, baseUrl) : Promise.resolve({ posts: [], errors: 0 })
-  ]);
-  
-  // Fusionner et déduplicater par slug (priorité aux fichiers locaux)
-  const allPosts = [...fileResult.posts, ...dbResult.posts];
-  const uniquePosts = allPosts.filter((post, index, self) => 
-    index === self.findIndex(p => p.slug === post.slug)
-  );
-  
-  const stats = {
-    blogPosts: uniquePosts.length,
-    errors: fileResult.errors + dbResult.errors,
-    generationTime: Date.now() - startTime,
-    fromFiles: fileResult.posts.length,
-    fromDB: dbResult.posts.length
-  };
-  
-  return { posts: uniquePosts, stats };
 }
 
 /**
