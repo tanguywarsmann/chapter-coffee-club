@@ -109,7 +109,7 @@ export const en: Translations = {
       title: "Prove you've ",
       titleHighlight: "actually",
       titleEnd: " read",
-      subtitle: "VREAD certifies your reading with adaptive quizzes and rewards you with exclusive badges. Join 2500+ passionate readers.",
+      subtitle: "VREAD certifies your reading with adaptive quizzes and rewards you with exclusive badges. Join 3000+ passionate readers.",
       ctaPrimary: "Start the adventure",
       ctaAvailability: "Free • Available on iOS and Android",
       desktopLink: "Access the site on desktop",
@@ -155,7 +155,7 @@ export const en: Translations = {
       },
     },
     community: {
-      title: "Join 2500+ passionate readers",
+      title: "Join 3000+ passionate readers",
       subtitle: "A supportive community sharing the same goal: read more and better.",
       ctaDownload: "Download VREAD",
       availability: "Available on iOS and Android",

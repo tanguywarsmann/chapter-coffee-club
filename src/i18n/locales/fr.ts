@@ -110,7 +110,7 @@ export const fr = {
 			title: "Prouvez que vous avez ",
 			titleHighlight: "vraiment",
 			titleEnd: " lu",
-			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 2500+ lecteurs passionnés.",
+			subtitle: "VREAD certifie votre lecture avec des quiz adaptatifs et vous récompense avec des badges exclusifs. Rejoignez 3000+ lecteurs passionnés.",
 			ctaPrimary: "Commencer l'aventure",
 			ctaAvailability: "Gratuit • Disponible sur iOS et Android",
 			desktopLink: "Accéder au site sur ordi",
@@ -156,7 +156,7 @@ export const fr = {
 			},
 		},
 		community: {
-			title: "Rejoignez 2500+ lecteurs passionnés",
+			title: "Rejoignez 3000+ lecteurs passionnés",
 			subtitle: "Une communauté bienveillante qui partage le même objectif : lire plus et mieux.",
 			ctaDownload: "Télécharger VREAD",
 			availability: "Disponible sur iOS et Android",
