@@ -268,27 +268,31 @@ let templateCache: string | null = null;
 function getTemplate(): string {
   if (templateCache) return templateCache;
 
-  // Try multiple paths — __dirname is unreliable in Vercel Serverless
   const candidates = [
     resolve(process.cwd(), "api", "_template.html"),
-    resolve(__dirname, "_template.html"),
     resolve(process.cwd(), "_template.html"),
+    resolve(process.cwd(), "dist", "index.html"),
   ];
 
   for (const p of candidates) {
     try {
       const content = readFileSync(p, "utf-8");
-      if (content && content.includes("<!--SEO_INJECT-->")) {
-        templateCache = content;
-        return content;
+      if (content) {
+        if (content.includes("<!--SEO_INJECT-->")) {
+          templateCache = content;
+          return content;
+        }
+        // Template found but missing marker — inject it
+        const patched = content.replace("</head>", "<!--SEO_INJECT-->\n</head>");
+        templateCache = patched;
+        return patched;
       }
     } catch {
       // try next
     }
   }
 
-  // All paths failed — use minimal fallback
-  console.error("api/render: _template.html not found at any candidate path, using fallback");
+  console.error("api/render: no template found, using fallback");
   templateCache = FALLBACK_TEMPLATE;
   return FALLBACK_TEMPLATE;
 }
@@ -363,10 +367,12 @@ export default async function handler(
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
     }
     res.status(seo.status || 200).send(html);
-  } catch (err) {
-    console.error("api/render error:", err);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("api/render error:", msg, err);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-VREAD-Render-Error", msg.slice(0, 120));
     res.status(500).send(
       `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>VREAD</title></head><body><div id="root"></div></body></html>`
     );
