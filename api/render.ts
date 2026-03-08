@@ -360,7 +360,8 @@ export default async function handler(
   try {
     const rawPathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
     const pathname = rawPathname.toLowerCase();
-    const canonical = normalizeCanonical(`${DOMAIN}${pathname}`);
+    // Canonical = DOMAIN + clean pathname, never query params
+    const canonical = `${DOMAIN}${pathname === "/" ? "" : pathname}`;
 
     let seo: SeoData;
 
