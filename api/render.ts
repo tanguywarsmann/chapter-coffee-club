@@ -425,8 +425,10 @@ export default async function handler(
     }
 
     const template = getTemplate();
+    // Remove any canonical already baked into the template to avoid duplicates
+    const templateSanitized = template.replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, "");
     const metaBlock = buildMetaBlock(seo);
-    const html = template.replace("<!--SEO_INJECT-->", metaBlock);
+    const html = templateSanitized.replace("<!--SEO_INJECT-->", metaBlock);
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", seo.cache);
