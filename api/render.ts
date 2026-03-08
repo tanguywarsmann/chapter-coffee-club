@@ -9,6 +9,38 @@ const DEFAULT_OG_IMAGE = `${DOMAIN}/og/vread-og-default.png`;
 
 const FALLBACK_TEMPLATE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!--SEO_INJECT--></head><body><div id="root"></div></body></html>`;
 
+// App routes that should NEVER be indexed
+const NOINDEX_PREFIXES = [
+  "/auth", "/onboarding", "/reset-password", "/profile", "/u/",
+  "/home", "/landing", "/book/", "/books/",
+  "/reading-list", "/discover", "/explore", "/search",
+  "/achievements", "/followers/", "/finished-chat/",
+  "/feedback", "/request-book", "/settings/",
+  "/admin", "/blog-admin",
+  "/sitemap.xml", "/api/",
+];
+
+// Query params to strip from canonical
+const STRIP_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid", "ref", "mc_cid", "mc_eid"];
+
+function isNoindexRoute(pathname: string): boolean {
+  return NOINDEX_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/") || pathname.startsWith(prefix));
+}
+
+function normalizeCanonical(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl);
+    STRIP_PARAMS.forEach(p => url.searchParams.delete(p));
+    // Remove trailing slash except for root
+    let path = url.pathname.replace(/\/+$/, "") || "/";
+    // Lowercase the path
+    path = path.toLowerCase();
+    return `${DOMAIN}${path === "/" ? "" : path}`;
+  } catch {
+    return rawUrl;
+  }
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -141,6 +173,25 @@ const SEO_MAP: Record<string, Omit<SeoData, "canonical" | "cache">> = {
         publisher: { "@type": "Organization", name: "VREAD", url: DOMAIN },
       },
     ],
+  },
+  "/premium": {
+    title: "VREAD Premium | Débloquez toutes les fonctionnalités",
+    description:
+      "Passez à VREAD Premium pour un accès illimité aux livres, badges exclusifs et fonctionnalités avancées.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
+  "/legal/privacy": {
+    title: "Politique de confidentialité | VREAD",
+    description: "Politique de confidentialité et gestion de vos données personnelles sur VREAD.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
+  "/legal/terms": {
+    title: "Conditions d'utilisation | VREAD",
+    description: "Conditions générales d'utilisation de l'application VREAD.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
   },
 };
 
@@ -307,7 +358,9 @@ export default async function handler(
   res.setHeader("X-VREAD-Renderer", "api-render");
 
   try {
-    const pathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
+    const rawPathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
+    const pathname = rawPathname.toLowerCase();
+    const canonical = normalizeCanonical(`${DOMAIN}${pathname}`);
 
     let seo: SeoData;
 
@@ -316,7 +369,7 @@ export default async function handler(
       const entry = SEO_MAP[pathname];
       seo = {
         ...entry,
-        canonical: `${DOMAIN}${pathname === "/" ? "" : pathname}`,
+        canonical,
         cache: "public, s-maxage=86400, stale-while-revalidate=604800",
       };
     }
@@ -343,17 +396,30 @@ export default async function handler(
       } else {
         seo = {
           ...SEO_MAP["/"]!,
-          canonical: DOMAIN,
+          canonical: `${DOMAIN}/blog`,
           cache: "public, s-maxage=86400, stale-while-revalidate=604800",
         };
       }
     }
-    // Unknown route
+    // App routes — noindex
+    else if (isNoindexRoute(pathname)) {
+      seo = {
+        title: "VREAD",
+        description: "Application de suivi de lecture.",
+        canonical: "",
+        ogType: "website",
+        ogImage: DEFAULT_OG_IMAGE,
+        noindex: true,
+        cache: "private, no-store",
+      };
+    }
+    // Unknown route — still serve SPA but noindex
     else {
       seo = {
         ...SEO_MAP["/"]!,
-        canonical: `${DOMAIN}${pathname}`,
-        cache: "public, s-maxage=86400, stale-while-revalidate=604800",
+        canonical,
+        cache: "public, s-maxage=3600, stale-while-revalidate=86400",
+        noindex: true,
       };
     }
 
