@@ -367,10 +367,12 @@ export default async function handler(
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
     }
     res.status(seo.status || 200).send(html);
-  } catch (err) {
-    console.error("api/render error:", err);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("api/render error:", msg, err);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-VREAD-Render-Error", msg.slice(0, 120));
     res.status(500).send(
       `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>VREAD</title></head><body><div id="root"></div></body></html>`
     );
