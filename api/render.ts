@@ -268,27 +268,31 @@ let templateCache: string | null = null;
 function getTemplate(): string {
   if (templateCache) return templateCache;
 
-  // Try multiple paths — __dirname is unreliable in Vercel Serverless
   const candidates = [
     resolve(process.cwd(), "api", "_template.html"),
-    resolve(__dirname, "_template.html"),
     resolve(process.cwd(), "_template.html"),
+    resolve(process.cwd(), "dist", "index.html"),
   ];
 
   for (const p of candidates) {
     try {
       const content = readFileSync(p, "utf-8");
-      if (content && content.includes("<!--SEO_INJECT-->")) {
-        templateCache = content;
-        return content;
+      if (content) {
+        if (content.includes("<!--SEO_INJECT-->")) {
+          templateCache = content;
+          return content;
+        }
+        // Template found but missing marker — inject it
+        const patched = content.replace("</head>", "<!--SEO_INJECT-->\n</head>");
+        templateCache = patched;
+        return patched;
       }
     } catch {
       // try next
     }
   }
 
-  // All paths failed — use minimal fallback
-  console.error("api/render: _template.html not found at any candidate path, using fallback");
+  console.error("api/render: no template found, using fallback");
   templateCache = FALLBACK_TEMPLATE;
   return FALLBACK_TEMPLATE;
 }
