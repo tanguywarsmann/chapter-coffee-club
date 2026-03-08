@@ -174,6 +174,25 @@ const SEO_MAP: Record<string, Omit<SeoData, "canonical" | "cache">> = {
       },
     ],
   },
+  "/premium": {
+    title: "VREAD Premium | Débloquez toutes les fonctionnalités",
+    description:
+      "Passez à VREAD Premium pour un accès illimité aux livres, badges exclusifs et fonctionnalités avancées.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
+  "/legal/privacy": {
+    title: "Politique de confidentialité | VREAD",
+    description: "Politique de confidentialité et gestion de vos données personnelles sur VREAD.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
+  "/legal/terms": {
+    title: "Conditions d'utilisation | VREAD",
+    description: "Conditions générales d'utilisation de l'application VREAD.",
+    ogType: "website",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
 };
 
 // ── Supabase blog fetch ─────────────────────────────────────────────────────
