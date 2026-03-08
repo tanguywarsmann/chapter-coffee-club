@@ -1,11 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readFileSync } from "fs";
-import { join } from "path";
+import { resolve } from "path";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const DOMAIN = "https://www.vread.fr";
 const DEFAULT_OG_IMAGE = `${DOMAIN}/og/vread-og-default.png`;
+
+const FALLBACK_TEMPLATE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!--SEO_INJECT--></head><body><div id="root"></div></body></html>`;
 
 function escapeHtml(str: string): string {
   return str
@@ -259,15 +261,36 @@ function buildMetaBlock(seo: SeoData): string {
   return lines.join("\n    ");
 }
 
-// ── Read template ───────────────────────────────────────────────────────────
+// ── Read template (with fallback) ───────────────────────────────────────────
 
 let templateCache: string | null = null;
 
 function getTemplate(): string {
   if (templateCache) return templateCache;
-  const templatePath = join(__dirname, "_template.html");
-  templateCache = readFileSync(templatePath, "utf-8");
-  return templateCache;
+
+  // Try multiple paths — __dirname is unreliable in Vercel Serverless
+  const candidates = [
+    resolve(process.cwd(), "api", "_template.html"),
+    resolve(__dirname, "_template.html"),
+    resolve(process.cwd(), "_template.html"),
+  ];
+
+  for (const p of candidates) {
+    try {
+      const content = readFileSync(p, "utf-8");
+      if (content && content.includes("<!--SEO_INJECT-->")) {
+        templateCache = content;
+        return content;
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  // All paths failed — use minimal fallback
+  console.error("api/render: _template.html not found at any candidate path, using fallback");
+  templateCache = FALLBACK_TEMPLATE;
+  return FALLBACK_TEMPLATE;
 }
 
 // ── Handler ─────────────────────────────────────────────────────────────────
@@ -276,66 +299,76 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  const pathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
+  // Debug header — always set first
+  res.setHeader("X-VREAD-Renderer", "api-render");
 
-  let seo: SeoData;
+  try {
+    const pathname = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
 
-  // Check static map
-  if (SEO_MAP[pathname]) {
-    const entry = SEO_MAP[pathname];
-    seo = {
-      ...entry,
-      canonical: `${DOMAIN}${pathname === "/" ? "" : pathname}`,
-      cache: "public, s-maxage=86400, stale-while-revalidate=604800",
-    };
-  }
-  // Blog slug
-  else if (pathname.startsWith("/blog/")) {
-    const slug = pathname.slice(6); // remove "/blog/"
-    if (slug && !slug.includes("/")) {
-      const blogSeo = await fetchBlogPost(slug);
-      if (blogSeo) {
-        seo = blogSeo;
-      } else {
-        // 404
-        seo = {
-          title: "Article introuvable | VREAD",
-          description: "Cet article n'existe pas sur VREAD.",
-          canonical: "",
-          ogType: "website",
-          ogImage: DEFAULT_OG_IMAGE,
-          noindex: true,
-          status: 404,
-          cache: "public, s-maxage=60",
-        };
-      }
-    } else {
-      // Fallback for malformed blog paths
+    let seo: SeoData;
+
+    // Check static map
+    if (SEO_MAP[pathname]) {
+      const entry = SEO_MAP[pathname];
       seo = {
-        ...SEO_MAP["/"]!,
-        canonical: DOMAIN,
+        ...entry,
+        canonical: `${DOMAIN}${pathname === "/" ? "" : pathname}`,
         cache: "public, s-maxage=86400, stale-while-revalidate=604800",
       };
     }
-  }
-  // Unknown route: serve with homepage defaults (SPA will handle client routing)
-  else {
-    seo = {
-      ...SEO_MAP["/"]!,
-      canonical: `${DOMAIN}${pathname}`,
-      cache: "public, s-maxage=86400, stale-while-revalidate=604800",
-    };
-  }
+    // Blog slug
+    else if (pathname.startsWith("/blog/")) {
+      const slug = pathname.slice(6);
+      if (slug && !slug.includes("/")) {
+        const blogSeo = await fetchBlogPost(slug);
+        if (blogSeo) {
+          seo = blogSeo;
+        } else {
+          // 404 — not found
+          seo = {
+            title: "Article introuvable | VREAD",
+            description: "Cet article n'existe pas sur VREAD.",
+            canonical: "",
+            ogType: "website",
+            ogImage: DEFAULT_OG_IMAGE,
+            noindex: true,
+            status: 404,
+            cache: "public, s-maxage=60",
+          };
+        }
+      } else {
+        seo = {
+          ...SEO_MAP["/"]!,
+          canonical: DOMAIN,
+          cache: "public, s-maxage=86400, stale-while-revalidate=604800",
+        };
+      }
+    }
+    // Unknown route
+    else {
+      seo = {
+        ...SEO_MAP["/"]!,
+        canonical: `${DOMAIN}${pathname}`,
+        cache: "public, s-maxage=86400, stale-while-revalidate=604800",
+      };
+    }
 
-  const template = getTemplate();
-  const metaBlock = buildMetaBlock(seo);
-  const html = template.replace("<!--SEO_INJECT-->", metaBlock);
+    const template = getTemplate();
+    const metaBlock = buildMetaBlock(seo);
+    const html = template.replace("<!--SEO_INJECT-->", metaBlock);
 
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.setHeader("Cache-Control", seo.cache);
-  res.setHeader("X-VREAD-Renderer", "api-render");
-  if (seo.noindex) {
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", seo.cache);
+    if (seo.noindex) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
+    res.status(seo.status || 200).send(html);
+  } catch (err) {
+    console.error("api/render error:", err);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.status(500).send(
+      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>VREAD</title></head><body><div id="root"></div></body></html>`
+    );
   }
-  res.status(seo.status || 200).send(html);
 }
