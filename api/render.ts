@@ -425,8 +425,14 @@ export default async function handler(
     }
 
     const template = getTemplate();
-    // Remove any canonical already baked into the template to avoid duplicates
-    const templateSanitized = template.replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, "");
+    // Strip all SEO tags baked into the template to avoid duplicates with injected metaBlock
+    const templateSanitized = template
+      .replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, "")
+      .replace(/<title>[^<]*<\/title>\s*/gi, "")
+      .replace(/<meta\s+name=["']description["'][^>]*>\s*/gi, "")
+      .replace(/<meta\s+property=["']og:[^"']*["'][^>]*>\s*/gi, "")
+      .replace(/<meta\s+name=["']twitter:[^"']*["'][^>]*>\s*/gi, "")
+      .replace(/<script\s+type=["']application\/ld\+json["'][^>]*>[^<]*<\/script>\s*/gi, "");
     const metaBlock = buildMetaBlock(seo);
     const html = templateSanitized.replace("<!--SEO_INJECT-->", metaBlock);
 
