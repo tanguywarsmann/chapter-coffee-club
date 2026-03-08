@@ -1,8 +1,6 @@
 // api/sitemap.xml.ts — Sitemap dynamique v2 avec améliorations
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { readdir, readFile } from 'fs/promises';
-import { join } from 'path';
-import matter from 'gray-matter';
+// Note: file-based blog post reading removed — Supabase DB is the single source of truth
 
 // Constantes de configuration
 const GOOGLE_SITEMAP_LIMIT = 50000;
