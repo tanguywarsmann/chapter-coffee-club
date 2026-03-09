@@ -224,7 +224,7 @@ export const fr = {
 		startYourNextAdventure: "Commencez votre prochaine aventure de lecture",
 		startLiteraryJourney: "Reprends goût à la lecture",
 		discoverCollection:
-			"Transforme chaque livre en défi avec des checkpoints tous les 30 pages",
+			"Transforme chaque livre en défi avec des checkpoints environ toutes les 30 pages, selon l'édition",
 		exploreBooks: "Explorer les livres",
 		myLibrary: "Ma bibliothèque",
 		noBooksInLibrary: "Aucun livre en cours",
