@@ -353,7 +353,7 @@ export const fr = {
 				period: "pour toujours",
 				features: {
 					catalog: "Accès au catalogue de livres classiques",
-					checkpoints: "Validation par checkpoints toutes les ~30 pages",
+					checkpoints: "Validation par checkpoints environ toutes les 30 pages, selon l'édition",
 					tracking: "Suivi de progression et statistiques",
 					badges: "Badges et système de récompenses",
 					community: "Communauté de lecteurs",

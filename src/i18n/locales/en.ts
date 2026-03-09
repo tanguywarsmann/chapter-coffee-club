@@ -342,7 +342,7 @@ export const en: Translations = {
         period: "forever",
         features: {
           catalog: "Access to classic books catalog",
-          checkpoints: "Validation at checkpoints every ~30 pages",
+          checkpoints: "Validation at checkpoints around every 30 pages, may vary by edition",
           tracking: "Progress tracking and statistics",
           badges: "Badges and rewards system",
           community: "Readers community",

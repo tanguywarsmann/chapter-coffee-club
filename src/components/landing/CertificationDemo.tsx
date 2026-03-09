@@ -236,7 +236,7 @@ export function CertificationDemo() {
                   className="text-sm font-medium"
                   style={{ color: BRAND.muted }}
                 >
-                  / 30 pages
+                  / ~30 pages
                 </span>
               </div>
             </motion.div>

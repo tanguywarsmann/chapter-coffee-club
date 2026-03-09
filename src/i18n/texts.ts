@@ -26,7 +26,7 @@ export const texts = {
   continueReading: "Continuer la lecture",
   startReading: "Commencer la lecture",
   validateMyReading: "Valider ma lecture",
-  validateSegment: "Valider 30 pages",
+  validateSegment: "Valider un segment",
   segmentValidated: "Segment validé avec succès !",
   alreadyValidated: "Ce segment a déjà été validé",
   validationFailed: "Échec de la validation",

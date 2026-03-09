@@ -66,7 +66,7 @@ export function ValidationModal({
             id="validation-modal-title"
             className="text-center text-coffee-darker font-serif"
           >
-            Validation de lecture : pages {(segment-1)*30+1}-{segment*30}
+            Validation de lecture : Segment {segment}
           </DialogTitle>
           <DialogDescription 
             id="validation-modal-description"
