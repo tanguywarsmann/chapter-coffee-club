@@ -260,7 +260,7 @@ export const en: Translations = {
     progression: "Progress",
     chaptersRead: "chapters read",
     segmentsValidated: "segments validated",
-    validateSegment: "Validate 30 pages",
+    validateSegment: "Validate a segment",
     validateMyReading: "Validate my reading",
     segmentValidated: "Segment validated successfully!",
     alreadyValidated: "This segment has already been validated",
