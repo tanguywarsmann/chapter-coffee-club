@@ -32,7 +32,7 @@ export function ValidationHistory({ validations }: ValidationHistoryProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-body-sm text-coffee-darker">
-                    Validation du segment {validation.segment} (pages {(validation.segment-1)*30+1}-{validation.segment*30})
+                    Validation du segment {validation.segment}
                   </p>
                   {validation.used_joker && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 text-caption bg-amber-100 text-amber-700 rounded-full">

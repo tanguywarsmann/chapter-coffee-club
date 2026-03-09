@@ -154,7 +154,7 @@ export function QuizModal({
       if (result?.ok) {
         // ✅ Phase 1.2: Afficher les XP dans le toast
         toast.success("✅ Segment validé !", {
-          description: "+10 XP • Prochain segment dans 30 pages",
+          description: "+10 XP • Prochain segment dans ~30 pages",
           duration: 4000,
         });
         if (!hasCalledComplete.current) {

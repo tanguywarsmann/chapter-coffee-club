@@ -117,7 +117,7 @@ export function SuccessMessage({ isOpen, onClose, segment, userId, expectedSegme
           {hasNextSegment && (
             <div className="text-sm text-muted-foreground mt-4">
               <p className="mb-1">Prochain segment : <strong>{nextSegment}</strong></p>
-              <p className="text-xs">Rendez-vous dans 30 pages</p>
+              <p className="text-xs">Prochaine validation dans environ 30 pages</p>
             </div>
           )}
         </div>

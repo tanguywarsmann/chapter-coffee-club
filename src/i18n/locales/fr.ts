@@ -67,7 +67,7 @@ export const fr = {
 		sloganPart4: "tu ne l'as pas lu.",
 		howItWorks: {
 			title: "Comment ça marche ?",
-			step1: "Lis 30 pages",
+			step1: "Lis environ 30 pages",
 			step2: "Question IA",
 			step3: "Réponds 1 mot",
 			step4: "Lecture certifiée",
@@ -91,7 +91,7 @@ export const fr = {
 			with3: "Bookies : likes et commentaires",
 			with4: "Partageable sur Instagram/LinkedIn",
 			mechanism:
-				"Le principe : Lire 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
+				"Le principe : Lire environ 30 pages → Répondre aux questions → Valider son segment → Continuer l'aventure",
 		},
 		certificationDemo: {
 			question: "Quel objet d'or étrange Dumbledore consulte-t-il avant l'arrivée de Hagrid ?",
@@ -224,7 +224,7 @@ export const fr = {
 		startYourNextAdventure: "Commencez votre prochaine aventure de lecture",
 		startLiteraryJourney: "Reprends goût à la lecture",
 		discoverCollection:
-			"Transforme chaque livre en défi avec des checkpoints tous les 30 pages",
+			"Transforme chaque livre en défi avec des checkpoints environ toutes les 30 pages, selon l'édition",
 		exploreBooks: "Explorer les livres",
 		myLibrary: "Ma bibliothèque",
 		noBooksInLibrary: "Aucun livre en cours",
@@ -267,7 +267,7 @@ export const fr = {
 		progression: "Progression",
 		chaptersRead: "chapitres lus",
 		segmentsValidated: "segments validés",
-		validateSegment: "Valider 30 pages",
+		validateSegment: "Valider un segment",
 		validateMyReading: "Valider ma lecture",
 		segmentValidated: "Segment validé avec succès !",
 		alreadyValidated: "Ce segment a déjà été validé",
@@ -353,7 +353,7 @@ export const fr = {
 				period: "pour toujours",
 				features: {
 					catalog: "Accès au catalogue de livres classiques",
-					checkpoints: "Validation par checkpoints toutes les ~30 pages",
+					checkpoints: "Validation par checkpoints environ toutes les 30 pages, selon l'édition",
 					tracking: "Suivi de progression et statistiques",
 					badges: "Badges et système de récompenses",
 					community: "Communauté de lecteurs",

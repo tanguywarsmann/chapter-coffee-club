@@ -67,7 +67,7 @@ export const en: Translations = {
     sloganPart4: "you haven't read it.",
     howItWorks: {
       title: "How does it work?",
-      step1: "Read 30 pages",
+      step1: "Read around 30 pages",
       step2: "AI Question",
       step3: "Answer 1 word",
       step4: "Reading certified",
@@ -90,7 +90,7 @@ export const en: Translations = {
       with2: "AI question = undeniable proof",
       with3: "Bookies: likes and comments",
       with4: "Shareable on Instagram/LinkedIn",
-      mechanism: "The principle: Read 30 pages → Answer questions → Validate your segment → Continue the adventure",
+      mechanism: "The principle: Read around 30 pages → Answer questions → Validate your segment → Continue the adventure",
     },
     certificationDemo: {
       question: "What strange golden object does Dumbledore consult before Hagrid's arrival?",
@@ -260,7 +260,7 @@ export const en: Translations = {
     progression: "Progress",
     chaptersRead: "chapters read",
     segmentsValidated: "segments validated",
-    validateSegment: "Validate 30 pages",
+    validateSegment: "Validate a segment",
     validateMyReading: "Validate my reading",
     segmentValidated: "Segment validated successfully!",
     alreadyValidated: "This segment has already been validated",
@@ -342,7 +342,7 @@ export const en: Translations = {
         period: "forever",
         features: {
           catalog: "Access to classic books catalog",
-          checkpoints: "Validation at checkpoints every ~30 pages",
+          checkpoints: "Validation at checkpoints around every 30 pages, may vary by edition",
           tracking: "Progress tracking and statistics",
           badges: "Badges and rewards system",
           community: "Readers community",

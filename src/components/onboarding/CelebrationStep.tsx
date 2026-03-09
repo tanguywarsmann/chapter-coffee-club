@@ -22,8 +22,8 @@ interface CelebrationStepProps {
 const howItWorksSteps = [
   {
     icon: BookOpen,
-    title: 'Lis 30 pages',
-    description: 'Avance dans ton livre, à ton rythme',
+    title: 'Lis environ 30 pages',
+    description: 'Avance dans ton livre, à ton rythme. Le nombre de pages peut varier selon l\'édition.',
   },
   {
     icon: MessageCircleQuestion,

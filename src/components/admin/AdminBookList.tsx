@@ -319,7 +319,7 @@ export function AdminBookList() {
                 <p className="text-body-sm flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span>
-                    Rappel : le segment 1 correspond aux pages 1 à 30, le segment 2 aux pages 31 à 60, etc.
+                    Chaque segment correspond à environ 30 pages. Le nombre exact peut varier selon l'édition.
                   </span>
                 </p>
               </div>
