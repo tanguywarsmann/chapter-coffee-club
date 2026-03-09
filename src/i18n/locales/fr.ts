@@ -67,7 +67,7 @@ export const fr = {
 		sloganPart4: "tu ne l'as pas lu.",
 		howItWorks: {
 			title: "Comment ça marche ?",
-			step1: "Lis 30 pages",
+			step1: "Lis environ 30 pages",
 			step2: "Question IA",
 			step3: "Réponds 1 mot",
 			step4: "Lecture certifiée",
