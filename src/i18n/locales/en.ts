@@ -90,7 +90,7 @@ export const en: Translations = {
       with2: "AI question = undeniable proof",
       with3: "Bookies: likes and comments",
       with4: "Shareable on Instagram/LinkedIn",
-      mechanism: "The principle: Read 30 pages → Answer questions → Validate your segment → Continue the adventure",
+      mechanism: "The principle: Read around 30 pages → Answer questions → Validate your segment → Continue the adventure",
     },
     certificationDemo: {
       question: "What strange golden object does Dumbledore consult before Hagrid's arrival?",
