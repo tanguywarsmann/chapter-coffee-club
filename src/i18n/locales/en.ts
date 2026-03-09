@@ -67,7 +67,7 @@ export const en: Translations = {
     sloganPart4: "you haven't read it.",
     howItWorks: {
       title: "How does it work?",
-      step1: "Read 30 pages",
+      step1: "Read around 30 pages",
       step2: "AI Question",
       step3: "Answer 1 word",
       step4: "Reading certified",
