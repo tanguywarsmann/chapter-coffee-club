@@ -267,7 +267,7 @@ export const fr = {
 		progression: "Progression",
 		chaptersRead: "chapitres lus",
 		segmentsValidated: "segments validés",
-		validateSegment: "Valider 30 pages",
+		validateSegment: "Valider un segment",
 		validateMyReading: "Valider ma lecture",
 		segmentValidated: "Segment validé avec succès !",
 		alreadyValidated: "Ce segment a déjà été validé",
