@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { BookSortSelect, SortOption } from "./BookSortSelect";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ReadingListHeaderProps {
   sortBy: SortOption;
@@ -11,15 +12,15 @@ interface ReadingListHeaderProps {
 
 export function ReadingListHeader({ sortBy, onSortChange }: ReadingListHeaderProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const rl = t.readingList;
 
   return (
     <div className="space-y-4">
-      {/* Titre principal - optimisé pour mobile */}
       <h1 className="text-2xl sm:text-3xl font-serif font-medium text-coffee-darker text-center sm:text-left">
-        Ma liste de lecture
+        {rl.title}
       </h1>
       
-      {/* Actions - layout responsive */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="w-full sm:w-auto">
           <BookSortSelect value={sortBy} onValueChange={onSortChange} />
@@ -30,7 +31,7 @@ export function ReadingListHeader({ sortBy, onSortChange }: ReadingListHeaderPro
           onClick={() => navigate("/explore")}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Ajouter un livre
+          {rl.addBook}
         </Button>
       </div>
     </div>

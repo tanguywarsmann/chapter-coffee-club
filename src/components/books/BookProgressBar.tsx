@@ -2,6 +2,7 @@
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { forwardRef, useEffect, ForwardedRef } from "react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BookProgressBarProps {
   progressPercent: number;
@@ -11,6 +12,8 @@ interface BookProgressBarProps {
 
 export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
   ({ progressPercent, jokersUsed = 0, jokersAllowed = 0 }, ref) => {
+    const { t } = useTranslation();
+
     useEffect(() => {
       if (progressPercent > 0 && ref && typeof ref !== 'function' && ref.current) {
         setTimeout(() => {
@@ -26,12 +29,13 @@ export const BookProgressBar = forwardRef<HTMLDivElement, BookProgressBarProps>(
           <span className="text-caption font-medium text-coffee-darker">{progressPercent}%</span>
         </div>
         
-        {/* Jokers info */}
         {jokersAllowed > 0 && (
           <div className="flex items-center justify-center gap-1 mt-1">
             <Sparkles className="h-3 w-3 text-amber-500" />
             <span className="text-caption text-muted-foreground">
-              Jokers : {jokersUsed} / {jokersAllowed} utilisés
+              {t.bookProgressBar.jokersUsed
+                .replace("{used}", String(jokersUsed))
+                .replace("{total}", String(jokersAllowed))}
             </span>
           </div>
         )}

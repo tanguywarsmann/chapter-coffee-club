@@ -2,20 +2,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, Sparkles } from "lucide-react";
 import { ReadingValidation } from "@/types/reading";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ValidationHistoryProps {
   validations: ReadingValidation[];
 }
 
 export function ValidationHistory({ validations }: ValidationHistoryProps) {
+  const { t, language } = useTranslation();
+  const vh = t.validationHistory;
+
   if (!validations?.length) return null;
+
+  const dateLocale = language === "fr" ? "fr-FR" : "en-US";
 
   return (
     <Card className="border-coffee-light">
       <CardHeader>
         <CardTitle className="text-h4 font-medium text-coffee-darker flex items-center">
           <Calendar className="mr-2 h-5 w-5" />
-          Historique de mes validations
+          {vh.title}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -32,17 +38,17 @@ export function ValidationHistory({ validations }: ValidationHistoryProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-body-sm text-coffee-darker">
-                    Validation du segment {validation.segment}
+                    {vh.segmentValidation.replace("{segment}", String(validation.segment))}
                   </p>
                   {validation.used_joker && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 text-caption bg-amber-100 text-amber-700 rounded-full">
                       <Sparkles className="h-3 w-3" />
-                      Joker utilisé
+                      {vh.jokerUsed}
                     </span>
                   )}
                 </div>
                 <p className="text-caption text-muted-foreground">
-                  {new Date(validation.validated_at || validation.date_validated).toLocaleDateString('fr-FR', { 
+                  {new Date(validation.validated_at || validation.date_validated).toLocaleDateString(dateLocale, { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 

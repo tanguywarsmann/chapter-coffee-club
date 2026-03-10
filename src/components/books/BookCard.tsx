@@ -10,6 +10,7 @@ import { BookCover } from "./BookCover";
 import { BookCardActions } from "./BookCardActions";
 import { BookOpen, BookMarked, CheckCircle } from "lucide-react";
 import { assertValidBook } from "@/utils/bookValidation";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { 
   getErrorMessage, 
   getErrorToastType, 
@@ -37,19 +38,19 @@ export function BookCard({
   onAction,
 }: BookCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const { user } = useAuth(); // Utilisation de useAuth au lieu de la logique locale
+  const { user } = useAuth();
   const { addToReadingList } = useReadingList();
+  const { t } = useTranslation();
+  const bc = t.bookCard;
 
-  // Validation précoce du livre
   if (!book) {
     return null;
   }
   
-  // Validation avec notre système centralisé
   try {
     assertValidBook(book as unknown);
   } catch (error) {
-    console.error('BookCard: Livre invalide', book, error);
+    console.error('BookCard: Invalid book', book, error);
     return null;
   }
   
@@ -71,7 +72,7 @@ export function BookCard({
   };
 
   const truncateTitle = (title: string, maxLength: number = 50) => {
-    if (!title) return "Titre inconnu";
+    if (!title) return bc.unknownTitle;
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + "...";
   };
@@ -80,7 +81,6 @@ export function BookCard({
     e.preventDefault();
     e.stopPropagation();
 
-    // Vérification d'authentification avec les nouvelles erreurs typées
     if (!user?.id) {
       const error = new AuthenticationRequiredError();
       toast.error(error.message);
@@ -88,21 +88,17 @@ export function BookCard({
     }
 
     if (isAdding) {
-      return; // Éviter les clics multiples
+      return;
     }
 
     try {
       setIsAdding(true);
-      console.log(`[DEBUG] Tentative d'ajout du livre:`, { id: book.id, title: book.title });
-      
       const success = await addToReadingList(book);
       if (success) {
-        console.log(`[DEBUG] Livre ajouté avec succès: ${book.title}`);
+        console.log(`[DEBUG] Book added: ${book.title}`);
       }
     } catch (error) {
-      console.error("Erreur dans handleAddToReadingList:", error);
-      
-      // Gestion d'erreur typée avec toast adapté
+      console.error("Error in handleAddToReadingList:", error);
       const toastType = getErrorToastType(error);
       const message = getErrorMessage(error);
       
@@ -112,7 +108,7 @@ export function BookCard({
         toast.error(message);
       }
     } finally {
-      setIsAdding(false); // Protection contre les double-clics assurée
+      setIsAdding(false);
     }
   };
 
@@ -121,7 +117,7 @@ export function BookCard({
     e.stopPropagation();
 
     if (!user?.id) {
-      toast.error("Vous devez être connecté pour effectuer cette action");
+      toast.error(bc.mustBeLoggedIn);
       return;
     }
 
@@ -131,7 +127,7 @@ export function BookCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toast.info("Fonction de suppression à implémenter");
+    toast.info(bc.deleteToImplement);
   };
   
   const getBookStatusIcon = () => {
@@ -145,13 +141,9 @@ export function BookCard({
   };
 
   function getStatusLabel() {
-    if (book.isCompleted) {
-      return "Terminé";
-    }
-    if (book.chaptersRead && book.chaptersRead > 0) {
-      return "En cours de lecture";
-    }
-    return "À lire";
+    if (book.isCompleted) return bc.completed;
+    if (book.chaptersRead && book.chaptersRead > 0) return bc.inProgress;
+    return bc.toRead;
   }
 
   const statusLabel = getStatusLabel();
@@ -161,7 +153,10 @@ export function BookCard({
       data-testid="book-card"
       to={`/books/${bookIdentifier}`} 
       className="block h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-coffee-dark focus-visible:ring-offset-2 rounded-md transition-all duration-200"
-      aria-label={`${book.title} par ${book.author}. Statut: ${statusLabel}. Appuyez sur Entrée pour ouvrir.`}
+      aria-label={bc.ariaLabel
+        .replace("{title}", book.title)
+        .replace("{author}", book.author)
+        .replace("{status}", statusLabel)}
       onKeyDown={handleKeyPress}
       tabIndex={0}
       role="link"
@@ -177,7 +172,7 @@ export function BookCard({
             {truncateTitle(book.title)}
           </h3>
           <p className="text-body-sm text-muted-foreground line-clamp-1 min-h-[1.25rem]">
-            {book.author || "Auteur inconnu"}
+            {book.author || bc.unknownAuthor}
           </p>
 
           <div className="mt-2 flex flex-wrap gap-1 min-h-[36px] overflow-hidden">
@@ -186,7 +181,7 @@ export function BookCard({
                 key={index}
                 variant="outline"
                 className="text-caption border-coffee-light"
-                aria-label={`Catégorie: ${category}`}
+                aria-label={bc.category.replace("{name}", category)}
               >
                 {category}
               </Badge>
