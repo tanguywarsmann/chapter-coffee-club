@@ -252,7 +252,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                 className="w-full py-3 text-h4 font-serif my-4"
               >
                 <span className="!text-white">
-                  {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+                  {progressData.chaptersRead > 0 ? bd.validateMyReading : bd.startMyReading}
                 </span>
               </Button>
             </>
