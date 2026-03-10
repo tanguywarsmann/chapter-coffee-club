@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { QuizContent } from "./QuizContent";
 import { PublicReadingQuestion } from "@/types/reading";
-// import { JokerConfirmationModal } from "./JokerConfirmationModal"; // (non utilisé)
 import { CorrectAnswerReveal } from "./CorrectAnswerReveal";
 import { useJokersInfo } from "@/hooks/useJokersInfo";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +20,8 @@ import { useJokerAndReveal } from "@/services/jokerService";
 import { trackJokerUsed, trackAnswerRevealed } from "@/services/analytics/jokerAnalytics";
 import { debugLog, auditJokerState, canUseJokers } from "@/utils/jokerConstraints";
 import { useAuth } from "@/contexts/AuthContext";
-import { validateReadingSegmentBeta } from "@/services/reading/validationServiceBeta"; // garde la validation serveur existante
+import { validateReadingSegmentBeta } from "@/services/reading/validationServiceBeta";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 type OnCompleteArgs = { correct: boolean; useJoker: boolean };
 
@@ -60,13 +60,14 @@ export function QuizModal({
   const maxAttempts = 3;
 
   const inFlightRef = useRef(false);
-  const hasCalledComplete = useRef(false); // Protection contre les appels multiples
-  const abortRef = useRef<AbortController | null>(null); // 🔒 annulation requête
+  const hasCalledComplete = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const { user } = useAuth();
   const shouldReduce = useReducedMotion();
+  const { t } = useTranslation();
+  const q = t.reading.quiz;
 
-  // Reset protections au changement de question + cleanup sur unmount
   useEffect(() => {
     hasCalledComplete.current = false;
     return () => {
@@ -75,7 +76,6 @@ export function QuizModal({
     };
   }, [question?.id]);
 
-  // Jokers (hook centralisé)
   const {
     jokersAllowed,
     jokersUsed,
@@ -89,7 +89,6 @@ export function QuizModal({
 
   const actualJokersRemaining = jokersRemaining ?? hookJokersRemaining;
 
-  // Fermer proprement (annule la requête en vol)
   const handleClose = () => {
     abortRef.current?.abort();
     onClose();
@@ -97,11 +96,10 @@ export function QuizModal({
 
   const handleSubmit = async () => {
     if (!answer.trim()) {
-      toast.error("Veuillez entrer une réponse");
+      toast.error(q.emptyAnswer);
       return;
     }
 
-    // ✅ Phase 1.3: Simplified anti-double-click
     if (isSubmitting) {
       console.log("❌ Prevented double submission");
       return;
@@ -110,11 +108,10 @@ export function QuizModal({
 
     try {
       if (!user?.id) {
-        toast.error("Vous devez être connecté pour valider");
+        toast.error(q.mustBeLoggedIn);
         return;
       }
 
-      // Résoudre le bookId depuis le slug
       const { data: bookData, error: bookError } = await supabase
         .from("books")
         .select("id")
@@ -123,11 +120,10 @@ export function QuizModal({
 
       if (bookError || !bookData?.id) {
         console.error("Book lookup error:", bookError);
-        toast.error("Erreur lors de la recherche du livre.");
+        toast.error(q.bookLookupError);
         return;
       }
 
-      // (Re)créer un AbortController pour cette tentative
       abortRef.current?.abort();
       abortRef.current = new AbortController();
 
@@ -138,23 +134,21 @@ export function QuizModal({
         attempts,
       });
 
-      // Validation côté serveur (service existant) — on passe un AbortSignal (cast safe)
       const result = await (validateReadingSegmentBeta as any)({
         bookId: bookData.id,
         questionId: question.id,
         answer: answer.trim(),
         userId: user.id,
         usedJoker: false,
-        correct: null, // laisser le serveur décider
-        signal: abortRef.current.signal, // 👈 annulation si fermeture
+        correct: null,
+        signal: abortRef.current.signal,
       });
 
       console.log("✅ Validation result:", result);
 
       if (result?.ok) {
-        // ✅ Phase 1.2: Afficher les XP dans le toast
-        toast.success("✅ Segment validé !", {
-          description: "+10 XP • Prochain segment dans ~30 pages",
+        toast.success(q.segmentValidated, {
+          description: q.segmentValidatedDesc,
           duration: 4000,
         });
         if (!hasCalledComplete.current) {
@@ -164,19 +158,18 @@ export function QuizModal({
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
-        toast.error("Réponse incorrecte", {
-          description: `${maxAttempts - newAttempts} tentative(s) restante(s)`,
+        toast.error(q.incorrectAnswer, {
+          description: `${maxAttempts - newAttempts} ${q.attemptsRemaining}`,
           duration: 4000,
         });
 
-        // Joker proposé dès la 1ère mauvaise réponse si autorisé serveur
         const canUseJokerFlag = canUseJokers(expectedSegments);
         if (newAttempts >= 1 && actualJokersRemaining > 0 && canUseJokerFlag && !isUsingJoker) {
           setJokerStartTime(Date.now());
           setShowJokerConfirmation(true);
         } else if (!canUseJokerFlag) {
-          toast.error("Jokers indisponibles", {
-            description: "Livre trop court (< 3 segments)",
+          toast.error(q.jokersUnavailable, {
+            description: q.jokersUnavailableDesc,
             duration: 4000,
           });
           if (newAttempts >= maxAttempts && !hasCalledComplete.current) {
@@ -184,8 +177,8 @@ export function QuizModal({
             onComplete({ correct: false, useJoker: false });
           }
         } else if (newAttempts >= maxAttempts) {
-          toast.error("Tentatives épuisées", {
-            description: "Réessayez plus tard",
+          toast.error(q.attemptsExhausted, {
+            description: q.attemptsExhaustedDesc,
             duration: 4000,
           });
           if (!hasCalledComplete.current) {
@@ -212,23 +205,23 @@ export function QuizModal({
         setJokerStartTime(Date.now());
         setShowJokerConfirmation(true);
       } else if (!canUseJokerFlag) {
-        toast.error("Les jokers ne sont pas disponibles pour ce livre (moins de 3 segments).");
+        toast.error(q.jokerUnavailableShort);
         if (newAttempts >= maxAttempts) {
           if (!hasCalledComplete.current) {
             hasCalledComplete.current = true;
             onComplete({ correct: false, useJoker: false });
           }
         } else {
-          toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+          toast.error(`${q.incorrectAnswer}. ${maxAttempts - newAttempts} ${q.attemptsRemaining}.`);
         }
       } else if (newAttempts >= maxAttempts) {
-        toast.error("Nombre maximum de tentatives atteint. Réessayez plus tard.");
+        toast.error(`${q.attemptsExhausted}. ${q.attemptsExhaustedDesc}`);
         if (!hasCalledComplete.current) {
           hasCalledComplete.current = true;
           onComplete({ correct: false, useJoker: false });
         }
       } else {
-        toast.error(`Réponse incorrecte. Il vous reste ${maxAttempts - newAttempts} tentative(s).`);
+        toast.error(`${q.incorrectAnswer}. ${maxAttempts - newAttempts} ${q.attemptsRemaining}.`);
       }
     } finally {
       setIsSubmitting(false);
@@ -239,7 +232,7 @@ export function QuizModal({
   const handleJokerConfirm = async () => {
     setShowJokerConfirmation(false);
 
-    if (isRevealing) return; // anti double-clic
+    if (isRevealing) return;
     setIsRevealing(true);
 
     try {
@@ -266,7 +259,7 @@ export function QuizModal({
       });
 
       const result = await useJokerAndReveal({
-        bookId: question.book_id, // l’Edge Function peut déduire via questionId si besoin
+        bookId: question.book_id,
         questionId: question.id,
         userId: user!.id,
         expectedSegments,
@@ -274,11 +267,10 @@ export function QuizModal({
 
       console.info("[JOKER] after-call", { payload: result });
 
-      // Compat: supporte { answer } ou string
       const revealed = (typeof result === "string" ? result : result?.answer ?? "").trim();
       if (!revealed) {
         console.error("[JOKER] empty answer", result);
-        toast.error("Impossible d'afficher la bonne réponse (données manquantes).");
+        toast.error(q.jokerMissingData);
         return;
       }
 
@@ -286,7 +278,6 @@ export function QuizModal({
       setAnswerRevealedAt(new Date().toISOString());
       setShowAnswerReveal(true);
 
-      // Analytics
       if (jokerStartTime) {
         try {
           await trackJokerUsed({
@@ -306,14 +297,13 @@ export function QuizModal({
       }
 
       await updateJokersInfo();
-      toast.success("Joker utilisé ! La bonne réponse est révélée.");
+      toast.success(q.jokerSuccess);
     } catch (error: any) {
       console.error("Joker reveal error:", error);
-      // Si le backend renvoie 403 pour < 3 segments
       if (error?.status === 403 || /trop court|moins de 3 segments/i.test(error?.message || "")) {
-        toast.error("Jokers indisponibles sur ce livre (moins de 3 segments).");
+        toast.error(q.jokerUnavailableShort);
       } else {
-        toast.error("Erreur lors de l'utilisation du joker. Veuillez réessayer.");
+        toast.error(q.jokerError);
       }
     } finally {
       setIsRevealing(false);
@@ -350,13 +340,13 @@ export function QuizModal({
               id="quiz-modal-title"
               className="text-center text-coffee-darker font-serif text-base"
             >
-              Valider un segment
+              {q.title}
             </DialogTitle>
             <DialogDescription
               id="quiz-modal-description"
               className="text-center text-xs text-muted-foreground"
             >
-              Répondez en un mot pour valider votre compréhension.
+              {q.subtitle}
             </DialogDescription>
           </DialogHeader>
 
@@ -379,12 +369,10 @@ export function QuizModal({
                 data-testid="quiz-answer-input"
               />
               
-              {/* ✅ Phase 3.1: Aria-live pour les tentatives */}
               <div className="sr-only" aria-live="polite" aria-atomic="true">
-                {attempts > 0 && `${maxAttempts - attempts} tentative(s) restante(s)`}
+                {attempts > 0 && `${maxAttempts - attempts} ${q.attemptsRemaining}`}
               </div>
 
-              {/* Debug expected_segments */}
               {import.meta.env.VITE_DEBUG_JOKER && (
                 <>{console.info("[JOKER expectedSegments]", expectedSegments, bookTitle)}</>
               )}
@@ -394,9 +382,9 @@ export function QuizModal({
                   variant="outline"
                   onClick={handleClose}
                   className="border-coffee-medium text-foreground hover:bg-muted"
-                  aria-label="Annuler le quiz de lecture"
+                  aria-label={q.cancelAriaLabel}
                 >
-                  Annuler
+                  {q.cancel}
                 </Button>
                 <Button
                   onClick={handleSubmit}
@@ -404,15 +392,15 @@ export function QuizModal({
                     !answer.trim() || showAnswerReveal || isRevealing || isSubmitting
                   }
                   className="bg-coffee-dark hover:bg-coffee-darker text-white px-6"
-                  aria-label="Valider ma réponse au quiz"
+                  aria-label={q.validateAriaLabel}
                   aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
                   data-testid="submit-answer-button"
                 >
-                  {isSubmitting ? "Validation…" : "Valider"}
+                  {isSubmitting ? q.validating : q.validate}
                 </Button>
                 {!answer.trim() && (
                   <div id="answer-requirement" className="sr-only" aria-live="polite">
-                    Vous devez saisir une réponse avant de valider
+                    {q.answerRequired}
                   </div>
                 )}
               </DialogFooter>
@@ -425,7 +413,9 @@ export function QuizModal({
       <Dialog open={showAnswerReveal} onOpenChange={() => setShowAnswerReveal(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center font-serif">Segment {chapterNumber} validé</DialogTitle>
+            <DialogTitle className="text-center font-serif">
+              {q.segmentLabel} {chapterNumber} {q.segmentValidatedTitle}
+            </DialogTitle>
           </DialogHeader>
 
           {revealedAnswer && (
@@ -444,10 +434,10 @@ export function QuizModal({
         <DialogContent className="sm:max-w-md border-coffee-medium">
           <DialogHeader>
             <DialogTitle className="text-center font-serif text-coffee-darker">
-              Utiliser un joker
+              {q.useJoker}
             </DialogTitle>
             <DialogDescription className="text-center text-body-sm text-foreground/80">
-              Révèle la bonne réponse pour ce segment en dépensant un joker.
+              {q.jokerDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -462,16 +452,16 @@ export function QuizModal({
               <div className="py-4 text-center space-y-4">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                   <p className="text-amber-800 text-body-sm">
-                    Utiliser un joker révélera immédiatement la bonne réponse et validera ce segment.
+                    {q.jokerWarning}
                   </p>
                 </div>
 
                 <div className="text-body-sm text-muted-foreground">
                   <p>
-                    Jokers restants :{" "}
+                    {q.jokersRemaining} :{" "}
                     <span className="font-semibold text-coffee-dark">{actualJokersRemaining}</span>
                   </p>
-                  <p>Segment : {chapterNumber}</p>
+                  <p>{q.segment} : {chapterNumber}</p>
                 </div>
               </div>
 
@@ -482,14 +472,14 @@ export function QuizModal({
                   disabled={isRevealing}
                   className="border-coffee-medium text-foreground hover:bg-muted"
                 >
-                  Annuler
+                  {q.cancel}
                 </Button>
                 <Button
                   onClick={handleJokerConfirm}
                   disabled={isRevealing}
                   className="bg-amber-600 hover:bg-amber-700 text-white"
                 >
-                  {isRevealing ? "Révélation..." : "Utiliser le joker"}
+                  {isRevealing ? q.validating : q.useJoker}
                 </Button>
               </DialogFooter>
             </motion.div>
