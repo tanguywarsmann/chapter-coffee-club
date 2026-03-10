@@ -1,6 +1,5 @@
 
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface QuizContentProps {
   bookTitle: string;
@@ -22,39 +21,44 @@ export function QuizContent({
   setAnswer,
 }: QuizContentProps) {
   return (
-    <div className="py-4">
-      <p className="text-body-sm text-foreground/80 mb-4 text-center">
-        Pour valider votre lecture du chapitre {chapterNumber} de "{bookTitle}", 
-        veuillez répondre à la question suivante:
+    <div className="py-2 space-y-3">
+      {/* Segment badge */}
+      <div className="text-center">
+        <span className="inline-block text-xs font-semibold tracking-wide uppercase text-primary/80">
+          Segment {chapterNumber}
+        </span>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Environ 30 pages, variable selon l'édition
+        </p>
+      </div>
+
+      {/* Question — compact */}
+      <p
+        className="text-sm text-foreground/90 leading-snug text-center"
+        id="quiz-question"
+      >
+        {question}
       </p>
-      
-      <div className="space-y-4">
-        <h3 className="font-medium text-foreground" id="quiz-question">
-          {question}
-        </h3>
-        
-        <div className="mt-2">
-          <Label htmlFor="answer" className="text-body-sm font-medium text-foreground">
-            Votre réponse
-          </Label>
-          <Textarea
-            id="answer"
-            placeholder="Votre réponse..."
-            rows={3}
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            className="w-full border-coffee-medium resize-none mt-1 text-foreground bg-background"
-            aria-describedby="quiz-question attempts-counter"
-            aria-required="true"
-          />
-          <p 
-            id="attempts-counter"
-            className="text-caption text-foreground/70 mt-1"
-            aria-live="polite"
-          >
-            Tentatives: {attempts}/{maxAttempts}
-          </p>
-        </div>
+
+      {/* Single-line input */}
+      <div>
+        <Input
+          id="answer"
+          placeholder="Réponse en un mot"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          className="h-9 border-coffee-medium/60 text-sm text-foreground bg-background placeholder:text-muted-foreground/60"
+          aria-describedby="quiz-question attempts-counter"
+          aria-required="true"
+          autoComplete="off"
+        />
+        <p
+          id="attempts-counter"
+          className="text-[11px] text-muted-foreground mt-1 text-right"
+          aria-live="polite"
+        >
+          {attempts}/{maxAttempts} tentatives
+        </p>
       </div>
     </div>
   );

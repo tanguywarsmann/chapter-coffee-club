@@ -348,15 +348,15 @@ export function QuizModal({
           <DialogHeader>
             <DialogTitle
               id="quiz-modal-title"
-              className="text-center text-coffee-darker font-serif"
+              className="text-center text-coffee-darker font-serif text-base"
             >
-              Vérification de lecture: Chapitre {chapterNumber}
+              Valider un segment
             </DialogTitle>
             <DialogDescription
               id="quiz-modal-description"
-              className="text-center text-body-sm text-foreground/80"
+              className="text-center text-xs text-muted-foreground"
             >
-              Répondez par un mot pour valider votre compréhension.
+              Répondez en un mot pour valider votre compréhension.
             </DialogDescription>
           </DialogHeader>
 
@@ -403,12 +403,12 @@ export function QuizModal({
                   disabled={
                     !answer.trim() || showAnswerReveal || isRevealing || isSubmitting
                   }
-                  className="bg-coffee-dark hover:bg-coffee-darker text-white"
+                  className="bg-coffee-dark hover:bg-coffee-darker text-white px-6"
                   aria-label="Valider ma réponse au quiz"
                   aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
                   data-testid="submit-answer-button"
                 >
-                  {isSubmitting ? "Validation..." : "Valider ma réponse"}
+                  {isSubmitting ? "Validation…" : "Valider"}
                 </Button>
                 {!answer.trim() && (
                   <div id="answer-requirement" className="sr-only" aria-live="polite">
