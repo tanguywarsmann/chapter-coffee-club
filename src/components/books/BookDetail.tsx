@@ -200,7 +200,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         
         if (!recalculatedSegment || recalculatedSegment <= 0) {
           trackError(new Error('Unable to calculate valid segment'));
-          toast.error("Impossible de déterminer le segment à valider");
+          toast.error(bd.cannotDetermineSegment);
           return;
         }
         
