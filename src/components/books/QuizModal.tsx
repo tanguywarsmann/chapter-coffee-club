@@ -403,12 +403,12 @@ export function QuizModal({
                   disabled={
                     !answer.trim() || showAnswerReveal || isRevealing || isSubmitting
                   }
-                  className="bg-coffee-dark hover:bg-coffee-darker text-white"
+                  className="bg-coffee-dark hover:bg-coffee-darker text-white px-6"
                   aria-label="Valider ma réponse au quiz"
                   aria-describedby={!answer.trim() ? "answer-requirement" : undefined}
                   data-testid="submit-answer-button"
                 >
-                  {isSubmitting ? "Validation..." : "Valider ma réponse"}
+                  {isSubmitting ? "Validation…" : "Valider"}
                 </Button>
                 {!answer.trim() && (
                   <div id="answer-requirement" className="sr-only" aria-live="polite">
