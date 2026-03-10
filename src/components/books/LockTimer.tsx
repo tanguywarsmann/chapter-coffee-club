@@ -2,33 +2,39 @@
 import { useState, useEffect, useCallback } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Clock } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface LockTimerProps {
   remainingSeconds: number;
   onExpire: () => void;
 }
 
+function pluralize(value: number, forms: string): string {
+  const [singular, plural] = forms.split("|");
+  return value <= 1 ? singular : plural;
+}
+
 export function LockTimer({ remainingSeconds, onExpire }: LockTimerProps) {
   const [timeLeft, setTimeLeft] = useState(remainingSeconds);
+  const { t } = useTranslation();
+  const lt = t.lockTimer;
   
-  // Optimisation pour éviter les rendus inutiles avec useCallback
   const calculateAndFormatTime = useCallback(() => {
     const hours = Math.floor(timeLeft / 3600);
     const minutes = Math.floor((timeLeft % 3600) / 60);
     const seconds = timeLeft % 60;
 
-    // Create a formatted string based on remaining time
     let timeDisplay;
     if (hours > 0) {
-      timeDisplay = `${hours} heure${hours > 1 ? 's' : ''} et ${minutes} minute${minutes > 1 ? 's' : ''}`;
+      timeDisplay = `${hours} ${pluralize(hours, lt.hours)} et ${minutes} ${pluralize(minutes, lt.minutes)}`;
     } else if (minutes > 0) {
-      timeDisplay = `${minutes} minute${minutes > 1 ? 's' : ''} et ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+      timeDisplay = `${minutes} ${pluralize(minutes, lt.minutes)} et ${seconds} ${pluralize(seconds, lt.seconds)}`;
     } else {
-      timeDisplay = `${seconds} seconde${seconds > 1 ? 's' : ''}`;
+      timeDisplay = `${seconds} ${pluralize(seconds, lt.seconds)}`;
     }
     
     return timeDisplay;
-  }, [timeLeft]);
+  }, [timeLeft, lt]);
   
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -36,12 +42,10 @@ export function LockTimer({ remainingSeconds, onExpire }: LockTimerProps) {
       return;
     }
     
-    // Utiliser un intervalle fixe pour réduire la charge CPU et éviter les dérives
     const timer = setInterval(() => {
       setTimeLeft(prevTime => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          // Utiliser setTimeout pour éviter les appels multiples si le composant est démonté
           setTimeout(onExpire, 0);
           return 0;
         }
@@ -52,7 +56,6 @@ export function LockTimer({ remainingSeconds, onExpire }: LockTimerProps) {
     return () => clearInterval(timer);
   }, [timeLeft, onExpire]);
 
-  // Éviter de recalculer le formatage à chaque rendu en utilisant useMemo
   const timeDisplay = calculateAndFormatTime();
 
   return (
@@ -60,7 +63,7 @@ export function LockTimer({ remainingSeconds, onExpire }: LockTimerProps) {
       <div className="flex items-center gap-2 text-amber-800">
         <Clock className="h-4 w-4" />
         <AlertDescription className="text-body-sm">
-          Vous pourrez réessayer dans <span className="font-medium">{timeDisplay}</span>
+          {lt.retryIn} <span className="font-medium">{timeDisplay}</span>
         </AlertDescription>
       </div>
     </Alert>

@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ReturnRitualProps {
   isOpen: boolean;
@@ -8,15 +9,17 @@ interface ReturnRitualProps {
 }
 
 export function ReturnRitual({ isOpen, onClose }: ReturnRitualProps) {
+  const { t } = useTranslation();
+  const rr = t.rituals.return;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl">Tu es revenu</DialogTitle>
+          <DialogTitle className="text-center text-2xl">{rr.title}</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-col items-center gap-6 py-6">
-          {/* Renardeau simple */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -28,15 +31,15 @@ export function ReturnRitual({ isOpen, onClose }: ReturnRitualProps) {
 
           <div className="text-center space-y-3 px-4">
             <p className="text-foreground/80 leading-relaxed">
-              C'est ça, être lecteur.
+              {rr.description1}
             </p>
             <p className="text-foreground/80 leading-relaxed">
-              Faire des pauses, puis revenir.
+              {rr.description2}
             </p>
           </div>
 
           <Button onClick={onClose} className="w-full max-w-xs">
-            Reprendre mon entraînement
+            {rr.cta}
           </Button>
         </div>
       </DialogContent>

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { UserQuest } from "@/types/quest";
 import { Sparkles, Trophy, Zap } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BookQuestDialogProps {
   open: boolean;
@@ -11,17 +12,20 @@ interface BookQuestDialogProps {
 }
 
 export function BookQuestDialog({ open, quests, setOpen }: BookQuestDialogProps) {
+  const { t } = useTranslation();
+  const qd = t.questDialog;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md border-amber-500 border-2 animate-enter bg-gradient-to-br from-amber-50 to-yellow-50">
         <DialogHeader>
           <DialogTitle className="text-center text-h3 font-serif text-amber-900 flex items-center justify-center gap-2">
             <Trophy className="h-8 w-8 text-amber-600 animate-pulse" />
-            Challenge Complété !
+            {qd.title}
             <Sparkles className="h-8 w-8 text-amber-600 animate-pulse" />
           </DialogTitle>
           <DialogDescription className="text-center text-amber-800 font-medium">
-            🏆 Vous avez accompli un exploit rare et prestigieux !
+            {qd.subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -39,7 +43,7 @@ export function BookQuestDialog({ open, quests, setOpen }: BookQuestDialogProps)
                   {quest.quest?.title || quest.quest_slug}
                 </h3>
                 <p className="text-body text-amber-800">
-                  {quest.quest?.description || "Quête accomplie !"}
+                  {quest.quest?.description || qd.questAccomplished}
                 </p>
                 {quest.quest?.xp_reward && (
                   <div className="mt-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full">
@@ -62,7 +66,7 @@ export function BookQuestDialog({ open, quests, setOpen }: BookQuestDialogProps)
             onClick={() => setOpen(false)}
             className="mt-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-bold px-8 py-6 text-lg shadow-lg"
           >
-            🎉 Fantastique !
+            {qd.fantastic}
           </Button>
           <Button
             variant="outline"
@@ -72,7 +76,7 @@ export function BookQuestDialog({ open, quests, setOpen }: BookQuestDialogProps)
               window.location.href = "/achievements";
             }}
           >
-            Voir toutes mes quêtes
+            {qd.viewAllQuests}
           </Button>
         </div>
       </DialogContent>

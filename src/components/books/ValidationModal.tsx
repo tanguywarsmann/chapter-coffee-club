@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Loader2, Sparkles } from "lucide-react";
 import { LockTimer } from "./LockTimer";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface ValidationModalProps {
   bookTitle: string;
@@ -35,13 +36,14 @@ export function ValidationModal({
   onLockExpire
 }: ValidationModalProps) {
   const [hasRead, setHasRead] = useState(false);
+  const { t } = useTranslation();
+  const vm = t.validationModal;
   
   const handleSubmit = () => {
     if (!hasRead) return;
     onValidate();
   };
 
-  // ✅ Phase 1.1: Reset hasRead when modal closes
   const handleModalChange = (open: boolean) => {
     if (!open) {
       setHasRead(false);
@@ -66,18 +68,17 @@ export function ValidationModal({
             id="validation-modal-title"
             className="text-center text-coffee-darker font-serif"
           >
-            Validation de lecture : Segment {segment}
+            {vm.title.replace("{segment}", String(segment))}
           </DialogTitle>
           <DialogDescription 
             id="validation-modal-description"
             className="text-center text-body-sm text-foreground/80"
           >
-            Confirmez votre lecture de "{bookTitle}"
+            {vm.subtitle.replace("{bookTitle}", bookTitle)}
           </DialogDescription>
         </DialogHeader>
         
         <div className="py-4 space-y-4">
-          {/* Jokers info - affiche toujours 0/0 si jokersAllowed = 0 (UI gating) */}
           <div className="bg-muted/50 p-3 rounded-lg border border-coffee-light">
             <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
               <Sparkles className="h-4 w-4" />
@@ -85,17 +86,19 @@ export function ValidationModal({
                 className={jokersUsed >= jokersAllowed ? "text-muted-foreground line-through" : ""}
                 data-testid="jokers-remaining"
               >
-                Jokers disponibles : {Math.max(0, jokersAllowed - jokersUsed)} / {jokersAllowed}
+                {vm.jokersAvailable
+                  .replace("{remaining}", String(Math.max(0, jokersAllowed - jokersUsed)))
+                  .replace("{total}", String(jokersAllowed))}
               </span>
             </div>
             {jokersAllowed === 0 && (
               <p className="text-caption text-muted-foreground mt-1">
-                Jokers disponibles à partir de 3 segments
+                {vm.jokersFromThreeSegments}
               </p>
             )}
             {jokersAllowed > 0 && jokersUsed >= jokersAllowed && (
               <p className="text-caption text-muted-foreground mt-1">
-                Tous vos jokers ont été utilisés pour ce livre
+                {vm.allJokersUsed}
               </p>
             )}
           </div>
@@ -121,13 +124,13 @@ export function ValidationModal({
                   htmlFor="hasRead"
                   className="text-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
                 >
-                  J'ai lu ces pages
+                  {vm.iHaveReadThesePages}
                 </Label>
                 <p 
                   id="checkbox-description"
                   className="text-caption text-foreground/70"
                 >
-                  Confirmez votre lecture avant de valider
+                  {vm.confirmBeforeValidating}
                 </p>
               </div>
             </div>
@@ -139,25 +142,25 @@ export function ValidationModal({
             variant="outline" 
             onClick={onClose} 
             className="border-coffee-medium text-foreground hover:bg-muted"
-            aria-label="Annuler la validation de lecture"
+            aria-label={vm.cancelAriaLabel}
           >
-            Annuler
+            {vm.cancel}
           </Button>
           {!isLocked && (
             <Button 
               onClick={handleSubmit} 
               disabled={!hasRead || isValidating}
               className="bg-coffee-dark hover:bg-coffee-darker text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={isValidating ? "Validation en cours" : "Valider cette étape de lecture"}
+              aria-label={isValidating ? vm.validatingAriaLabel : vm.validateAriaLabel}
               aria-describedby={!hasRead ? "validation-requirement" : undefined}
             >
               {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                  <span>Validation...</span>
+                  <span>{vm.validating}</span>
                 </>
               ) : (
-                "Valider cette étape"
+                vm.validateStep
               )}
             </Button>
           )}
@@ -167,7 +170,7 @@ export function ValidationModal({
               className="sr-only"
               aria-live="polite"
             >
-              Vous devez cocher la case pour valider votre lecture
+              {vm.mustCheckToValidate}
             </div>
           )}
         </DialogFooter>

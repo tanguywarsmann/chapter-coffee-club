@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { BadgeCard } from "@/components/achievements/BadgeCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/types/badge";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BookBadgeDialogProps {
   open: boolean;
@@ -11,15 +12,18 @@ interface BookBadgeDialogProps {
 }
 
 export function BookBadgeDialog({ open, badges, setOpen }: BookBadgeDialogProps) {
+  const { t } = useTranslation();
+  const bd = t.badgeDialog;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md border-coffee-medium animate-enter">
         <DialogHeader>
           <DialogTitle className="text-center text-h4 font-serif text-coffee-darker">
-            🎉 Nouveau badge débloqué !
+            {bd.title}
           </DialogTitle>
           <DialogDescription className="text-center">
-            Félicitations pour cette nouvelle étape dans votre parcours de lecture !
+            {bd.subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -34,7 +38,7 @@ export function BookBadgeDialog({ open, badges, setOpen }: BookBadgeDialogProps)
             onClick={() => setOpen(false)}
             className="mt-4 bg-coffee-dark hover:bg-coffee-darker"
           >
-            Super !
+            {bd.great}
           </Button>
           <Button
             variant="outline"
@@ -44,7 +48,7 @@ export function BookBadgeDialog({ open, badges, setOpen }: BookBadgeDialogProps)
               window.location.href = "/achievements";
             }}
           >
-            Voir tous mes badges
+            {bd.viewAllBadges}
           </Button>
         </div>
       </DialogContent>

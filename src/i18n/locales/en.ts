@@ -582,4 +582,138 @@ export const en: Translations = {
     },
     realTime: "🔥 Real-time • Hundreds of feedbacks shared",
   },
+
+  // Book Detail Page
+  bookDetail: {
+    validateMyReading: "Validate my reading",
+    startMyReading: "Start my reading",
+    progressLabel: "Progress: {read} / {total} segments validated.",
+    bookCompleted: "Congratulations! You have finished this book.",
+    cannotDetermineSegment: "Unable to determine the segment to validate",
+  },
+
+  // Validation Modal (pre-quiz confirmation)
+  validationModal: {
+    title: "Reading validation: Segment {segment}",
+    subtitle: "Confirm your reading of \"{bookTitle}\"",
+    jokersAvailable: "Jokers available: {remaining} / {total}",
+    jokersFromThreeSegments: "Jokers available from 3 segments",
+    allJokersUsed: "All your jokers have been used for this book",
+    iHaveReadThesePages: "I have read these pages",
+    confirmBeforeValidating: "Confirm your reading before validating",
+    cancel: "Cancel",
+    cancelAriaLabel: "Cancel reading validation",
+    validateStep: "Validate this step",
+    validating: "Validating...",
+    validatingAriaLabel: "Validation in progress",
+    validateAriaLabel: "Validate this reading step",
+    mustCheckToValidate: "You must check the box to validate your reading",
+  },
+
+  // Success Message (post-validation celebration)
+  successMessage: {
+    title: "Perfect!",
+    description: "Your reading has been validated successfully",
+    level: "Level {level}",
+    xpProgress: "{xp} / {next} XP for level {level}",
+    nextSegment: "Next segment: {segment}",
+    nextValidation: "Next validation in around 30 pages",
+    continueReading: "Continue reading",
+    shareInstagram: "Share on Instagram",
+    shared: "Shared!",
+    shareClipboard: "Text copied. Open Instagram to paste it in your story.",
+    shareError: "Unable to prepare sharing. Try again later.",
+    shareText: "I just finished \"{bookTitle}\" on VREAD!",
+    shareTextGeneric: "I just finished a book on VREAD!",
+  },
+
+  // Validation History
+  validationHistory: {
+    title: "My validation history",
+    segmentValidation: "Segment {segment} validation",
+    jokerUsed: "Joker used",
+  },
+
+  // Book Card
+  bookCard: {
+    unknownTitle: "Unknown title",
+    unknownAuthor: "Unknown author",
+    category: "Category: {name}",
+    completed: "Completed",
+    inProgress: "Reading in progress",
+    toRead: "To read",
+    ariaLabel: "{title} by {author}. Status: {status}. Press Enter to open.",
+    addToList: "Add to my list",
+    adding: "Adding...",
+    remove: "Remove",
+    mustBeLoggedIn: "You must be logged in to perform this action",
+    deleteToImplement: "Delete function to implement",
+  },
+
+  // Book Progress Bar
+  bookProgressBar: {
+    jokersUsed: "Jokers: {used} / {total} used",
+  },
+
+  // Lock Timer
+  lockTimer: {
+    retryIn: "You can retry in",
+    hours: "hour|hours",
+    minutes: "minute|minutes",
+    seconds: "second|seconds",
+  },
+
+  // Book Quest Dialog
+  questDialog: {
+    title: "Challenge Completed!",
+    subtitle: "🏆 You have accomplished a rare and prestigious feat!",
+    questAccomplished: "Quest accomplished!",
+    fantastic: "🎉 Fantastic!",
+    viewAllQuests: "View all my quests",
+  },
+
+  // Book Badge Dialog
+  badgeDialog: {
+    title: "🎉 New badge unlocked!",
+    subtitle: "Congratulations on this new milestone in your reading journey!",
+    great: "Great!",
+    viewAllBadges: "View all my badges",
+  },
+
+  // Reading List
+  readingList: {
+    title: "My reading list",
+    addBook: "Add a book",
+    sortBy: "Sort by...",
+    sortDate: "Date",
+    sortAuthor: "Author",
+    sortPages: "Number of pages",
+  },
+
+  // Booky Rituals
+  rituals: {
+    birth: {
+      title: "Booky was just born!",
+      stage: "Stage 2: Fox cub",
+      description1: "Every day you read, your fox grows.",
+      description2: "Read for {days} days to see Booky evolve!",
+      cta: "Continue the adventure",
+      phaseEgg: "A mystery awakens...",
+      phaseShake: "Something is moving...",
+      phaseCrack: "The egg is cracking...",
+      phaseHatch: "Hatching!",
+    },
+    week: {
+      title: "First week of training",
+      description1: "You just held 7 consecutive days of reading.",
+      description2: "Your fox sees you as a true reading marathoner.",
+      cta: "Continue my cycle",
+    },
+    return: {
+      title: "You're back",
+      description1: "That's what being a reader is.",
+      description2: "Taking breaks, then coming back.",
+      cta: "Resume my training",
+    },
+  },
 };

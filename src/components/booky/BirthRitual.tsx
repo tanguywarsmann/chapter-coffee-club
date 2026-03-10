@@ -6,6 +6,7 @@ import { BOOKY_BRAND, getStageById } from "@/lib/bookyStages";
 import { BookyAvatar } from "./BookyAvatar";
 import { CelebrationParticles } from "./StageParticles";
 import confetti from "canvas-confetti";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BirthRitualProps {
   isOpen: boolean;
@@ -25,8 +26,10 @@ const PHASE_TIMINGS = {
 export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
   const [phase, setPhase] = useState<Phase>("egg");
   const [showCelebration, setShowCelebration] = useState(false);
+  const { t } = useTranslation();
+  const br = t.rituals.birth;
 
-  const stage = getStageById(2); // Renardeau
+  const stage = getStageById(2);
 
   useEffect(() => {
     if (!isOpen) {
@@ -35,30 +38,23 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
       return;
     }
 
-    // Animation sequence
     const timers: NodeJS.Timeout[] = [];
-
     let elapsed = 0;
     
-    // Egg appears
     elapsed += PHASE_TIMINGS.egg;
     timers.push(setTimeout(() => setPhase("shake"), elapsed));
     
-    // Shake phase
     elapsed += PHASE_TIMINGS.shake;
     timers.push(setTimeout(() => setPhase("crack"), elapsed));
     
-    // Crack phase
     elapsed += PHASE_TIMINGS.crack;
     timers.push(setTimeout(() => setPhase("hatch"), elapsed));
     
-    // Hatch phase (explosion)
     elapsed += PHASE_TIMINGS.hatch;
     timers.push(setTimeout(() => {
       setPhase("reveal");
       setShowCelebration(true);
       
-      // Launch confetti
       confetti({
         particleCount: 50,
         spread: 60,
@@ -70,7 +66,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
       });
     }, elapsed));
     
-    // Reveal → Celebrate
     elapsed += PHASE_TIMINGS.reveal;
     timers.push(setTimeout(() => setPhase("celebrate"), elapsed));
 
@@ -85,7 +80,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
           background: `linear-gradient(175deg, ${BOOKY_BRAND.dark} 0%, ${BOOKY_BRAND.darker} 100%)`,
         }}
       >
-        {/* Top highlight */}
         <div 
           className="absolute top-0 left-[10%] right-[10%] h-[1px]"
           style={{ background: `linear-gradient(90deg, transparent, ${BOOKY_BRAND.primary}50, transparent)` }}
@@ -93,7 +87,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
 
         <div className="relative px-8 py-10 flex flex-col items-center min-h-[400px]">
           
-          {/* Background glow */}
           <motion.div
             className="absolute inset-0 opacity-30"
             animate={{
@@ -104,13 +97,10 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
             transition={{ duration: 1 }}
           />
 
-          {/* Celebration particles */}
           <CelebrationParticles isActive={showCelebration} color={BOOKY_BRAND.gold} />
 
-          {/* Main animation container */}
           <div className="relative w-40 h-40 flex items-center justify-center mb-8">
             <AnimatePresence mode="wait">
-              {/* Egg phases */}
               {["egg", "shake", "crack"].includes(phase) && (
                 <motion.div
                   key="egg"
@@ -127,7 +117,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                   }}
                   className="absolute"
                 >
-                  {/* Egg with cracks */}
                   <svg width="120" height="156" viewBox="0 0 80 104" fill="none">
                     <defs>
                       <linearGradient id="birthEggGradient" x1="40" y1="14" x2="40" y2="102" gradientUnits="userSpaceOnUse">
@@ -136,14 +125,9 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                       </linearGradient>
                     </defs>
                     
-                    {/* Egg glow */}
                     <motion.ellipse
-                      cx="40"
-                      cy="58"
-                      rx="42"
-                      ry="50"
-                      fill={BOOKY_BRAND.primary}
-                      opacity="0.2"
+                      cx="40" cy="58" rx="42" ry="50"
+                      fill={BOOKY_BRAND.primary} opacity="0.2"
                       animate={{ 
                         opacity: phase === "shake" ? [0.2, 0.4, 0.2] : 0.2,
                         scale: phase === "shake" ? [1, 1.05, 1] : 1,
@@ -151,55 +135,23 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                       transition={{ duration: 0.5, repeat: phase === "shake" ? Infinity : 0 }}
                     />
                     
-                    {/* Egg body */}
                     <ellipse cx="40" cy="58" rx="36" ry="44" fill="url(#birthEggGradient)" />
-                    
-                    {/* Highlight */}
                     <ellipse cx="28" cy="42" rx="12" ry="18" fill="white" opacity="0.3" />
                     
-                    {/* Cracks (appear in crack phase) */}
                     {phase === "crack" && (
                       <motion.g
                         initial={{ opacity: 0, pathLength: 0 }}
                         animate={{ opacity: 1, pathLength: 1 }}
                         transition={{ duration: 0.8 }}
                       >
-                        <motion.path
-                          d="M40 20 L38 35 L45 40 L42 55"
-                          stroke={BOOKY_BRAND.dark}
-                          strokeWidth="2"
-                          fill="none"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.5 }}
-                        />
-                        <motion.path
-                          d="M55 45 L48 52 L52 60 L45 70"
-                          stroke={BOOKY_BRAND.dark}
-                          strokeWidth="2"
-                          fill="none"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                        />
-                        <motion.path
-                          d="M25 50 L32 58 L28 68"
-                          stroke={BOOKY_BRAND.dark}
-                          strokeWidth="2"
-                          fill="none"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.5, delay: 0.4 }}
-                        />
+                        <motion.path d="M40 20 L38 35 L45 40 L42 55" stroke={BOOKY_BRAND.dark} strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5 }} />
+                        <motion.path d="M55 45 L48 52 L52 60 L45 70" stroke={BOOKY_BRAND.dark} strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: 0.2 }} />
+                        <motion.path d="M25 50 L32 58 L28 68" stroke={BOOKY_BRAND.dark} strokeWidth="2" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: 0.4 }} />
                       </motion.g>
                     )}
                     
-                    {/* Mystery glow inside */}
                     <motion.ellipse
-                      cx="40"
-                      cy="58"
-                      rx="15"
-                      ry="18"
+                      cx="40" cy="58" rx="15" ry="18"
                       fill={stage.gradient.from}
                       animate={{ 
                         opacity: [0.3, 0.6, 0.3],
@@ -211,7 +163,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                 </motion.div>
               )}
 
-              {/* Hatch explosion */}
               {phase === "hatch" && (
                 <motion.div
                   key="explosion"
@@ -222,25 +173,17 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                 >
                   <div 
                     className="w-32 h-32 rounded-full"
-                    style={{
-                      background: `radial-gradient(circle, ${BOOKY_BRAND.gold} 0%, transparent 70%)`,
-                    }}
+                    style={{ background: `radial-gradient(circle, ${BOOKY_BRAND.gold} 0%, transparent 70%)` }}
                   />
                 </motion.div>
               )}
 
-              {/* Fox reveal */}
               {["reveal", "celebrate"].includes(phase) && (
                 <motion.div
                   key="fox"
                   initial={{ scale: 0, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 300, 
-                    damping: 15,
-                    delay: 0.1,
-                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
                   className="absolute"
                 >
                   <BookyAvatar stageId={2} size="xl" animate={true} />
@@ -249,7 +192,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
             </AnimatePresence>
           </div>
 
-          {/* Text content */}
           <AnimatePresence mode="wait">
             {phase === "celebrate" && (
               <motion.div
@@ -259,7 +201,6 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="text-center space-y-4"
               >
-                {/* Title */}
                 <motion.h2
                   className="text-2xl font-serif font-bold"
                   style={{ color: BOOKY_BRAND.cream }}
@@ -267,10 +208,9 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  Booky vient de naître !
+                  {br.title}
                 </motion.h2>
 
-                {/* Subtitle badge */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -286,32 +226,26 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                     className="text-sm font-medium"
                     style={{ color: BOOKY_BRAND.primaryLight }}
                   >
-                    Stade 2 : Renardeau
+                    {br.stage}
                   </span>
                 </motion.div>
 
-                {/* Description */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
                   className="space-y-2 pt-2"
                 >
-                  <p 
-                    className="text-sm leading-relaxed"
-                    style={{ color: BOOKY_BRAND.muted }}
-                  >
-                    Chaque jour où tu lis, ton renard grandit.
+                  <p className="text-sm leading-relaxed" style={{ color: BOOKY_BRAND.muted }}>
+                    {br.description1}
                   </p>
-                  <p 
-                    className="text-sm leading-relaxed"
-                    style={{ color: BOOKY_BRAND.muted }}
-                  >
-                    Lis <span style={{ color: BOOKY_BRAND.primaryLight, fontWeight: 600 }}>7 jours</span> pour voir Booky évoluer !
+                  <p className="text-sm leading-relaxed" style={{ color: BOOKY_BRAND.muted }}>
+                    {br.description2.replace("{days}", "7").split("{days}").length > 1
+                      ? br.description2.replace("{days}", "7")
+                      : br.description2.replace("{days}", "7")}
                   </p>
                 </motion.div>
 
-                {/* CTA Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -326,14 +260,13 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                       boxShadow: `0 8px 24px -6px ${BOOKY_BRAND.primary}80`,
                     }}
                   >
-                    Continuer l'aventure
+                    {br.cta}
                   </Button>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Loading indicator during animation */}
           {!["reveal", "celebrate"].includes(phase) && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -347,14 +280,11 @@ export function BirthRitual({ isOpen, onClose }: BirthRitualProps) {
                 animate={{ opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 1, repeat: Infinity }}
               />
-              <span 
-                className="text-sm"
-                style={{ color: BOOKY_BRAND.muted }}
-              >
-                {phase === "egg" && "Un mystère s'éveille..."}
-                {phase === "shake" && "Quelque chose bouge..."}
-                {phase === "crack" && "L'œuf se fissure..."}
-                {phase === "hatch" && "Éclosion !"}
+              <span className="text-sm" style={{ color: BOOKY_BRAND.muted }}>
+                {phase === "egg" && br.phaseEgg}
+                {phase === "shake" && br.phaseShake}
+                {phase === "crack" && br.phaseCrack}
+                {phase === "hatch" && br.phaseHatch}
               </span>
             </motion.div>
           )}

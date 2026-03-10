@@ -26,6 +26,7 @@ import { getValidationHistory } from "@/services/reading/validationHistoryServic
 import { ReadingValidation } from "@/types/reading";
 import { useExpectedSegments } from "@/hooks/useExpectedSegments";
 import { uiJokersAllowed } from "@/utils/jokerUiGate";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BookDetailProps {
   book: Book;
@@ -34,7 +35,8 @@ interface BookDetailProps {
 
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const { trackRender, trackApiCall, trackError } = usePerformanceTracker('BookDetail');
-  
+  const { t } = useTranslation();
+  const bd = t.bookDetail;
   const {
     currentBook,
     setCurrentBook,
@@ -173,7 +175,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
       
       if (segment <= 0) {
         trackError(new Error('Invalid segment calculated'));
-        toast.error("Impossible de déterminer le segment à valider");
+        toast.error(bd.cannotDetermineSegment);
         return;
       }
       
@@ -198,7 +200,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         
         if (!recalculatedSegment || recalculatedSegment <= 0) {
           trackError(new Error('Unable to calculate valid segment'));
-          toast.error("Impossible de déterminer le segment à valider");
+          toast.error(bd.cannotDetermineSegment);
           return;
         }
         
@@ -237,7 +239,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         {progressData.isBookCompleted ? (
           <MemoizedComponent deps={[progressData.isBookCompleted]}>
             <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
-              <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
+              <p className="text-green-800 font-medium">{bd.bookCompleted}</p>
             </div>
           </MemoizedComponent>
         ) : progressData.showValidationButton && (
@@ -250,7 +252,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
                 className="w-full py-3 text-h4 font-serif my-4"
               >
                 <span className="!text-white">
-                  {progressData.chaptersRead > 0 ? "Valider ma lecture" : "Commencer ma lecture"}
+                  {progressData.chaptersRead > 0 ? bd.validateMyReading : bd.startMyReading}
                 </span>
               </Button>
             </>
@@ -260,7 +262,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         <MemoizedComponent deps={[progressData.chaptersRead, progressData.totalChapters, progressPercent, jokersUsed, jokersAllowed]}>
           <>
             <p className="text-muted-foreground text-center">
-              Progression : {progressData.chaptersRead} / {progressData.totalChapters} segments validés.
+              {bd.progressLabel
+                .replace("{read}", String(progressData.chaptersRead))
+                .replace("{total}", String(progressData.totalChapters))}
             </p>
             <BookProgressBar 
               progressPercent={progressPercent} 
