@@ -239,7 +239,7 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         {progressData.isBookCompleted ? (
           <MemoizedComponent deps={[progressData.isBookCompleted]}>
             <div className="bg-green-50 p-4 rounded-md border border-green-200 text-center">
-              <p className="text-green-800 font-medium">Félicitations ! Vous avez terminé ce livre.</p>
+              <p className="text-green-800 font-medium">{bd.bookCompleted}</p>
             </div>
           </MemoizedComponent>
         ) : progressData.showValidationButton && (
