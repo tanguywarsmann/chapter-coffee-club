@@ -1,5 +1,6 @@
 
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface QuizContentProps {
   bookTitle: string;
@@ -20,15 +21,18 @@ export function QuizContent({
   maxAttempts,
   setAnswer,
 }: QuizContentProps) {
+  const { t } = useTranslation();
+  const q = t.reading.quiz;
+
   return (
     <div className="py-2 space-y-3">
       {/* Segment badge */}
       <div className="text-center">
         <span className="inline-block text-xs font-semibold tracking-wide uppercase text-primary/80">
-          Segment {chapterNumber}
+          {q.segmentLabel} {chapterNumber}
         </span>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Environ 30 pages, variable selon l'édition
+          {q.segmentHint}
         </p>
       </div>
 
@@ -44,7 +48,7 @@ export function QuizContent({
       <div>
         <Input
           id="answer"
-          placeholder="Réponse en un mot"
+          placeholder={q.placeholder}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           className="h-9 border-coffee-medium/60 text-sm text-foreground bg-background placeholder:text-muted-foreground/60"
@@ -57,7 +61,7 @@ export function QuizContent({
           className="text-[11px] text-muted-foreground mt-1 text-right"
           aria-live="polite"
         >
-          {attempts}/{maxAttempts} tentatives
+          {attempts}/{maxAttempts} {q.attempts}
         </p>
       </div>
     </div>
