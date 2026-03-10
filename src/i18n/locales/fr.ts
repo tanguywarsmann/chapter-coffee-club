@@ -604,6 +604,140 @@ export const fr = {
 		},
 		realTime: "🔥 En temps réel • Des centaines de feedbacks partagés",
 	},
+
+	// Book Detail Page
+	bookDetail: {
+		validateMyReading: "Valider ma lecture",
+		startMyReading: "Commencer ma lecture",
+		progressLabel: "Progression : {read} / {total} segments validés.",
+		bookCompleted: "Félicitations ! Vous avez terminé ce livre.",
+		cannotDetermineSegment: "Impossible de déterminer le segment à valider",
+	},
+
+	// Validation Modal (pre-quiz confirmation)
+	validationModal: {
+		title: "Validation de lecture : Segment {segment}",
+		subtitle: "Confirmez votre lecture de \"{bookTitle}\"",
+		jokersAvailable: "Jokers disponibles : {remaining} / {total}",
+		jokersFromThreeSegments: "Jokers disponibles à partir de 3 segments",
+		allJokersUsed: "Tous vos jokers ont été utilisés pour ce livre",
+		iHaveReadThesePages: "J'ai lu ces pages",
+		confirmBeforeValidating: "Confirmez votre lecture avant de valider",
+		cancel: "Annuler",
+		cancelAriaLabel: "Annuler la validation de lecture",
+		validateStep: "Valider cette étape",
+		validating: "Validation...",
+		validatingAriaLabel: "Validation en cours",
+		validateAriaLabel: "Valider cette étape de lecture",
+		mustCheckToValidate: "Vous devez cocher la case pour valider votre lecture",
+	},
+
+	// Success Message (post-validation celebration)
+	successMessage: {
+		title: "Parfait !",
+		description: "Votre lecture a été validée avec succès",
+		level: "Niveau {level}",
+		xpProgress: "{xp} / {next} XP pour le niveau {level}",
+		nextSegment: "Prochain segment : {segment}",
+		nextValidation: "Prochaine validation dans environ 30 pages",
+		continueReading: "Continuer ma lecture",
+		shareInstagram: "Partager sur Instagram",
+		shared: "Partagé !",
+		shareClipboard: "Texte copié. Ouvre Instagram pour le coller dans ta story.",
+		shareError: "Impossible de préparer le partage. Réessaie plus tard.",
+		shareText: "Je viens de terminer \"{bookTitle}\" sur VREAD !",
+		shareTextGeneric: "Je viens de terminer un livre sur VREAD !",
+	},
+
+	// Validation History
+	validationHistory: {
+		title: "Historique de mes validations",
+		segmentValidation: "Validation du segment {segment}",
+		jokerUsed: "Joker utilisé",
+	},
+
+	// Book Card
+	bookCard: {
+		unknownTitle: "Titre inconnu",
+		unknownAuthor: "Auteur inconnu",
+		category: "Catégorie : {name}",
+		completed: "Terminé",
+		inProgress: "En cours de lecture",
+		toRead: "À lire",
+		ariaLabel: "{title} par {author}. Statut : {status}. Appuyez sur Entrée pour ouvrir.",
+		addToList: "Ajouter à ma liste",
+		adding: "Ajout en cours...",
+		remove: "Retirer",
+		mustBeLoggedIn: "Vous devez être connecté pour effectuer cette action",
+		deleteToImplement: "Fonction de suppression à implémenter",
+	},
+
+	// Book Progress Bar
+	bookProgressBar: {
+		jokersUsed: "Jokers : {used} / {total} utilisés",
+	},
+
+	// Lock Timer
+	lockTimer: {
+		retryIn: "Vous pourrez réessayer dans",
+		hours: "heure|heures",
+		minutes: "minute|minutes",
+		seconds: "seconde|secondes",
+	},
+
+	// Book Quest Dialog
+	questDialog: {
+		title: "Challenge Complété !",
+		subtitle: "🏆 Vous avez accompli un exploit rare et prestigieux !",
+		questAccomplished: "Quête accomplie !",
+		fantastic: "🎉 Fantastique !",
+		viewAllQuests: "Voir toutes mes quêtes",
+	},
+
+	// Book Badge Dialog
+	badgeDialog: {
+		title: "🎉 Nouveau badge débloqué !",
+		subtitle: "Félicitations pour cette nouvelle étape dans votre parcours de lecture !",
+		great: "Super !",
+		viewAllBadges: "Voir tous mes badges",
+	},
+
+	// Reading List
+	readingList: {
+		title: "Ma liste de lecture",
+		addBook: "Ajouter un livre",
+		sortBy: "Trier par...",
+		sortDate: "Date",
+		sortAuthor: "Auteur",
+		sortPages: "Nombre de pages",
+	},
+
+	// Booky Rituals
+	rituals: {
+		birth: {
+			title: "Booky vient de naître !",
+			stage: "Stade 2 : Renardeau",
+			description1: "Chaque jour où tu lis, ton renard grandit.",
+			description2: "Lis {days} jours pour voir Booky évoluer !",
+			cta: "Continuer l'aventure",
+			phaseEgg: "Un mystère s'éveille...",
+			phaseShake: "Quelque chose bouge...",
+			phaseCrack: "L'œuf se fissure...",
+			phaseHatch: "Éclosion !",
+		},
+		week: {
+			title: "Première semaine d'entraînement",
+			description1: "Tu viens de tenir 7 jours de lecture consécutifs.",
+			description2: "Ton renard te voit comme un vrai marathonien de la lecture.",
+			cta: "Continuer mon cycle",
+		},
+		return: {
+			title: "Tu es revenu",
+			description1: "C'est ça, être lecteur.",
+			description2: "Faire des pauses, puis revenir.",
+			cta: "Reprendre mon entraînement",
+		},
+	},
 };
 
 export type Translations = typeof fr;
