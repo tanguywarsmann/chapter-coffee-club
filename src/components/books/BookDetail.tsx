@@ -35,7 +35,8 @@ interface BookDetailProps {
 
 export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
   const { trackRender, trackApiCall, trackError } = usePerformanceTracker('BookDetail');
-  
+  const { t } = useTranslation();
+  const bd = t.bookDetail;
   const {
     currentBook,
     setCurrentBook,
