@@ -26,6 +26,7 @@ import { getValidationHistory } from "@/services/reading/validationHistoryServic
 import { ReadingValidation } from "@/types/reading";
 import { useExpectedSegments } from "@/hooks/useExpectedSegments";
 import { uiJokersAllowed } from "@/utils/jokerUiGate";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface BookDetailProps {
   book: Book;
