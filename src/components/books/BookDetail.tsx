@@ -262,7 +262,9 @@ export const BookDetail = ({ book, onChapterComplete }: BookDetailProps) => {
         <MemoizedComponent deps={[progressData.chaptersRead, progressData.totalChapters, progressPercent, jokersUsed, jokersAllowed]}>
           <>
             <p className="text-muted-foreground text-center">
-              Progression : {progressData.chaptersRead} / {progressData.totalChapters} segments validés.
+              {bd.progressLabel
+                .replace("{read}", String(progressData.chaptersRead))
+                .replace("{total}", String(progressData.totalChapters))}
             </p>
             <BookProgressBar 
               progressPercent={progressPercent} 
