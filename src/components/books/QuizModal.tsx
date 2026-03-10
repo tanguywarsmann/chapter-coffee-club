@@ -348,15 +348,15 @@ export function QuizModal({
           <DialogHeader>
             <DialogTitle
               id="quiz-modal-title"
-              className="text-center text-coffee-darker font-serif"
+              className="text-center text-coffee-darker font-serif text-base"
             >
-              Vérification de lecture: Chapitre {chapterNumber}
+              Valider un segment
             </DialogTitle>
             <DialogDescription
               id="quiz-modal-description"
-              className="text-center text-body-sm text-foreground/80"
+              className="text-center text-xs text-muted-foreground"
             >
-              Répondez par un mot pour valider votre compréhension.
+              Répondez en un mot pour valider votre compréhension.
             </DialogDescription>
           </DialogHeader>
 
