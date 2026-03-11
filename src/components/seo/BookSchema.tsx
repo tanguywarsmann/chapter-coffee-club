@@ -24,12 +24,7 @@ export function BookSchema({ book }: BookSchemaProps) {
       "@type": "Organization",
       "name": "VREAD"
     },
-    "genre": book.tags?.join(", ") || "",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.5",
-      "reviewCount": "100"
-    }
+    "genre": book.tags?.join(", ") || ""
   };
 
   return (

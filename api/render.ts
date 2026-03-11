@@ -78,13 +78,21 @@ const SEO_MAP: Record<string, Omit<SeoData, "canonical" | "cache">> = {
         name: "VREAD",
         url: DOMAIN,
         logo: `${DOMAIN}/branding/vread-logo-512.png`,
-        sameAs: [],
+        sameAs: [
+          "https://apps.apple.com/fr/app/v-read/id6752836822",
+          "https://play.google.com/store/apps/details?id=com.vread.app",
+        ],
       },
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "VREAD",
         url: DOMAIN,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${DOMAIN}/explore?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   },
