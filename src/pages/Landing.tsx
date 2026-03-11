@@ -367,7 +367,7 @@ export default function Landing() {
                 className="flex justify-center order-2 lg:order-1"
               >
                 <div className="iphone-frame w-64 md:w-72">
-                  <img src="/images/screen-welcome.png" alt="Écran de bienvenue" />
+                  <img src="/images/screen-welcome.png" alt="Écran de bienvenue" loading="lazy" width={288} height={624} />
                 </div>
               </motion.div>
 
