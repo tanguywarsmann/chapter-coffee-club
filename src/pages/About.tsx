@@ -10,14 +10,14 @@ export default function About() {
     "url": "https://www.vread.fr/",
     "logo": "https://www.vread.fr/branding/vread-logo-512.png",
     "description": "VREAD est la première application qui gamifie la lecture de vrais livres grâce à un système de segments, de validation par question et de progression type Strava.",
-    "foundingDate": "2024",
+    "foundingDate": "2025",
     "sameAs": [
       "https://apps.apple.com/fr/app/v-read/id6752836822",
       "https://play.google.com/store/apps/details?id=com.vread.app"
     ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "email": "contact@vread.fr",
+      "email": "tanguy@vread.fr",
       "contactType": "customer support",
       "availableLanguage": ["French", "English"]
     }
@@ -123,7 +123,7 @@ export default function About() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold mb-4">Contact</h2>
             <p className="text-muted-foreground">
-              Pour toute question, suggestion ou partenariat : <a href="mailto:contact@vread.fr" className="text-primary hover:underline">contact@vread.fr</a>
+              Pour toute question, suggestion ou partenariat : <a href="mailto:tanguy@vread.fr" className="text-primary hover:underline">contact@vread.fr</a>
             </p>
           </section>
 
