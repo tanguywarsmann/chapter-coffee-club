@@ -272,6 +272,9 @@ export default function Landing() {
                     src="/images/screen-success.png" 
                     alt="Gamification" 
                     className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
                   />
                 </div>
                 <div className="p-6">
