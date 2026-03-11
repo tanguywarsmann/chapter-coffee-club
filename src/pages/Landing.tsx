@@ -423,13 +423,13 @@ export default function Landing() {
               className="flex justify-center items-end gap-4 md:gap-8 mb-16"
             >
               <div className="iphone-frame w-40 md:w-52 opacity-80 -rotate-6 translate-y-8">
-                <img src="/images/screen-library.png" alt="Communauté" />
+                <img src="/images/screen-library.png" alt="Communauté" loading="lazy" width={208} height={450} />
               </div>
               <div className="iphone-frame w-48 md:w-64 z-10">
-                <img src="/images/screen-success.png" alt="Succès" />
+                <img src="/images/screen-success.png" alt="Succès" loading="lazy" width={256} height={554} />
               </div>
               <div className="iphone-frame w-40 md:w-52 opacity-80 rotate-6 translate-y-8">
-                <img src="/images/screen-progression.png" alt="Progression" />
+                <img src="/images/screen-progression.png" alt="Progression" loading="lazy" width={208} height={450} />
               </div>
             </motion.div>
 

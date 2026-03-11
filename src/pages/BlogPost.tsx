@@ -152,6 +152,16 @@ export default function BlogPost() {
     }
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.vread.fr/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vread.fr/blog" },
+      { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://www.vread.fr/blog/${post.slug}` }
+    ]
+  };
+
   return (
     <>
       <Helmet>
@@ -213,6 +223,9 @@ export default function BlogPost() {
           })}
         </script>
       </Helmet>
+
+      {/* BreadcrumbList JSON-LD */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       
       <div className="min-h-screen bg-logo-background">
         <div className="mx-auto w-full px-4 max-w-none py-8">
