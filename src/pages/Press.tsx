@@ -68,7 +68,7 @@ export default function Press() {
                   logo: "https://www.vread.fr/branding/vread-logo-512.png",
                   contactPoint: {
                     "@type": "ContactPoint",
-                    email: "contact@vread.fr",
+                    email: "tanguy@vread.fr",
                     contactType: "press",
                     availableLanguage: ["French", "English"],
                   },
@@ -129,7 +129,7 @@ export default function Press() {
                   Pour toute demande d'interview, reportage ou information complémentaire, notre équipe est à votre disposition.
                 </p>
                 <Button asChild className="w-full" variant="outline">
-                  <a href="mailto:contact@vread.fr">contact@vread.fr</a>
+                  <a href="mailto:tanguy@vread.fr">tanguy@vread.fr</a>
                 </Button>
               </section>
 
