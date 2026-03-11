@@ -48,6 +48,15 @@ export default function Blog() {
     );
   }
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.vread.fr/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.vread.fr/blog" }
+    ]
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
@@ -93,8 +102,11 @@ export default function Blog() {
           })}
         </script>
       </Helmet>
+
+      {/* BreadcrumbList JSON-LD in body */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       
-      <div className="flex-1 bg-logo-background">
+      <main className="flex-1 bg-logo-background">
         <div className="container mx-auto px-4 py-12">
           {/* Bouton retour à l'accueil */}
           <div className="mb-8">
@@ -123,7 +135,7 @@ export default function Blog() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       <AppFooter />
     </div>

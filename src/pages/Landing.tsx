@@ -191,7 +191,7 @@ export default function Landing() {
               >
                 <div className="relative">
                   <div className="iphone-frame w-64 md:w-72">
-                    <img src="/images/screen-library.png" alt="VREAD App - Bibliothèque" />
+                    <img src="/images/screen-library.png" alt="VREAD App - Bibliothèque" loading="lazy" width={288} height={624} />
                   </div>
                   
                   {/* Floating XP badge */}
@@ -248,6 +248,9 @@ export default function Landing() {
                     src="/images/screen-progression.png" 
                     alt="Suivi de progression" 
                     className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
                   />
                 </div>
                 <div className="p-6">
@@ -269,6 +272,9 @@ export default function Landing() {
                     src="/images/screen-success.png" 
                     alt="Gamification" 
                     className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
                   />
                 </div>
                 <div className="p-6">
@@ -290,6 +296,9 @@ export default function Landing() {
                     src="/images/screen-library2.png" 
                     alt="Bibliothèque" 
                     className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
                   />
                 </div>
                 <div className="p-6">
@@ -340,7 +349,7 @@ export default function Landing() {
                 className="flex justify-center"
               >
                 <div className="iphone-frame w-64 md:w-72">
-                  <img src="/images/screen-book-detail.png" alt="Détail du livre" />
+                  <img src="/images/screen-book-detail.png" alt="Détail du livre" loading="lazy" width={288} height={624} />
                 </div>
               </motion.div>
             </div>
@@ -358,7 +367,7 @@ export default function Landing() {
                 className="flex justify-center order-2 lg:order-1"
               >
                 <div className="iphone-frame w-64 md:w-72">
-                  <img src="/images/screen-welcome.png" alt="Écran de bienvenue" />
+                  <img src="/images/screen-welcome.png" alt="Écran de bienvenue" loading="lazy" width={288} height={624} />
                 </div>
               </motion.div>
 
@@ -414,13 +423,13 @@ export default function Landing() {
               className="flex justify-center items-end gap-4 md:gap-8 mb-16"
             >
               <div className="iphone-frame w-40 md:w-52 opacity-80 -rotate-6 translate-y-8">
-                <img src="/images/screen-library.png" alt="Communauté" />
+                <img src="/images/screen-library.png" alt="Communauté" loading="lazy" width={208} height={450} />
               </div>
               <div className="iphone-frame w-48 md:w-64 z-10">
-                <img src="/images/screen-success.png" alt="Succès" />
+                <img src="/images/screen-success.png" alt="Succès" loading="lazy" width={256} height={554} />
               </div>
               <div className="iphone-frame w-40 md:w-52 opacity-80 rotate-6 translate-y-8">
-                <img src="/images/screen-progression.png" alt="Progression" />
+                <img src="/images/screen-progression.png" alt="Progression" loading="lazy" width={208} height={450} />
               </div>
             </motion.div>
 

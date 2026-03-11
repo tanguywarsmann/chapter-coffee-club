@@ -78,13 +78,21 @@ const SEO_MAP: Record<string, Omit<SeoData, "canonical" | "cache">> = {
         name: "VREAD",
         url: DOMAIN,
         logo: `${DOMAIN}/branding/vread-logo-512.png`,
-        sameAs: [],
+        sameAs: [
+          "https://apps.apple.com/fr/app/v-read/id6752836822",
+          "https://play.google.com/store/apps/details?id=com.vread.app",
+        ],
       },
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "VREAD",
         url: DOMAIN,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${DOMAIN}/explore?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   },
@@ -278,12 +286,16 @@ function buildMetaBlock(seo: SeoData): string {
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
   ];
-
+  }
   if (seo.noindex) {
     lines.push(`<meta name="robots" content="noindex, nofollow" />`);
   } else {
     lines.push(`<meta name="robots" content="index, follow" />`);
     lines.push(`<link rel="canonical" href="${seo.canonical}" />`);
+    // hreflang for bilingual support
+    lines.push(`<link rel="alternate" hreflang="fr" href="${seo.canonical}" />`);
+    lines.push(`<link rel="alternate" hreflang="en" href="${seo.canonical}${seo.canonical.includes('?') ? '&' : '?'}lang=en" />`);
+    lines.push(`<link rel="alternate" hreflang="x-default" href="${seo.canonical}" />`);
   }
 
   // Open Graph
