@@ -286,7 +286,7 @@ function buildMetaBlock(seo: SeoData): string {
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
   ];
-
+  }
   if (seo.noindex) {
     lines.push(`<meta name="robots" content="noindex, nofollow" />`);
   } else {
