@@ -248,6 +248,9 @@ export default function Landing() {
                     src="/images/screen-progression.png" 
                     alt="Suivi de progression" 
                     className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                    width={640}
+                    height={800}
                   />
                 </div>
                 <div className="p-6">
