@@ -296,6 +296,7 @@ function buildMetaBlock(seo: SeoData): string {
     lines.push(`<link rel="alternate" hreflang="fr" href="${seo.canonical}" />`);
     lines.push(`<link rel="alternate" hreflang="en" href="${seo.canonical}${seo.canonical.includes('?') ? '&' : '?'}lang=en" />`);
     lines.push(`<link rel="alternate" hreflang="x-default" href="${seo.canonical}" />`);
+  }
 
   // Open Graph
   lines.push(`<meta property="og:title" content="${t}" />`);
