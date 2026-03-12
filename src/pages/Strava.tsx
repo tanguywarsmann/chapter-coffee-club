@@ -20,14 +20,16 @@ export default function Strava() {
     "headline": "VREAD : Le Strava de la lecture",
     "description": "Découvrez comment VREAD applique les principes de tracking et gamification de Strava à la lecture de livres français. Stats, séries, badges et progression.",
     "url": "https://www.vread.fr/strava",
-    "author": { "@type": "Organization", "name": "VREAD" },
+    "image": "https://www.vread.fr/branding/vread-logo-1024-q80.webp",
+    "author": { "@type": "Organization", "name": "VREAD", "url": "https://www.vread.fr/" },
     "publisher": {
       "@type": "Organization",
       "name": "VREAD",
+      "url": "https://www.vread.fr/",
       "logo": { "@type": "ImageObject", "url": "https://www.vread.fr/branding/vread-logo-512.png" }
     },
-    "datePublished": "2025-01-15",
-    "dateModified": new Date().toISOString().split('T')[0],
+    "datePublished": "2025-01-15T08:00:00Z",
+    "dateModified": new Date().toISOString(),
     "mainEntityOfPage": "https://www.vread.fr/strava",
     "keywords": "strava lecture, tracking lecture, stats lecture, progression lecture, gamification, habitude lecture, séries lecture"
   };
