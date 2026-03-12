@@ -21,14 +21,16 @@ export default function Duolingo() {
     "headline": "VREAD et Duolingo : Comparaison complète pour apprendre le français",
     "description": "Comparaison détaillée entre VREAD et Duolingo pour apprendre le français. Analyse des forces, faiblesses, prix et recommandations selon votre niveau.",
     "url": "https://www.vread.fr/duolingo",
-    "author": { "@type": "Organization", "name": "VREAD" },
+    "image": "https://www.vread.fr/branding/vread-logo-1024-q80.webp",
+    "author": { "@type": "Organization", "name": "VREAD", "url": "https://www.vread.fr/" },
     "publisher": {
       "@type": "Organization",
       "name": "VREAD",
+      "url": "https://www.vread.fr/",
       "logo": { "@type": "ImageObject", "url": "https://www.vread.fr/branding/vread-logo-512.png" }
     },
-    "datePublished": "2025-01-15",
-    "dateModified": new Date().toISOString().split('T')[0],
+    "datePublished": "2025-01-15T08:00:00Z",
+    "dateModified": new Date().toISOString(),
     "mainEntityOfPage": "https://www.vread.fr/duolingo",
     "keywords": "duolingo, apprendre français, lecture, comparaison, application français, DELF, DALF, B2, C1, C2"
   };

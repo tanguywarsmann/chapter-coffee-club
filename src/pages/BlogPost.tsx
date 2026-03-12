@@ -197,21 +197,23 @@ export default function BlogPost() {
             "@type": "Article",
             "headline": post.title,
             "description": post.excerpt || "",
+            "image": post.imageHero || "https://www.vread.fr/branding/vread-logo-1024-q80.webp",
             "author": {
               "@type": "Organization",
-              "name": post.author || "VREAD"
+              "name": post.author || "VREAD",
+              "url": "https://www.vread.fr/"
             },
             "publisher": {
               "@type": "Organization",
               "name": "VREAD",
-              "url": "https://www.vread.fr",
+              "url": "https://www.vread.fr/",
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://www.vread.fr/branding/vread-logo-512.png"
               }
             },
-            "datePublished": post.created_at,
-            "dateModified": post.updated_at,
+            "datePublished": post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString(),
+            "dateModified": post.updated_at ? new Date(post.updated_at).toISOString() : new Date().toISOString(),
             "url": `https://www.vread.fr/blog/${post.slug}`,
             "mainEntityOfPage": {
               "@type": "WebPage",
@@ -219,7 +221,7 @@ export default function BlogPost() {
             },
             "keywords": post.tags?.join(", ") || "",
             "articleSection": "Littérature",
-            "image": post.imageHero || "https://www.vread.fr/branding/vread-logo-512.png"
+            "inLanguage": "fr"
           })}
         </script>
       </Helmet>
