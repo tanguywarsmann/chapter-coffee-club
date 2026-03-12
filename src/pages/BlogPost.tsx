@@ -221,7 +221,7 @@ export default function BlogPost() {
             },
             "keywords": post.tags?.join(", ") || "",
             "articleSection": "Littérature",
-            "image": post.imageHero || "https://www.vread.fr/branding/vread-logo-512.png"
+            "inLanguage": "fr"
           })}
         </script>
       </Helmet>
