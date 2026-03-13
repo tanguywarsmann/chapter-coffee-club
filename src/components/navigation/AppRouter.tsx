@@ -142,6 +142,11 @@ const AppRouter = () => {
 
         {/* Admin Panel */}
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/metrics" element={
+          <AdminGuard>
+            <AdminMetrics />
+          </AdminGuard>
+        } />
         <Route path="/admin/auto-covers" element={
           <AdminGuard>
             <AdminAutoCovers />
