@@ -48,6 +48,7 @@ const Achievements = lazy(() => import('@/pages/Achievements'));
 const Followers = lazy(() => import('@/pages/Followers'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminAutoCovers = lazy(() => import('@/pages/AdminAutoCovers'));
+const AdminMetrics = lazy(() => import('@/pages/AdminMetrics'));
 const AdminAudit = lazy(() => import('@/pages/AdminAudit'));
 const AdminBookRequests = lazy(() => import('@/pages/AdminBookRequests'));
 const FinishedChatPage = lazy(() => import('@/pages/FinishedChatPage'));
