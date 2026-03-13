@@ -1427,6 +1427,15 @@ export type Database = {
     }
     Functions: {
       activate_premium: { Args: never; Returns: Json }
+      admin_get_activation_funnel: { Args: { p_days?: number }; Returns: Json }
+      admin_get_alerts: { Args: never; Returns: Json }
+      admin_get_catalog: { Args: never; Returns: Json }
+      admin_get_cohort_retention: { Args: { p_weeks?: number }; Returns: Json }
+      admin_get_conversion: { Args: { p_days?: number }; Returns: Json }
+      admin_get_engagement: { Args: { p_days?: number }; Returns: Json }
+      admin_get_kpis: { Args: { p_days?: number }; Returns: Json }
+      admin_get_social_retention: { Args: never; Returns: Json }
+      admin_get_social_stats: { Args: never; Returns: Json }
       auto_grant_badges: {
         Args: { p_user_id?: string }
         Returns: {

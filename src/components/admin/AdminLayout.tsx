@@ -42,6 +42,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             Demandes
           </NavLink>
+          <NavLink 
+            to="/admin/metrics" 
+            className={({ isActive }) => 
+              `hover:underline ${isActive ? 'text-primary font-medium' : 'text-foreground'}`
+            }
+          >
+            📊 Métriques
+          </NavLink>
         </nav>
         <AdminBadge />
       </header>
